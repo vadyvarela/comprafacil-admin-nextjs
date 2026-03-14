@@ -3,22 +3,8 @@
 import { useState } from "react"
 import { useQuery } from "@apollo/client/react"
 import { GET_CATEGORIES } from "@/lib/graphql/categories/queries"
-import { AppSidebar } from "@/components/app-sidebar"
+import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { CreateCategoryModal } from "@/components/categories/create-category-modal"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -35,7 +21,9 @@ export default function CategoriesPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
 
-  const { data, loading, error, refetch } = useQuery(GET_CATEGORIES, {
+  const { data, loading, error, refetch } = useQuery<{
+    categories: { data: Category[] }
+  }>(GET_CATEGORIES, {
     variables: {
       page: { page: 0, size: 100 },
     },
@@ -43,58 +31,33 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <div className="flex items-center justify-center p-8">
-            <p className="text-muted-foreground">Carregando categorias...</p>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <>
+        <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Categorias" }]} />
+        <div className="flex items-center justify-center p-8">
+          <p className="text-muted-foreground">Carregando categorias...</p>
+        </div>
+      </>
     )
   }
 
   if (error) {
     return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <div className="bg-destructive/10 text-destructive p-4 rounded-md m-4">
-            <p className="font-semibold">Erro ao carregar categorias</p>
-            <p className="text-sm mt-1">{error.message}</p>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <>
+        <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Categorias" }]} />
+        <div className="bg-destructive/10 text-destructive p-4 rounded-md m-4">
+          <p className="font-semibold">Erro ao carregar categorias</p>
+          <p className="text-sm mt-1">{error.message}</p>
+        </div>
+      </>
     )
   }
 
   const categories = data?.categories?.data || []
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Categorias</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-6 p-6">
+    <>
+      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Categorias" }]} />
+      <div className="flex flex-1 flex-col gap-6 p-6">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Categorias</h1>
@@ -211,8 +174,7 @@ export default function CategoriesPage() {
             setSelectedCategory(null)
           }}
         />
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   )
 }
 

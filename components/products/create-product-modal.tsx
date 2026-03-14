@@ -49,10 +49,12 @@ export function CreateProductModal({
     summary: "",
     sku: "",
     categoryId: "none",
+    brandId: "none",
     discount: "",
     price: "",
     quantity: "",
     createDefaultVariant: true, // Por padrão, criar variante padrão
+    brand: "",
     // Metadata expandido
     model: "",
     weight: "",
@@ -63,24 +65,24 @@ export function CreateProductModal({
     notes: "",
   })
 
-  const { data: categoriesData, loading: categoriesLoading } = useQuery(
-    GET_CATEGORY_LIST,
-    {
-      skip: !open,
-    }
-  )
+  const { data: categoriesData, loading: categoriesLoading } = useQuery<{
+    categoryList: { id: string; name: string; slug: string }[]
+  }>(GET_CATEGORY_LIST, {
+    skip: !open,
+  })
 
-  const { data: brandsData, loading: brandsLoading } = useQuery(
-    GET_BRAND_LIST,
-    {
-      skip: !open,
-    }
-  )
+  const { data: brandsData, loading: brandsLoading } = useQuery<{
+    brandList: { id: string; name: string; slug: string }[]
+  }>(GET_BRAND_LIST, {
+    skip: !open,
+  })
 
   const categories = categoriesData?.categoryList || []
   const brands = brandsData?.brandList || []
 
-  const [createProduct, { loading, error }] = useMutation(CREATE_PRODUCT, {
+  const [createProduct, { loading, error }] = useMutation<{
+    createProduct: { id: string }
+  }>(CREATE_PRODUCT, {
     refetchQueries: [{ query: GET_PRODUCTS }],
   })
 

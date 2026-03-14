@@ -52,7 +52,9 @@ export function CreateCategoryModal({
   })
 
   // Buscar lista de categorias para o seletor de categoria pai
-  const { data: categoriesData } = useQuery(GET_CATEGORY_LIST, {
+  const { data: categoriesData } = useQuery<{
+    categoryList: Category[]
+  }>(GET_CATEGORY_LIST, {
     skip: !open,
   })
 

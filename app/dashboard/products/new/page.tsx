@@ -7,21 +7,7 @@ import { CREATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { GET_PRODUCTS } from "@/lib/graphql/products/queries"
 import { CREATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
 import { CREATE_PRICE } from "@/lib/graphql/prices/mutations"
-import { AppSidebar } from "@/components/app-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
+import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
@@ -37,7 +23,9 @@ export default function NewProductPage() {
     createDefaultVariant: true, // Por padrão, criar variante padrão
   })
 
-  const [createProduct, { loading, error }] = useMutation(CREATE_PRODUCT, {
+  const [createProduct, { loading, error }] = useMutation<{
+    createProduct: { id: string }
+  }>(CREATE_PRODUCT, {
     refetchQueries: [{ query: GET_PRODUCTS }],
   })
 
@@ -114,36 +102,9 @@ export default function NewProductPage() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbLink href="/dashboard/products">
-                    Produtos
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Criar Produto</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+    <>
+      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "Criar Produto" }]} />
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           <h1 className="text-2xl font-bold">Criar Novo Produto</h1>
 
           {error && (
@@ -296,7 +257,6 @@ export default function NewProductPage() {
             </div>
           </form>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   )
 }

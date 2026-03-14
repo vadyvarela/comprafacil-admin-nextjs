@@ -59,7 +59,7 @@ export function CreateCouponModal({
     skip: !open,
   })
 
-  const products = productsData?.products.data || []
+  const products = (productsData as { products?: { data: unknown[] } } | undefined)?.products?.data || []
 
   const [createCoupon, { loading: creating }] = useMutation(CREATE_COUPON, {
     refetchQueries: [{ query: GET_COUPONS }],
@@ -143,7 +143,8 @@ export function CreateCouponModal({
         maxRedemptions: parseInt(formData.maxRedemptions),
       }),
       ...(formData.redeemBy && {
-        redeemBy: new Date(formData.redeemBy).toISOString(),
+        // Backend GraphQL rejeita ISO com "Z"; enviar como YYYY-MM-DDTHH:mm:ss
+        redeemBy: `${formData.redeemBy}T12:00:00`,
       }),
       ...(formData.appliesToProductId &&
         formData.appliesToProductId !== "none" && {

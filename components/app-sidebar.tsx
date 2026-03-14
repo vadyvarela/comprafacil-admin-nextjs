@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Package, Box, FolderTree, TicketPercent, Image as ImageIcon, Tag } from "lucide-react"
+import { Package, Box, FolderTree, TicketPercent, Image as ImageIcon, Tag, ShoppingCart, CreditCard } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -93,16 +93,42 @@ const data = {
         },
       ],
     },
+    {
+      title: "Pedidos",
+      url: "/dashboard/orders",
+      icon: ShoppingCart,
+      isActive: false,
+      items: [
+        {
+          title: "Todos os Pedidos",
+          url: "/dashboard/orders",
+        },
+      ],
+    },
+    {
+      title: "Transações",
+      url: "/dashboard/transactions",
+      icon: CreditCard,
+      isActive: false,
+      items: [
+        {
+          title: "Todas as Transações",
+          url: "/dashboard/transactions",
+        },
+      ],
+    },
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <Package className="h-5 w-5" />
-          <span className="font-semibold">TechArena Admin</span>
+      <SidebarHeader className="border-b border-sidebar-border">
+        <div className="flex items-center gap-2 px-3 py-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Package className="h-4 w-4" />
+          </div>
+          <span className="font-semibold text-sm">Admin</span>
         </div>
       </SidebarHeader>
       <SidebarContent>

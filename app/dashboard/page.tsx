@@ -1,49 +1,37 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
+import Link from "next/link"
+import { CreditCard, Package, Receipt, LayoutDashboard } from "lucide-react"
+import { DashboardHeader } from "@/components/layout/dashboard-header"
 
-export default function Page() {
+const links = [
+  { href: "/dashboard/orders", label: "Pedidos", icon: Receipt },
+  { href: "/dashboard/transactions", label: "Transações", icon: CreditCard },
+  { href: "/dashboard/products", label: "Produtos", icon: Package },
+]
+
+export default function DashboardPage() {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Dashboard</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-            <div className="bg-muted/50 aspect-video rounded-xl" />
-          </div>
-          <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min" />
+    <>
+      <DashboardHeader items={[{ label: "Dashboard" }]} />
+      <div className="flex flex-1 flex-col gap-4 p-4 pt-3">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <LayoutDashboard className="h-4 w-4" />
+          <p className="text-sm">Acesso rápido</p>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {links.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-3 rounded-md border border-border bg-card px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                <Icon className="h-4 w-4" />
+              </div>
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </>
   )
 }

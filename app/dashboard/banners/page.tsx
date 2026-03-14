@@ -5,23 +5,9 @@ import { useQuery, useMutation } from "@apollo/client/react"
 import { GET_BANNERS } from "@/lib/graphql/banners/queries"
 import { DELETE_BANNER } from "@/lib/graphql/banners/mutations"
 import { Banner } from "@/lib/graphql/banners/types"
-import { AppSidebar } from "@/components/app-sidebar"
+import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { CreateBannerModal } from "@/components/banners/create-banner-modal"
 import { EditBannerModal } from "@/components/banners/edit-banner-modal"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
 import Link from "next/link"
 import {
   Image as ImageIcon,
@@ -101,26 +87,9 @@ export default function BannersPage() {
     }) || []
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Banners</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-
-        <div className="flex flex-1 flex-col">
+    <>
+      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Banners" }]} />
+      <div className="flex flex-1 flex-col">
           {/* Header */}
           <div className="border-b px-4 py-3">
             <div className="flex items-center justify-between mb-3">
@@ -311,8 +280,7 @@ export default function BannersPage() {
             banner={selectedBanner}
           />
         )}
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   )
 }
 

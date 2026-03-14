@@ -1,0 +1,86 @@
+import { Suspense } from "react"
+import { getTransactions } from "@/lib/actions"
+import { DashboardHeader } from "@/components/layout/dashboard-header"
+import { TransactionList } from "@/components/transactions/transaction-list"
+import { TransactionListToolbar } from "@/components/transactions/transaction-list-toolbar"
+import { TransactionPagination } from "@/components/transactions/transaction-pagination"
+import { CreditCard } from "lucide-react"
+
+const PAGE_SIZE = 20
+
+type PageProps = {
+  searchParams: Promise<{ page?: string; q?: string }>
+}
+
+export default async function TransactionsPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const page = Math.max(0, Math.floor(Number(params.page) || 0))
+  const search = params.q?.trim() ?? null
+
+  const result = await getTransactions({
+    page: { page, size: PAGE_SIZE, sortBy: "createdAt", sortDirection: "DESC" },
+    filter: { search },
+  })
+
+  const transactions = result.ok ? result.data.data : []
+  const totalElements = result.ok ? result.data.totalElements : 0
+  const totalPages = result.ok ? result.data.totalPages : 0
+  const error = result.ok ? null : result.error
+
+  return (
+    <>
+      <DashboardHeader
+        items={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Transações" },
+        ]}
+      />
+      <div className="flex flex-1 flex-col min-h-0">
+        <Suspense fallback={null}>
+          <TransactionListToolbar
+            totalElements={totalElements}
+            search={search ?? undefined}
+            error={error}
+          />
+        </Suspense>
+        <div className="flex-1 overflow-auto p-4 pt-3">
+          {result.ok ? (
+            <>
+              {transactions.length === 0 ? (
+                <div
+                  className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-sm mx-auto"
+                  role="status"
+                  aria-label="Nenhuma transação"
+                >
+                  <CreditCard className="h-10 w-10 text-muted-foreground mb-4" />
+                  <h2 className="text-sm font-semibold text-foreground mb-1">
+                    {search
+                      ? "Nenhum resultado"
+                      : "Nenhuma transação"}
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    {search
+                      ? "Tente outro termo ou remova o filtro de busca."
+                      : "As transações de pagamento aparecerão aqui."}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <TransactionList transactions={transactions} />
+                  <Suspense fallback={null}>
+                    <TransactionPagination
+                      currentPage={page}
+                      totalPages={totalPages}
+                      totalElements={totalElements}
+                      pageSize={PAGE_SIZE}
+                    />
+                  </Suspense>
+                </>
+              )}
+            </>
+          ) : null}
+        </div>
+      </div>
+    </>
+  )
+}

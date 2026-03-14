@@ -67,8 +67,8 @@ export function EditProductModal({
     skip: !open,
   })
 
-  const categories = categoriesData?.categoryList || []
-  const brands = brandsData?.brandList || []
+  const categories = (categoriesData as { categoryList?: unknown[] } | undefined)?.categoryList || []
+  const brands = (brandsData as { brandList?: unknown[] } | undefined)?.brandList || []
 
   const [updateProduct, { loading, error }] = useMutation(UPDATE_PRODUCT, {
     refetchQueries: [
@@ -97,7 +97,7 @@ export function EditProductModal({
         discount: product.discount?.toString() || "",
         sku: metadata?.sku || "",
         categoryId: product.category?.id || "none",
-        brandId: product.brand?.id || "none",
+        brandId: (product as { brand?: { id: string } }).brand?.id || "none",
         model: metadata?.model || "",
         weight: metadata?.weight || "",
         dimensions: metadata?.dimensions || "",

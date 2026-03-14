@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
+import type { Product } from "@/lib/graphql/products/types"
 import { CREATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
 import {
   Dialog,
@@ -41,7 +42,9 @@ export function ProductAttributesManager({
   open,
   onOpenChange,
 }: ProductAttributesManagerProps) {
-  const { data: productData, loading: productLoading } = useQuery(GET_PRODUCT, {
+  const { data: productData, loading: productLoading } = useQuery<{
+    productDetails?: Product
+  }>(GET_PRODUCT, {
     variables: { id: productId },
     skip: !productId || !open,
   })

@@ -9,7 +9,7 @@ import {
 } from "@/lib/graphql/variants/mutations"
 import { CREATE_PRICE, UPDATE_PRICE } from "@/lib/graphql/prices/mutations"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
-import { ProductVariant } from "@/lib/graphql/products/types"
+import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import {
   Dialog,
   DialogContent,
@@ -66,7 +66,7 @@ export function VariantManager({
   open,
   onOpenChange,
 }: VariantManagerProps) {
-  const { data, loading } = useQuery(GET_PRODUCT, {
+  const { data, loading } = useQuery<{ productDetails?: Product }>(GET_PRODUCT, {
     variables: { id: productId },
     skip: !productId || !open,
   })

@@ -157,7 +157,7 @@ export async function updateBannerWithImage(
 
         return {
           id: bannerIdFromResponse,
-          image: imageFromResponse,
+          image: imageFromResponse ?? undefined,
         }
       }
 

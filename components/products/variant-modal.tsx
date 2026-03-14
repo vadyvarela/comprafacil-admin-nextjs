@@ -7,7 +7,7 @@ import {
   UPDATE_PRODUCT_VARIANT,
 } from "@/lib/graphql/variants/mutations"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
-import { ProductVariant } from "@/lib/graphql/products/types"
+import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import {
   Dialog,
   DialogContent,
@@ -90,7 +90,7 @@ export function VariantModal({
   const loading = creating || updating
 
   // Buscar informações do produto para verificar estoque disponível
-  const { data: productData } = useQuery(GET_PRODUCT, {
+  const { data: productData } = useQuery<{ productDetails?: Product }>(GET_PRODUCT, {
     variables: { id: productId },
     skip: !productId || !open,
   })

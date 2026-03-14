@@ -6,25 +6,11 @@ import { useParams, useRouter } from "next/navigation"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
 import { DELETE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
-import { AppSidebar } from "@/components/app-sidebar"
+import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { EditProductModal } from "@/components/products/edit-product-modal"
 import { VariantManager } from "@/components/products/variant-manager"
 import { ProductImageUpload } from "@/components/products/product-image-upload"
 import { StockModal } from "@/components/products/stock-modal"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -104,75 +90,48 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <div className="flex flex-col gap-4 p-4">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <>
+        <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "…" }]} />
+        <div className="flex flex-col gap-4 p-4">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </>
     )
   }
 
   if (error || !product) {
     return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-            <div className="text-center space-y-3 max-w-md">
-              <Package className="h-10 w-10 mx-auto text-muted-foreground" />
-              <div>
-                <h2 className="text-lg font-semibold">
-                  {error ? "Erro ao carregar produto" : "Produto não encontrado"}
-                </h2>
-                {error && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {error.message}
-                  </p>
-                )}
-              </div>
-              <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/products")}>
-                <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
-                Voltar
-              </Button>
+      <>
+        <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "Detalhe" }]} />
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+          <div className="text-center space-y-3 max-w-md">
+            <Package className="h-10 w-10 mx-auto text-muted-foreground" />
+            <div>
+              <h2 className="text-lg font-semibold">
+                {error ? "Erro ao carregar produto" : "Produto não encontrado"}
+              </h2>
+              {error && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  {error.message}
+                </p>
+              )}
             </div>
+            <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/products")}>
+              <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+              Voltar
+            </Button>
           </div>
-        </SidebarInset>
-      </SidebarProvider>
+        </div>
+      </>
     )
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard/products">Produtos</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="max-w-[200px] truncate text-sm">
-                  {product.title}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-
-        <div className="flex flex-1 flex-col">
+    <>
+      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: product.title ?? "Produto" }]} />
+      <div className="flex flex-1 flex-col">
           {/* Header */}
           <div className="border-b px-4 py-3">
             <div className="flex items-start justify-between gap-4">
@@ -503,7 +462,6 @@ export default function ProductDetailPage() {
           onOpenChange={setStockModalOpen}
           productId={productId}
         />
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   )
 }

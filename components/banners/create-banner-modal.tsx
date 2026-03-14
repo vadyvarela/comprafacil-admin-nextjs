@@ -57,7 +57,9 @@ export function CreateBannerModal({
     endDate: undefined as Date | undefined,
   })
 
-  const [createBanner, { loading, error }] = useMutation(CREATE_BANNER, {
+  const [createBanner, { loading, error }] = useMutation<{
+    createBanner: { title: string }
+  }>(CREATE_BANNER, {
     refetchQueries: [{ query: GET_BANNERS }],
     onCompleted: (data) => {
       showToast.success("Banner criado", `O banner "${data.createBanner.title}" foi criado com sucesso`)

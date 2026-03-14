@@ -59,3 +59,21 @@ export const DELETE_COUPON = gql`
   }
 `
 
+export const CREATE_PROMOTION_CODE = gql`
+  mutation CreatePromotionCode($input: PromotionCodeInput!) {
+    createPromotionCode(input: $input) {
+      id
+      code
+      maxRedemptions
+      timesRedeemed
+      expiresAt
+      couponId
+      status {
+        code
+        description
+      }
+      createdAt
+      updatedAt
+    }
+  }
+`

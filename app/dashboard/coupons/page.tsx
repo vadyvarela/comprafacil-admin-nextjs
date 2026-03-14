@@ -4,22 +4,8 @@ import { useState } from "react"
 import { useQuery } from "@apollo/client/react"
 import { GET_COUPONS } from "@/lib/graphql/coupons/queries"
 import { Coupon } from "@/lib/graphql/coupons/types"
-import { AppSidebar } from "@/components/app-sidebar"
+import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { CreateCouponModal } from "@/components/coupons/create-coupon-modal"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
 import Link from "next/link"
 import {
   TicketPercent,
@@ -51,26 +37,9 @@ export default function CouponsPage() {
     }) || []
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Cupons</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-
-        <div className="flex flex-1 flex-col">
+    <>
+      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons" }]} />
+      <div className="flex flex-1 flex-col">
           {/* Header */}
           <div className="border-b px-4 py-3">
             <div className="flex items-center justify-between mb-3">
@@ -229,8 +198,7 @@ export default function CouponsPage() {
           open={createModalOpen}
           onOpenChange={setCreateModalOpen}
         />
-      </SidebarInset>
-    </SidebarProvider>
+    </>
   )
 }
 

@@ -13,15 +13,16 @@ const retryLink = new RetryLink({
   },
   attempts: {
     max: 3,
-    retryIf: (error, _operation) => {
+      retryIf: (error, _operation) => {
+      const err = error as { networkError?: unknown; graphQLErrors?: { message?: string }[] }
       // Retry apenas para erros de rede ou erros JDBC temporários
-      if (error?.networkError) {
+      if (err?.networkError) {
         return true
       }
       // Retry para erros JDBC Connection
-      if (error?.graphQLErrors?.some((err: any) => 
-        err.message?.includes("JDBC Connection") || 
-        err.message?.includes("Unable to commit")
+      if (err?.graphQLErrors?.some((e) =>
+        e.message?.includes("JDBC Connection") ||
+        e.message?.includes("Unable to commit")
       )) {
         return true
       }
@@ -39,7 +40,12 @@ const httpLink = createHttpLink({
 export const gtwClient = new ApolloClient({
   ssrMode: false,
   link: from([
-    onError(({ graphQLErrors, networkError, operation, forward }) => {
+    onError((arg) => {
+      const { graphQLErrors, networkError, forward } = arg as unknown as {
+        graphQLErrors?: { message: string; locations?: unknown; path?: unknown }[]
+        networkError?: unknown
+        forward: () => unknown
+      }
       if (graphQLErrors) {
         graphQLErrors.forEach(({ message, locations, path }) => {
           console.error(
@@ -50,6 +56,7 @@ export const gtwClient = new ApolloClient({
       if (networkError) {
         console.error(`[Network error]: ${networkError}`)
       }
+      return forward() as ReturnType<Parameters<typeof onError>[0]>
     }),
     retryLink,
     httpLink,

@@ -87,3 +87,12 @@ export interface CouponSearchRequest {
   search?: string | null
 }
 
+/** Input para criar código de promoção (gateway). */
+export interface PromotionCodeInput {
+  code: string
+  maxRedemptions: number
+  expiresAt?: string | null
+  couponId: string
+  customerId?: string | null
+  defaultPromotion?: boolean | null
+}

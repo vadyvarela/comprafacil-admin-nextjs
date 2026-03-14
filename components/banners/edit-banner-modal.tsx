@@ -60,7 +60,9 @@ export function EditBannerModal({
     endDate: undefined as Date | undefined,
   })
 
-  const [updateBanner, { loading, error }] = useMutation(UPDATE_BANNER, {
+  const [updateBanner, { loading, error }] = useMutation<{
+    updateBanner: { title: string }
+  }>(UPDATE_BANNER, {
     refetchQueries: [{ query: GET_BANNERS }],
     onCompleted: (data) => {
       showToast.success("Banner atualizado", `O banner "${data.updateBanner.title}" foi atualizado com sucesso`)

@@ -164,7 +164,7 @@ export async function updateProductWithImage(
 
         return {
           id: productIdFromResponse,
-          image: imageFromResponse,
+          image: imageFromResponse ?? undefined,
         }
       }
 

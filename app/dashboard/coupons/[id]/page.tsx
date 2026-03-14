@@ -4,24 +4,20 @@ import { useState } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { useParams, useRouter } from "next/navigation"
 import { GET_COUPON_DETAILS } from "@/lib/graphql/coupons/queries"
-import { DELETE_COUPON } from "@/lib/graphql/coupons/mutations"
-import { AppSidebar } from "@/components/app-sidebar"
+import { DELETE_COUPON, CREATE_PROMOTION_CODE } from "@/lib/graphql/coupons/mutations"
+import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { CreateCouponModal } from "@/components/coupons/create-coupon-modal"
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,9 +36,11 @@ import {
   Calendar,
   Package,
   Info,
+  Plus,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
+import type { CouponDetails } from "@/lib/graphql/coupons/types"
 
 export default function CouponDetailPage() {
   const params = useParams()
@@ -50,6 +48,8 @@ export default function CouponDetailPage() {
   const couponId = params.id as string
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [addCodeOpen, setAddCodeOpen] = useState(false)
+  const [newCode, setNewCode] = useState({ code: "", maxRedemptions: "1", expiresAt: "" })
 
   const [deleteCoupon, { loading: deleting }] = useMutation(DELETE_COUPON, {
     refetchQueries: [{ query: GET_COUPON_DETAILS, variables: { couponId } }],
@@ -58,7 +58,17 @@ export default function CouponDetailPage() {
     },
   })
 
-  const { data, loading, error } = useQuery(GET_COUPON_DETAILS, {
+  const [createPromotionCode, { loading: creatingCode }] = useMutation(CREATE_PROMOTION_CODE, {
+    refetchQueries: [{ query: GET_COUPON_DETAILS, variables: { couponId } }],
+    onCompleted: () => {
+      setAddCodeOpen(false)
+      setNewCode({ code: "", maxRedemptions: "1", expiresAt: "" })
+    },
+  })
+
+  const { data, loading, error } = useQuery<{
+    couponDetails: CouponDetails
+  }>(GET_COUPON_DETAILS, {
     variables: { couponId },
     skip: !couponId,
   })
@@ -74,47 +84,65 @@ export default function CouponDetailPage() {
     }
   }
 
+  const handleAddCode = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!coupon || !newCode.code.trim()) return
+    const max = Math.max(1, parseInt(newCode.maxRedemptions, 10) || 1)
+    try {
+      await createPromotionCode({
+        variables: {
+          input: {
+            code: newCode.code.trim().toUpperCase(),
+            maxRedemptions: max,
+            couponId: coupon.id,
+            ...(newCode.expiresAt && {
+              expiresAt: `${newCode.expiresAt}T12:00:00`,
+            }),
+          },
+        },
+      })
+    } catch (err) {
+      console.error("Error creating promotion code:", err)
+    }
+  }
+
   if (loading) {
     return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <div className="flex flex-col gap-4 p-4">
-            <Skeleton className="h-8 w-64" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-64 w-full" />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
+      <>
+        <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons", href: "/dashboard/coupons" }, { label: "…" }]} />
+        <div className="flex flex-col gap-4 p-4">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </>
     )
   }
 
   if (error || !coupon) {
     return (
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-            <div className="text-center space-y-3 max-w-md">
-              <TicketPercent className="h-10 w-10 mx-auto text-muted-foreground" />
-              <div>
-                <h2 className="text-lg font-semibold">
-                  {error ? "Erro ao carregar cupom" : "Cupom não encontrado"}
-                </h2>
-                {error && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {error.message}
-                  </p>
-                )}
-              </div>
-              <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/coupons")}>
-                <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
-                Voltar
-              </Button>
+      <>
+        <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons", href: "/dashboard/coupons" }, { label: "Detalhe" }]} />
+        <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+          <div className="text-center space-y-3 max-w-md">
+            <TicketPercent className="h-10 w-10 mx-auto text-muted-foreground" />
+            <div>
+              <h2 className="text-lg font-semibold">
+                {error ? "Erro ao carregar cupom" : "Cupom não encontrado"}
+              </h2>
+              {error && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  {error.message}
+                </p>
+              )}
             </div>
+            <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/coupons")}>
+              <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+              Voltar
+            </Button>
           </div>
-        </SidebarInset>
-      </SidebarProvider>
+        </div>
+      </>
     )
   }
 
@@ -125,32 +153,9 @@ export default function CouponDetailPage() {
     : null
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-4" />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbLink href="/dashboard/coupons">Cupons</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="max-w-[200px] truncate text-sm">
-                  {coupon.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-
-        <div className="flex flex-1 flex-col">
+    <>
+      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons", href: "/dashboard/coupons" }, { label: coupon.name }]} />
+      <div className="flex flex-1 flex-col">
           {/* Header */}
           <div className="border-b px-4 py-3">
             <div className="flex items-start justify-between gap-4">
@@ -278,13 +283,23 @@ export default function CouponDetailPage() {
 
               {/* Main Content */}
               <div className="lg:col-span-2">
-                <div className="mb-3">
-                  <h2 className="text-base font-semibold">Códigos de Promoção</h2>
-                  <p className="text-xs text-muted-foreground">
-                    {coupon.promotionCodes?.length || 0} código
-                    {(coupon.promotionCodes?.length || 0) !== 1 ? "s" : ""} cadastrado
-                    {(coupon.promotionCodes?.length || 0) !== 1 ? "s" : ""}
-                  </p>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-base font-semibold">Códigos de Promoção</h2>
+                    <p className="text-xs text-muted-foreground">
+                      {coupon.promotionCodes?.length ?? 0} código(s) associado(s) a este cupom
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setAddCodeOpen(true)}
+                    className="gap-1.5"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Adicionar código
+                  </Button>
                 </div>
 
                 {coupon.promotionCodes && coupon.promotionCodes.length > 0 ? (
@@ -318,12 +333,22 @@ export default function CouponDetailPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-12 text-center border rounded">
-                    <TicketPercent className="h-8 w-8 text-muted-foreground mb-2" />
-                    <h3 className="text-sm font-medium mb-1">Nenhum código</h3>
-                    <p className="text-xs text-muted-foreground">
-                      Códigos de promoção serão criados automaticamente
+                  <div className="flex flex-col items-center justify-center py-10 px-4 text-center border border-dashed rounded-lg bg-muted/30">
+                    <TicketPercent className="h-7 w-7 text-muted-foreground mb-2" />
+                    <p className="text-sm font-medium text-foreground mb-0.5">Nenhum código associado</p>
+                    <p className="text-xs text-muted-foreground max-w-[280px] mb-3">
+                      Crie um código para os clientes usarem no checkout.
                     </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setAddCodeOpen(true)}
+                      className="gap-1.5"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                      Adicionar código
+                    </Button>
                   </div>
                 )}
               </div>
@@ -337,8 +362,73 @@ export default function CouponDetailPage() {
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
         />
-      </SidebarInset>
-    </SidebarProvider>
+
+        <Dialog open={addCodeOpen} onOpenChange={setAddCodeOpen}>
+          <DialogContent className="sm:max-w-[400px]">
+            <DialogHeader>
+              <DialogTitle>Novo código de promoção</DialogTitle>
+              <DialogDescription>
+                O código será vinculado a este cupom. Os clientes usam-no no checkout.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddCode} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="promo-code">Código *</Label>
+                <Input
+                  id="promo-code"
+                  value={newCode.code}
+                  onChange={(e) => setNewCode((p) => ({ ...p, code: e.target.value }))}
+                  placeholder="Ex: VERAO2026"
+                  required
+                  disabled={creatingCode}
+                  className="uppercase"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="promo-max">Máx. resgates *</Label>
+                <Input
+                  id="promo-max"
+                  type="number"
+                  min={1}
+                  value={newCode.maxRedemptions}
+                  onChange={(e) => setNewCode((p) => ({ ...p, maxRedemptions: e.target.value }))}
+                  disabled={creatingCode}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="promo-expires">Válido até (opcional)</Label>
+                <Input
+                  id="promo-expires"
+                  type="date"
+                  value={newCode.expiresAt}
+                  onChange={(e) => setNewCode((p) => ({ ...p, expiresAt: e.target.value }))}
+                  disabled={creatingCode}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setAddCodeOpen(false)}
+                  disabled={creatingCode}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={creatingCode || !newCode.code.trim()}>
+                  {creatingCode ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Criando…
+                    </>
+                  ) : (
+                    "Criar código"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+    </>
   )
 }
 
