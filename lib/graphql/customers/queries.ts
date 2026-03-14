@@ -1,5 +1,26 @@
 import { gql } from "@apollo/client"
 
+export const CUSTOMERS_SEARCH = gql`
+  query CustomersSearch($filter: CustomerFilterRequest, $page: PageInput!) {
+    customers(filter: $filter, page: $page) {
+      data {
+        id
+        customerExternalId
+        name
+        identifier
+        email
+        phone
+        status { code description }
+        createdAt
+      }
+      pageNumber
+      pageSize
+      totalElements
+      totalPages
+    }
+  }
+`
+
 export const CUSTOMER_DETAILS = gql`
   query CustomerDetails($id: UUID!) {
     customerDetails(id: $id) {

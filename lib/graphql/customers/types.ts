@@ -24,6 +24,29 @@ export interface AddressResponse {
   updatedAt?: string
 }
 
+export interface CustomerResponse {
+  id: string
+  customerExternalId?: string
+  name?: string
+  description?: string
+  provider?: DomainModel
+  identifier?: string
+  email?: string
+  phone?: string
+  metadata?: string
+  status?: DomainModel
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface CustomerPageResponse {
+  data: CustomerResponse[]
+  pageNumber?: number
+  pageSize?: number
+  totalElements?: number
+  totalPages?: number
+}
+
 export interface CustomerDetailsResponse {
   id: string
   customerExternalId?: string

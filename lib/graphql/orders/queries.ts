@@ -56,8 +56,7 @@ export const CHECKOUT_SESSION_DETAILS = gql`
       paymentMode
       maximumNumberOfInstallments
       hasPaymentIntent
-      # Descomentar quando o gateway tiver metadata em CheckoutSessionDetailsResponse (endereço da compra)
-      # metadata
+      metadata
       customer {
         id
         customerExternalId

@@ -2,6 +2,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { Badge } from "@/components/ui/badge"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
+import { formatCurrency } from "@/lib/utils/currency"
 import { cn } from "@/lib/utils"
 import { CreditCard, User, Calendar, ArrowRight } from "lucide-react"
 
@@ -28,13 +29,6 @@ function customerDisplay(customer: PaymentIntent["customer"]): string {
 function shortId(id: string): string {
   if (!id || id.length < 8) return id
   return `${id.slice(0, 8)}…`
-}
-
-function formatAmount(amount: number, currency: string): string {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "CVE",
-  }).format(amount / 100)
 }
 
 function statusVariant(code: string): "default" | "secondary" | "destructive" | "outline" {
@@ -88,7 +82,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   {customerDisplay(tx.customer)}
                 </td>
                 <td className="px-4 py-2.5 text-right tabular-nums font-medium">
-                  {formatAmount(tx.amount, tx.currency)}
+                  {formatCurrency(tx.amount, tx.currency)}
                 </td>
                 <td className="px-4 py-2.5">
                   <Badge
@@ -132,7 +126,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   </Badge>
                 </div>
                 <div className="text-sm font-medium tabular-nums mb-1">
-                  {formatAmount(tx.amount, tx.currency)}
+                  {formatCurrency(tx.amount, tx.currency)}
                 </div>
                 <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                   {(tx.customer?.name || tx.customer?.email) && (

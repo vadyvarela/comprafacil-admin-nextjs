@@ -103,20 +103,23 @@ export default function NewProductPage() {
 
   return (
     <>
-      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "Criar Produto" }]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <h1 className="text-2xl font-bold">Criar Novo Produto</h1>
+      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "Criar produto" }]} />
+      <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
+        <div>
+          <h1 className="text-lg font-semibold text-foreground">Criar produto</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">Preencha os dados e opcionalmente uma variante com preço e stock.</p>
+        </div>
 
-          {error && (
-            <div className="bg-destructive/10 text-destructive p-4 rounded-md">
-              <p className="font-semibold">Erro ao criar produto</p>
-              <p className="text-sm mt-1">{error.message}</p>
-            </div>
-          )}
+        {error && (
+          <div className="p-2.5 rounded-md border border-destructive/50 bg-destructive/10 text-xs">
+            <p className="font-medium text-destructive">Erro ao criar produto</p>
+            <p className="text-muted-foreground mt-1">{error.message}</p>
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit} className="bg-card border rounded-lg p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="rounded-lg border border-border bg-card p-4 md:p-5 space-y-4">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium mb-2">
+              <label htmlFor="title" className="block text-xs font-medium text-foreground mb-1.5">
                 Título *
               </label>
               <Input
@@ -131,10 +134,7 @@ export default function NewProductPage() {
             </div>
 
             <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium mb-2"
-              >
+              <label htmlFor="description" className="block text-xs font-medium text-foreground mb-1.5">
                 Descrição
               </label>
               <textarea
@@ -143,14 +143,14 @@ export default function NewProductPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className="w-full min-h-[100px] px-3 py-2 border rounded-md"
+                className="w-full min-h-[80px] px-3 py-2 text-sm border rounded-md border-input bg-background"
                 placeholder="Descrição do produto"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="sku" className="block text-sm font-medium mb-2">
+                <label htmlFor="sku" className="block text-xs font-medium text-foreground mb-1.5">
                   SKU
                 </label>
                 <Input
@@ -164,7 +164,7 @@ export default function NewProductPage() {
               </div>
 
               <div>
-                <label htmlFor="discount" className="block text-sm font-medium mb-2">
+                <label htmlFor="discount" className="block text-xs font-medium text-foreground mb-1.5">
                   Desconto (%)
                 </label>
                 <Input
@@ -182,7 +182,7 @@ export default function NewProductPage() {
             </div>
 
             {/* Seção de Variante Padrão */}
-            <div className="border-t pt-4 space-y-4">
+            <div className="border-t border-border pt-4 space-y-4">
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -191,9 +191,9 @@ export default function NewProductPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, createDefaultVariant: e.target.checked })
                   }
-                  className="h-4 w-4"
+                  className="h-4 w-4 rounded border-input"
                 />
-                <label htmlFor="createDefaultVariant" className="text-sm font-medium">
+                <label htmlFor="createDefaultVariant" className="text-xs font-medium text-foreground">
                   Criar variante padrão com preço
                 </label>
               </div>
@@ -201,7 +201,7 @@ export default function NewProductPage() {
               {formData.createDefaultVariant && (
                 <div className="grid grid-cols-2 gap-4 pl-6">
                   <div>
-                    <label htmlFor="price" className="block text-sm font-medium mb-2">
+                    <label htmlFor="price" className="block text-xs font-medium text-foreground mb-1.5">
                       Preço (CVE) *
                     </label>
                     <Input
@@ -219,8 +219,8 @@ export default function NewProductPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="quantity" className="block text-sm font-medium mb-2">
-                      Quantidade em Estoque
+                    <label htmlFor="quantity" className="block text-xs font-medium text-foreground mb-1.5">
+                      Quantidade em stock
                     </label>
                     <Input
                       id="quantity"
@@ -237,26 +237,22 @@ export default function NewProductPage() {
               )}
 
               {!formData.createDefaultVariant && (
-                <p className="text-xs text-gray-500 pl-6">
-                  O produto será criado sem variantes. Você pode adicionar variantes depois na página de detalhes do produto.
+                <p className="text-xs text-muted-foreground pl-6">
+                  O produto será criado sem variantes. Pode adicionar variantes na página de detalhes.
                 </p>
               )}
             </div>
 
             <div className="flex gap-2 pt-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Criando..." : "Criar Produto"}
+              <Button type="submit" size="sm" disabled={loading}>
+                {loading ? "A criar…" : "Criar produto"}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.back()}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => router.back()}>
                 Cancelar
               </Button>
             </div>
           </form>
-        </div>
+      </div>
     </>
   )
 }

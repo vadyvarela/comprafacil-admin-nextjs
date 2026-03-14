@@ -23,7 +23,11 @@ export type {
 export { getTransactions } from "./transactions"
 export type { GetTransactionsParams, GetTransactionsResult } from "./transactions"
 export {
+  getCustomers,
   getCustomerDetails,
   getCustomerDetailsByExternalId,
 } from "./customers"
-export type { GetCustomerDetailsResult } from "./customers"
+export type {
+  GetCustomersResult,
+  GetCustomerDetailsResult,
+} from "./customers"

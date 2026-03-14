@@ -36,41 +36,42 @@ export default function CouponsPage() {
       return coupon.name.toLowerCase().includes(query)
     }) || []
 
+  const total = data?.coupons?.length ?? 0
+
   return (
     <>
       <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons" }]} />
-      <div className="flex flex-1 flex-col">
-          {/* Header */}
-          <div className="border-b px-4 py-3">
-            <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-1 flex-col min-h-0">
+        <div className="border-b border-border bg-card">
+          <div className="px-4 py-2.5">
+            <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h1 className="text-xl font-semibold">Cupons</h1>
+                <h1 className="text-base font-semibold tracking-tight">Cupons</h1>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {data?.coupons.length || 0} cupom
-                  {(data?.coupons.length || 0) !== 1 ? "s" : ""}
+                  {total} cupom{total !== 1 ? "s" : ""}
                 </p>
               </div>
-              <Button
-                onClick={() => setCreateModalOpen(true)}
-                size="sm"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1.5" />
-                Novo
-              </Button>
-            </div>
-            <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-              <Input
-                placeholder="Buscar..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-7 h-8 text-sm"
-              />
+              <div className="flex gap-2">
+                <div className="relative w-56 sm:w-64">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" aria-hidden />
+                  <Input
+                    placeholder="Nome do cupom…"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8 h-8 text-xs"
+                    aria-label="Buscar cupons"
+                  />
+                </div>
+                <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  Novo
+                </Button>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-auto p-4">
+        <div className="flex-1 overflow-auto p-4 pt-3">
             {loading && (
               <div className="space-y-2">
                 {[...Array(8)].map((_, i) => (
@@ -80,16 +81,11 @@ export default function CouponsPage() {
             )}
 
             {error && (
-              <div className="p-3 rounded border border-destructive/50 bg-destructive/10 text-sm">
-                <p className="font-medium text-destructive mb-1">Erro ao carregar</p>
-                <p className="text-muted-foreground text-xs">{error.message}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => refetch()}
-                  className="mt-2"
-                >
-                  Tentar Novamente
+              <div className="p-2.5 rounded-md border border-destructive/50 bg-destructive/10 text-xs">
+                <p className="font-medium text-destructive">Erro ao carregar</p>
+                <p className="text-muted-foreground mt-1">{error.message}</p>
+                <Button variant="outline" size="sm" onClick={() => refetch()} className="mt-2">
+                  Tentar novamente
                 </Button>
               </div>
             )}
@@ -97,23 +93,24 @@ export default function CouponsPage() {
             {!loading && !error && (
               <>
                 {filteredCoupons.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <TicketPercent className="h-8 w-8 text-muted-foreground mb-3" />
-                    <h3 className="text-sm font-medium mb-1">
+                  <div
+                    className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-sm mx-auto"
+                    role="status"
+                    aria-label={searchQuery ? "Nenhum resultado" : "Nenhum cupom"}
+                  >
+                    <TicketPercent className="h-10 w-10 text-muted-foreground mb-4" />
+                    <h2 className="text-sm font-semibold text-foreground mb-1">
                       {searchQuery ? "Nenhum resultado" : "Nenhum cupom"}
-                    </h3>
+                    </h2>
                     <p className="text-xs text-muted-foreground mb-4">
                       {searchQuery
-                        ? "Tente ajustar sua busca"
-                        : "Comece criando seu primeiro cupom"}
+                        ? "Tente outro termo ou remova o filtro de busca."
+                        : "Crie o primeiro cupom para começar."}
                     </p>
                     {!searchQuery && (
-                      <Button
-                        onClick={() => setCreateModalOpen(true)}
-                        size="sm"
-                      >
+                      <Button onClick={() => setCreateModalOpen(true)} size="sm">
                         <Plus className="h-3.5 w-3.5 mr-1.5" />
-                        Criar Cupom
+                        Criar cupom
                       </Button>
                     )}
                   </div>
