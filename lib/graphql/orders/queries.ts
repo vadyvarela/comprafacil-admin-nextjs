@@ -57,6 +57,10 @@ export const CHECKOUT_SESSION_DETAILS = gql`
       maximumNumberOfInstallments
       hasPaymentIntent
       metadata
+      fulfillmentStatus {
+        code
+        description
+      }
       customer {
         id
         customerExternalId

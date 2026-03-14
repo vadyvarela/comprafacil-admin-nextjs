@@ -21,3 +21,27 @@ export function getOrderStatusVariant(
   if (c === "EXPIRED") return "destructive"
   return "secondary"
 }
+
+/** Labels para estado de processamento/envio (fulfillment). */
+export const FULFILLMENT_OPTIONS = [
+  { code: "PENDING", label: "A processar" },
+  { code: "PREPARING", label: "Em preparação" },
+  { code: "SHIPPED", label: "Enviado" },
+  { code: "DELIVERED", label: "Entregue" },
+  { code: "CANCELLED", label: "Cancelado" },
+] as const
+
+export function getFulfillmentStatusLabel(code: string | null | undefined): string {
+  if (!code) return "—"
+  return FULFILLMENT_OPTIONS.find((o) => o.code === code?.toUpperCase())?.label ?? code
+}
+
+export function getFulfillmentStatusVariant(
+  code: string | null | undefined
+): "default" | "secondary" | "destructive" | "outline" {
+  const c = code?.toUpperCase() ?? ""
+  if (c === "DELIVERED") return "default"
+  if (c === "SHIPPED" || c === "PREPARING") return "secondary"
+  if (c === "CANCELLED") return "destructive"
+  return "outline"
+}

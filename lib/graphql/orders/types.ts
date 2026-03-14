@@ -63,6 +63,8 @@ export interface CheckoutSessionDetailsResponse {
   hasPaymentIntent?: boolean
   /** JSON da sessão (ex.: basePayload com shippingAddress) */
   metadata?: string | null
+  /** Estado de processamento/envio: PENDING, PREPARING, SHIPPED, DELIVERED, CANCELLED */
+  fulfillmentStatus?: DomainModel | null
   customer?: CustomerResponse
   lines?: OrderItemResponse[]
 }

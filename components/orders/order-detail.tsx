@@ -24,6 +24,7 @@ import {
   getOrderStatusVariant,
 } from "@/lib/orders/status"
 import { OrderDetailActions } from "./order-detail-actions"
+import { OrderFulfillmentStatus } from "./order-fulfillment-status"
 
 type OrderDetailProps = {
   order: CheckoutSessionDetailsResponse
@@ -162,6 +163,11 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                 )}
               </div>
             </div>
+
+            <OrderFulfillmentStatus
+              orderId={order.id}
+              fulfillmentStatus={order.fulfillmentStatus}
+            />
 
             {order.customer && (
               <div className="border border-border rounded-lg p-3">
