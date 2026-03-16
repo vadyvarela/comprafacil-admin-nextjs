@@ -18,6 +18,7 @@ import {
 } from "@/lib/orders/status"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/utils/currency"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 type OrderListProps = {
   orders: OrderSummary[]
@@ -45,12 +46,6 @@ function shortId(id: string): string {
   return `${id.slice(0, 8)}…`
 }
 
-/** Formata valor em centavos (mesmo critério da página de detalhe). */
-function formatMoney(amount: number | null | undefined, currency = "CVE"): string {
-  if (amount == null || Number.isNaN(amount)) return "—"
-  return formatCurrency(amount, currency)
-}
-
 function productSummaryText(order: OrderSummary): string {
   if (order.productSummary?.trim()) return order.productSummary
   if (order.itemsCount && order.itemsCount > 0) return `${order.itemsCount} item(ns)`
@@ -58,85 +53,130 @@ function productSummaryText(order: OrderSummary): string {
 }
 
 export function OrderList({ orders }: OrderListProps) {
+  const columns = [
+    {
+      id: "amount",
+      header: "Valor",
+      headerClassName: "text-right w-[110px]",
+      cellClassName: "text-right font-medium tabular-nums text-foreground",
+      render: (order: OrderSummary) => formatCurrency(order.totalAmount ?? 0, order.currency),
+    },
+    {
+      id: "customer",
+      header: "Cliente",
+      headerClassName: "min-w-[160px]",
+      cellClassName: "text-foreground max-w-[180px] truncate",
+      render: (order: OrderSummary) => customerDisplay(order.customer),
+    },
+    {
+      id: "products",
+      header: "Produtos",
+      headerClassName: "min-w-[200px]",
+      cellClassName: "text-muted-foreground max-w-[220px] truncate",
+      render: (order: OrderSummary) => productSummaryText(order),
+    },
+    {
+      id: "itemsCount",
+      header: "Qtde",
+      headerClassName: "text-center w-[70px]",
+      cellClassName: "text-center tabular-nums text-xs text-muted-foreground",
+      render: (order: OrderSummary) =>
+        order.itemsCount && order.itemsCount > 0 ? order.itemsCount : "—",
+    },
+    {
+      id: "status",
+      header: "Status",
+      headerClassName: "w-[90px]",
+      cellClassName: "",
+      render: (order: OrderSummary) =>
+        order.status ? (
+          <Badge
+            variant={getOrderStatusVariant(order.status.code)}
+            className="text-xs font-normal"
+          >
+            {getOrderStatusLabel(order.status.code)}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
+      id: "reference",
+      header: "Ref.",
+      headerClassName: "w-[110px]",
+      cellClassName: "",
+      render: (order: OrderSummary) => (
+        <Link
+          href={`/dashboard/orders/${order.id}`}
+          className="font-mono text-[11px] font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring rounded"
+        >
+          {shortId(order.id)}
+        </Link>
+      ),
+    },
+    {
+      id: "createdAt",
+      header: "Criado em",
+      headerClassName: "w-[150px]",
+      cellClassName: "text-muted-foreground tabular-nums text-xs",
+      render: (order: OrderSummary) => formatOrderDate(order.createdAt),
+    },
+    {
+      id: "paymentProvider",
+      header: "Pagamento",
+      headerClassName: "w-[130px]",
+      cellClassName: "text-muted-foreground text-xs",
+      render: (order: OrderSummary) => order.paymentProviderType || "—",
+    },
+    {
+      id: "actions",
+      header: "",
+      headerClassName: "w-10",
+      cellClassName: "px-3",
+      render: (order: OrderSummary) => (
+        <Link
+          href={`/dashboard/orders/${order.id}`}
+          className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
+          aria-label={`Ver pedido ${shortId(order.id)}`}
+        >
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      ),
+    },
+  ] as const
+
   return (
     <div className="space-y-0">
       {/* Desktop: table with Valor + Produtos */}
       <div className="hidden lg:block rounded-lg border border-border overflow-hidden bg-card shadow-sm">
-        <table className="w-full text-sm" role="grid" aria-label="Lista de pedidos">
-          <thead>
-            <tr className="border-b border-border bg-muted/40">
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-3 w-[100px]">
-                Ref.
-              </th>
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-3 min-w-[160px]">
-                Cliente
-              </th>
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-3 min-w-[180px]">
-                Produtos
-              </th>
-              <th scope="col" className="text-right font-medium text-muted-foreground px-4 py-3 w-[100px]">
-                Valor
-              </th>
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-3 w-[120px]">
-                Data
-              </th>
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-3 w-[90px]">
-                Status
-              </th>
-              <th scope="col" className="w-12 px-3 py-3" aria-label="Ações" />
-            </tr>
-          </thead>
-          <tbody>
+        <Table role="grid" aria-label="Lista de pedidos">
+          <TableHeader>
+            <TableRow>
+              {columns.map((column) => (
+                <TableHead key={column.id} className={column.headerClassName}>
+                  {column.header}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {orders.map((order) => (
-              <tr
+              <TableRow
                 key={order.id}
-                className="border-b border-border last:border-0 hover:bg-accent/40 transition-colors group"
+                className="border-border hover:bg-accent/40 transition-colors group"
               >
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/dashboard/orders/${order.id}`}
-                    className="font-mono text-xs font-medium text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-ring rounded"
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    className={column.cellClassName}
                   >
-                    {shortId(order.id)}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-foreground max-w-[180px] truncate">
-                  {customerDisplay(order.customer)}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate" title={productSummaryText(order)}>
-                  {productSummaryText(order)}
-                </td>
-                <td className="px-4 py-3 text-right font-medium tabular-nums text-foreground">
-                  {formatMoney(order.totalAmount, order.currency)}
-                </td>
-                <td className="px-4 py-3 text-muted-foreground tabular-nums text-xs">
-                  {formatOrderDate(order.createdAt)}
-                </td>
-                <td className="px-4 py-3">
-                  {order.status ? (
-                    <Badge
-                      variant={getOrderStatusVariant(order.status.code)}
-                      className="text-xs font-normal"
-                    >
-                      {getOrderStatusLabel(order.status.code)}
-                    </Badge>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </td>
-                <td className="px-3 py-3">
-                  <Link
-                    href={`/dashboard/orders/${order.id}`}
-                    className="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring"
-                    aria-label={`Ver pedido ${shortId(order.id)}`}
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </td>
-              </tr>
+                    {column.render(order)}
+                  </TableCell>
+                ))}
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* Mobile: cards with valor + produtos */}
@@ -173,7 +213,7 @@ export function OrderList({ orders }: OrderListProps) {
                   {productSummaryText(order)}
                 </p>
                 <p className="text-lg font-semibold tabular-nums text-foreground">
-                  {formatMoney(order.totalAmount, order.currency)}
+                  {formatCurrency(order.totalAmount ?? 0, order.currency ?? "CVE")}
                 </p>
                 <div className="flex flex-col gap-0.5 mt-2 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1.5 truncate">

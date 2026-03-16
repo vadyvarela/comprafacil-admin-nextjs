@@ -5,6 +5,8 @@ import type { PaymentIntent } from "@/lib/graphql/transactions/types"
 import { formatCurrency } from "@/lib/utils/currency"
 import { cn } from "@/lib/utils"
 import { CreditCard, User, Calendar, ArrowRight } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 type TransactionListProps = {
   transactions: PaymentIntent[]
@@ -31,6 +33,18 @@ function shortId(id: string): string {
   return `${id.slice(0, 8)}…`
 }
 
+function productTitle(tx: PaymentIntent): string {
+  const line = tx.checkoutSession?.lines?.[0]
+  const title = line?.productVariant?.product?.title || line?.productVariant?.title
+  return title || "—"
+}
+
+function quantity(tx: PaymentIntent): string {
+  const line = tx.checkoutSession?.lines?.[0]
+  if (!line) return "—"
+  return String(line.quantity ?? "—")
+}
+
 function statusVariant(code: string): "default" | "secondary" | "destructive" | "outline" {
   const paid = ["PS", "Completed", "CAPTURED", "PAID"]
   const failed = ["Error", "CANCELED", "FAILED", "REJECTED"]
@@ -40,65 +54,128 @@ function statusVariant(code: string): "default" | "secondary" | "destructive" | 
 }
 
 export function TransactionList({ transactions }: TransactionListProps) {
+  const columns = [
+    {
+      id: "amount",
+      header: "Valor",
+      headerClassName: "text-right w-[120px]",
+      cellClassName: "text-right tabular-nums font-medium",
+      render: (tx: PaymentIntent) => formatCurrency(tx.amount, tx.currency),
+    },
+    {
+      id: "customer",
+      header: "Cliente",
+      headerClassName: "text-left min-w-[160px]",
+      cellClassName: "text-left text-muted-foreground max-w-[200px] truncate",
+      render: (tx: PaymentIntent) => customerDisplay(tx.customer),
+    },
+    {
+      id: "product",
+      header: "Produto",
+      headerClassName: "text-left min-w-[160px]",
+      cellClassName: "text-left text-muted-foreground max-w-[220px] truncate",
+      render: (tx: PaymentIntent) => productTitle(tx),
+    },
+    {
+      id: "quantity",
+      header: "Qtde",
+      headerClassName: "text-center w-[80px]",
+      cellClassName: "text-center tabular-nums text-xs",
+      render: (tx: PaymentIntent) => quantity(tx),
+    },
+    {
+      id: "status",
+      header: "Estado",
+      headerClassName: "text-left w-[110px]",
+      cellClassName: "text-left",
+      render: (tx: PaymentIntent) => (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge
+              variant={statusVariant(tx.status?.code ?? "")}
+              className="text-xs font-normal cursor-default"
+            >
+              {tx.status?.code ?? "—"}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            <div className="max-w-xs text-left space-y-0.5">
+              <p className="font-medium">
+                {tx.status?.code ?? "—"}
+              </p>
+              {tx.status?.description && (
+                <p className="text-[11px] leading-snug">
+                  {tx.status.description}
+                </p>
+              )}
+              {tx.statusReason && (
+                <p className="text-[11px] leading-snug text-muted">
+                  Motivo: {tx.statusReason}
+                </p>
+              )}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      ),
+    },
+    {
+      id: "reference",
+      header: "Referência",
+      headerClassName: "text-left min-w-[140px]",
+      cellClassName: "text-left text-muted-foreground tabular-nums",
+      render: (tx: PaymentIntent) => tx.merchantReference || "—",
+    },
+    {
+      id: "createdAt",
+      header: "Criado em",
+      headerClassName: "text-left w-[150px]",
+      cellClassName: "text-left text-muted-foreground tabular-nums",
+      render: (tx: PaymentIntent) => formatDate(tx.createdAt),
+    },
+    {
+      id: "updatedAt",
+      header: "Atualizado em",
+      headerClassName: "text-left w-[150px]",
+      cellClassName: "text-left text-muted-foreground tabular-nums",
+      render: (tx: PaymentIntent) => formatDate(tx.updatedAt),
+    },
+    {
+      id: "capturedAt",
+      header: "Capturado em",
+      headerClassName: "text-left w-[150px]",
+      cellClassName: "text-left text-muted-foreground tabular-nums",
+      render: (tx: PaymentIntent) => formatDate(tx.capturedAt),
+    },
+  ] as const
+
   return (
     <div className="space-y-0">
       <div className="hidden lg:block rounded-md border overflow-hidden">
-        <table className="w-full text-sm" role="grid" aria-label="Lista de transações">
-          <thead>
-            <tr className="border-b bg-muted/50">
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-2.5 w-[100px]">
-                ID
-              </th>
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-2.5 min-w-[120px]">
-                Ref.
-              </th>
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-2.5 min-w-[140px]">
-                Cliente
-              </th>
-              <th scope="col" className="text-right font-medium text-muted-foreground px-4 py-2.5 w-[100px]">
-                Valor
-              </th>
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-2.5 w-[100px]">
-                Status
-              </th>
-              <th scope="col" className="text-left font-medium text-muted-foreground px-4 py-2.5 w-[140px]">
-                Data
-              </th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table role="grid" aria-label="Lista de transações">
+          <TableHeader>
+            <TableRow>
+              {columns.map((column) => (
+                <TableHead key={column.id} className={column.headerClassName}>
+                  {column.header}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {transactions.map((tx) => (
-              <tr
-                key={tx.id}
-                className="border-b last:border-0 hover:bg-accent/30 transition-colors"
-              >
-                <td className="px-4 py-2.5 font-mono text-xs text-muted-foreground">
-                  {shortId(tx.id)}
-                </td>
-                <td className="px-4 py-2.5 text-muted-foreground max-w-[140px] truncate">
-                  {tx.merchantReference || "—"}
-                </td>
-                <td className="px-4 py-2.5 text-muted-foreground max-w-[200px] truncate">
-                  {customerDisplay(tx.customer)}
-                </td>
-                <td className="px-4 py-2.5 text-right tabular-nums font-medium">
-                  {formatCurrency(tx.amount, tx.currency)}
-                </td>
-                <td className="px-4 py-2.5">
-                  <Badge
-                    variant={statusVariant(tx.status?.code ?? "")}
-                    className="text-xs font-normal"
+              <TableRow key={tx.id}>
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    className={column.cellClassName}
                   >
-                    {tx.status?.code ?? "—"}
-                  </Badge>
-                </td>
-                <td className="px-4 py-2.5 text-muted-foreground tabular-nums">
-                  {formatDate(tx.createdAt)}
-                </td>
-              </tr>
+                    {column.render(tx)}
+                  </TableCell>
+                ))}
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       <div className="lg:hidden space-y-2">
@@ -118,12 +195,33 @@ export function TransactionList({ transactions }: TransactionListProps) {
                   <span className="font-mono text-xs font-medium text-foreground">
                     {shortId(tx.id)}
                   </span>
-                  <Badge
-                    variant={statusVariant(tx.status?.code ?? "")}
-                    className="text-xs font-normal"
-                  >
-                    {tx.status?.code ?? "—"}
-                  </Badge>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge
+                        variant={statusVariant(tx.status?.code ?? "")}
+                        className="text-xs font-normal cursor-default"
+                      >
+                        {tx.status?.code ?? "—"}
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <div className="max-w-xs text-left space-y-0.5">
+                        <p className="font-medium">
+                          {tx.status?.code ?? "—"}
+                        </p>
+                        {tx.status?.description && (
+                          <p className="text-[11px] leading-snug">
+                            {tx.status.description}
+                          </p>
+                        )}
+                        {tx.statusReason && (
+                          <p className="text-[11px] leading-snug text-muted">
+                            Motivo: {tx.statusReason}
+                          </p>
+                        )}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className="text-sm font-medium tabular-nums mb-1">
                   {formatCurrency(tx.amount, tx.currency)}

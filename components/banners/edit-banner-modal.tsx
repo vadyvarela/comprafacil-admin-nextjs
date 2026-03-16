@@ -36,6 +36,13 @@ interface EditBannerModalProps {
   banner: Banner
 }
 
+// Formata Date para o formato aceito pelo gateway (sem milissegundos / Z)
+function toGatewayDateTime(date: Date | undefined): string | null {
+  if (!date) return null
+  // Ex: "2026-03-04T02:00:00"
+  return date.toISOString().slice(0, 19)
+}
+
 export function EditBannerModal({
   open,
   onOpenChange,
@@ -158,8 +165,8 @@ export function EditBannerModal({
               code: formData.status,
               description: formData.status === "ACTIVE" ? "Ativo" : "Inativo",
             },
-            startDate: formData.startDate ? formData.startDate.toISOString() : null,
-            endDate: formData.endDate ? formData.endDate.toISOString() : null,
+            startDate: toGatewayDateTime(formData.startDate),
+            endDate: toGatewayDateTime(formData.endDate),
           },
           selectedImage
         )
@@ -183,8 +190,8 @@ export function EditBannerModal({
                 code: formData.status,
                 description: formData.status === "ACTIVE" ? "Ativo" : "Inativo",
               },
-              startDate: formData.startDate ? formData.startDate.toISOString() : null,
-              endDate: formData.endDate ? formData.endDate.toISOString() : null,
+              startDate: toGatewayDateTime(formData.startDate),
+              endDate: toGatewayDateTime(formData.endDate),
             },
           },
         })

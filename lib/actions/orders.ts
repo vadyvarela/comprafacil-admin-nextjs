@@ -49,8 +49,11 @@ export type OrderByIdOutput =
   | { ok: false; error: string; notFound?: boolean }
 
 export function parseOrdersTab(value?: string | null): OrdersTab {
-  if (value === "paid" || value === "pending" || value === "all") return value
-  return "paid"
+  const v = (value ?? "").toUpperCase()
+  if (v === "PENDING" || v === "PREPARING" || v === "SHIPPED" || v === "DELIVERED" || v === "CANCELLED") {
+    return v as OrdersTab
+  }
+  return "all"
 }
 
 /**
@@ -65,6 +68,7 @@ export async function getOrdersPage(params: OrdersPageParams): Promise<OrdersPag
     CHECKOUT_SESSION_SEARCH,
     {
       filter: {
+        // Lista apenas pedidos com pagamento bem-sucedido; filtro de fulfillment é feito depois.
         status: STATUS_SUCCESS,
         search: search ?? null,
       },
@@ -131,7 +135,15 @@ export function enrichOrderWithDetails(
   details: CheckoutSessionDetailsResponse | null
 ): OrderSummary {
   if (!details?.lines?.length) {
-    return { ...order, totalAmount: null, productSummary: null, itemsCount: 0 }
+    return {
+      ...order,
+      totalAmount: null,
+      productSummary: null,
+      itemsCount: 0,
+      fulfillmentStatus: details?.fulfillmentStatus ?? null,
+    } as OrderSummary & {
+      fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
+    }
   }
   const total = details.lines.reduce(
     (sum, line) => sum + (line.quantity ?? 0) * (Number(line.unitAmount) ?? 0),
@@ -157,6 +169,9 @@ export function enrichOrderWithDetails(
     currency: details.currency ?? order.currency,
     productSummary: productSummary ?? null,
     itemsCount,
+    fulfillmentStatus: details.fulfillmentStatus ?? null,
+  } as OrderSummary & {
+    fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
   }
 }
 
@@ -185,11 +200,21 @@ export async function getOrdersPageWithDetails(
   const detailsResults = await Promise.all(
     orders.map((o) => getOrderById(o.id))
   )
-  const data: OrderSummary[] = orders.map((order, i) => {
+  const enriched = orders.map((order, i) => {
     const det = detailsResults[i]
     const details = det?.ok ? det.data : null
-    return enrichOrderWithDetails(order, details)
+    return enrichOrderWithDetails(order, details) as OrderSummary & {
+      fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
+    }
   })
+
+  const tab = parseOrdersTab(params.tab)
+  const data: OrderSummary[] =
+    tab === "all"
+      ? enriched
+      : enriched.filter(
+          (o) => o.fulfillmentStatus?.code?.toUpperCase() === tab
+        )
   return {
     ok: true,
     data: {

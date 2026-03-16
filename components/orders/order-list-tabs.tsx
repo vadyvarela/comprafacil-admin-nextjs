@@ -4,11 +4,14 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { cn } from "@/lib/utils"
 import type { OrdersTab } from "@/lib/orders/types"
+import { FULFILLMENT_OPTIONS } from "@/lib/orders/status"
 
 const TABS: { value: OrdersTab; label: string }[] = [
   { value: "all", label: "Todos" },
-  { value: "paid", label: "Pagamento efetuado" },
-  { value: "pending", label: "Pendentes" },
+  ...FULFILLMENT_OPTIONS.map((opt) => ({
+    value: opt.code as OrdersTab,
+    label: opt.label,
+  })),
 ]
 
 type OrderListTabsProps = {
@@ -26,7 +29,7 @@ export function OrderListTabs({ currentTab }: OrderListTabsProps) {
   }
 
   return (
-    <nav aria-label="Filtrar pedidos por estado de pagamento" className="flex border-b border-border">
+    <nav aria-label="Filtrar pedidos por estado do pedido" className="flex border-b border-border">
       {TABS.map(({ value, label }) => (
         <Link
           key={value}

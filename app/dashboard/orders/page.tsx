@@ -1,13 +1,14 @@
 import { Suspense } from "react"
-import { getOrdersPageWithDetails, ORDER_PAGE_SIZE } from "@/lib/actions/orders"
+import { getOrdersPageWithDetails, ORDER_PAGE_SIZE, parseOrdersTab } from "@/lib/actions/orders"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { OrderList } from "@/components/orders/order-list"
 import { OrderListToolbar } from "@/components/orders/order-list-toolbar"
 import { OrderPagination } from "@/components/orders/order-pagination"
+import { OrderListTabs } from "@/components/orders/order-list-tabs"
 import { CreditCard, Search } from "lucide-react"
 
 type PageProps = {
-  searchParams: Promise<{ search?: string; page?: string }>
+  searchParams: Promise<{ search?: string; page?: string; tab?: string }>
 }
 
 function emptyStateConfig(
@@ -31,8 +32,9 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const params = await searchParams
   const search = params.search?.trim() ?? null
   const page = Math.max(0, Math.floor(Number(params.page) || 0))
+  const tab = parseOrdersTab(params.tab ?? null)
 
-  const result = await getOrdersPageWithDetails({ search, page })
+  const result = await getOrdersPageWithDetails({ search, page, tab })
 
   const orders = result.ok ? result.data.data : []
   const totalElements = result.ok ? (result.data.totalElements ?? 0) : 0
@@ -57,7 +59,9 @@ export default async function OrdersPage({ searchParams }: PageProps) {
             error={error}
           />
         </Suspense>
-        <div className="flex-1 overflow-auto p-4 pt-3">
+        <div className="flex-1 overflow-auto p-4 pt-3 space-y-3">
+          {/* Abas de status (Todos, Pago, Pendentes) */}
+          <OrderListTabs currentTab={tab} />
           {result.ok ? (
             <>
               {orders.length === 0 ? (
