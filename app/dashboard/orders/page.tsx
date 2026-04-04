@@ -66,15 +66,17 @@ export default async function OrdersPage({ searchParams }: PageProps) {
             <>
               {orders.length === 0 ? (
                 <div
-                  className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-sm mx-auto"
+                  className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-sm mx-auto"
                   role="status"
                   aria-label={empty.title}
                 >
-                  <empty.icon className="h-10 w-10 text-muted-foreground mb-4" />
-                  <h2 className="text-sm font-semibold text-foreground mb-1">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+                    <empty.icon className="h-7 w-7 text-muted-foreground/50" />
+                  </div>
+                  <h2 className="text-sm font-bold text-foreground mb-1">
                     {empty.title}
                   </h2>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
                     {empty.description}
                   </p>
                 </div>

@@ -34,43 +34,59 @@ export function OrderPagination({
   if (totalPages <= 1 && totalElements <= pageSize) return null
 
   return (
-    <nav
-      aria-label="Paginação da lista de pedidos"
-      className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t"
-    >
-      <p className="text-xs text-muted-foreground order-2 sm:order-1">
-        {totalElements === 0 ? (
-          "0 resultados"
-        ) : (
+    <div className="flex items-center justify-between gap-3 py-3 px-1">
+      <p className="text-xs text-muted-foreground">
+        {totalElements === 0 ? "0 resultados" : (
           <>
-            Mostrando <strong className="text-foreground">{start}</strong>–<strong className="text-foreground">{end}</strong> de{" "}
-            <strong className="text-foreground">{totalElements}</strong>
+            <span className="font-semibold text-foreground">{start}–{end}</span>
+            {" "}de{" "}
+            <span className="font-semibold text-foreground">{totalElements.toLocaleString("pt-PT")}</span>
           </>
         )}
       </p>
-      <div className="flex items-center gap-2 order-1 sm:order-2">
-        <Button variant="outline" size="sm" disabled={!hasPrev} asChild>
-          <Link
-            href={pageUrl(currentPage - 1)}
-            aria-label="Página anterior"
-          >
-            <ChevronLeft className="h-4 w-4 mr-0.5" />
-            Anterior
-          </Link>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1 text-xs"
+          disabled={!hasPrev}
+          asChild={hasPrev}
+        >
+          {hasPrev ? (
+            <Link href={pageUrl(currentPage - 1)}>
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Anterior
+            </Link>
+          ) : (
+            <span>
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Anterior
+            </span>
+          )}
         </Button>
-        <span className="text-xs text-muted-foreground min-w-[100px] text-center">
-          Página {currentPage + 1} de {Math.max(1, totalPages)}
+        <span className="text-xs font-medium text-muted-foreground px-2">
+          {currentPage + 1} / {Math.max(1, totalPages)}
         </span>
-        <Button variant="outline" size="sm" disabled={!hasNext} asChild>
-          <Link
-            href={pageUrl(currentPage + 1)}
-            aria-label="Próxima página"
-          >
-            Próxima
-            <ChevronRight className="h-4 w-4 ml-0.5" />
-          </Link>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1 text-xs"
+          disabled={!hasNext}
+          asChild={hasNext}
+        >
+          {hasNext ? (
+            <Link href={pageUrl(currentPage + 1)}>
+              Próxima
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          ) : (
+            <span>
+              Próxima
+              <ChevronRight className="h-3.5 w-3.5" />
+            </span>
+          )}
         </Button>
       </div>
-    </nav>
+    </div>
   )
 }
