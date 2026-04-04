@@ -15,6 +15,7 @@ import type { OrderSummary } from "@/lib/graphql/orders/types"
 import {
   getOrderStatusLabel,
   getOrderStatusVariant,
+  getOrderStatusClass,
 } from "@/lib/orders/status"
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/utils/currency"
@@ -90,12 +91,11 @@ export function OrderList({ orders }: OrderListProps) {
       cellClassName: "",
       render: (order: OrderSummary) =>
         order.status ? (
-          <Badge
-            variant={getOrderStatusVariant(order.status.code)}
-            className="text-xs font-normal"
+          <span
+            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${getOrderStatusClass(order.status.code)}`}
           >
             {getOrderStatusLabel(order.status.code)}
-          </Badge>
+          </span>
         ) : (
           <span className="text-muted-foreground">—</span>
         ),
@@ -148,12 +148,12 @@ export function OrderList({ orders }: OrderListProps) {
   return (
     <div className="space-y-0">
       {/* Desktop: table with Valor + Produtos */}
-      <div className="hidden lg:block rounded-lg border border-border overflow-hidden bg-card shadow-sm">
+      <div className="hidden lg:block rounded-xl border border-border overflow-hidden bg-card shadow-sm">
         <Table role="grid" aria-label="Lista de pedidos">
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
               {columns.map((column) => (
-                <TableHead key={column.id} className={column.headerClassName}>
+                <TableHead key={column.id} className={cn("text-xs font-semibold text-muted-foreground", column.headerClassName)}>
                   {column.header}
                 </TableHead>
               ))}
@@ -163,7 +163,7 @@ export function OrderList({ orders }: OrderListProps) {
             {orders.map((order) => (
               <TableRow
                 key={order.id}
-                className="border-border hover:bg-accent/40 transition-colors group"
+                className="border-border hover:bg-muted/30 transition-colors group"
               >
                 {columns.map((column) => (
                   <TableCell
@@ -201,12 +201,11 @@ export function OrderList({ orders }: OrderListProps) {
                     {shortId(order.id)}
                   </span>
                   {order.status && (
-                    <Badge
-                      variant={getOrderStatusVariant(order.status.code)}
-                      className="text-xs font-normal"
+                    <span
+                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${getOrderStatusClass(order.status.code)}`}
                     >
                       {getOrderStatusLabel(order.status.code)}
-                    </Badge>
+                    </span>
                   )}
                 </div>
                 <p className="text-sm font-medium text-foreground truncate mb-0.5">

@@ -22,6 +22,14 @@ export function getOrderStatusVariant(
   return "secondary"
 }
 
+/** CSS class para badge colorido de status de pagamento. */
+export function getOrderStatusClass(code: string): string {
+  const c = code?.toUpperCase() ?? ""
+  if (c === "COMPLETED") return "badge-success"
+  if (c === "EXPIRED") return "badge-danger"
+  return "badge-neutral"
+}
+
 /** Labels para estado de processamento/envio (fulfillment). */
 export const FULFILLMENT_OPTIONS = [
   { code: "PENDING", label: "A processar" },
@@ -44,4 +52,15 @@ export function getFulfillmentStatusVariant(
   if (c === "SHIPPED" || c === "PREPARING") return "secondary"
   if (c === "CANCELLED") return "destructive"
   return "outline"
+}
+
+/** CSS class para badge colorido de fulfillment. */
+export function getFulfillmentStatusClass(code: string | null | undefined): string {
+  const c = code?.toUpperCase() ?? ""
+  if (c === "DELIVERED") return "badge-success"
+  if (c === "SHIPPED") return "badge-info"
+  if (c === "PREPARING") return "badge-warning"
+  if (c === "CANCELLED") return "badge-danger"
+  if (c === "PENDING") return "badge-neutral"
+  return "badge-neutral"
 }

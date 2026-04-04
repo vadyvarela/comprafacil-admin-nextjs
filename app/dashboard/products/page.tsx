@@ -17,6 +17,8 @@ import {
   MoreVertical,
   Trash2,
   Loader2,
+  Edit2,
+  Eye,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -26,6 +28,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { showToast } from "@/lib/utils/toast"
@@ -90,9 +93,7 @@ export default function ProductsPage() {
         product.description?.toLowerCase().includes(query) ||
         (() => {
           try {
-            const metadata = product.metadata
-              ? JSON.parse(product.metadata)
-              : null
+            const metadata = product.metadata ? JSON.parse(product.metadata) : null
             return metadata?.sku?.toLowerCase().includes(query)
           } catch {
             return false
@@ -108,29 +109,28 @@ export default function ProductsPage() {
       <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos" }]} />
       <div className="flex flex-1 flex-col min-h-0">
         {/* Toolbar */}
-        <div className="border-b border-border bg-card">
-          <div className="px-4 py-2.5">
-            <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="border-b border-border bg-card/60 backdrop-blur">
+          <div className="px-5 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h1 className="text-base font-semibold tracking-tight">Produtos</h1>
+                <h1 className="text-base font-bold tracking-tight text-foreground">Produtos</h1>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {total} produto{total !== 1 ? "s" : ""}
+                  {loading ? "A carregar…" : `${total} produto${total !== 1 ? "s" : ""} no catálogo`}
                 </p>
               </div>
               <div className="flex gap-2">
                 <div className="relative w-56 sm:w-64">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" aria-hidden />
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
                   <Input
                     placeholder="Título, descrição, SKU…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-8 h-8 text-xs"
-                    aria-label="Buscar produtos"
                   />
                 </div>
-                <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs">
-                  <Plus className="h-3.5 w-3.5 mr-1.5" />
-                  Novo
+                <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
+                  <Plus className="h-3.5 w-3.5" />
+                  Novo produto
                 </Button>
               </div>
             </div>
@@ -138,141 +138,142 @@ export default function ProductsPage() {
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-auto p-4 pt-3">
-            {loading && (
-              <div className="space-y-2">
-                {[...Array(8)].map((_, i) => (
-                  <Skeleton key={i} className="h-14 rounded" />
-                ))}
-              </div>
-            )}
+        <div className="flex-1 overflow-auto p-5">
+          {loading && (
+            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(9)].map((_, i) => (
+                <Skeleton key={i} className="h-20 rounded-xl" />
+              ))}
+            </div>
+          )}
 
-            {error && (
-              <div className="p-2.5 rounded-md border border-destructive/50 bg-destructive/10 text-xs">
-                <p className="font-medium text-destructive mb-1">Erro ao carregar</p>
-                <p className="text-muted-foreground mb-2">{error.message}</p>
-                <Button variant="outline" size="sm" onClick={() => refetch()}>
-                  Tentar novamente
-                </Button>
-              </div>
-            )}
+          {error && (
+            <div className="p-4 rounded-xl border border-destructive/40 bg-destructive/5 text-xs">
+              <p className="font-semibold text-destructive mb-1">Erro ao carregar produtos</p>
+              <p className="text-muted-foreground mb-3">{error.message}</p>
+              <Button variant="outline" size="sm" onClick={() => refetch()}>
+                Tentar novamente
+              </Button>
+            </div>
+          )}
 
-            {!loading && !error && (
-              <>
-                {filteredProducts.length === 0 ? (
-                  <div
-                    className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-sm mx-auto"
-                    role="status"
-                    aria-label={searchQuery ? "Nenhum resultado" : "Nenhum produto"}
-                  >
-                    <Package className="h-10 w-10 text-muted-foreground mb-4" />
-                    <h2 className="text-sm font-semibold text-foreground mb-1">
-                      {searchQuery ? "Nenhum resultado" : "Nenhum produto"}
-                    </h2>
-                    <p className="text-xs text-muted-foreground mb-4">
-                      {searchQuery
-                        ? "Tente outro termo ou remova o filtro de busca."
-                        : "Crie o primeiro produto para começar."}
-                    </p>
-                    {!searchQuery && (
-                      <Button onClick={() => setCreateModalOpen(true)} size="sm">
-                        <Plus className="h-3.5 w-3.5 mr-1.5" />
-                        Criar produto
-                      </Button>
-                    )}
+          {!loading && !error && (
+            <>
+              {filteredProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-sm mx-auto">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+                    <Package className="h-7 w-7 text-muted-foreground/50" />
                   </div>
-                ) : (
-                  <div className="space-y-1">
-                    {filteredProducts.map((product) => {
-                      let metadata = null
-                      try {
-                        metadata = product.metadata
-                          ? JSON.parse(product.metadata)
-                          : null
-                      } catch (e) {}
+                  <h2 className="text-sm font-semibold text-foreground mb-1">
+                    {searchQuery ? "Nenhum resultado" : "Sem produtos"}
+                  </h2>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    {searchQuery
+                      ? "Tente outro termo de busca."
+                      : "Crie o primeiro produto para começar."}
+                  </p>
+                  {!searchQuery && (
+                    <Button onClick={() => setCreateModalOpen(true)} size="sm" className="gap-1.5">
+                      <Plus className="h-3.5 w-3.5" />
+                      Criar produto
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredProducts.map((product) => {
+                    let metadata: any = null
+                    try {
+                      metadata = product.metadata ? JSON.parse(product.metadata) : null
+                    } catch {}
 
-                      return (
-                        <div
-                          key={product.id}
-                          className="group relative"
-                        >
-                          <Link
-                            href={`/dashboard/products/${product.id}`}
-                            className="block"
-                          >
-                            <div className="flex items-center gap-3 p-3 rounded border hover:bg-accent/50 hover:border-border transition-colors">
-                              <div className="h-8 w-8 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                                <Package className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                  <h3 className="font-medium text-sm group-hover:text-primary transition-colors truncate">
-                                    {product.title}
-                                  </h3>
-                                  {product.category && (
-                                    <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                                      {product.category.name}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                  {metadata?.sku && (
-                                    <span className="flex items-center gap-1">
-                                      <Tag className="h-3 w-3" />
-                                      {metadata.sku}
-                                    </span>
-                                  )}
-                                  <span className="text-muted-foreground/60">
-                                    {product.type.code}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                      onClick={(e) => e.preventDefault()}
-                                      disabled={deletingProductId === product.id}
-                                    >
-                                      {deletingProductId === product.id ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                      ) : (
-                                        <MoreVertical className="h-3.5 w-3.5" />
-                                      )}
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem
-                                      className="text-destructive focus:text-destructive"
-                                      onClick={(e) => handleDeleteProduct(product.id, product.title, e)}
-                                      disabled={deletingProductId === product.id}
-                                    >
-                                      <Trash2 className="h-3.5 w-3.5 mr-2" />
-                                      Excluir
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                                <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
+                    const isDeleting = deletingProductId === product.id
+
+                    return (
+                      <div key={product.id} className="group relative">
+                        <Link href={`/dashboard/products/${product.id}`} className="block">
+                          <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/30 hover:shadow-sm transition-all">
+                            {/* Product icon */}
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary mt-0.5">
+                              <Package className="h-5 w-5" />
                             </div>
-                          </Link>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </>
-            )}
+
+                            {/* Info */}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors leading-tight">
+                                {product.title}
+                              </h3>
+                              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                                {product.category && (
+                                  <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
+                                    {product.category.name}
+                                  </Badge>
+                                )}
+                                {metadata?.sku && (
+                                  <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+                                    <Tag className="h-3 w-3" />
+                                    {metadata.sku}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-muted-foreground/60 mt-1 font-mono">
+                                {product.type?.code}
+                              </p>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                    }}
+                                    disabled={isDeleting}
+                                  >
+                                    {isDeleting ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <MoreVertical className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-40">
+                                  <DropdownMenuItem asChild>
+                                    <Link href={`/dashboard/products/${product.id}`} onClick={(e) => e.stopPropagation()}>
+                                      <Eye className="h-3.5 w-3.5 mr-2" />
+                                      Ver produto
+                                    </Link>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    onClick={(e) => handleDeleteProduct(product.id, product.title, e)}
+                                    disabled={isDeleting}
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5 mr-2" />
+                                    Excluir
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </div>
+                        </Link>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      <CreateProductModal
-          open={createModalOpen}
-          onOpenChange={setCreateModalOpen}
-        />
+      <CreateProductModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
     </>
   )
 }

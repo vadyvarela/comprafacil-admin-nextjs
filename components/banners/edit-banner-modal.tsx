@@ -355,7 +355,8 @@ export function EditBannerModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hero">Hero</SelectItem>
+                    <SelectItem value="hero">Hero (Carrossel Principal)</SelectItem>
+                    <SelectItem value="hero-side">Hero Side (Cards Laterais)</SelectItem>
                     <SelectItem value="promo">Promo</SelectItem>
                     <SelectItem value="sidebar">Sidebar</SelectItem>
                   </SelectContent>

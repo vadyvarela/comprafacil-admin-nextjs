@@ -51,9 +51,9 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className="h-7 w-7 rounded-full ring-2 ring-sidebar-primary/30">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg text-xs">
+                <AvatarFallback className="rounded-full text-xs bg-gradient-to-br from-indigo-400 to-violet-500 text-white font-bold">
                   {getInitials(user.name || "A")}
                 </AvatarFallback>
               </Avatar>
@@ -72,9 +72,9 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
-                <Avatar className="h-9 w-9 rounded-lg">
+                <Avatar className="h-9 w-9 rounded-full">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg text-xs">
+                  <AvatarFallback className="rounded-full text-xs bg-gradient-to-br from-indigo-400 to-violet-500 text-white font-bold">
                     {getInitials(user.name || "A")}
                   </AvatarFallback>
                 </Avatar>
