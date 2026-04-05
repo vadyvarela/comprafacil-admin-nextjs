@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client"
 
 export const CHECKOUT_SESSION_SEARCH = gql`
-  query CheckoutSessionSearch($filter: PaymentFilterRequest, $page: PageInput!) {
+  query CheckoutSessionSearch($filter: CheckoutSessionFilterRequest, $page: PageInput!) {
     checkoutSessionSearch(filter: $filter, page: $page) {
       data {
         id

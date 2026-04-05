@@ -24,6 +24,8 @@ export interface OrdersPageParams {
   search?: string | null
   page?: number
   tab?: OrdersTab
+  dateFrom?: string | null
+  dateTo?: string | null
 }
 
 export interface OrdersPageResult {
@@ -68,9 +70,10 @@ export async function getOrdersPage(params: OrdersPageParams): Promise<OrdersPag
     CHECKOUT_SESSION_SEARCH,
     {
       filter: {
-        // Lista apenas pedidos com pagamento bem-sucedido; filtro de fulfillment é feito depois.
         status: STATUS_SUCCESS,
         search: search ?? null,
+        dateFrom: params.dateFrom ?? null,
+        dateTo: params.dateTo ?? null,
       },
       page: {
         page,

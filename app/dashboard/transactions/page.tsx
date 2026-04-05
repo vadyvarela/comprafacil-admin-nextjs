@@ -9,17 +9,25 @@ import { CreditCard } from "lucide-react"
 const PAGE_SIZE = 20
 
 type PageProps = {
-  searchParams: Promise<{ page?: string; q?: string }>
+  searchParams: Promise<{ page?: string; q?: string; status?: string; from?: string; to?: string }>
 }
 
 export default async function TransactionsPage({ searchParams }: PageProps) {
   const params = await searchParams
   const page = Math.max(0, Math.floor(Number(params.page) || 0))
   const search = params.q?.trim() ?? null
+  const status = params.status?.trim() || null
+  const dateFrom = params.from?.trim() || null
+  const dateTo = params.to?.trim() || null
 
   const result = await getTransactions({
     page: { page, size: PAGE_SIZE, sortBy: "createdAt", sortDirection: "DESC" },
-    filter: { search },
+    filter: {
+      search,
+      status,
+      dateFrom: dateFrom ? `${dateFrom}T00:00:00` : null,
+      dateTo: dateTo ? `${dateTo}T23:59:59` : null,
+    },
   })
 
   const transactions = result.ok ? result.data.data : []
@@ -40,6 +48,9 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           <TransactionListToolbar
             totalElements={totalElements}
             search={search ?? undefined}
+            status={status ?? undefined}
+            dateFrom={dateFrom ?? undefined}
+            dateTo={dateTo ?? undefined}
             error={error}
           />
         </Suspense>
@@ -54,13 +65,11 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                 >
                   <CreditCard className="h-10 w-10 text-muted-foreground mb-4" />
                   <h2 className="text-sm font-semibold text-foreground mb-1">
-                    {search
-                      ? "Nenhum resultado"
-                      : "Nenhuma transação"}
+                    {search || status || dateFrom ? "Nenhum resultado" : "Nenhuma transação"}
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    {search
-                      ? "Tente outro termo ou remova o filtro de busca."
+                    {search || status || dateFrom
+                      ? "Tente outros filtros ou remova os existentes."
                       : "As transações de pagamento aparecerão aqui."}
                   </p>
                 </div>

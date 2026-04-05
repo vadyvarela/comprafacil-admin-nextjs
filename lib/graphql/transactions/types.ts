@@ -17,6 +17,8 @@ export interface PaymentFilterRequest {
   amount?: number | null
   authorizedAt?: string | null
   search?: string | null
+  dateFrom?: string | null
+  dateTo?: string | null
 }
 
 export interface PaymentStatus {

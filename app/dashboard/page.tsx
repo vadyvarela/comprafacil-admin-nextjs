@@ -11,9 +11,9 @@ import {
   Sparkles,
 } from "lucide-react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
-import { getOrdersPage, getOrdersPageWithDetails } from "@/lib/actions/orders"
-import { getTransactions } from "@/lib/actions/transactions"
+import { getOrdersPageWithDetails } from "@/lib/actions/orders"
 import { getCustomers } from "@/lib/actions/customers"
+import { getDashboardStats } from "@/lib/actions/stats"
 import { getFulfillmentStatusLabel, getFulfillmentStatusVariant } from "@/lib/orders/status"
 import { formatCurrency } from "@/lib/utils/currency"
 import { format } from "date-fns"
@@ -22,29 +22,25 @@ import type { OrderSummary } from "@/lib/graphql/orders/types"
 import type { CheckoutSessionDetailsResponse } from "@/lib/graphql/orders/types"
 
 async function getDashboardData() {
-  const [ordersRes, transactionsRes, customersRes, recentOrdersRes] = await Promise.all([
-    getOrdersPage({ page: 0 }),
-    getTransactions({ page: { page: 0, size: 20 }, filter: {} }),
+  const [statsRes, customersRes, recentOrdersRes] = await Promise.all([
+    getDashboardStats({ days: 30 }),
     getCustomers({ page: 0 }),
     getOrdersPageWithDetails({ page: 0 }),
   ])
 
-  const totalOrders = ordersRes.ok ? (ordersRes.data.totalElements ?? 0) : 0
-  const totalTransactions = transactionsRes.ok ? transactionsRes.data.totalElements ?? 0 : 0
-  const totalCustomers = customersRes.ok ? customersRes.data.totalElements ?? 0 : 0
-
-  // Sum recent revenue from last 20 transactions
-  const recentRevenue = transactionsRes.ok
-    ? transactionsRes.data.data.reduce((sum, tx) => sum + (tx.amount ?? 0), 0)
+  const totalRevenue = statsRes.ok ? (statsRes.data.salesSummary?.totalRevenue ?? 0) : 0
+  const totalOrders = statsRes.ok
+    ? statsRes.data.paymentStatusSummary.reduce((sum, s) => sum + (s.quantity ?? 0), 0)
     : 0
-
+  const totalCustomers = customersRes.ok ? customersRes.data.totalElements ?? 0 : 0
+  const avgTicket = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
   const recentOrders = recentOrdersRes.ok ? recentOrdersRes.data.data.slice(0, 6) : []
 
   return {
     totalOrders,
-    totalTransactions,
+    totalRevenue,
     totalCustomers,
-    recentRevenue,
+    avgTicket,
     recentOrders,
   }
 }
@@ -87,19 +83,18 @@ function FulfillmentBadge({ code }: { code: string | null | undefined }) {
 }
 
 export default async function DashboardPage() {
-  const { totalOrders, totalTransactions, totalCustomers, recentRevenue, recentOrders } =
+  const { totalOrders, totalRevenue, totalCustomers, avgTicket, recentOrders } =
     await getDashboardData()
-
-  const avgTicket = totalOrders > 0 ? Math.round(recentRevenue / Math.min(totalOrders, 20)) : 0
 
   const kpis = [
     {
-      title: "Receita recente",
-      value: formatCurrency(recentRevenue),
-      description: "Últimas 20 transações",
+      title: "Receita (30 dias)",
+      value: formatCurrency(totalRevenue),
+      description: "Últimos 30 dias",
       icon: TrendingUp,
-      gradient: "from-emerald-500 to-teal-600",
-      glow: "shadow-emerald-500/25",
+      iconBg: "bg-emerald-500/10",
+      iconColor: "text-emerald-600",
+      accent: "border-l-emerald-500",
       href: "/dashboard/transactions",
     },
     {
@@ -107,8 +102,9 @@ export default async function DashboardPage() {
       value: totalOrders.toLocaleString("pt-PT"),
       description: "Pedidos pagos",
       icon: ShoppingCart,
-      gradient: "from-indigo-500 to-blue-600",
-      glow: "shadow-indigo-500/25",
+      iconBg: "bg-blue-500/10",
+      iconColor: "text-blue-600",
+      accent: "border-l-blue-500",
       href: "/dashboard/orders",
     },
     {
@@ -116,8 +112,9 @@ export default async function DashboardPage() {
       value: totalCustomers.toLocaleString("pt-PT"),
       description: "Clientes registados",
       icon: Users,
-      gradient: "from-violet-500 to-purple-600",
-      glow: "shadow-violet-500/25",
+      iconBg: "bg-violet-500/10",
+      iconColor: "text-violet-600",
+      accent: "border-l-violet-500",
       href: "/dashboard/customers",
     },
     {
@@ -125,8 +122,9 @@ export default async function DashboardPage() {
       value: formatCurrency(avgTicket),
       description: "Valor médio por pedido",
       icon: CreditCard,
-      gradient: "from-amber-500 to-orange-500",
-      glow: "shadow-amber-500/25",
+      iconBg: "bg-amber-500/10",
+      iconColor: "text-amber-600",
+      accent: "border-l-amber-500",
       href: "/dashboard/analytics",
     },
   ]
@@ -153,28 +151,22 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* KPI cards — gradient */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {/* KPI cards */}
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {kpis.map((kpi) => (
             <Link key={kpi.href} href={kpi.href} className="block group">
-              <div className={`relative rounded-2xl bg-gradient-to-br ${kpi.gradient} p-5 overflow-hidden shadow-lg ${kpi.glow} hover:scale-[1.02] transition-transform duration-200`}>
-                {/* Subtle pattern overlay */}
-                <div className="absolute inset-0 bg-white/5 rounded-2xl" />
-                <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-white/10" />
-                <div className="absolute -right-1 -bottom-6 h-24 w-24 rounded-full bg-black/10" />
-                <div className="relative">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
-                      <kpi.icon className="h-5 w-5 text-white" />
-                    </div>
-                    <ArrowUpRight className="h-4 w-4 text-white/50 group-hover:text-white transition-colors" />
+              <div className={`relative rounded-2xl border border-border bg-card p-5 border-l-4 ${kpi.accent} hover:shadow-md hover:border-border/80 transition-all duration-200`}>
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${kpi.iconBg}`}>
+                    <kpi.icon className={`h-5 w-5 ${kpi.iconColor}`} />
                   </div>
-                  <p className="text-3xl font-bold tabular-nums text-white tracking-tight leading-none mb-1.5">
-                    {kpi.value}
-                  </p>
-                  <p className="text-sm font-semibold text-white/90">{kpi.title}</p>
-                  <p className="text-xs text-white/60 mt-0.5">{kpi.description}</p>
+                  <ArrowUpRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
                 </div>
+                <p className="text-2xl font-bold tabular-nums text-foreground tracking-tight leading-none mb-1.5">
+                  {kpi.value}
+                </p>
+                <p className="text-sm font-semibold text-foreground/80">{kpi.title}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{kpi.description}</p>
               </div>
             </Link>
           ))}

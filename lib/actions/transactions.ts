@@ -27,6 +27,8 @@ const DEFAULT_FILTER: PaymentFilterRequest = {
   amount: null,
   authorizedAt: null,
   search: null,
+  dateFrom: null,
+  dateTo: null,
 }
 
 export type GetTransactionsResult =
@@ -57,6 +59,8 @@ export async function getTransactions(
       search: filter.search ?? null,
       amount: filter.amount ?? null,
       authorizedAt: filter.authorizedAt ?? null,
+      dateFrom: filter.dateFrom ?? null,
+      dateTo: filter.dateTo ?? null,
     },
   })
 

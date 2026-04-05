@@ -8,7 +8,7 @@ import { OrderListTabs } from "@/components/orders/order-list-tabs"
 import { CreditCard, Search } from "lucide-react"
 
 type PageProps = {
-  searchParams: Promise<{ search?: string; page?: string; tab?: string }>
+  searchParams: Promise<{ search?: string; page?: string; tab?: string; from?: string; to?: string }>
 }
 
 function emptyStateConfig(
@@ -33,8 +33,10 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const search = params.search?.trim() ?? null
   const page = Math.max(0, Math.floor(Number(params.page) || 0))
   const tab = parseOrdersTab(params.tab ?? null)
+  const dateFrom = params.from ?? null
+  const dateTo = params.to ?? null
 
-  const result = await getOrdersPageWithDetails({ search, page, tab })
+  const result = await getOrdersPageWithDetails({ search, page, tab, dateFrom, dateTo })
 
   const orders = result.ok ? result.data.data : []
   const totalElements = result.ok ? (result.data.totalElements ?? 0) : 0
@@ -57,6 +59,8 @@ export default async function OrdersPage({ searchParams }: PageProps) {
           <OrderListToolbar
             totalElements={totalElements}
             error={error}
+            dateFrom={dateFrom ?? undefined}
+            dateTo={dateTo ?? undefined}
           />
         </Suspense>
         <div className="flex-1 overflow-auto p-4 pt-3 space-y-3">

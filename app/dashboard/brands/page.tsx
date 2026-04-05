@@ -1,20 +1,23 @@
 "use client"
 
 import { useState } from "react"
-import { useQuery } from "@apollo/client/react"
+import { useQuery, useMutation } from "@apollo/client/react"
 import { GET_BRANDS } from "@/lib/graphql/brands/queries"
+import { DELETE_BRAND } from "@/lib/graphql/brands/mutations"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { CreateBrandModal } from "@/components/brands/create-brand-modal"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Tag, Plus, Pencil, Trash2, MoreVertical, Globe } from "lucide-react"
+import { Tag, Plus, Pencil, Trash2, MoreVertical, Globe, Loader2 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Brand } from "@/lib/graphql/brands/types"
+import { showToast } from "@/lib/utils/toast"
 
 function brandStatusClass(code: string | undefined): string {
   const c = code?.toUpperCase()
@@ -26,10 +29,30 @@ function brandStatusClass(code: string | undefined): string {
 export default function BrandsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null)
+  const [deletingBrandId, setDeletingBrandId] = useState<string | null>(null)
 
   const { data, loading, error, refetch } = useQuery<{ brands: { data: Brand[] } }>(GET_BRANDS, {
     variables: { page: { page: 0, size: 100 } },
   })
+
+  const [deleteBrand] = useMutation(DELETE_BRAND, {
+    refetchQueries: [{ query: GET_BRANDS, variables: { page: { page: 0, size: 100 } } }],
+  })
+
+  const handleDelete = async (brand: Brand, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!confirm(`Excluir a marca "${brand.name}"? Esta ação não pode ser desfeita.`)) return
+    setDeletingBrandId(brand.id)
+    try {
+      await deleteBrand({ variables: { id: brand.id } })
+      showToast.success("Marca excluída", `"${brand.name}" foi excluída`)
+    } catch (err: any) {
+      showToast.error("Erro", err?.message || "Erro ao excluir marca")
+    } finally {
+      setDeletingBrandId(null)
+    }
+  }
 
   const brands = data?.brands?.data || []
 
@@ -120,8 +143,17 @@ export default function BrandsPage() {
                             <Pencil className="h-3.5 w-3.5 mr-2" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive focus:text-destructive">
-                            <Trash2 className="h-3.5 w-3.5 mr-2" />
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={(e) => handleDelete(brand, e)}
+                            disabled={deletingBrandId === brand.id}
+                          >
+                            {deletingBrandId === brand.id ? (
+                              <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5 mr-2" />
+                            )}
                             Excluir
                           </DropdownMenuItem>
                         </DropdownMenuContent>
