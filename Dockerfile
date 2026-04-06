@@ -13,12 +13,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_SITE_URL
-ARG CMS_URL
-ARG CMS_GRAPH_SUFFIX
-ARG CMS_ACCESS_TOKEN
-ARG NODE_ENV
-
 RUN bun run build
 
 FROM base AS runner

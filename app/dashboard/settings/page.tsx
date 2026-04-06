@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -19,7 +20,7 @@ const SETTINGS_SECTIONS = [
     icon: Store,
     color: "text-blue-600",
     bg: "bg-blue-500/10",
-    badge: null,
+    href: null,
   },
   {
     title: "Aparência",
@@ -27,7 +28,7 @@ const SETTINGS_SECTIONS = [
     icon: Palette,
     color: "text-purple-600",
     bg: "bg-purple-500/10",
-    badge: null,
+    href: null,
   },
   {
     title: "Pagamentos",
@@ -35,7 +36,7 @@ const SETTINGS_SECTIONS = [
     icon: CreditCard,
     color: "text-emerald-600",
     bg: "bg-emerald-500/10",
-    badge: null,
+    href: null,
   },
   {
     title: "Envios",
@@ -43,7 +44,7 @@ const SETTINGS_SECTIONS = [
     icon: Truck,
     color: "text-amber-600",
     bg: "bg-amber-500/10",
-    badge: null,
+    href: null,
   },
   {
     title: "Notificações",
@@ -51,7 +52,7 @@ const SETTINGS_SECTIONS = [
     icon: Bell,
     color: "text-rose-600",
     bg: "bg-rose-500/10",
-    badge: null,
+    href: null,
   },
   {
     title: "E-mails",
@@ -59,7 +60,7 @@ const SETTINGS_SECTIONS = [
     icon: Mail,
     color: "text-cyan-600",
     bg: "bg-cyan-500/10",
-    badge: null,
+    href: null,
   },
   {
     title: "Domínio",
@@ -67,15 +68,15 @@ const SETTINGS_SECTIONS = [
     icon: Globe,
     color: "text-indigo-600",
     bg: "bg-indigo-500/10",
-    badge: null,
+    href: null,
   },
   {
     title: "Segurança",
-    description: "Autenticação, 2FA e permissões",
+    description: "Tokens de API e autenticação",
     icon: Shield,
     color: "text-slate-600",
     bg: "bg-slate-500/10",
-    badge: null,
+    href: "/dashboard/settings/security",
   },
 ]
 
@@ -97,23 +98,40 @@ export default function SettingsPage() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {SETTINGS_SECTIONS.map((section) => (
-            <button
-              key={section.title}
-              className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/30 hover:shadow-sm transition-all cursor-not-allowed opacity-70"
-              disabled
-              title="Em breve"
-            >
-              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${section.bg}`}>
-                <section.icon className={`h-5 w-5 ${section.color}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">{section.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">{section.description}</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
-            </button>
-          ))}
+          {SETTINGS_SECTIONS.map((section) =>
+            section.href ? (
+              <Link
+                key={section.title}
+                href={section.href}
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/30 hover:shadow-sm transition-all"
+              >
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${section.bg}`}>
+                  <section.icon className={`h-5 w-5 ${section.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{section.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{section.description}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 group-hover:text-primary transition-colors" />
+              </Link>
+            ) : (
+              <button
+                key={section.title}
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/30 hover:shadow-sm transition-all cursor-not-allowed opacity-70"
+                disabled
+                title="Em breve"
+              >
+                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${section.bg}`}>
+                  <section.icon className={`h-5 w-5 ${section.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{section.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{section.description}</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+              </button>
+            )
+          )}
         </div>
 
         <Card className="border-border shadow-sm border-dashed">
