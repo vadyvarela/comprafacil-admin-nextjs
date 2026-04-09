@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep:*)",
+      "Bash(./mvnw compile:*)",
+      "Bash(java -version)",
+      "Bash(JAVA_HOME=\"C:/Program Files/Eclipse Adoptium/jdk-21.0.5.11-hotspot\" ./mvnw compile -q)"
+    ]
+  }
+}

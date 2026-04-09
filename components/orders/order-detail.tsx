@@ -8,6 +8,8 @@ import {
   CreditCard,
   MapPin,
   ExternalLink,
+  Hash,
+  Globe,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
@@ -162,9 +164,20 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                     value={<span className="font-mono text-[10px] break-all">{order.id}</span>}
                   />
                   {order.mode && <InfoRow label="Modo" value={order.mode} />}
+                  {order.paymentMode && <InfoRow label="Modo pagamento" value={order.paymentMode} />}
                   {order.submitType && <InfoRow label="Tipo" value={order.submitType} />}
+                  {order.currency && <InfoRow label="Moeda" value={order.currency} />}
                   {order.maximumNumberOfInstallments != null && (
                     <InfoRow label="Parcelas máx." value={order.maximumNumberOfInstallments} />
+                  )}
+                  {order.hasPaymentIntent != null && (
+                    <InfoRow label="Tem pagamento" value={order.hasPaymentIntent ? "Sim" : "Não"} />
+                  )}
+                  {order.updatedAt && (
+                    <InfoRow
+                      label="Atualizado em"
+                      value={format(new Date(order.updatedAt), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                    />
                   )}
                 </div>
               </div>
@@ -232,6 +245,73 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                         )}
                       </>
                     )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+              {/* URLs */}
+              {(order.url || order.cancelUrl || order.returnUrl) && (
+                <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
+                    <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">URLs</span>
+                  </div>
+                  <div className="px-4 py-1">
+                    {order.url && (
+                      <InfoRow
+                        label="URL"
+                        value={
+                          <a href={order.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                            <ExternalLink className="h-3 w-3" />
+                            Abrir
+                          </a>
+                        }
+                      />
+                    )}
+                    {order.cancelUrl && (
+                      <InfoRow
+                        label="URL cancelamento"
+                        value={
+                          <a href={order.cancelUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                            <ExternalLink className="h-3 w-3" />
+                            Abrir
+                          </a>
+                        }
+                      />
+                    )}
+                    {order.returnUrl && (
+                      <InfoRow
+                        label="URL retorno"
+                        value={
+                          <a href={order.returnUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline">
+                            <ExternalLink className="h-3 w-3" />
+                            Abrir
+                          </a>
+                        }
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Raw metadata */}
+              {order.metadata && (
+                <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
+                    <Hash className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">Metadata</span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <pre className="text-[10px] font-mono bg-muted/50 rounded-lg p-3 overflow-auto whitespace-pre-wrap break-all max-h-52 text-foreground">
+                      {(() => {
+                        try {
+                          return JSON.stringify(JSON.parse(order.metadata!), null, 2)
+                        } catch {
+                          return order.metadata
+                        }
+                      })()}
+                    </pre>
                   </div>
                 </div>
               )}
