@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TechArena Admin",
-  description: "Admin panel for TechArena",
+  title: "KumpraFacil Admin",
+  description: "Admin panel for KumpraFacil",
 };
 
 export default function RootLayout({

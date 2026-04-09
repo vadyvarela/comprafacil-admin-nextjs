@@ -78,7 +78,7 @@ export function AppSidebar({ user: sessionUser, ...props }: AppSidebarProps) {
         email: sessionUser.email ?? "",
         avatar: sessionUser.picture ?? "",
       }
-    : { name: "Admin", email: "admin@techarena.com", avatar: "" }
+    : { name: "Admin", email: "admin@KumpraFacil.com", avatar: "" }
 
   function isActive(url: string, exact: boolean) {
     if (exact) return pathname === url
@@ -94,7 +94,7 @@ export function AppSidebar({ user: sessionUser, ...props }: AppSidebarProps) {
             <Zap className="h-4 w-4 text-white" />
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-bold text-white leading-none">TechArena</p>
+            <p className="truncate text-sm font-bold text-white leading-none">KumpraFacil</p>
             <p className="truncate text-[10px] text-sidebar-foreground/45 mt-0.5 font-medium tracking-wide uppercase">Admin</p>
           </div>
         </Link>

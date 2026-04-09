@@ -93,7 +93,7 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-xl font-bold text-foreground">Definições</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Configurações gerais da loja TechArena
+            Configurações gerais da loja KumpraFacil
           </p>
         </div>
 
