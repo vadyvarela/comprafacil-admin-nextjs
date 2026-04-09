@@ -398,6 +398,5 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
           </div>
         </div>
       </div>
-    </div>
   )
 }
