@@ -16,7 +16,7 @@
  */
 
 exports.onExecutePostLogin = async (event, api) => {
-  const namespace = "https://comprafacil.com";
+  const namespace = "https://Kumprafacil.com";
   const claimName = `${namespace}/roles`;
 
   // 1) Tentar app_metadata (caso alguém preencha manualmente)

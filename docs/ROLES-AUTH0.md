@@ -11,8 +11,8 @@ O Auth0 preenche `event.authorization.roles` no Post-Login quando o login pede *
 ### No Auth0 Dashboard
 
 1. **Applications → APIs → Create API**
-   - Name: `CompraFácil API` (ou outro)
-   - Identifier: `https://comprafacil.com/api` (tem de ser um URL; usa este em todo o lado)
+   - Name: `KumpraFácil API` (ou outro)
+   - Identifier: `https://Kumprafacil.com/api` (tem de ser um URL; usa este em todo o lado)
    - Create
 
 2. **Na API que criaste → Settings**
@@ -27,7 +27,7 @@ O Auth0 preenche `event.authorization.roles` no Post-Login quando o login pede *
    - Assign Roles → seleciona **admin**
 
 5. **Autorizar a aplicação a aceder à API** (obrigatório)
-   - **Applications → APIs** → clica na API `https://comprafacil.com/api`
+   - **Applications → APIs** → clica na API `https://Kumprafacil.com/api`
    - Aba **Application Access** (ou **Settings** → Application Access)
    - Se **User Access** estiver em "Allow via client-grant":
      - Clica **Edit** ao lado de **User Access**
@@ -36,14 +36,14 @@ O Auth0 preenche `event.authorization.roles` no Post-Login quando o login pede *
    - **OU** se quiseres que qualquer app do tenant possa pedir esta API (mais simples para desenvolvimento): muda **User Access** para **Allow** e Save
 
    Se não autorizares, ao fazer login vês:  
-   `Client "..." is not authorized to access resource server "https://comprafacil.com/api"`.
+   `Client "..." is not authorized to access resource server "https://Kumprafacil.com/api"`.
 
 ### Na aplicação Next.js
 
 No `.env.local`:
 
 ```env
-AUTH0_AUDIENCE=https://comprafacil.com/api
+AUTH0_AUDIENCE=https://Kumprafacil.com/api
 ```
 
 O `lib/auth0.ts` já está configurado para usar `authorizationParameters.audience` quando `AUTH0_AUDIENCE` existe.
@@ -54,7 +54,7 @@ O `lib/auth0.ts` já está configurado para usar `authorizationParameters.audien
 
 ```javascript
 exports.onExecutePostLogin = async (event, api) => {
-  const namespace = "https://comprafacil.com";
+  const namespace = "https://Kumprafacil.com";
   const claimName = `${namespace}/roles`;
 
   if (event.authorization && Array.isArray(event.authorization.roles) && event.authorization.roles.length > 0) {
@@ -67,9 +67,9 @@ Deploy e adicionar ao **Login** flow.
 
 ### Resumo Opção 1
 
-- Criar **API** com identifier `https://comprafacil.com/api`, ativar **RBAC**
+- Criar **API** com identifier `https://Kumprafacil.com/api`, ativar **RBAC**
 - Role **admin** criada e atribuída ao user
-- App com `AUTH0_AUDIENCE=https://comprafacil.com/api`
+- App com `AUTH0_AUDIENCE=https://Kumprafacil.com/api`
 - Action só usa `event.authorization.roles`
 - Sem M2M, sem Secrets
 
@@ -97,7 +97,7 @@ Se o teu tenant não preencher `event.authorization` no login (por exemplo sem a
 
 ## O que a app espera
 
-- **Claim no ID token:** `https://comprafacil.com/roles` (array de strings, ex.: `["admin"]`).
-- **Variáveis de ambiente opcionais:** `AUTH0_ADMIN_ROLE` (default `admin`), `AUTH0_ROLE_CLAIM` (default `https://comprafacil.com/roles`).
+- **Claim no ID token:** `https://Kumprafacil.com/roles` (array de strings, ex.: `["admin"]`).
+- **Variáveis de ambiente opcionais:** `AUTH0_ADMIN_ROLE` (default `admin`), `AUTH0_ROLE_CLAIM` (default `https://Kumprafacil.com/roles`).
 
 O SDK Next.js filtra custom claims por defeito; o `beforeSessionSaved` em `lib/auth0.ts` garante que este claim fica em `session.user` para o `hasAdminRole()` funcionar.

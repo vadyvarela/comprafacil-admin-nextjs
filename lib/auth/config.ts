@@ -10,10 +10,10 @@ export const ADMIN_ROLE = process.env.AUTH0_ADMIN_ROLE ?? "admin";
 /**
  * Claim onde o Auth0 envia as roles (ex.: app_metadata.roles ou custom claim).
  * No Auth0, configurar uma Action que adicione ao token:
- * - namespace: https://comprafacil.com (ou o seu domínio)
+ * - namespace: https://Kumprafacil.com (ou o seu domínio)
  * - claim: roles (array, ex.: ["admin"] ou ["customer"])
  */
-export const ROLE_CLAIM = process.env.AUTH0_ROLE_CLAIM ?? "https://comprafacil.com/roles";
+export const ROLE_CLAIM = process.env.AUTH0_ROLE_CLAIM ?? "https://Kumprafacil.com/roles";
 
 export type SessionUser = {
   sub?: string | null;

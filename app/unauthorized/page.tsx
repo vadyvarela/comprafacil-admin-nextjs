@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Acesso negado - Compra Fácil Admin",
+  title: "Acesso negado - Kumpra Fácil Admin",
   description: "Não tem permissão para aceder ao backoffice.",
 };
 

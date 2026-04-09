@@ -44,7 +44,7 @@ Plano para evoluir o admin para um layout profissional estilo Shopify, com todas
 |----------------|--------|------------|
 | Listar clientes | ❌ | Alta |
 | Detalhe do cliente | ❌ | Alta |
-| Histórico de compras | ❌ | Alta |
+| Histórico de Kumpras | ❌ | Alta |
 | Grupos/segmentos | ❌ | Baixa |
 
 ### 5. **Pagamentos e Transações**
@@ -97,7 +97,7 @@ Plano para evoluir o admin para um layout profissional estilo Shopify, com todas
 ### **Fase 1: Layout Profissional (Shell estilo Shopify)** ✅
 Objetivo: base visual sólida, sem alterar funcionalidades atuais.
 
-- [x] Header refinado: logo "Compra Fácil", breadcrumb, backdrop blur
+- [x] Header refinado: logo "Kumpra Fácil", breadcrumb, backdrop blur
 - [x] Sidebar: agrupamento por secções (Principal, Vendas, Catálogo, Marketing)
 - [x] Dashboard home: cards com métricas (Pedidos, Transações, Produtos) e acesso rápido
 - [x] NavUser simplificado (Conta, Terminar sessão) e iniciais no avatar
@@ -118,7 +118,7 @@ Objetivo: base visual sólida, sem alterar funcionalidades atuais.
 - [x] Página detalhe cliente `/dashboard/customers/[id]` (dados + endereços)
 - [ ] Workflow de estados do pedido (depende do backend: em processamento, enviado)
 - [ ] Listagem de clientes (quando o backend expor o endpoint)
-- [ ] Histórico de compras por cliente (fase posterior)
+- [ ] Histórico de Kumpras por cliente (fase posterior)
 
 ### **Fase 4: Relatórios e Dashboard**
 - [ ] Gráficos de vendas

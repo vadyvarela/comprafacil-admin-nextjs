@@ -1,4 +1,4 @@
-# Arquitetura Next.js – Compra Fácil Admin
+# Arquitetura Next.js – Kumpra Fácil Admin
 
 Estrutura do projeto com foco em **Server Components**, **Server Actions**, **Auth0** e organização clara de componentes, actions e hooks.
 
@@ -16,9 +16,9 @@ Estrutura do projeto com foco em **Server Components**, **Server Actions**, **Au
 
 - **Primeira página** (`/`): se não houver sessão, mostra ecrã de login com link para `/api/auth/login`. Se houver sessão e o utilizador tiver role **admin**, redireciona para `/dashboard`. Caso contrário, redireciona para `/unauthorized`.
 - **Dashboard** (`/dashboard/*`): o `dashboard/layout.tsx` é um Server Component que chama `auth0.getSession()`. Sem sessão → redirect para `/api/auth/login`. Com sessão mas sem role admin → redirect para `/unauthorized`.
-- **Permissões**: em `lib/auth/config.ts` define-se `ADMIN_ROLE` (ex.: `"admin"`) e `ROLE_CLAIM` (claim do token onde o Auth0 envia as roles, ex.: `https://comprafacil.com/roles`). A função `hasAdminRole(user)` verifica se o utilizador tem permissão.
+- **Permissões**: em `lib/auth/config.ts` define-se `ADMIN_ROLE` (ex.: `"admin"`) e `ROLE_CLAIM` (claim do token onde o Auth0 envia as roles, ex.: `https://Kumprafacil.com/roles`). A função `hasAdminRole(user)` verifica se o utilizador tem permissão.
 - **Auth0**: middleware em `middleware.ts` usa `auth0.middleware(request)` para tratar login, logout, callback e renovação de sessão. Rotas de auth: `/api/auth/login`, `/api/auth/logout`, `/api/auth/callback`.
-- **Configuração no Auth0**: criar uma Action (ou Rule) que adicione ao token um claim com as roles do utilizador (ex.: `app_metadata.roles` ou custom claim `https://comprafacil.com/roles` com valor `["admin"]`). Utilizadores do front devem ter apenas role `customer` ou nenhuma; apenas utilizadores com `admin` acedem ao backoffice.
+- **Configuração no Auth0**: criar uma Action (ou Rule) que adicione ao token um claim com as roles do utilizador (ex.: `app_metadata.roles` ou custom claim `https://Kumprafacil.com/roles` com valor `["admin"]`). Utilizadores do front devem ter apenas role `customer` ou nenhuma; apenas utilizadores com `admin` acedem ao backoffice.
 
 ---
 
@@ -160,7 +160,7 @@ hooks/
 - `AUTH0_CLIENT_ID` – Client ID da aplicação Auth0 (Regular Web Application).
 - `AUTH0_CLIENT_SECRET` – Client Secret da aplicação.
 - `AUTH0_ADMIN_ROLE` – (opcional) Nome da role que permite acesso ao admin. Default: `admin`.
-- `AUTH0_ROLE_CLAIM` – (opcional) Claim do token onde vêm as roles. Default: `https://comprafacil.com/roles`.
+- `AUTH0_ROLE_CLAIM` – (opcional) Claim do token onde vêm as roles. Default: `https://Kumprafacil.com/roles`.
 
 No Auth0 Dashboard, registar para esta aplicação: **Allowed Callback URLs** (ex.: `http://localhost:3001/api/auth/callback`), **Allowed Logout URLs** (ex.: `http://localhost:3001`).
 
