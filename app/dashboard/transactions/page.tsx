@@ -4,12 +4,13 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { TransactionList } from "@/components/transactions/transaction-list"
 import { TransactionListToolbar } from "@/components/transactions/transaction-list-toolbar"
 import { TransactionPagination } from "@/components/transactions/transaction-pagination"
+import { TransactionDetail } from "@/components/transactions/transaction-detail"
 import { CreditCard } from "lucide-react"
 
 const PAGE_SIZE = 20
 
 type PageProps = {
-  searchParams: Promise<{ page?: string; q?: string; status?: string; from?: string; to?: string }>
+  searchParams: Promise<{ page?: string; q?: string; status?: string; from?: string; to?: string; id?: string }>
 }
 
 export default async function TransactionsPage({ searchParams }: PageProps) {
@@ -19,6 +20,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const status = params.status?.trim() || null
   const dateFrom = params.from?.trim() || null
   const dateTo = params.to?.trim() || null
+  const detailId = params.id?.trim() || null
 
   const result = await getTransactions({
     page: { page, size: PAGE_SIZE, sortBy: "createdAt", sortDirection: "DESC" },
@@ -34,6 +36,36 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const totalElements = result.ok ? result.data.totalElements : 0
   const totalPages = result.ok ? result.data.totalPages : 0
   const error = result.ok ? null : result.error
+
+  // Se há um ?id= na URL, mostramos a página de detalhe com os dados já buscados
+  if (detailId) {
+    const tx = transactions.find((t) => t.id === detailId) ?? null
+    const shortId = detailId.slice(0, 8)
+    return (
+      <>
+        <DashboardHeader
+          items={[
+            { label: "Dashboard", href: "/dashboard" },
+            { label: "Transações", href: "/dashboard/transactions" },
+            { label: `${shortId}…` },
+          ]}
+        />
+        {tx ? (
+          <TransactionDetail tx={tx} backHref="/dashboard/transactions" />
+        ) : (
+          <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+            <div className="text-center space-y-3 max-w-md">
+              <CreditCard className="h-10 w-10 mx-auto text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Transação não encontrada</h2>
+              <p className="text-sm text-muted-foreground">
+                Esta transação pode estar numa página diferente. Use a busca para localizá-la.
+              </p>
+            </div>
+          </div>
+        )}
+      </>
+    )
+  }
 
   return (
     <>

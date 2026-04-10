@@ -126,3 +126,7 @@ export interface PaymentsPage {
   totalElements: number
   totalPages: number
 }
+
+export interface PaymentIntentResponse {
+  paymentIntent: PaymentIntent | null
+}

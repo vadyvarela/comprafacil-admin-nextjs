@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
@@ -83,12 +84,12 @@ function StatusBadge({ tx }: { tx: PaymentIntent }) {
 }
 
 export function TransactionList({ transactions }: TransactionListProps) {
+  const router = useRouter()
   const [selected, setSelected] = useState<PaymentIntent | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
 
   function openDetail(tx: PaymentIntent) {
-    setSelected(tx)
-    setSheetOpen(true)
+    router.push(`/dashboard/transactions?id=${tx.id}`)
   }
 
   const columns = [

@@ -5,7 +5,12 @@
       "Bash(./mvnw compile:*)",
       "Bash(java -version)",
       "Bash(JAVA_HOME=\"C:/Program Files/Eclipse Adoptium/jdk-21.0.5.11-hotspot\" ./mvnw compile -q)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(grep -v \"private\\\\|//\")",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm build:*)",
+      "Bash(rm -f \"c:/Users/vadyy/Desktop/work/VADY/2025/loja/techstore-backoffice/app/dashboard/transactions/[id]/page.tsx\")",
+      "Bash(rmdir \"c:/Users/vadyy/Desktop/work/VADY/2025/loja/techstore-backoffice/app/dashboard/transactions/[id]\")"
     ]
   }
 }
