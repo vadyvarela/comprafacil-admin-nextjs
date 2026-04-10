@@ -7,11 +7,18 @@ export const GET_PRODUCTS = gql`
         id
         title
         description
+        image
         discount
         type {
           code
         }
         metadata
+        brand {
+          id
+          name
+          slug
+          logo
+        }
         category {
           id
           name

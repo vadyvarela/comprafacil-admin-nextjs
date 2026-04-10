@@ -281,12 +281,6 @@ export default function ProductDetailPage() {
                         <p className="font-medium">{metadata.sku}</p>
                       </div>
                     )}
-                    {metadata?.brand && (
-                      <div>
-                        <p className="text-muted-foreground mb-0.5">Marca</p>
-                        <p className="font-medium">{metadata.brand}</p>
-                      </div>
-                    )}
                     {metadata?.model && (
                       <div>
                         <p className="text-muted-foreground mb-0.5">Modelo</p>

@@ -9,6 +9,12 @@ export interface Product {
     code: string
   }
   metadata?: string | null
+  brand?: {
+    id: string
+    name: string
+    slug: string
+    logo?: string | null
+  } | null
   category?: {
     id: string
     name: string

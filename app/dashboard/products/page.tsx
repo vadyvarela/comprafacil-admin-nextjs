@@ -8,16 +8,15 @@ import { Product } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { CreateProductModal } from "@/components/products/create-product-modal"
 import Link from "next/link"
+import Image from "next/image"
 import {
   Package,
   Plus,
   Search,
-  ArrowRight,
   Tag,
   MoreVertical,
   Trash2,
   Loader2,
-  Edit2,
   Eye,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -31,6 +30,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { showToast } from "@/lib/utils/toast"
 
 export default function ProductsPage() {
@@ -140,9 +147,9 @@ export default function ProductsPage() {
         {/* Content */}
         <div className="flex-1 overflow-auto p-5">
           {loading && (
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-              {[...Array(9)].map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-xl" />
+            <div className="space-y-2">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="h-14 rounded-lg" />
               ))}
             </div>
           )}
@@ -180,55 +187,115 @@ export default function ProductsPage() {
                   )}
                 </div>
               ) : (
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredProducts.map((product) => {
-                    let metadata: any = null
-                    try {
-                      metadata = product.metadata ? JSON.parse(product.metadata) : null
-                    } catch {}
+                <div className="rounded-xl border border-border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/40 hover:bg-muted/40">
+                        <TableHead className="w-14 text-xs">Img</TableHead>
+                        <TableHead className="text-xs">Produto</TableHead>
+                        <TableHead className="text-xs hidden md:table-cell">Categoria</TableHead>
+                        <TableHead className="text-xs hidden lg:table-cell">SKU</TableHead>
+                        <TableHead className="text-xs hidden lg:table-cell">Tipo</TableHead>
+                        <TableHead className="text-xs hidden sm:table-cell">Desconto</TableHead>
+                        <TableHead className="w-10" />
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredProducts.map((product) => {
+                        let metadata: any = null
+                        try {
+                          metadata = product.metadata ? JSON.parse(product.metadata) : null
+                        } catch {}
 
-                    const isDeleting = deletingProductId === product.id
+                        const isDeleting = deletingProductId === product.id
 
-                    return (
-                      <div key={product.id} className="group relative">
-                        <Link href={`/dashboard/products/${product.id}`} className="block">
-                          <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-card hover:border-primary/30 hover:shadow-sm transition-all">
-                            {/* Product icon */}
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary mt-0.5">
-                              <Package className="h-5 w-5" />
-                            </div>
+                        return (
+                          <TableRow
+                            key={product.id}
+                            className="group cursor-pointer hover:bg-muted/30"
+                          >
+                            {/* Imagem */}
+                            <TableCell className="py-2 px-3">
+                              <Link href={`/dashboard/products/${product.id}`} className="block">
+                                <div className="h-10 w-10 rounded-lg border border-border bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+                                  {product.image ? (
+                                    <Image
+                                      src={product.image}
+                                      alt={product.title}
+                                      width={40}
+                                      height={40}
+                                      className="object-cover w-full h-full"
+                                    />
+                                  ) : (
+                                    <Package className="h-4 w-4 text-muted-foreground/40" />
+                                  )}
+                                </div>
+                              </Link>
+                            </TableCell>
 
-                            {/* Info */}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors leading-tight">
-                                {product.title}
-                              </h3>
-                              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                                {product.category && (
-                                  <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
-                                    {product.category.name}
-                                  </Badge>
-                                )}
-                                {metadata?.sku && (
-                                  <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-                                    <Tag className="h-3 w-3" />
-                                    {metadata.sku}
+                            {/* Título */}
+                            <TableCell className="py-2">
+                              <Link href={`/dashboard/products/${product.id}`} className="block">
+                                <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                                  {product.title}
+                                </span>
+                                {product.description && (
+                                  <span className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                                    {product.description}
                                   </span>
                                 )}
-                              </div>
-                              <p className="text-[11px] text-muted-foreground/60 mt-1 font-mono">
-                                {product.type?.code}
-                              </p>
-                            </div>
+                              </Link>
+                            </TableCell>
 
-                            {/* Actions */}
-                            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {/* Categoria */}
+                            <TableCell className="py-2 hidden md:table-cell">
+                              {product.category ? (
+                                <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
+                                  {product.category.name}
+                                </Badge>
+                              ) : (
+                                <span className="text-[11px] text-muted-foreground/40">—</span>
+                              )}
+                            </TableCell>
+
+                            {/* SKU */}
+                            <TableCell className="py-2 hidden lg:table-cell">
+                              {metadata?.sku ? (
+                                <span className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
+                                  <Tag className="h-3 w-3" />
+                                  {metadata.sku}
+                                </span>
+                              ) : (
+                                <span className="text-[11px] text-muted-foreground/40">—</span>
+                              )}
+                            </TableCell>
+
+                            {/* Tipo */}
+                            <TableCell className="py-2 hidden lg:table-cell">
+                              <span className="text-[11px] text-muted-foreground font-mono">
+                                {product.type?.code ?? "—"}
+                              </span>
+                            </TableCell>
+
+                            {/* Desconto */}
+                            <TableCell className="py-2 hidden sm:table-cell">
+                              {product.discount ? (
+                                <Badge variant="outline" className="text-[11px] h-5 px-1.5 text-green-600 border-green-200">
+                                  {product.discount}%
+                                </Badge>
+                              ) : (
+                                <span className="text-[11px] text-muted-foreground/40">—</span>
+                              )}
+                            </TableCell>
+
+                            {/* Ações */}
+                            <TableCell className="py-2 pr-3">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-7 w-7"
+                                    className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                                     onClick={(e) => {
                                       e.preventDefault()
                                       e.stopPropagation()
@@ -260,12 +327,12 @@ export default function ProductsPage() {
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                            </div>
-                          </div>
-                        </Link>
-                      </div>
-                    )
-                  })}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      })}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </>

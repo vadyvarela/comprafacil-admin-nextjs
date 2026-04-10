@@ -97,7 +97,7 @@ export function EditProductModal({
         discount: product.discount?.toString() || "",
         sku: metadata?.sku || "",
         categoryId: product.category?.id || "none",
-        brandId: (product as { brand?: { id: string } }).brand?.id || "none",
+        brandId: "none", // productDetails API não retorna brand — usuário reseleciona ao editar
         model: metadata?.model || "",
         weight: metadata?.weight || "",
         dimensions: metadata?.dimensions || "",
@@ -301,6 +301,9 @@ export function EditProductModal({
                     ))}
                   </SelectContent>
                 </Select>
+                <p className="text-xs text-muted-foreground">
+                  Selecione a marca para atualizar ou manter a atual.
+                </p>
               </div>
             </div>
           </div>

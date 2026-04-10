@@ -54,7 +54,6 @@ export function CreateProductModal({
     price: "",
     quantity: "",
     createDefaultVariant: true, // Por padrão, criar variante padrão
-    brand: "",
     // Metadata expandido
     model: "",
     weight: "",
@@ -107,7 +106,6 @@ export function CreateProductModal({
       price: "",
       quantity: "",
       createDefaultVariant: true,
-      brand: "",
       model: "",
       weight: "",
       dimensions: "",
@@ -540,7 +538,7 @@ export function CreateProductModal({
                     }
                     placeholder="Notas adicionais sobre o produto..."
                     disabled={isLoading}
-                    className="min-h-[80px] resize-none"
+                    className="min-h-20 resize-none"
                   />
                 </div>
               </div>
