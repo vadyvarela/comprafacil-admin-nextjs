@@ -2,8 +2,14 @@ import { redirect } from "next/navigation";
 import { auth0 } from "@/lib/auth0";
 import { hasAdminRole } from "@/lib/auth/config";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ auth_error?: string }>;
+}) {
   const session = await auth0.getSession();
+  const params = await searchParams;
+  const authError = params.auth_error;
 
   if (!session?.user) {
     return (
@@ -12,6 +18,11 @@ export default async function HomePage() {
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
             Kumpra Fácil Admin
           </h1>
+          {authError && (
+            <p className="w-full rounded-md bg-red-50 px-4 py-2 text-center text-sm text-red-600 dark:bg-red-950 dark:text-red-400">
+              Erro de autenticação: {authError}. Tente novamente.
+            </p>
+          )}
           <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
             Acesso reservado a utilizadores autorizados. Faça login para continuar.
           </p>
