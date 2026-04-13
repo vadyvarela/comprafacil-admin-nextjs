@@ -91,7 +91,7 @@ export function NavUser({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <a href="/api/auth/logout" className="cursor-pointer">
+              <a href="/auth/logout" className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 Terminar sessão
               </a>

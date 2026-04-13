@@ -10,7 +10,9 @@
       "Bash(npx tsc:*)",
       "Bash(pnpm build:*)",
       "Bash(rm -f \"c:/Users/vadyy/Desktop/work/VADY/2025/loja/techstore-backoffice/app/dashboard/transactions/[id]/page.tsx\")",
-      "Bash(rmdir \"c:/Users/vadyy/Desktop/work/VADY/2025/loja/techstore-backoffice/app/dashboard/transactions/[id]\")"
+      "Bash(rmdir \"c:/Users/vadyy/Desktop/work/VADY/2025/loja/techstore-backoffice/app/dashboard/transactions/[id]\")",
+      "Bash(node -e \"const auth0 = require\\('c:/Users/vadyy/Desktop/work/VADY/2025/loja/techarena/node_modules/@auth0/nextjs-auth0/dist/server/index.js'\\); console.log\\(Object.keys\\(auth0\\)\\)\")",
+      "Bash(node -e \"const m = require\\('c:/Users/vadyy/Desktop/work/VADY/2025/loja/techarena/node_modules/@auth0/nextjs-auth0'\\); console.log\\(Object.keys\\(m\\)\\)\")"
     ]
   }
 }

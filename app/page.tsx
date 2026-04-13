@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth0 } from "@/lib/auth0";
+import { getValidSession } from "@/lib/auth0";
 import { hasAdminRole } from "@/lib/auth/config";
 
 export default async function HomePage({
@@ -7,7 +7,7 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ auth_error?: string }>;
 }) {
-  const session = await auth0.getSession();
+  const session = await getValidSession();
   const params = await searchParams;
   const authError = params.auth_error;
 
@@ -27,7 +27,7 @@ export default async function HomePage({
             Acesso reservado a utilizadores autorizados. Faça login para continuar.
           </p>
           <a
-            href="/api/auth/login?returnTo=/dashboard"
+            href="/auth/login?returnTo=/dashboard"
             className="flex h-11 w-full items-center justify-center rounded-lg bg-zinc-900 px-4 font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
           >
             Entrar

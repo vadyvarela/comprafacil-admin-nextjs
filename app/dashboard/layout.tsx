@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth0 } from "@/lib/auth0";
+import { getValidSession } from "@/lib/auth0";
 import { hasAdminRole } from "@/lib/auth/config";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
@@ -12,10 +12,10 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth0.getSession();
+  const session = await getValidSession();
 
   if (!session?.user) {
-    redirect("/api/auth/login?returnTo=/dashboard");
+    redirect("/auth/login?returnTo=/dashboard");
   }
 
   if (!hasAdminRole(session.user)) {

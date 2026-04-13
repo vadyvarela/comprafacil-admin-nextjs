@@ -33,7 +33,7 @@ export default function UnauthorizedPage() {
         </p>
         <div className="flex w-full flex-col gap-3">
           <a
-            href="/api/auth/logout"
+            href="/auth/logout"
             className="flex h-11 items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
           >
             Terminar sessão

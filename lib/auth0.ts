@@ -1,33 +1,17 @@
 import { Auth0Client } from "@auth0/nextjs-auth0/server";
 import { ROLE_CLAIM } from "@/lib/auth/config";
 
-const domain =
-  process.env.AUTH0_ISSUER_BASE_URL?.replace(/^https?:\/\//, "").replace(/\/$/, "") ??
-  process.env.AUTH0_DOMAIN;
-
-const audience = process.env.AUTH0_AUDIENCE;
-
 export const auth0 = new Auth0Client({
-  domain,
+  domain: process.env.AUTH0_DOMAIN,
   clientId: process.env.AUTH0_CLIENT_ID,
   clientSecret: process.env.AUTH0_CLIENT_SECRET,
+  appBaseUrl: process.env.APP_BASE_URL,
   secret: process.env.AUTH0_SECRET,
-  appBaseUrl: process.env.AUTH0_BASE_URL,
-  /** Para que event.authorization.roles venha preenchido no Auth0, pedir audience de uma API com RBAC. Ver docs/ROLES-AUTH0.md. */
-  ...(audience ? { authorizationParameters: { audience } } : {}),
-  /** Rotas de auth: primeira página do admin é login. */
-  routes: {
-    callback: "/api/auth/callback",
-    login: "/api/auth/login",
-    logout: "/api/auth/logout",
+  authorizationParameters: {
+    scope: "openid profile email read:shows",
+    audience: process.env.AUTH0_AUDIENCE,
   },
-  /** Após login bem-sucedido, redirecionar para o dashboard. */
   signInReturnToPath: "/dashboard",
-  /**
-   * O SDK filtra custom claims do ID token por defeito; sem este hook as roles
-   * não chegam a session.user. Também lemos do payload do JWT (fallback) caso
-   * o claim venha no token mas não em session.user.
-   */
   async beforeSessionSaved(session, idToken) {
     if (!session?.user) return session;
 
@@ -56,3 +40,21 @@ export const auth0 = new Auth0Client({
     };
   },
 });
+
+
+const EXPIRY_BUFFER_SECONDS = 60;
+
+export type ValidSession = NonNullable<
+  Awaited<ReturnType<typeof auth0.getSession>>
+>;
+
+
+export async function getValidSession(): Promise<ValidSession | null> {
+  const session = await auth0.getSession();
+  if (!session?.user?.sub || !session?.tokenSet) return null;
+  const expiresAt = session.tokenSet.expiresAt;
+  if (typeof expiresAt !== "number") return null;
+  const now = Math.floor(Date.now() / 1000);
+  if (expiresAt <= now + EXPIRY_BUFFER_SECONDS) return null;
+  return session;
+}
