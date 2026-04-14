@@ -142,7 +142,9 @@ export function enrichOrderWithDetails(
       ...order,
       totalAmount: null,
       productSummary: null,
+      primaryProductImageUrl: null,
       itemsCount: 0,
+      orderLineCount: 0,
       fulfillmentStatus: details?.fulfillmentStatus ?? null,
     } as OrderSummary & {
       fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
@@ -166,12 +168,21 @@ export function enrichOrderWithDetails(
           ? names.join(", ")
           : `${names[0]} +${names.length - 1}`
   const itemsCount = details.lines.reduce((s, l) => s + (l.quantity ?? 0), 0)
+  const orderLineCount = details.lines.length
+  const firstLine = details.lines[0]
+  const pv = firstLine?.productVariant
+  const primaryProductImageUrl =
+    (pv?.image?.trim() ? pv.image.trim() : null) ??
+    (pv?.product?.image?.trim() ? pv.product.image.trim() : null) ??
+    null
   return {
     ...order,
     totalAmount: total,
     currency: details.currency ?? order.currency,
     productSummary: productSummary ?? null,
+    primaryProductImageUrl,
     itemsCount,
+    orderLineCount,
     fulfillmentStatus: details.fulfillmentStatus ?? null,
   } as OrderSummary & {
     fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null

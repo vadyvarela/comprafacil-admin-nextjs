@@ -14,6 +14,7 @@ import { TransactionDetailSheet } from "./transaction-detail-sheet"
 
 type TransactionListProps = {
   transactions: PaymentIntent[]
+  gatewayOrigin?: string | null
 }
 
 function formatDate(iso: string | null | undefined): string {
@@ -83,7 +84,7 @@ function StatusBadge({ tx }: { tx: PaymentIntent }) {
   )
 }
 
-export function TransactionList({ transactions }: TransactionListProps) {
+export function TransactionList({ transactions, gatewayOrigin = null }: TransactionListProps) {
   const router = useRouter()
   const [selected, setSelected] = useState<PaymentIntent | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -232,6 +233,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
         tx={selected}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
+        gatewayOrigin={gatewayOrigin}
       />
     </>
   )

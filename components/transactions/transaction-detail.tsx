@@ -22,11 +22,13 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatCurrency } from "@/lib/utils/currency"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
-import { TransactionCreateDocButtons } from "./transaction-create-doc-buttons"
+import { invoicePdfHref, receiptPdfHref } from "@/lib/gateway-origin"
 
 type TransactionDetailProps = {
   tx: PaymentIntent
   backHref?: string
+  /** Origem do gateway (ex.: https://api.example.com) para link PDF quando `url` vem vazio */
+  gatewayOrigin?: string | null
 }
 
 function formatDate(iso: string | null | undefined): string {
@@ -132,7 +134,17 @@ function ReceiptStatusBadge({ status }: { status: string }) {
   )
 }
 
-export function TransactionDetail({ tx, backHref = "/dashboard/transactions" }: TransactionDetailProps) {
+export function TransactionDetail({
+  tx,
+  backHref = "/dashboard/transactions",
+  gatewayOrigin = null,
+}: TransactionDetailProps) {
+  const invoicePdfLink =
+    (tx.invoice?.url?.trim() ? tx.invoice.url : null) ||
+    invoicePdfHref(gatewayOrigin, tx.invoice?.id ?? null)
+  const receiptPdfLink =
+    (tx.receipt?.url?.trim() ? tx.receipt.url : null) ||
+    receiptPdfHref(gatewayOrigin, tx.receipt?.id ?? null)
   const discount = tx.checkoutSession?.amountDiscount ?? 0
   const hasInstallments =
     tx.checkoutSession?.installmentPlans &&
@@ -532,15 +544,18 @@ export function TransactionDetail({ tx, backHref = "/dashboard/transactions" }: 
                         <InfoRow label="Vencimento" value={formatDate(tx.invoice.dueDate)} />
                       )}
                     </div>
-                    {tx.invoice.url ? (
-                      <div className="px-4 pb-4 pt-2">
-                        <Button variant="default" size="sm" className="h-9 text-xs gap-2 w-full font-semibold" asChild>
-                          <a href={tx.invoice.url} target="_blank" rel="noopener noreferrer">
-                            <FileText className="h-3.5 w-3.5" />
-                            Abrir fatura
-                            <ExternalLink className="h-3 w-3 ml-auto opacity-70" />
-                          </a>
-                        </Button>
+                    {invoicePdfLink ? (
+                      <div className="px-4 pb-3 pt-2">
+                        <a
+                          href={invoicePdfLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium text-primary underline-offset-4 hover:underline inline-flex items-center gap-1.5"
+                        >
+                          <FileText className="h-3.5 w-3.5 shrink-0" />
+                          PDF da fatura
+                          <ExternalLink className="h-3 w-3 opacity-70" />
+                        </a>
                       </div>
                     ) : tx.invoicePath ? (
                       <div className="px-4 pb-3">
@@ -562,13 +577,6 @@ export function TransactionDetail({ tx, backHref = "/dashboard/transactions" }: 
                   <div className="flex flex-col items-center justify-center py-5 px-4 text-center gap-2">
                     <FileText className="h-7 w-7 text-muted-foreground/40" />
                     <p className="text-xs text-muted-foreground">Fatura não disponível para esta transação.</p>
-                    <div className="w-full mt-1">
-                      <TransactionCreateDocButtons
-                        paymentId={tx.id}
-                        hasInvoice={false}
-                        hasReceipt={!!tx.receipt}
-                      />
-                    </div>
                   </div>
                 )}
               </SectionCard>
@@ -600,15 +608,18 @@ export function TransactionDetail({ tx, backHref = "/dashboard/transactions" }: 
                         />
                       )}
                     </div>
-                    {tx.receipt.url && (
-                      <div className="px-4 pb-4 pt-2">
-                        <Button variant="outline" size="sm" className="h-9 text-xs gap-2 w-full font-semibold" asChild>
-                          <a href={tx.receipt.url} target="_blank" rel="noopener noreferrer">
-                            <Receipt className="h-3.5 w-3.5" />
-                            Abrir recibo
-                            <ExternalLink className="h-3 w-3 ml-auto opacity-70" />
-                          </a>
-                        </Button>
+                    {receiptPdfLink && (
+                      <div className="px-4 pb-3 pt-2">
+                        <a
+                          href={receiptPdfLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium text-primary underline-offset-4 hover:underline inline-flex items-center gap-1.5"
+                        >
+                          <Receipt className="h-3.5 w-3.5 shrink-0" />
+                          PDF do recibo
+                          <ExternalLink className="h-3 w-3 opacity-70" />
+                        </a>
                       </div>
                     )}
                   </>
@@ -616,13 +627,6 @@ export function TransactionDetail({ tx, backHref = "/dashboard/transactions" }: 
                   <div className="flex flex-col items-center justify-center py-5 px-4 text-center gap-2">
                     <Receipt className="h-7 w-7 text-muted-foreground/40" />
                     <p className="text-xs text-muted-foreground">Recibo não disponível para esta transação.</p>
-                    <div className="w-full mt-1">
-                      <TransactionCreateDocButtons
-                        paymentId={tx.id}
-                        hasInvoice={!!tx.invoice}
-                        hasReceipt={false}
-                      />
-                    </div>
                   </div>
                 )}
               </SectionCard>

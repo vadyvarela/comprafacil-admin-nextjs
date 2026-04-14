@@ -69,20 +69,22 @@ export interface CheckoutSession {
 }
 
 export interface PaymentInvoice {
+  id?: string
   number: string
   amountTotal: number
   amountPaid: number
   currency: string
-  url: string
+  url: string | null
   dueDate: string | null
 }
 
 export interface PaymentReceipt {
+  id?: string
   number: string
   sendTo: string
   sentAt: string | null
   deliveryStatus: string
-  url: string
+  url: string | null
 }
 
 export interface PaymentIntent {

@@ -54,6 +54,7 @@ const PAYMENT_FIELDS = `
   }
   invoicePath
   invoice {
+    id
     number
     amountTotal
     amountPaid
@@ -62,6 +63,7 @@ const PAYMENT_FIELDS = `
     dueDate
   }
   receipt {
+    id
     number
     sendTo
     sentAt
@@ -77,37 +79,6 @@ export const PAYMENT_INTENT_BY_ID = gql`
   query paymentIntent($id: ID!) {
     paymentIntent(id: $id) {
       ${PAYMENT_FIELDS}
-    }
-  }
-`
-
-/**
- * Mutation para criar fatura de um payment intent.
- */
-export const CREATE_PAYMENT_INVOICE = gql`
-  mutation createPaymentInvoice($paymentId: UUID!) {
-    createPaymentInvoice(paymentId: $paymentId) {
-      number
-      amountTotal
-      amountPaid
-      currency
-      url
-      dueDate
-    }
-  }
-`
-
-/**
- * Mutation para criar recibo de um payment intent.
- */
-export const CREATE_PAYMENT_RECEIPT = gql`
-  mutation createPaymentReceipt($paymentId: UUID!) {
-    createPaymentReceipt(paymentId: $paymentId) {
-      number
-      sendTo
-      sentAt
-      deliveryStatus
-      url
     }
   }
 `
@@ -173,6 +144,7 @@ export const PAYMENTS_SEARCH = gql`
         }
         invoicePath
         invoice {
+          id
           number
           amountTotal
           amountPaid
@@ -181,6 +153,7 @@ export const PAYMENTS_SEARCH = gql`
           dueDate
         }
         receipt {
+          id
           number
           sendTo
           sentAt

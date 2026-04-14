@@ -5,6 +5,7 @@ import { TransactionList } from "@/components/transactions/transaction-list"
 import { TransactionListToolbar } from "@/components/transactions/transaction-list-toolbar"
 import { TransactionPagination } from "@/components/transactions/transaction-pagination"
 import { TransactionDetail } from "@/components/transactions/transaction-detail"
+import { gatewayOriginFromEnv } from "@/lib/gateway-origin"
 import { CreditCard } from "lucide-react"
 
 const PAGE_SIZE = 20
@@ -21,6 +22,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const dateFrom = params.from?.trim() || null
   const dateTo = params.to?.trim() || null
   const detailId = params.id?.trim() || null
+  const gatewayOrigin = gatewayOriginFromEnv()
 
   const result = await getTransactions({
     page: { page, size: PAGE_SIZE, sortBy: "createdAt", sortDirection: "DESC" },
@@ -51,7 +53,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           ]}
         />
         {tx ? (
-          <TransactionDetail tx={tx} backHref="/dashboard/transactions" />
+          <TransactionDetail tx={tx} backHref="/dashboard/transactions" gatewayOrigin={gatewayOrigin} />
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
             <div className="text-center space-y-3 max-w-md">
@@ -107,7 +109,7 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                 </div>
               ) : (
                 <>
-                  <TransactionList transactions={transactions} />
+                  <TransactionList transactions={transactions} gatewayOrigin={gatewayOrigin} />
                   <Suspense fallback={null}>
                     <TransactionPagination
                       currentPage={page}

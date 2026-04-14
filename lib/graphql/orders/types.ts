@@ -41,7 +41,8 @@ export interface OrderItemResponse {
   productVariant?: {
     id: string
     title?: string
-    product?: { id: string; title?: string }
+    image?: string | null
+    product?: { id: string; title?: string; image?: string | null }
   }
 }
 
@@ -92,5 +93,9 @@ export interface OrderSummary extends CheckoutSessionResponse {
   totalAmount?: number | null
   currency?: string
   productSummary?: string | null
+  /** URL da imagem do 1.º item (variante ou produto) para a lista de pedidos */
+  primaryProductImageUrl?: string | null
   itemsCount?: number
+  /** Número de linhas distintas no pedido (para badge "+N") */
+  orderLineCount?: number
 }

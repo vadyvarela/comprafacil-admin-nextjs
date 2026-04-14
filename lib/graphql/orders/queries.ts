@@ -81,9 +81,11 @@ export const CHECKOUT_SESSION_DETAILS = gql`
         productVariant {
           id
           title
+          image
           product {
             id
             title
+            image
           }
         }
       }

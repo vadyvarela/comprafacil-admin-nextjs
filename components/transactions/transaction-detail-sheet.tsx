@@ -1,9 +1,9 @@
 "use client"
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
 import { formatCurrency } from "@/lib/utils/currency"
+import { invoicePdfHref, receiptPdfHref } from "@/lib/gateway-origin"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
@@ -22,6 +22,7 @@ type Props = {
   tx: PaymentIntent | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  gatewayOrigin?: string | null
 }
 
 function formatDate(iso: string | null | undefined): string {
@@ -70,8 +71,17 @@ function tryParseJson(raw: string | null | undefined | Record<string, unknown>):
   }
 }
 
-export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
+export function TransactionDetailSheet({ tx, open, onOpenChange, gatewayOrigin = null }: Props) {
   if (!tx) return null
+
+  const invoicePdfLink =
+    tx.invoice &&
+    ((tx.invoice.url?.trim() ? tx.invoice.url : null) ||
+      invoicePdfHref(gatewayOrigin, tx.invoice.id ?? null))
+  const receiptPdfLink =
+    tx.receipt &&
+    ((tx.receipt.url?.trim() ? tx.receipt.url : null) ||
+      receiptPdfHref(gatewayOrigin, tx.receipt.id ?? null))
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -212,14 +222,17 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
                 <Row label="Total fatura" value={<span className="font-bold tabular-nums">{formatCurrency(tx.invoice.amountTotal, tx.invoice.currency)}</span>} />
                 <Row label="Total pago" value={<span className="tabular-nums text-emerald-600 font-semibold">{formatCurrency(tx.invoice.amountPaid, tx.invoice.currency)}</span>} />
                 {tx.invoice.dueDate && <Row label="Data de vencimento" value={formatDate(tx.invoice.dueDate)} />}
-                {tx.invoice.url && (
+                {invoicePdfLink && (
                   <div className="py-2">
-                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 w-full" asChild>
-                      <a href={tx.invoice.url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-3 w-3" />
-                        Abrir fatura
-                      </a>
-                    </Button>
+                    <a
+                      href={invoicePdfLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-primary underline-offset-4 hover:underline inline-flex items-center gap-1.5"
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" />
+                      PDF da fatura
+                    </a>
                   </div>
                 )}
               </div>
@@ -235,14 +248,17 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
                 {tx.receipt.sendTo && <Row label="Enviado para" value={tx.receipt.sendTo} />}
                 {tx.receipt.sentAt && <Row label="Enviado em" value={formatDate(tx.receipt.sentAt)} />}
                 {tx.receipt.deliveryStatus && <Row label="Estado entrega" value={tx.receipt.deliveryStatus} />}
-                {tx.receipt.url && (
+                {receiptPdfLink && (
                   <div className="py-2">
-                    <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 w-full" asChild>
-                      <a href={tx.receipt.url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-3 w-3" />
-                        Abrir recibo
-                      </a>
-                    </Button>
+                    <a
+                      href={receiptPdfLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-primary underline-offset-4 hover:underline inline-flex items-center gap-1.5"
+                    >
+                      <ExternalLink className="h-3 w-3 shrink-0" />
+                      PDF do recibo
+                    </a>
                   </div>
                 )}
               </div>
