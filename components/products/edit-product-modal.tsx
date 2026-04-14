@@ -47,6 +47,7 @@ export function EditProductModal({
     description: "",
     summary: "",
     discount: "",
+    condition: "novo",
     sku: "",
     categoryId: "",
     brandId: "",
@@ -95,9 +96,10 @@ export function EditProductModal({
         description: product.description || "",
         summary: product.summary || "",
         discount: product.discount?.toString() || "",
+        condition: product.condition || metadata?.condition || "novo",
         sku: metadata?.sku || "",
         categoryId: product.category?.id || "none",
-        brandId: "none", // productDetails API não retorna brand — usuário reseleciona ao editar
+        brandId: product.brand?.id || "none",
         model: metadata?.model || "",
         weight: metadata?.weight || "",
         dimensions: metadata?.dimensions || "",
@@ -144,6 +146,7 @@ export function EditProductModal({
             description: formData.description || null,
             summary: formData.summary || null,
             discount: formData.discount ? parseInt(formData.discount) : null,
+            condition: formData.condition,
             type: productType,
             metadata: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
             categoryId: formData.categoryId && formData.categoryId !== "none" ? formData.categoryId : null,
@@ -256,7 +259,7 @@ export function EditProductModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="categoryId">Categoria</Label>
                 <Select
@@ -304,6 +307,25 @@ export function EditProductModal({
                 <p className="text-xs text-muted-foreground">
                   Selecione a marca para atualizar ou manter a atual.
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="condition">Estado</Label>
+                <Select
+                  value={formData.condition}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, condition: value })
+                  }
+                  disabled={loading}
+                >
+                  <SelectTrigger id="condition">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="novo">Novo</SelectItem>
+                    <SelectItem value="seminovo">Seminovo</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>

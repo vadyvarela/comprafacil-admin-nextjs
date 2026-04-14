@@ -9,6 +9,7 @@ export const GET_PRODUCTS = gql`
         description
         image
         discount
+        condition
         type {
           code
         }
@@ -44,6 +45,7 @@ export const GET_PRODUCT = gql`
       summary
       image
       discount
+      condition
       type {
         code
       }
@@ -57,6 +59,12 @@ export const GET_PRODUCT = gql`
         id
         name
         slug
+      }
+      brand {
+        id
+        name
+        slug
+        logo
       }
       variants {
         id

@@ -8,6 +8,7 @@ export const CREATE_PRODUCT = gql`
       description
       summary
       discount
+      condition
       type {
         code
       }
@@ -29,6 +30,7 @@ export const UPDATE_PRODUCT = gql`
       description
       summary
       discount
+      condition
       type {
         code
       }

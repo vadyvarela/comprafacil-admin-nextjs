@@ -9,6 +9,13 @@ import { CREATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Package, Tag, Layers, ArrowLeft, AlertCircle } from "lucide-react"
 
 export default function NewProductPage() {
@@ -17,6 +24,7 @@ export default function NewProductPage() {
     title: "",
     description: "",
     discount: "",
+    condition: "novo",
     sku: "",
     price: "",
     quantity: "",
@@ -40,6 +48,7 @@ export default function NewProductPage() {
             title: formData.title,
             description: formData.description || null,
             discount: formData.discount ? parseInt(formData.discount) : null,
+            condition: formData.condition,
             type: { code: "TICKET" },
             metadata: JSON.stringify({ sku: formData.sku || null }),
           },
@@ -257,6 +266,23 @@ export default function NewProductPage() {
                     placeholder="0"
                     className="h-9"
                   />
+                </div>
+                <div>
+                  <label htmlFor="condition" className="block text-xs font-medium text-foreground mb-1.5">
+                    Estado
+                  </label>
+                  <Select
+                    value={formData.condition}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, condition: value }))}
+                  >
+                    <SelectTrigger id="condition" className="h-9">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="novo">Novo</SelectItem>
+                      <SelectItem value="seminovo">Seminovo</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>

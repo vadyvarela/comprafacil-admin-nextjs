@@ -50,6 +50,7 @@ export function CreateProductModal({
     sku: "",
     categoryId: "none",
     brandId: "none",
+    condition: "novo",
     discount: "",
     price: "",
     quantity: "",
@@ -102,6 +103,7 @@ export function CreateProductModal({
       sku: "",
       categoryId: "none",
       brandId: "none",
+      condition: "novo",
       discount: "",
       price: "",
       quantity: "",
@@ -159,6 +161,7 @@ export function CreateProductModal({
               code: "TICKET",
             },
             metadata: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
+            condition: formData.condition,
             categoryId,
             brandId,
             stockData: {
@@ -359,6 +362,25 @@ export function CreateProductModal({
                   placeholder="Ex: 10"
                   disabled={isLoading}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="condition">Estado</Label>
+                <Select
+                  value={formData.condition}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, condition: value })
+                  }
+                  disabled={isLoading}
+                >
+                  <SelectTrigger id="condition">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="novo">Novo</SelectItem>
+                    <SelectItem value="seminovo">Seminovo</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

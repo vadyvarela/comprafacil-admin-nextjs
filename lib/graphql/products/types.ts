@@ -5,6 +5,7 @@ export interface Product {
   summary?: string | null
   image?: string | null
   discount?: number | null
+  condition?: string | null
   type: {
     code: string
   }
@@ -48,6 +49,7 @@ export interface ProductInput {
   description?: string | null
   summary?: string | null
   discount?: number | null
+  condition?: string | null
   type: {
     code: string
   }
@@ -60,6 +62,7 @@ export interface ProductUpdateInput {
   type?: {
     code: string
   }
+  condition?: string | null
   metadata?: string | null
 }
 
