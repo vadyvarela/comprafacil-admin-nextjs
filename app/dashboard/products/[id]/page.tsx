@@ -90,6 +90,9 @@ export default function ProductDetailPage() {
         }
       })()
     : null
+  const summaryPreview = product?.summary
+    ? product.summary.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+    : ""
 
   const handleDeleteProduct = async () => {
     if (
@@ -171,9 +174,9 @@ export default function ProductDetailPage() {
                     {product.type.code}
                   </Badge>
                 </div>
-                {product.description && (
+                {summaryPreview && (
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {product.description}
+                    {summaryPreview}
                   </p>
                 )}
               </div>

@@ -45,7 +45,6 @@ export function CreateProductModal({
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
-    description: "",
     summary: "",
     sku: "",
     categoryId: "none",
@@ -98,7 +97,6 @@ export function CreateProductModal({
   const resetForm = () => {
     setFormData({
       title: "",
-      description: "",
       summary: "",
       sku: "",
       categoryId: "none",
@@ -154,7 +152,6 @@ export function CreateProductModal({
         variables: {
           input: {
             title: formData.title.trim(),
-            description: formData.description?.trim() || null,
             summary: formData.summary?.trim() || null,
             discount,
             type: {
@@ -254,20 +251,6 @@ export function CreateProductModal({
                 required
                 placeholder="Ex: iPhone 15 Pro Max"
                 disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Descreva o produto..."
-                disabled={isLoading}
-                className="min-h-[100px] resize-none"
               />
             </div>
 

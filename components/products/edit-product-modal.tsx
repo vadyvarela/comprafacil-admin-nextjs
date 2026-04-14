@@ -44,7 +44,6 @@ export function EditProductModal({
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
-    description: "",
     summary: "",
     discount: "",
     condition: "novo",
@@ -93,7 +92,6 @@ export function EditProductModal({
 
       setFormData({
         title: product.title || "",
-        description: product.description || "",
         summary: product.summary || "",
         discount: product.discount?.toString() || "",
         condition: product.condition || metadata?.condition || "novo",
@@ -143,7 +141,6 @@ export function EditProductModal({
           id: product.id,
           input: {
             title: formData.title,
-            description: formData.description || null,
             summary: formData.summary || null,
             discount: formData.discount ? parseInt(formData.discount) : null,
             condition: formData.condition,
@@ -196,20 +193,6 @@ export function EditProductModal({
                 required
                 placeholder="Nome do produto"
                 disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">Descrição</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Descrição do produto"
-                disabled={loading}
-                className="min-h-[100px] resize-none"
               />
             </div>
 

@@ -22,7 +22,7 @@ export default function NewProductPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
     title: "",
-    description: "",
+    summary: "",
     discount: "",
     condition: "novo",
     sku: "",
@@ -46,7 +46,7 @@ export default function NewProductPage() {
         variables: {
           input: {
             title: formData.title,
-            description: formData.description || null,
+            summary: formData.summary || null,
             discount: formData.discount ? parseInt(formData.discount) : null,
             condition: formData.condition,
             type: { code: "TICKET" },
@@ -149,16 +149,16 @@ export default function NewProductPage() {
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-xs font-medium text-foreground mb-1.5">
-                  Descrição
+                <label htmlFor="summary" className="block text-xs font-medium text-foreground mb-1.5">
+                  Descrição completa
                 </label>
                 <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={set("description")}
-                  rows={3}
+                  id="summary"
+                  value={formData.summary}
+                  onChange={set("summary")}
+                  rows={5}
                   className="w-full px-3 py-2 text-sm rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring/20 resize-none"
-                  placeholder="Descrição detalhada do produto…"
+                  placeholder="Descrição completa do produto…"
                 />
               </div>
             </div>
