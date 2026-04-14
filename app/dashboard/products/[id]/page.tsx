@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { useParams, useRouter } from "next/navigation"
-import { GET_PRODUCT } from "@/lib/graphql/products/queries"
+import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
 import { DELETE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
@@ -57,7 +57,29 @@ export default function ProductDetailPage() {
     skip: !productId,
   })
 
+  const { data: productsData } = useQuery<{
+    products?: { data?: Array<{ id: string; brand?: Product["brand"] }> }
+  }>(GET_PRODUCTS, {
+    variables: {
+      page: {
+        page: 0,
+        size: 1000,
+        sortBy: "createdAt",
+        sortDirection: "DESC",
+      },
+    },
+    skip: !productId,
+  })
+
   const product = data?.productDetails
+  const fallbackBrand = productsData?.products?.data?.find((item) => item.id === product?.id)?.brand
+  const productForEditing =
+    product
+      ? {
+          ...product,
+          brand: product.brand ?? fallbackBrand ?? null,
+        }
+      : null
 
   const metadata = product?.metadata
     ? (() => {
@@ -434,7 +456,7 @@ export default function ProductDetailPage() {
 
         {/* Modals */}
         <EditProductModal
-          product={product}
+          product={productForEditing}
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
         />
