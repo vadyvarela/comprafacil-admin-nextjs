@@ -12,23 +12,17 @@ import {
   Image as ImageIcon,
   Plus,
   Search,
-  MoreVertical,
   Trash2,
   Loader2,
   Edit,
   CheckCircle2,
   XCircle,
+  CalendarDays,
+  ExternalLink,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { showToast } from "@/lib/utils/toast"
 
 export default function BannersPage() {
@@ -44,9 +38,7 @@ export default function BannersPage() {
     refetchQueries: [{ query: GET_BANNERS }],
   })
 
-  const handleDeleteBanner = async (bannerId: string, bannerTitle: string, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleDeleteBanner = async (bannerId: string, bannerTitle: string) => {
     if (!confirm(`Excluir o banner "${bannerTitle}"? Esta ação não pode ser desfeita.`)) return
     setDeletingBannerId(bannerId)
     try {
@@ -59,9 +51,7 @@ export default function BannersPage() {
     }
   }
 
-  const handleEditBanner = (banner: Banner, e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+  const handleEditBanner = (banner: Banner) => {
     setSelectedBanner(banner)
     setEditModalOpen(true)
   }
@@ -78,6 +68,19 @@ export default function BannersPage() {
     }) || []
 
   const total = data?.banners?.length ?? 0
+  const activeTotal = data?.banners?.filter((b) => b.status?.code === "ACTIVE").length ?? 0
+
+  const formatDateRange = (start?: string | null, end?: string | null) => {
+    if (!start && !end) return "Sem período"
+    const formatter = new Intl.DateTimeFormat("pt-PT", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
+    const startLabel = start ? formatter.format(new Date(start)) : "—"
+    const endLabel = end ? formatter.format(new Date(end)) : "—"
+    return `${startLabel} - ${endLabel}`
+  }
 
   return (
     <>
@@ -93,9 +96,15 @@ export default function BannersPage() {
                 </div>
                 <div>
                   <h1 className="text-base font-bold tracking-tight text-foreground">Banners</h1>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {loading ? "A carregar…" : `${total} banner${total !== 1 ? "s" : ""}`}
-                  </p>
+                  <div className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
+                    <span>{loading ? "A carregar…" : `${total} banner${total !== 1 ? "s" : ""}`}</span>
+                    {!loading && (
+                      <>
+                        <span>•</span>
+                        <span>{activeTotal} ativo{activeTotal !== 1 ? "s" : ""}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -157,14 +166,122 @@ export default function BannersPage() {
                   )}
                 </div>
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="rounded-xl border border-border bg-card overflow-hidden">
+                  {/* Desktop table */}
+                  <div className="hidden md:block overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-muted/40 border-b border-border">
+                        <tr>
+                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Banner</th>
+                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
+                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Posição</th>
+                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Período</th>
+                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ordem</th>
+                          <th className="text-right px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredBanners.map((banner) => {
+                          const isActive = banner.status?.code === "ACTIVE"
+                          const isDeleting = deletingBannerId === banner.id
+                          return (
+                            <tr key={banner.id} className="border-b border-border last:border-b-0 hover:bg-muted/20 transition-colors">
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-3 min-w-[260px]">
+                                  <div className="h-12 w-20 rounded-md overflow-hidden border border-border bg-muted shrink-0">
+                                    {banner.image ? (
+                                      <img src={banner.image} alt={banner.title} className="h-full w-full object-cover" />
+                                    ) : (
+                                      <div className="h-full w-full flex items-center justify-center">
+                                        <ImageIcon className="h-4 w-4 text-muted-foreground/40" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <p className="text-sm font-semibold text-foreground truncate">{banner.title}</p>
+                                    {banner.subtitle && (
+                                      <p className="text-xs text-muted-foreground truncate">{banner.subtitle}</p>
+                                    )}
+                                    {banner.link && (
+                                      <a
+                                        href={banner.link}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-1 mt-0.5 text-[11px] text-primary hover:underline"
+                                      >
+                                        Ver link
+                                        <ExternalLink className="h-3 w-3" />
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                {isActive ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-success">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    Ativo
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-neutral">
+                                    <XCircle className="h-3 w-3" />
+                                    Inativo
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-xs text-foreground">
+                                {banner.position || "—"}
+                              </td>
+                              <td className="px-4 py-3 text-xs text-muted-foreground">
+                                <span className="inline-flex items-center gap-1">
+                                  <CalendarDays className="h-3.5 w-3.5" />
+                                  {formatDateRange(banner.startDate, banner.endDate)}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-xs font-medium text-foreground">
+                                {banner.orderIndex ?? "—"}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 text-xs"
+                                    onClick={() => handleEditBanner(banner)}
+                                  >
+                                    <Edit className="h-3.5 w-3.5 mr-1.5" />
+                                    Editar
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 text-xs text-destructive hover:text-destructive"
+                                    onClick={() => handleDeleteBanner(banner.id, banner.title)}
+                                    disabled={isDeleting}
+                                  >
+                                    {isDeleting ? (
+                                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile cards */}
+                  <div className="md:hidden grid gap-3 p-3">
                   {filteredBanners.map((banner) => {
                     const isActive = banner.status?.code === "ACTIVE"
                     const isDeleting = deletingBannerId === banner.id
 
                     return (
-                      <div key={banner.id} className="group rounded-xl border border-border bg-card overflow-hidden hover:border-primary/30 hover:shadow-sm transition-all">
-                        {/* Image */}
+                      <div key={banner.id} className="rounded-xl border border-border bg-card overflow-hidden">
                         <div className="relative h-36 bg-muted">
                           {banner.image ? (
                             <img
@@ -177,7 +294,6 @@ export default function BannersPage() {
                               <ImageIcon className="h-8 w-8 text-muted-foreground/30" />
                             </div>
                           )}
-                          {/* Overlay badges */}
                           <div className="absolute top-2 left-2 flex gap-1.5">
                             {isActive ? (
                               <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-success backdrop-blur-sm bg-white/80">
@@ -196,55 +312,53 @@ export default function BannersPage() {
                               </span>
                             )}
                           </div>
-                          {/* Actions */}
-                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="secondary"
-                                  size="icon"
-                                  className="h-7 w-7 backdrop-blur-sm"
-                                  disabled={isDeleting}
-                                >
-                                  {isDeleting ? (
-                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                  ) : (
-                                    <MoreVertical className="h-3.5 w-3.5" />
-                                  )}
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-36">
-                                <DropdownMenuItem onClick={(e) => handleEditBanner(banner, e)}>
-                                  <Edit className="h-3.5 w-3.5 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onClick={(e) => handleDeleteBanner(banner.id, banner.title, e)}
-                                  disabled={isDeleting}
-                                >
-                                  <Trash2 className="h-3.5 w-3.5 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
                         </div>
 
-                        {/* Info */}
                         <div className="p-3">
-                          <h3 className="font-semibold text-sm text-foreground truncate">{banner.title}</h3>
+                          <h3 className="font-semibold text-sm text-foreground truncate mb-0.5">{banner.title}</h3>
                           {banner.subtitle && (
-                            <p className="text-xs text-muted-foreground mt-0.5 truncate">{banner.subtitle}</p>
+                            <p className="text-xs text-muted-foreground truncate">{banner.subtitle}</p>
                           )}
-                          {banner.orderIndex != null && (
-                            <p className="text-[11px] text-muted-foreground/60 mt-1">Ordem: {banner.orderIndex}</p>
+                          <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
+                            <p>Posição: <span className="text-foreground">{banner.position || "—"}</span></p>
+                            <p>Período: <span className="text-foreground">{formatDateRange(banner.startDate, banner.endDate)}</span></p>
+                            <p>Ordem: <span className="text-foreground">{banner.orderIndex ?? "—"}</span></p>
+                          </div>
+                          {banner.link && (
+                            <a
+                              href={banner.link}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 mt-2 text-[11px] text-primary hover:underline"
+                            >
+                              Ver link
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
                           )}
+                          <div className="mt-3 flex items-center gap-2">
+                            <Button variant="outline" size="sm" className="h-8 text-xs flex-1" onClick={() => handleEditBanner(banner)}>
+                              <Edit className="h-3.5 w-3.5 mr-1.5" />
+                              Editar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 text-xs text-destructive hover:text-destructive"
+                              onClick={() => handleDeleteBanner(banner.id, banner.title)}
+                              disabled={isDeleting}
+                            >
+                              {isDeleting ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-3.5 w-3.5" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     )
                   })}
+                  </div>
                 </div>
               )}
             </>
