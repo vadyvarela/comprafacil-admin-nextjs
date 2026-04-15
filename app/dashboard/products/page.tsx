@@ -6,6 +6,7 @@ import { GET_PRODUCTS } from "@/lib/graphql/products/queries"
 import { DELETE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { Product } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
+import { PageToolbar } from "@/components/admin/page-toolbar"
 import { CreateProductModal } from "@/components/products/create-product-modal"
 import Link from "next/link"
 import Image from "next/image"
@@ -115,36 +116,28 @@ export default function ProductsPage() {
     <>
       <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos" }]} />
       <div className="flex flex-1 flex-col min-h-0">
-        {/* Toolbar */}
-        <div className="border-b border-border bg-card/60 backdrop-blur">
-          <div className="px-5 py-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h1 className="text-base font-bold tracking-tight text-foreground">Produtos</h1>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {loading ? "A carregar…" : `${total} produto${total !== 1 ? "s" : ""} no catálogo`}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <div className="relative w-56 sm:w-64">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                  <Input
-                    placeholder="Título, descrição, SKU…"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 h-8 text-xs"
-                  />
-                </div>
-                <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
-                  <Plus className="h-3.5 w-3.5" />
-                  Novo produto
-                </Button>
-              </div>
-            </div>
+        <PageToolbar
+          icon={Package}
+          iconBg="bg-indigo-500/10"
+          iconColor="text-indigo-400"
+          title="Produtos"
+          subtitle={loading ? "A carregar…" : `${total} produto${total !== 1 ? "s" : ""} no catálogo`}
+        >
+          <div className="relative w-56 sm:w-64">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <Input
+              placeholder="Título, descrição, SKU…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 text-xs"
+            />
           </div>
-        </div>
+          <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
+            <Plus className="h-3.5 w-3.5" />
+            Novo produto
+          </Button>
+        </PageToolbar>
 
-        {/* Content */}
         <div className="flex-1 overflow-auto p-5">
           {loading && (
             <div className="space-y-2">
@@ -155,7 +148,7 @@ export default function ProductsPage() {
           )}
 
           {error && (
-            <div className="p-4 rounded-xl border border-destructive/40 bg-destructive/5 text-xs">
+            <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-xs">
               <p className="font-semibold text-destructive mb-1">Erro ao carregar produtos</p>
               <p className="text-muted-foreground mb-3">{error.message}</p>
               <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -169,7 +162,7 @@ export default function ProductsPage() {
               {filteredProducts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-sm mx-auto">
                   <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
-                    <Package className="h-7 w-7 text-muted-foreground/50" />
+                    <Package className="h-7 w-7 text-muted-foreground/40" />
                   </div>
                   <h2 className="text-sm font-semibold text-foreground mb-1">
                     {searchQuery ? "Nenhum resultado" : "Sem produtos"}
@@ -187,7 +180,7 @@ export default function ProductsPage() {
                   )}
                 </div>
               ) : (
-                <div className="rounded-xl border border-border overflow-hidden">
+                <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -212,9 +205,8 @@ export default function ProductsPage() {
                         return (
                           <TableRow
                             key={product.id}
-                            className="group cursor-pointer hover:bg-muted/30"
+                            className="group cursor-pointer hover:bg-muted/20"
                           >
-                            {/* Imagem */}
                             <TableCell className="py-2 px-3">
                               <Link href={`/dashboard/products/${product.id}`} className="block">
                                 <div className="h-10 w-10 rounded-lg border border-border bg-muted overflow-hidden shrink-0 flex items-center justify-center">
@@ -233,7 +225,6 @@ export default function ProductsPage() {
                               </Link>
                             </TableCell>
 
-                            {/* Título */}
                             <TableCell className="py-2">
                               <Link href={`/dashboard/products/${product.id}`} className="block">
                                 <span className="font-medium text-sm text-foreground group-hover:text-primary transition-colors line-clamp-1">
@@ -247,7 +238,6 @@ export default function ProductsPage() {
                               </Link>
                             </TableCell>
 
-                            {/* Categoria */}
                             <TableCell className="py-2 hidden md:table-cell">
                               {product.category ? (
                                 <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
@@ -258,7 +248,6 @@ export default function ProductsPage() {
                               )}
                             </TableCell>
 
-                            {/* SKU */}
                             <TableCell className="py-2 hidden lg:table-cell">
                               {metadata?.sku ? (
                                 <span className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
@@ -270,17 +259,15 @@ export default function ProductsPage() {
                               )}
                             </TableCell>
 
-                            {/* Tipo */}
                             <TableCell className="py-2 hidden lg:table-cell">
                               <span className="text-[11px] text-muted-foreground font-mono">
                                 {product.type?.code ?? "—"}
                               </span>
                             </TableCell>
 
-                            {/* Desconto */}
                             <TableCell className="py-2 hidden sm:table-cell">
                               {product.discount ? (
-                                <Badge variant="outline" className="text-[11px] h-5 px-1.5 text-green-600 border-green-200">
+                                <Badge variant="outline" className="text-[11px] h-5 px-1.5 text-emerald-400 border-emerald-500/30">
                                   {product.discount}%
                                 </Badge>
                               ) : (
@@ -288,7 +275,6 @@ export default function ProductsPage() {
                               )}
                             </TableCell>
 
-                            {/* Ações */}
                             <TableCell className="py-2 pr-3">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>

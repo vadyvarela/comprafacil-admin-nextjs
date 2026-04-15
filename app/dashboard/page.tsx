@@ -11,6 +11,8 @@ import {
   Sparkles,
 } from "lucide-react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
+import { PageHeader } from "@/components/admin/page-header"
+import { StatsCard } from "@/components/admin/stats-card"
 import { getOrdersPageWithDetails } from "@/lib/actions/orders"
 import { getCustomers } from "@/lib/actions/customers"
 import { getDashboardStats } from "@/lib/actions/stats"
@@ -86,100 +88,78 @@ export default async function DashboardPage() {
   const { totalOrders, totalRevenue, totalCustomers, avgTicket, recentOrders } =
     await getDashboardData()
 
-  const kpis = [
-    {
-      title: "Receita (30 dias)",
-      value: formatCurrency(totalRevenue),
-      description: "Últimos 30 dias",
-      icon: TrendingUp,
-      iconBg: "bg-emerald-500/10",
-      iconColor: "text-emerald-600",
-      accent: "border-l-emerald-500",
-      href: "/dashboard/transactions",
-    },
-    {
-      title: "Pedidos totais",
-      value: totalOrders.toLocaleString("pt-PT"),
-      description: "Pedidos pagos",
-      icon: ShoppingCart,
-      iconBg: "bg-blue-500/10",
-      iconColor: "text-blue-600",
-      accent: "border-l-blue-500",
-      href: "/dashboard/orders",
-    },
-    {
-      title: "Clientes",
-      value: totalCustomers.toLocaleString("pt-PT"),
-      description: "Clientes registados",
-      icon: Users,
-      iconBg: "bg-violet-500/10",
-      iconColor: "text-violet-600",
-      accent: "border-l-violet-500",
-      href: "/dashboard/customers",
-    },
-    {
-      title: "Ticket médio",
-      value: formatCurrency(avgTicket),
-      description: "Valor médio por pedido",
-      icon: CreditCard,
-      iconBg: "bg-amber-500/10",
-      iconColor: "text-amber-600",
-      accent: "border-l-amber-500",
-      href: "/dashboard/analytics",
-    },
-  ]
-
   return (
     <>
       <DashboardHeader items={[{ label: "Dashboard" }]} />
-      <div className="flex flex-1 flex-col gap-5 p-4 md:p-6">
-        {/* Page title */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-foreground">Visão geral</h1>
-            <p className="text-xs text-muted-foreground mt-0.5 capitalize">
-              {format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-            </p>
-          </div>
-          <Link
-            href="/dashboard/analytics"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 border border-primary/20 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/15 transition-colors"
+      <div className="flex flex-1 flex-col gap-6 p-5 md:p-6 bg-grid">
+        {/* Page header */}
+        <div className="animate-enter">
+          <PageHeader
+            title="Visão geral"
+            description={format(new Date(), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
           >
-            <Sparkles className="h-3 w-3" />
-            Analytics
-            <ArrowUpRight className="h-3 w-3" />
-          </Link>
+            <Link
+              href="/dashboard/analytics"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              Analytics
+              <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          </PageHeader>
         </div>
 
         {/* KPI cards */}
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {kpis.map((kpi) => (
-            <Link key={kpi.href} href={kpi.href} className="block group">
-              <div className={`relative rounded-2xl border border-border bg-card p-5 border-l-4 ${kpi.accent} hover:shadow-md hover:border-border/80 transition-all duration-200`}>
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${kpi.iconBg}`}>
-                    <kpi.icon className={`h-5 w-5 ${kpi.iconColor}`} />
-                  </div>
-                  <ArrowUpRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
-                </div>
-                <p className="text-2xl font-bold tabular-nums text-foreground tracking-tight leading-none mb-1.5">
-                  {kpi.value}
-                </p>
-                <p className="text-sm font-semibold text-foreground/80">{kpi.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{kpi.description}</p>
-              </div>
-            </Link>
-          ))}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <Link href="/dashboard/transactions" className="block animate-enter">
+            <StatsCard
+              label="Receita (30 dias)"
+              value={formatCurrency(totalRevenue)}
+              icon={TrendingUp}
+              accentColor="emerald"
+              period="Últimos 30 dias"
+            />
+          </Link>
+          <Link href="/dashboard/orders" className="block animate-enter-delay-1">
+            <StatsCard
+              label="Pedidos totais"
+              value={totalOrders.toLocaleString("pt-PT")}
+              icon={ShoppingCart}
+              accentColor="blue"
+              period="Pedidos pagos"
+            />
+          </Link>
+          <Link href="/dashboard/customers" className="block animate-enter-delay-2">
+            <StatsCard
+              label="Clientes"
+              value={totalCustomers.toLocaleString("pt-PT")}
+              icon={Users}
+              accentColor="violet"
+              period="Clientes registados"
+            />
+          </Link>
+          <Link href="/dashboard/analytics" className="block animate-enter-delay-3">
+            <StatsCard
+              label="Ticket médio"
+              value={formatCurrency(avgTicket)}
+              icon={CreditCard}
+              accentColor="amber"
+              period="Valor médio por pedido"
+            />
+          </Link>
         </div>
 
         {/* Recent orders */}
-        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden animate-enter">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-                <ShoppingCart className="h-3.5 w-3.5 text-primary" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <ShoppingCart className="h-4 w-4 text-primary" />
               </div>
-              <span className="text-sm font-semibold text-foreground">Pedidos recentes</span>
+              <div>
+                <span className="text-sm font-semibold text-foreground">Pedidos recentes</span>
+                <p className="text-[11px] text-muted-foreground">Últimas transações processadas</p>
+              </div>
             </div>
             <Link
               href="/dashboard/orders"
@@ -190,11 +170,12 @@ export default async function DashboardPage() {
             </Link>
           </div>
           {recentOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+            <div className="flex flex-col items-center justify-center py-14 px-4 text-center">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted mb-3">
                 <ShoppingCart className="h-6 w-6 text-muted-foreground/40" />
               </div>
               <p className="text-sm font-medium text-muted-foreground">Nenhum pedido ainda</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Os pedidos aparecerão aqui após a primeira venda</p>
             </div>
           ) : (
             <div className="divide-y divide-border">
@@ -207,10 +188,10 @@ export default async function DashboardPage() {
                   <Link
                     key={order.id}
                     href={`/dashboard/orders/${order.id}`}
-                    className="flex items-center gap-4 px-5 py-3 hover:bg-muted/40 transition-colors group"
+                    className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors group"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15">
-                      <ShoppingCart className="h-3.5 w-3.5 text-primary" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15 group-hover:bg-primary/12 transition-colors">
+                      <ShoppingCart className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
@@ -234,7 +215,7 @@ export default async function DashboardPage() {
                         {formatDate(order.createdAt)}
                       </p>
                     </div>
-                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-muted-foreground shrink-0 transition-colors" />
+                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/30 group-hover:text-muted-foreground shrink-0 transition-colors" />
                   </Link>
                 )
               })}
@@ -243,7 +224,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick actions */}
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-3 animate-enter">
           {[
             {
               href: "/dashboard/products/new",
@@ -251,15 +232,15 @@ export default async function DashboardPage() {
               label: "Novo produto",
               sub: "Adicionar ao catálogo",
               iconBg: "bg-indigo-500/10",
-              iconColor: "text-indigo-600",
+              iconColor: "text-indigo-400",
             },
             {
-              href: "/dashboard/coupons/new",
+              href: "/dashboard/coupons",
               icon: Sparkles,
               label: "Criar cupão",
               sub: "Promoção ou desconto",
               iconBg: "bg-emerald-500/10",
-              iconColor: "text-emerald-600",
+              iconColor: "text-emerald-400",
             },
             {
               href: "/dashboard/orders",
@@ -267,16 +248,16 @@ export default async function DashboardPage() {
               label: "Pedidos pendentes",
               sub: "Ver a processar",
               iconBg: "bg-amber-500/10",
-              iconColor: "text-amber-600",
+              iconColor: "text-amber-400",
             },
           ].map((action) => (
             <Link
               key={action.href}
               href={action.href}
-              className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 hover:border-primary/25 hover:shadow-sm hover:bg-muted/30 transition-all group"
+              className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 hover:border-primary/20 hover:bg-card/80 transition-all group"
             >
-              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${action.iconBg}`}>
-                <action.icon className={`h-4.5 w-4.5 ${action.iconColor}`} />
+              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${action.iconBg}`}>
+                <action.icon className={`h-5 w-5 ${action.iconColor}`} />
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-foreground">{action.label}</p>

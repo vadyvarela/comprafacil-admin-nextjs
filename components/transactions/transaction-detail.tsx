@@ -102,10 +102,12 @@ function SectionCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
-        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-        <span className="text-xs font-bold text-foreground uppercase tracking-wide">{title}</span>
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted">
+          <Icon className="h-3 w-3 text-muted-foreground" />
+        </div>
+        <span className="text-xs font-semibold text-foreground">{title}</span>
         {badge && <span className="ml-auto">{badge}</span>}
       </div>
       {children}
@@ -153,51 +155,52 @@ export function TransactionDetail({
     tx.checkoutSession?.lines && tx.checkoutSession.lines.length > 0
 
   return (
-    <div className="flex flex-1 flex-col min-h-0">
-      {/* ── Sub-header ── */}
-      <div className="border-b border-border bg-card/80 backdrop-blur sticky top-0 z-10">
-        <div className="px-5 py-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Left */}
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 shrink-0">
-                <CreditCard className="h-5 w-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-base font-bold font-mono tracking-tight text-foreground">
-                    #{tx.id.slice(0, 8)}…
-                  </h1>
-                  {tx.status && (
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusClass(tx.status.code)}`}
-                    >
-                      <StatusIcon code={tx.status.code} />
-                      <span className="hidden sm:inline">{tx.status.code}</span>
-                    </span>
-                  )}
-                  {tx.checkoutSession?.paymentMode && (
-                    <span className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                      {tx.checkoutSession.paymentMode}
-                    </span>
-                  )}
-                </div>
-                {tx.createdAt && (
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {formatDateLong(tx.createdAt)}
-                  </p>
-                )}
-              </div>
-            </div>
+    <div className="flex flex-1 flex-col min-h-0 bg-grid">
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-6xl mx-auto px-5 py-6 md:px-6 space-y-5">
 
-            {/* Right: amount + back */}
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs text-muted-foreground">Valor</p>
-                <p className="text-lg font-bold tabular-nums text-foreground leading-tight">
-                  {formatCurrency(tx.amount, tx.currency)}
-                </p>
+          {/* Hero */}
+          <div className="animate-enter relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-emerald-500/[0.04] p-6">
+            <div className="absolute inset-0 bg-grid opacity-30" />
+            <div className="relative flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-start gap-4 min-w-0">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/20">
+                  <CreditCard className="h-6 w-6 text-emerald-400" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5 flex-wrap mb-1">
+                    <h1 className="text-xl font-bold font-mono tracking-tight">
+                      #{tx.id.slice(0, 8)}…
+                    </h1>
+                    {tx.status && (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusClass(tx.status.code)}`}
+                      >
+                        <StatusIcon code={tx.status.code} />
+                        <span className="hidden sm:inline">{tx.status.code}</span>
+                      </span>
+                    )}
+                    {tx.checkoutSession?.paymentMode && (
+                      <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        {tx.checkoutSession.paymentMode}
+                      </span>
+                    )}
+                  </div>
+                  {tx.createdAt && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {formatDateLong(tx.createdAt)}
+                    </p>
+                  )}
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-2xl font-extrabold tabular-nums">{formatCurrency(tx.amount, tx.currency)}</span>
+                    {discount > 0 && (
+                      <span className="text-xs font-medium text-emerald-400">
+                        −{formatCurrency(discount, tx.currency)} desc.
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
               <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
                 <Link href={backHref}>
@@ -207,43 +210,14 @@ export function TransactionDetail({
               </Button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ── Content ── */}
-      <div className="flex-1 overflow-auto p-4 md:p-5">
-        <div className="max-w-6xl mx-auto space-y-4">
-
-          {/* ── Amount hero ── */}
-          <div className="rounded-2xl border border-border bg-linear-to-r from-primary/5 to-primary/10 p-5 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-1">Valor total da transação</p>
-              <p className="text-3xl font-extrabold tabular-nums text-foreground">
-                {formatCurrency(tx.amount, tx.currency)}
-              </p>
-              {discount > 0 && (
-                <p className="text-sm text-emerald-600 font-medium mt-1">
-                  −{formatCurrency(discount, tx.currency)} desconto aplicado
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <StatusIcon code={tx.status?.code ?? ""} />
-              <div>
-                <p className="text-sm font-bold text-foreground">{tx.status?.code ?? "—"}</p>
-                {tx.status?.description && (
-                  <p className="text-xs text-muted-foreground">{tx.status.description}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* ── Timeline ── */}
           {(tx.createdAt || tx.authorizedAt || tx.capturedAt || tx.canceledAt) && (
-            <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
-                <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-xs font-bold text-foreground uppercase tracking-wide">Linha do tempo</span>
+            <div className="animate-enter-delay-1 rounded-xl border border-border bg-card overflow-hidden">
+              <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-500/10">
+                  <Calendar className="h-3 w-3 text-blue-400" />
+                </div>
+                <span className="text-xs font-semibold text-foreground">Linha do tempo</span>
               </div>
               <div className="px-4 py-3">
                 <ol className="relative border-l border-border ml-3 space-y-4">
@@ -300,8 +274,7 @@ export function TransactionDetail({
             </div>
           )}
 
-          {/* ── Main grid ── */}
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div className="grid gap-5 lg:grid-cols-3 animate-enter-delay-2">
 
             {/* ── Left column ── */}
             <div className="space-y-4">
@@ -449,7 +422,7 @@ export function TransactionDetail({
                     <span className="tabular-nums font-semibold text-foreground">{formatCurrency(tx.amount, tx.currency)}</span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-sm text-emerald-600">
+                    <div className="flex justify-between text-sm text-emerald-400">
                       <span>Desconto</span>
                       <span className="tabular-nums font-medium">−{formatCurrency(discount, tx.currency)}</span>
                     </div>
@@ -534,7 +507,7 @@ export function TransactionDetail({
                       <InfoRow
                         label="Total pago"
                         value={
-                          <span className="tabular-nums text-emerald-600 font-bold">
+                          <span className="tabular-nums text-emerald-400 font-bold">
                             {formatCurrency(tx.invoice.amountPaid, tx.invoice.currency)}
                           </span>
                         }

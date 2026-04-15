@@ -77,6 +77,7 @@ export function VariantManager({
   const [options, setOptions] = useState<ProductOption[]>([])
   const [variantCombinations, setVariantCombinations] = useState<ProductVariantCombination[]>([])
   const [activeVariants, setActiveVariants] = useState(true)
+  const [savingVariants, setSavingVariants] = useState(false)
 
   // Carregar opções e variantes existentes
   useEffect(() => {
@@ -165,16 +166,10 @@ export function VariantManager({
 
   const [createVariant] = useMutation(CREATE_PRODUCT_VARIANT, {
     refetchQueries: [{ query: GET_PRODUCT, variables: { id: productId } }],
-    onCompleted: () => {
-      showToast.success("Variantes criadas", "As variantes foram criadas com sucesso")
-    },
   })
 
   const [updateVariant] = useMutation(UPDATE_PRODUCT_VARIANT, {
     refetchQueries: [{ query: GET_PRODUCT, variables: { id: productId } }],
-    onCompleted: () => {
-      showToast.success("Variante atualizada", "As alterações foram salvas")
-    },
   })
 
   const [deleteVariant] = useMutation(DELETE_PRODUCT_VARIANT, {
@@ -286,7 +281,13 @@ export function VariantManager({
   }
 
   const saveAllVariants = async () => {
+    if (savingVariants) return
+
+    setSavingVariants(true)
     try {
+      let createdCount = 0
+      let updatedCount = 0
+
       for (const combo of variantCombinations) {
         if (!combo.price || parseFloat(combo.price) <= 0) {
           showToast.error("Erro", "Todas as variantes devem ter um preço")
@@ -333,6 +334,7 @@ export function VariantManager({
               },
             })
           }
+          updatedCount += 1
         } else {
           // Criar nova variante
           await createVariant({
@@ -346,12 +348,19 @@ export function VariantManager({
               },
             },
           })
+          createdCount += 1
         }
       }
 
-      showToast.success("Sucesso", "Todas as variantes foram salvas")
+      const parts: string[] = []
+      if (createdCount > 0) parts.push(`${createdCount} criada${createdCount > 1 ? "s" : ""}`)
+      if (updatedCount > 0) parts.push(`${updatedCount} atualizada${updatedCount > 1 ? "s" : ""}`)
+      const description = parts.length > 0 ? parts.join(" • ") : "Nenhuma alteração detectada"
+      showToast.success("Variantes salvas", description)
     } catch (error: any) {
       showToast.error("Erro", error.message || "Erro ao salvar variantes")
+    } finally {
+      setSavingVariants(false)
     }
   }
 
@@ -511,8 +520,8 @@ export function VariantManager({
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <Label className="text-base font-medium">Variantes do Produto</Label>
-                      <Button onClick={saveAllVariants} size="sm">
-                        Salvar Todas as Variantes
+                      <Button onClick={saveAllVariants} size="sm" disabled={savingVariants}>
+                        {savingVariants ? "A guardar..." : "Salvar Todas as Variantes"}
                       </Button>
                     </div>
 

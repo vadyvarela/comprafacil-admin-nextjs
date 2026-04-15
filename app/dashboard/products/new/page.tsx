@@ -98,7 +98,7 @@ export default function NewProductPage() {
         ]}
       />
 
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-6 max-w-3xl mx-auto w-full">
+      <div className="flex flex-1 flex-col gap-6 p-5 md:p-6 max-w-3xl mx-auto w-full">
         {/* Page title */}
         <div className="flex items-center gap-3">
           <button
@@ -109,7 +109,7 @@ export default function NewProductPage() {
             <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           </button>
           <div>
-            <h1 className="text-lg font-bold text-foreground">Novo produto</h1>
+            <h1 className="text-xl font-bold text-foreground">Novo produto</h1>
             <p className="text-xs text-muted-foreground mt-0.5">Preencha as informações básicas do produto</p>
           </div>
         </div>
@@ -126,7 +126,7 @@ export default function NewProductPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Informações básicas */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
             <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border bg-muted/30">
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
                 <Package className="h-3.5 w-3.5 text-primary" />
@@ -165,10 +165,10 @@ export default function NewProductPage() {
           </div>
 
           {/* Preço e stock */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
             <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border bg-muted/30">
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10">
-                <Tag className="h-3.5 w-3.5 text-emerald-600" />
+                <Tag className="h-3.5 w-3.5 text-emerald-400" />
               </div>
               <span className="text-sm font-semibold text-foreground">Preço e stock</span>
             </div>
@@ -231,10 +231,10 @@ export default function NewProductPage() {
           </div>
 
           {/* Identificação */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
             <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border bg-muted/30">
               <div className="flex h-6 w-6 items-center justify-center rounded-md bg-violet-500/10">
-                <Layers className="h-3.5 w-3.5 text-violet-600" />
+                <Layers className="h-3.5 w-3.5 text-violet-400" />
               </div>
               <span className="text-sm font-semibold text-foreground">Identificação</span>
             </div>

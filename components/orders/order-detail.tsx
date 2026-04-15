@@ -69,9 +69,38 @@ function getShippingAddressFromMetadata(
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between gap-3 py-2 border-b border-border last:border-0">
-      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
+    <div className="flex items-start justify-between gap-3 py-2.5 border-b border-border/50 last:border-0">
+      <span className="text-[11px] text-muted-foreground shrink-0">{label}</span>
       <span className="text-xs font-medium text-foreground text-right">{value}</span>
+    </div>
+  )
+}
+
+function SectionCard({
+  icon: Icon,
+  iconBg,
+  iconColor,
+  title,
+  badge,
+  children,
+}: {
+  icon: React.ElementType
+  iconBg?: string
+  iconColor?: string
+  title: string
+  badge?: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
+        <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${iconBg ?? "bg-muted"}`}>
+          <Icon className={`h-3 w-3 ${iconColor ?? "text-muted-foreground"}`} />
+        </div>
+        <span className="text-xs font-semibold text-foreground">{title}</span>
+        {badge && <span className="ml-auto">{badge}</span>}
+      </div>
+      {children}
     </div>
   )
 }
@@ -88,74 +117,76 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
   const currency = order.currency ?? "CVE"
 
   return (
-    <div className="flex flex-1 flex-col min-h-0">
-      {/* Sub-header */}
-      <div className="border-b border-border bg-card/80 backdrop-blur">
-        <div className="px-5 py-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            {/* Left: order ID + badges */}
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 shrink-0">
-                <Package className="h-4 w-4 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-base font-bold font-mono tracking-tight text-foreground">
-                    #{order.id.slice(0, 8)}
-                  </h1>
-                  {order.status && (
-                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getOrderStatusClass(order.status.code)}`}>
-                      {getOrderStatusLabel(order.status.code)}
-                    </span>
-                  )}
-                  {order.paymentProviderType && (
-                    <span className="inline-flex items-center rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
-                      {order.paymentProviderType}
-                    </span>
-                  )}
+    <div className="flex flex-1 flex-col min-h-0 bg-grid">
+      <div className="flex-1 overflow-auto">
+        <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-6 space-y-5">
+
+          {/* Hero */}
+          <div className="animate-enter relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-blue-500/[0.04] p-6">
+            <div className="absolute inset-0 bg-grid opacity-30" />
+            <div className="relative flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-start gap-4 min-w-0">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/10">
+                  <Package className="h-6 w-6 text-blue-400" />
                 </div>
-                {order.createdAt && (
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    {format(new Date(order.createdAt), "dd 'de' MMMM yyyy, HH:mm", { locale: ptBR })}
-                  </p>
-                )}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2.5 flex-wrap mb-1">
+                    <h1 className="text-xl font-bold font-mono tracking-tight">
+                      #{order.id.slice(0, 8)}
+                    </h1>
+                    {order.status && (
+                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getOrderStatusClass(order.status.code)}`}>
+                        {getOrderStatusLabel(order.status.code)}
+                      </span>
+                    )}
+                    {order.paymentProviderType && (
+                      <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        {order.paymentProviderType}
+                      </span>
+                    )}
+                  </div>
+                  {order.createdAt && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(order.createdAt), "dd 'de' MMMM yyyy, HH:mm", { locale: ptBR })}
+                    </p>
+                  )}
+                  {/* Amount hero */}
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-2xl font-extrabold tabular-nums">{formatCurrency(total, currency)}</span>
+                    {discount > 0 && (
+                      <span className="text-xs font-medium text-emerald-400">
+                        −{formatCurrency(discount, currency)} desc.
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-            {/* Right: actions */}
-            <div className="flex items-center gap-2 shrink-0">
-              <OrderDetailActions />
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
-                <Link href="/dashboard/orders">
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  Voltar
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <OrderDetailActions />
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
+                  <Link href="/dashboard/orders">
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Voltar
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-auto p-4 md:p-5">
-        <div className="max-w-6xl mx-auto space-y-4">
+          {/* Fulfillment */}
+          <div className="animate-enter-delay-1">
+            <OrderFulfillmentStatus
+              orderId={order.id}
+              fulfillmentStatus={order.fulfillmentStatus}
+            />
+          </div>
 
-          {/* Fulfillment status — full width, most prominent */}
-          <OrderFulfillmentStatus
-            orderId={order.id}
-            fulfillmentStatus={order.fulfillmentStatus}
-          />
-
-          {/* Main grid */}
-          <div className="grid gap-4 lg:grid-cols-3">
-            {/* Left column — info, customer, shipping */}
-            <div className="space-y-4">
-              {/* Order metadata */}
-              <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
-                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs font-bold text-foreground uppercase tracking-wide">Informações</span>
-                </div>
+          {/* Grid */}
+          <div className="grid gap-5 lg:grid-cols-3 animate-enter-delay-2">
+            {/* Left sidebar */}
+            <div className="space-y-5">
+              <SectionCard icon={Info} iconBg="bg-primary/10" iconColor="text-primary" title="Informações">
                 <div className="px-4 py-1">
                   <InfoRow
                     label="ID completo"
@@ -167,15 +198,10 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                     <InfoRow label="Parcelas máx." value={order.maximumNumberOfInstallments} />
                   )}
                 </div>
-              </div>
+              </SectionCard>
 
-              {/* Customer */}
               {order.customer && (
-                <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
-                    <User className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">Cliente</span>
-                  </div>
+                <SectionCard icon={User} iconBg="bg-violet-500/10" iconColor="text-violet-400" title="Cliente">
                   <div className="px-4 py-1">
                     {order.customer.name && (
                       <InfoRow label="Nome" value={<span className="font-semibold">{order.customer.name}</span>} />
@@ -200,16 +226,11 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                       </Button>
                     </div>
                   )}
-                </div>
+                </SectionCard>
               )}
 
-              {/* Shipping address */}
               {(shippingFromMetadata || order.customer?.id) && (
-                <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
-                    <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="text-xs font-bold text-foreground uppercase tracking-wide">Endereço de entrega</span>
-                  </div>
+                <SectionCard icon={MapPin} iconBg="bg-amber-500/10" iconColor="text-amber-400" title="Endereço de entrega">
                   <div className="px-4 py-3">
                     {shippingFromMetadata ? (
                       <div className="space-y-0.5">
@@ -233,49 +254,49 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                       </>
                     )}
                   </div>
-                </div>
+                </SectionCard>
               )}
             </div>
 
-            {/* Right column — items + payment */}
-            <div className="lg:col-span-2 space-y-4">
-              {/* Items */}
-              <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
-                  <Package className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs font-bold text-foreground uppercase tracking-wide">
-                    Itens do pedido
-                  </span>
-                  {order.lines && order.lines.length > 0 && (
-                    <span className="ml-auto text-xs font-medium text-muted-foreground">
+            {/* Right column */}
+            <div className="lg:col-span-2 space-y-5">
+              <SectionCard
+                icon={Package}
+                iconBg="bg-indigo-500/10"
+                iconColor="text-indigo-400"
+                title="Itens do pedido"
+                badge={
+                  order.lines && order.lines.length > 0 ? (
+                    <span className="text-[11px] font-medium text-muted-foreground">
                       {order.lines.length} item{order.lines.length !== 1 ? "s" : ""}
                     </span>
-                  )}
-                </div>
+                  ) : undefined
+                }
+              >
                 {order.lines && order.lines.length > 0 ? (
                   <div className="divide-y divide-border">
                     {order.lines.map((line: OrderItemResponse) => (
-                      <div key={line.id} className="flex items-center gap-4 px-4 py-3.5">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted">
-                          <Package className="h-5 w-5 text-muted-foreground" />
+                      <div key={line.id} className="flex items-center gap-4 px-4 py-3.5 transition-colors hover:bg-muted/10">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/50">
+                          <Package className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-foreground truncate">
+                          <p className="font-semibold text-sm truncate">
                             {line.productVariant?.product?.title ?? line.description ?? "Produto"}
                           </p>
                           {line.productVariant?.title && (
-                            <p className="text-xs text-muted-foreground">{line.productVariant.title}</p>
+                            <p className="text-[11px] text-muted-foreground">{line.productVariant.title}</p>
                           )}
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
                             {line.quantity} × {formatCurrency(line.unitAmount, line.currency)}
                           </p>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="font-bold text-sm text-foreground">
+                          <p className="font-bold text-sm tabular-nums">
                             {formatCurrency(line.quantity * line.unitAmount, line.currency)}
                           </p>
                           {line.status && (
-                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium mt-1 ${getOrderStatusClass(line.status.code)}`}>
+                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium mt-1 ${getOrderStatusClass(line.status.code)}`}>
                               {getOrderStatusLabel(line.status.code)}
                             </span>
                           )}
@@ -284,36 +305,33 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-10 text-sm text-muted-foreground">
-                    <Package className="h-8 w-8 mb-2 opacity-30" />
+                  <div className="flex flex-col items-center justify-center py-12 text-sm text-muted-foreground">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/50 mb-3">
+                      <Package className="h-6 w-6 text-muted-foreground/30" />
+                    </div>
                     Nenhum item neste pedido.
                   </div>
                 )}
-              </div>
+              </SectionCard>
 
-              {/* Payment summary */}
-              <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/30">
-                  <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-xs font-bold text-foreground uppercase tracking-wide">Resumo do pagamento</span>
-                </div>
-                <div className="px-4 py-3 space-y-2">
-                  <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Subtotal</span>
-                    <span className="tabular-nums font-medium text-foreground">{formatCurrency(totalLines, currency)}</span>
+              <SectionCard icon={CreditCard} iconBg="bg-emerald-500/10" iconColor="text-emerald-400" title="Resumo do pagamento">
+                <div className="px-4 py-4 space-y-2.5">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="tabular-nums font-medium">{formatCurrency(totalLines, currency)}</span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-sm text-emerald-600">
-                      <span>Desconto</span>
-                      <span className="tabular-nums font-medium">−{formatCurrency(discount, currency)}</span>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-emerald-400">Desconto</span>
+                      <span className="tabular-nums font-medium text-emerald-400">−{formatCurrency(discount, currency)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-base font-bold text-foreground pt-2 border-t border-border">
+                  <div className="flex justify-between text-base font-bold pt-3 border-t border-border">
                     <span>Total</span>
                     <span className="tabular-nums">{formatCurrency(total, currency)}</span>
                   </div>
                 </div>
-              </div>
+              </SectionCard>
             </div>
           </div>
         </div>

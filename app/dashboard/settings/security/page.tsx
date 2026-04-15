@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -141,7 +141,7 @@ export default function SecurityPage() {
         ]}
       />
 
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+      <div className="flex flex-1 flex-col gap-6 p-5 md:p-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-foreground">Tokens de API</h1>
@@ -229,18 +229,19 @@ export default function SecurityPage() {
           )}
         </div>
 
-        {/* Info card */}
-        <Card className="border-border bg-muted/30">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Como usar o token</CardTitle>
-            <CardDescription className="text-xs">
+        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="px-4 py-3 border-b border-border bg-muted/30">
+            <h3 className="text-sm font-bold text-foreground">Como usar o token</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Adiciona o header em todas as chamadas ao backend.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-xs font-mono bg-muted rounded-lg p-3 text-muted-foreground">
-            Authorization: Bearer &lt;token&gt;
-          </CardContent>
-        </Card>
+            </p>
+          </div>
+          <div className="p-4">
+            <code className="block text-xs font-mono bg-muted/50 rounded-lg px-3 py-2.5 text-foreground">
+              Authorization: Bearer &lt;token&gt;
+            </code>
+          </div>
+        </div>
       </div>
 
       {/* Modal — Gerar token */}

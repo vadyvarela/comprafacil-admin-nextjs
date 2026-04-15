@@ -104,7 +104,7 @@ function OrderProductPreview({ order }: { order: OrderSummary }) {
 
 export function OrderList({ orders }: OrderListProps) {
   return (
-    <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
       {/* Desktop header */}
       <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,1.25fr)_minmax(0,1fr)_128px_104px_40px] border-b border-border bg-muted/50 px-4 py-2.5 gap-3">
         <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Pedido</span>

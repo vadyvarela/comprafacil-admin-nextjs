@@ -1,9 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { useMutation } from "@apollo/client/react"
-import { GET_PRODUCT } from "@/lib/graphql/products/queries"
-import { Image, X, Upload, Loader2 } from "lucide-react"
+import { Image, X, Upload, Loader2, ImageOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/utils/toast"
 
@@ -17,11 +15,13 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   useEffect(() => {
     // Mostrar imagem atual se existir
     if (currentImage && !selectedImage) {
       setImagePreview(currentImage)
+      setImageError(false)
     }
   }, [currentImage, selectedImage])
 
@@ -46,6 +46,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
       const reader = new FileReader()
       reader.onloadend = () => {
         setImagePreview(reader.result as string)
+        setImageError(false)
       }
       reader.readAsDataURL(file)
     }
@@ -86,6 +87,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
       // Atualizar preview com a nova URL da imagem
       if (data.data?.image) {
         setImagePreview(data.data.image)
+        setImageError(false)
       }
 
       setSelectedImage(null)
@@ -129,12 +131,20 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
 
       {imagePreview ? (
         <div className="relative group">
-          <div className="relative w-full h-48 rounded-md border border-input overflow-hidden bg-muted">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-full h-full object-cover"
-            />
+          <div className="relative w-full aspect-4/3 rounded-lg border border-input overflow-hidden bg-muted/40">
+            {!imageError ? (
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="h-full w-full object-contain p-2"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                <ImageOff className="h-6 w-6" />
+                <p className="text-xs">Não foi possível carregar a imagem</p>
+              </div>
+            )}
             {selectedImage && (
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                 <span className="text-xs text-white font-medium">Nova imagem selecionada</span>

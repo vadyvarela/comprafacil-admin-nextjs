@@ -76,12 +76,11 @@ export function TransactionListToolbar({
   const hasDateFilter = dateFrom || dateTo
 
   return (
-    <div className="border-b border-border bg-card/60 backdrop-blur">
-      {/* Header row */}
+    <div className="border-b border-border bg-background/60 backdrop-blur-sm sticky top-14 z-30">
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-            <CreditCard className="h-4.5 w-4.5 text-primary" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10">
+            <CreditCard className="h-4.5 w-4.5 text-emerald-400" />
           </div>
           <div>
             <h1 className="text-base font-bold tracking-tight text-foreground">Transações</h1>
@@ -168,7 +167,7 @@ export function TransactionListToolbar({
       </div>
 
       {error && (
-        <div className="mx-5 mb-3 p-3 rounded-xl border border-destructive/40 bg-destructive/5 text-xs">
+        <div className="mx-5 mb-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs">
           <p className="font-semibold text-destructive mb-1">Erro ao carregar</p>
           <p className="text-muted-foreground mb-2">{error}</p>
           <Button variant="outline" size="sm" onClick={() => router.refresh()}>Tentar novamente</Button>

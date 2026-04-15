@@ -46,7 +46,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus }: Props) {
 
   if (isCancelled) {
     return (
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
           <span className="text-xs font-bold text-foreground uppercase tracking-wide">Estado do envio</span>
         </div>
@@ -72,7 +72,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
         <span className="text-xs font-bold text-foreground uppercase tracking-wide">Estado do envio</span>

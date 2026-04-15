@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getValidSession } from "@/lib/auth0";
 import { hasAdminRole } from "@/lib/auth/config";
+import { Zap } from "lucide-react";
 
 export default async function HomePage({
   searchParams,
@@ -13,22 +14,25 @@ export default async function HomePage({
 
   if (!session?.user) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 font-sans dark:bg-zinc-950">
-        <main className="flex w-full max-w-md flex-col items-center gap-8 rounded-lg border border-zinc-200 bg-white p-8 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-            Kumpra Fácil Admin
-          </h1>
-          {authError && (
-            <p className="w-full rounded-md bg-red-50 px-4 py-2 text-center text-sm text-red-600 dark:bg-red-950 dark:text-red-400">
-              Erro de autenticação: {authError}. Tente novamente.
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
+        <main className="flex w-full max-w-md flex-col items-center gap-6 rounded-2xl border border-border bg-card p-8 shadow-lg mx-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 via-indigo-500 to-violet-600 shadow-md shadow-indigo-900/40">
+            <Zap className="h-6 w-6 text-white" />
+          </div>
+          <div className="text-center space-y-1">
+            <h1 className="text-xl font-bold text-foreground">KumpraFacil Admin</h1>
+            <p className="text-sm text-muted-foreground">
+              Acesso reservado a utilizadores autorizados
             </p>
+          </div>
+          {authError && (
+            <div className="w-full rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-2.5 text-center text-xs text-destructive font-medium">
+              Erro de autenticação: {authError}. Tente novamente.
+            </div>
           )}
-          <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-            Acesso reservado a utilizadores autorizados. Faça login para continuar.
-          </p>
           <a
             href="/auth/login?returnTo=/dashboard"
-            className="flex h-11 w-full items-center justify-center rounded-lg bg-zinc-900 px-4 font-medium text-white transition-colors hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+            className="flex h-10 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Entrar
           </a>

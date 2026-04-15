@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { PageHeader } from "@/components/admin/page-header"
 import {
   Store,
   Globe,
@@ -11,6 +11,7 @@ import {
   Mail,
   Palette,
   ChevronRight,
+  Construction,
 } from "lucide-react"
 
 const SETTINGS_SECTIONS = [
@@ -18,7 +19,7 @@ const SETTINGS_SECTIONS = [
     title: "Loja",
     description: "Nome, logo, moeda e informações gerais",
     icon: Store,
-    color: "text-blue-600",
+    color: "text-blue-400",
     bg: "bg-blue-500/10",
     href: null,
   },
@@ -26,7 +27,7 @@ const SETTINGS_SECTIONS = [
     title: "Aparência",
     description: "Tema, cores e personalização visual",
     icon: Palette,
-    color: "text-purple-600",
+    color: "text-purple-400",
     bg: "bg-purple-500/10",
     href: null,
   },
@@ -34,7 +35,7 @@ const SETTINGS_SECTIONS = [
     title: "Pagamentos",
     description: "Métodos de pagamento e gateway",
     icon: CreditCard,
-    color: "text-emerald-600",
+    color: "text-emerald-400",
     bg: "bg-emerald-500/10",
     href: null,
   },
@@ -42,7 +43,7 @@ const SETTINGS_SECTIONS = [
     title: "Envios",
     description: "Transportadoras, zonas e tarifas",
     icon: Truck,
-    color: "text-amber-600",
+    color: "text-amber-400",
     bg: "bg-amber-500/10",
     href: null,
   },
@@ -50,7 +51,7 @@ const SETTINGS_SECTIONS = [
     title: "Notificações",
     description: "E-mails automáticos e alertas",
     icon: Bell,
-    color: "text-rose-600",
+    color: "text-rose-400",
     bg: "bg-rose-500/10",
     href: null,
   },
@@ -58,7 +59,7 @@ const SETTINGS_SECTIONS = [
     title: "E-mails",
     description: "Templates e configurações de envio",
     icon: Mail,
-    color: "text-cyan-600",
+    color: "text-cyan-400",
     bg: "bg-cyan-500/10",
     href: null,
   },
@@ -66,7 +67,7 @@ const SETTINGS_SECTIONS = [
     title: "Domínio",
     description: "Configurar domínio personalizado",
     icon: Globe,
-    color: "text-indigo-600",
+    color: "text-indigo-400",
     bg: "bg-indigo-500/10",
     href: null,
   },
@@ -74,7 +75,7 @@ const SETTINGS_SECTIONS = [
     title: "Segurança",
     description: "Tokens de API e autenticação",
     icon: Shield,
-    color: "text-slate-600",
+    color: "text-slate-400",
     bg: "bg-slate-500/10",
     href: "/dashboard/settings/security",
   },
@@ -89,21 +90,21 @@ export default function SettingsPage() {
           { label: "Definições" },
         ]}
       />
-      <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Definições</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Configurações gerais da loja KumpraFacil
-          </p>
+      <div className="flex flex-1 flex-col gap-6 p-5 md:p-6 bg-grid">
+        <div className="animate-enter">
+          <PageHeader
+            title="Definições"
+            description="Configurações gerais da loja KumpraFacil"
+          />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-enter">
           {SETTINGS_SECTIONS.map((section) =>
             section.href ? (
               <Link
                 key={section.title}
                 href={section.href}
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/30 hover:shadow-sm transition-all"
+                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/20 hover:shadow-sm transition-all"
               >
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${section.bg}`}>
                   <section.icon className={`h-5 w-5 ${section.color}`} />
@@ -117,7 +118,7 @@ export default function SettingsPage() {
             ) : (
               <button
                 key={section.title}
-                className="group flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/30 hover:shadow-sm transition-all cursor-not-allowed opacity-70"
+                className="group flex items-center gap-3 rounded-xl border border-border border-dashed bg-card/50 p-4 text-left cursor-not-allowed opacity-60"
                 disabled
                 title="Em breve"
               >
@@ -128,21 +129,21 @@ export default function SettingsPage() {
                   <p className="text-sm font-semibold text-foreground">{section.title}</p>
                   <p className="text-xs text-muted-foreground mt-0.5 truncate">{section.description}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0" />
+                <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                  Em breve
+                </span>
               </button>
             )
           )}
         </div>
 
-        <Card className="border-border shadow-sm border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-            <Store className="h-10 w-10 text-muted-foreground/30 mb-3" />
-            <p className="text-sm font-semibold text-foreground mb-1">Definições em desenvolvimento</p>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              As configurações da loja estarão disponíveis em breve. Por agora podes gerir produtos, pedidos e clientes.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-dashed border-border bg-card/30 p-8 text-center animate-enter">
+          <Construction className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+          <p className="text-sm font-semibold text-foreground mb-1">Definições em desenvolvimento</p>
+          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+            As configurações da loja estarão disponíveis em breve. Por agora podes gerir produtos, pedidos e clientes.
+          </p>
+        </div>
       </div>
     </>
   )

@@ -54,7 +54,7 @@ export default async function CustomersPage({ searchParams }: PageProps) {
         <Suspense fallback={null}>
           <CustomerListToolbar totalElements={totalElements} error={error} />
         </Suspense>
-        <div className="flex-1 overflow-auto p-4 pt-3">
+        <div className="flex-1 overflow-auto p-5 pt-4">
           {result.ok ? (
             <>
               {customers.length === 0 ? (

@@ -63,7 +63,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
             dateTo={dateTo ?? undefined}
           />
         </Suspense>
-        <div className="flex-1 overflow-auto p-4 pt-3 space-y-3">
+        <div className="flex-1 overflow-auto p-5 pt-4 space-y-3">
           {/* Abas de status (Todos, Pago, Pendentes) */}
           <OrderListTabs currentTab={tab} />
           {result.ok ? (

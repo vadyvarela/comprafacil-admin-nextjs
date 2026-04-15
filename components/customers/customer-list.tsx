@@ -62,7 +62,7 @@ export function CustomerList({ customers }: CustomerListProps) {
   return (
     <div>
       {/* Desktop */}
-      <div className="hidden lg:block rounded-xl border border-border overflow-hidden bg-card shadow-sm">
+      <div className="hidden lg:block rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         <Table role="grid" aria-label="Lista de clientes">
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">

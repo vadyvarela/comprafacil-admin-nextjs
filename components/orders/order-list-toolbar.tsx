@@ -64,13 +64,12 @@ export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: Ord
   const hasDateFilter = dateFrom || dateTo
 
   return (
-    <div className="border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <div className="border-b border-border bg-background/60 backdrop-blur-sm sticky top-14 z-30">
       <div className="px-5 py-3.5 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Title */}
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 shadow-sm shadow-indigo-500/30">
-              <ShoppingCart className="h-4.5 w-4.5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
+              <ShoppingCart className="h-4.5 w-4.5 text-blue-400" />
             </div>
             <div>
               <h1 className="text-base font-bold tracking-tight text-foreground">Pedidos</h1>
@@ -162,7 +161,7 @@ export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: Ord
       </div>
 
       {error && (
-        <div className="mx-5 mb-3 p-3 rounded-xl border border-destructive/30 bg-destructive/5 text-xs flex items-start gap-2">
+        <div className="mx-5 mb-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs flex items-start gap-2">
           <div className="flex-1">
             <p className="font-semibold text-destructive">Erro ao carregar pedidos</p>
             <p className="text-muted-foreground mt-0.5">{error}</p>
