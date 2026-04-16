@@ -16,13 +16,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Obter FormData da requisição
     const formData = await request.formData()
     const imageFile = formData.get("image") as File
 
     if (!imageFile) {
       return NextResponse.json(
         { error: "Nenhuma imagem fornecida" },
+        { status: 400 }
+      )
+    }
+
+    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"]
+    const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
+
+    if (!ALLOWED_TYPES.includes(imageFile.type)) {
+      return NextResponse.json(
+        { error: `Tipo de ficheiro não permitido: ${imageFile.type}. Use JPEG, PNG, WebP, GIF ou SVG.` },
+        { status: 400 }
+      )
+    }
+
+    if (imageFile.size > MAX_SIZE) {
+      return NextResponse.json(
+        { error: "Ficheiro demasiado grande. Tamanho máximo: 10 MB." },
         { status: 400 }
       )
     }
@@ -56,17 +72,14 @@ export async function POST(request: NextRequest) {
       data = await response.json()
     } catch (e) {
       return NextResponse.json(
-        { error: `Failed to upload image: ${response.statusText}` },
+        { error: "Failed to upload image" },
         { status: response.status }
       )
     }
 
     if (!response.ok) {
       return NextResponse.json(
-        {
-          error: data.error || data.message || "Failed to upload image",
-          details: data,
-        },
+        { error: "Failed to upload image" },
         { status: response.status }
       )
     }

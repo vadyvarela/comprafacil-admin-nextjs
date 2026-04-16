@@ -83,9 +83,9 @@ export async function POST(request: NextRequest) {
       status: data.errors ? 200 : response.status, // GraphQL returns 200 even with errors
     })
   } catch (error: any) {
-    console.error("GraphQL API error:", error)
+    console.error("GraphQL API error:", error?.message)
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }

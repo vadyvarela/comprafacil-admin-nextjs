@@ -31,44 +31,25 @@ export async function POST(request: NextRequest) {
     let data
     try {
       data = await response.json()
-    } catch (e) {
-      const text = await response.text()
-      console.error("Failed to parse response as JSON:", text)
+    } catch {
       return NextResponse.json(
-        { error: `Failed to create product: ${response.statusText}` },
+        { error: "Failed to create product" },
         { status: response.status || 500 }
       )
     }
 
     if (!response.ok) {
-      console.error("Backend error response:", data)
-      
-      // Tentar extrair mensagem mais útil do erro
-      let errorMessage = "Failed to create product"
-      if (data.data?.uiMessage) {
-        errorMessage = data.data.uiMessage
-      } else if (data.data?.technicalMessage) {
-        errorMessage = data.data.technicalMessage
-      } else if (data.message) {
-        errorMessage = data.message
-      } else if (data.error) {
-        errorMessage = data.error
-      }
-      
+      const errorMessage = data.data?.uiMessage || "Failed to create product"
       return NextResponse.json(
-        { 
-          error: errorMessage,
-          details: data
-        },
+        { error: errorMessage },
         { status: response.status }
       )
     }
 
     return NextResponse.json(data, { status: response.status })
-  } catch (error: any) {
-    console.error("Product creation API error:", error)
+  } catch {
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     )
   }
