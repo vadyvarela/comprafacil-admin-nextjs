@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
+import { requireAdminSession } from "@/lib/auth/requireAdmin"
 
 export async function POST(request: NextRequest) {
   try {
+    const { error } = await requireAdminSession()
+    if (error) return error
+
     const gtwUrl = process.env.GTW_URL
     const cmsAccessToken = process.env.CMS_ACCESS_TOKEN
 
@@ -14,19 +18,6 @@ export async function POST(request: NextRequest) {
 
     // Obter FormData da requisição
     const formData = await request.formData()
-
-    // Log do que está sendo enviado (apenas para debug - remover em produção)
-    const productJson = formData.get("product") as string
-    if (productJson) {
-      try {
-        const productData = JSON.parse(productJson)
-        console.log("[DEBUG] Product data being sent:", JSON.stringify(productData, null, 2))
-      } catch (e) {
-        console.error("[ERROR] Failed to parse product JSON:", e)
-      }
-    } else {
-      console.error("[ERROR] No product JSON found in FormData")
-    }
 
     // Fazer proxy para o backend Java
     const response = await fetch(`${gtwUrl}/api/product/create`, {

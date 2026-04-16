@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
+import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { rateLimit } from "@/lib/security/rate-limit"
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.ip ?? null)
+    if (rateLimited) return rateLimited
+
+    const { error } = await requireAdminSession()
+    if (error) return error
+
     const body = await request.json()
 
     const gtwUrl = process.env.GTW_URL

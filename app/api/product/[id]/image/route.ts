@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
+import { requireAdminSession } from "@/lib/auth/requireAdmin"
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { error } = await requireAdminSession()
+    if (error) return error
+
     const gtwUrl = process.env.GTW_URL
     const gtwToken = process.env.GTW_TOKEN
     const cmsAccessToken = process.env.CMS_ACCESS_TOKEN

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { requireAdminSession } from "@/lib/auth/requireAdmin"
 
 function gtwHeaders() {
   return {
@@ -9,9 +10,10 @@ function gtwHeaders() {
 
 export async function GET() {
   try {
+    const { error } = await requireAdminSession()
+    if (error) return error
+
     const url = `${process.env.GTW_URL}/api/security/tokens`
-    console.log("[security/tokens] GET →", url)
-    console.log("[security/tokens] CMS_ACCESS_TOKEN:", process.env.CMS_ACCESS_TOKEN ? "definido" : "VAZIO")
 
     const res = await fetch(url, {
       headers: gtwHeaders(),

@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
+import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { rateLimit } from "@/lib/security/rate-limit"
+
+const STRICT_LIMIT = { maxRequests: 5, windowMs: 60_000 }
 
 function gtwHeaders() {
   return {
@@ -9,10 +13,14 @@ function gtwHeaders() {
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.ip ?? null, STRICT_LIMIT)
+    if (rateLimited) return rateLimited
+
+    const { error } = await requireAdminSession()
+    if (error) return error
+
     const body = await request.json().catch(() => ({}))
     const url = `${process.env.GTW_URL}/api/security/tokens/generate`
-    console.log("[security/tokens/generate] POST →", url)
-    console.log("[security/tokens/generate] CMS_ACCESS_TOKEN:", process.env.CMS_ACCESS_TOKEN ? "definido" : "VAZIO")
 
     const res = await fetch(url, {
       method: "POST",
@@ -21,10 +29,7 @@ export async function POST(request: NextRequest) {
       signal: AbortSignal.timeout(15000),
     })
 
-    console.log("[security/tokens/generate] status:", res.status)
-
     const text = await res.text()
-    console.log("[security/tokens/generate] body:", text.slice(0, 300))
 
     let data
     try {

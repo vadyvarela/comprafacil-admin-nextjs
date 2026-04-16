@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
+import { requireAdminSession } from "@/lib/auth/requireAdmin"
+
+const ALLOWED_TOKEN_ACTIONS = ["activate", "deactivate"] as const
 
 function gtwHeaders() {
   return {
@@ -12,6 +15,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { error } = await requireAdminSession()
+    if (error) return error
+
     const { id } = await params
     const res = await fetch(`${process.env.GTW_URL}/api/security/tokens/${id}`, {
       method: "DELETE",
@@ -31,8 +37,16 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { error } = await requireAdminSession()
+    if (error) return error
+
     const { id } = await params
     const { action } = await request.json()
+
+    if (!ALLOWED_TOKEN_ACTIONS.includes(action)) {
+      return NextResponse.json({ error: "Invalid action" }, { status: 400 })
+    }
+
     const res = await fetch(`${process.env.GTW_URL}/api/security/tokens/${id}/${action}`, {
       method: "PUT",
       headers: gtwHeaders(),
