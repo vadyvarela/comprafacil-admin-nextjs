@@ -4,7 +4,7 @@ import { rateLimit } from "@/lib/security/rate-limit"
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.ip ?? null)
+    const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null)
     if (rateLimited) return rateLimited
 
     const { error } = await requireAdminSession()

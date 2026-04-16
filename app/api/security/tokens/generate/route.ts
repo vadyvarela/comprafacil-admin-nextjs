@@ -13,7 +13,7 @@ function gtwHeaders() {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.ip ?? null, STRICT_LIMIT)
+    const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null, STRICT_LIMIT)
     if (rateLimited) return rateLimited
 
     const { error } = await requireAdminSession()
