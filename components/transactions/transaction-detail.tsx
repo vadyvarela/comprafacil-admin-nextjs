@@ -81,6 +81,83 @@ function tryParseJson(raw: string | null | undefined | Record<string, unknown>):
   }
 }
 
+const SISP_REQUEST_LABELS: Record<string, string> = {
+  transactionCode: "Código de transação",
+  posID: "POS ID",
+  merchantRef: "Ref. merchant",
+  merchantSession: "Sessão merchant",
+  amount: "Valor",
+  currency: "Moeda",
+  is3DSec: "3D Secure",
+  urlMerchantResponse: "URL resposta merchant",
+  languageMessages: "Idioma",
+  timeStamp: "Data/hora",
+  fingerprintversion: "Versão fingerprint",
+  fingerprint: "Fingerprint",
+  purchaseRequest: "Purchase request (3DS)",
+  token: "Token",
+}
+
+const SISP_RESPONSE_LABELS: Record<string, string> = {
+  messageType: "Tipo de mensagem",
+  merchantRef: "Ref. merchant",
+  merchantSession: "Sessão merchant",
+  userCancelled: "Cancelado pelo utilizador",
+  merchantRespCP: "Código de processamento",
+  merchantRespTid: "TID",
+  merchantRespMerchantRef: "Ref. merchant (resp.)",
+  merchantRespMerchantSession: "Sessão (resp.)",
+  merchantRespPurchaseAmount: "Valor de compra",
+  merchantRespMessageID: "ID da mensagem",
+  merchantRespPan: "PAN",
+  merchantResp: "Resposta",
+  merchantRespTimeStamp: "Data/hora",
+  merchantRespReferenceNumber: "Número de referência",
+  merchantRespEntityCode: "Código de entidade",
+  merchantRespClientReceipt: "Recibo do cliente",
+  merchantRespErrorCode: "Código de erro",
+  merchantRespErrorDescription: "Descrição do erro",
+  merchantRespErrorDetail: "Detalhe do erro",
+  merchantRespAdditionalErrorMessage: "Mensagem adicional",
+  merchantRespReloadCode: "Código de recarga",
+  resultFingerPrint: "Fingerprint",
+  token: "Token",
+  tokenDescription: "Descrição do token",
+  maxAmountAllowed: "Valor máx. permitido",
+  maxNumberOfTransactions: "Nº máx. transações",
+  limitDate: "Data limite",
+  approvalCode: "Código de aprovação",
+}
+
+function SispTable({ raw, labels }: { raw: string; labels: Record<string, string> }) {
+  let parsed: Record<string, string> | null = null
+  try {
+    parsed = typeof raw === "string" ? JSON.parse(raw) : raw
+  } catch {
+    parsed = null
+  }
+  if (!parsed || typeof parsed !== "object") {
+    return (
+      <pre className="text-[10px] font-mono bg-muted/50 rounded-xl p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
+        {raw}
+      </pre>
+    )
+  }
+  const entries = Object.entries(parsed).filter(([, v]) => v != null && v !== "")
+  return (
+    <div className="px-4 py-1">
+      {entries.map(([key, value]) => (
+        <InfoRow
+          key={key}
+          label={labels[key] ?? key}
+          value={<span className="font-mono text-[11px] break-all">{String(value)}</span>}
+        />
+      ))}
+    </div>
+  )
+}
+
+
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-4 py-2.5 border-b border-border last:border-0">
@@ -177,7 +254,7 @@ export function TransactionDetail({
                         className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold ${statusClass(tx.status.code)}`}
                       >
                         <StatusIcon code={tx.status.code} />
-                        <span className="hidden sm:inline">{tx.status.code}</span>
+                        <span className="hidden sm:inline">{tx.status.description ?? tx.status.code}</span>
                       </span>
                     )}
                     {tx.checkoutSession?.paymentMode && (
@@ -606,23 +683,24 @@ export function TransactionDetail({
             </div>
           </div>
 
-          {/* ── Metadata ── */}
-          {(tx.metadata || tx.responseMetadata) && (
+          {/* ── SISP + Metadata ── */}
+          {(tx.sispRequest || tx.responseMetadata || tx.metadata) && (
             <div className="grid gap-4 sm:grid-cols-2">
+              {tx.sispRequest && (
+                <SectionCard icon={Hash} title="SISP Request">
+                  <SispTable raw={tx.sispRequest} labels={SISP_REQUEST_LABELS} />
+                </SectionCard>
+              )}
+              {tx.responseMetadata && (
+                <SectionCard icon={Info} title="SISP Response">
+                  <SispTable raw={tx.responseMetadata} labels={SISP_RESPONSE_LABELS} />
+                </SectionCard>
+              )}
               {tx.metadata && (
                 <SectionCard icon={Hash} title="Metadata">
                   <div className="px-4 py-3">
                     <pre className="text-[10px] font-mono bg-muted/50 rounded-xl p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
                       {tryParseJson(tx.metadata)}
-                    </pre>
-                  </div>
-                </SectionCard>
-              )}
-              {tx.responseMetadata && (
-                <SectionCard icon={Info} title="Response Metadata">
-                  <div className="px-4 py-3">
-                    <pre className="text-[10px] font-mono bg-muted/50 rounded-xl p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
-                      {tryParseJson(tx.responseMetadata)}
                     </pre>
                   </div>
                 </SectionCard>

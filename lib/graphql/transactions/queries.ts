@@ -5,6 +5,7 @@ const PAYMENT_FIELDS = `
   canceledAt
   merchantReference
   responseMetadata
+  sispRequest
   statusReason
   statementDescriptor
   description
@@ -95,6 +96,7 @@ export const PAYMENTS_SEARCH = gql`
         canceledAt
         merchantReference
         responseMetadata
+        sispRequest
         statusReason
         statementDescriptor
         description

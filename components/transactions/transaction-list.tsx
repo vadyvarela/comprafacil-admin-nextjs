@@ -66,15 +66,12 @@ function StatusBadge({ tx }: { tx: PaymentIntent }) {
         <span
           className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium cursor-default ${statusClass(tx.status?.code ?? "")}`}
         >
-          {tx.status?.code ?? "—"}
+          {tx.status?.description ?? tx.status?.code ?? "—"}
         </span>
       </TooltipTrigger>
       <TooltipContent side="top">
         <div className="max-w-xs text-left space-y-0.5">
-          <p className="font-medium">{tx.status?.code ?? "—"}</p>
-          {tx.status?.description && (
-            <p className="text-[11px] leading-snug">{tx.status.description}</p>
-          )}
+          <p className="font-medium font-mono text-[11px]">{tx.status?.code ?? "—"}</p>
           {tx.statusReason && (
             <p className="text-[11px] leading-snug text-muted">Motivo: {tx.statusReason}</p>
           )}

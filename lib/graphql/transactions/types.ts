@@ -92,6 +92,7 @@ export interface PaymentIntent {
   canceledAt: string | null
   merchantReference: string
   responseMetadata: string
+  sispRequest: string | null
   statusReason: string | null
   statementDescriptor: string | null
   description: string | null
