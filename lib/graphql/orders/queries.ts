@@ -66,6 +66,7 @@ export const CHECKOUT_SESSION_DETAILS = gql`
         customerExternalId
         name
         email
+        phone
         identifier
       }
       lines {

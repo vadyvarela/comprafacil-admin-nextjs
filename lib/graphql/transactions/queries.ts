@@ -52,6 +52,7 @@ const PAYMENT_FIELDS = `
       dueDate
     }
     amountDiscount
+    metadata
   }
   invoicePath
   invoice {
@@ -143,6 +144,7 @@ export const PAYMENTS_SEARCH = gql`
             dueDate
           }
           amountDiscount
+          metadata
         }
         invoicePath
         invoice {

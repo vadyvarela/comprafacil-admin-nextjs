@@ -8,6 +8,7 @@ import {
   CreditCard,
   MapPin,
   ExternalLink,
+  Phone,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
@@ -107,6 +108,7 @@ function SectionCard({
 
 export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
   const shippingFromMetadata = getShippingAddressFromMetadata(order.metadata)
+  const customerPhone = shippingFromMetadata?.phone ?? order.customer?.phone ?? customerDetails?.phone
   const totalLines =
     order.lines?.reduce(
       (sum: number, line: OrderItemResponse) => sum + line.quantity * line.unitAmount,
@@ -229,7 +231,7 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                 </SectionCard>
               )}
 
-              {(shippingFromMetadata || order.customer?.id) && (
+              {(shippingFromMetadata || customerPhone || order.customer?.id) && (
                 <SectionCard icon={MapPin} iconBg="bg-amber-500/10" iconColor="text-amber-400" title="Endereço de entrega">
                   <div className="px-4 py-3">
                     {shippingFromMetadata ? (
@@ -252,6 +254,12 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                           </Button>
                         )}
                       </>
+                    )}
+                    {customerPhone && (
+                      <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-border/50">
+                        <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
+                        <span className="text-xs font-medium text-foreground">{customerPhone}</span>
+                      </div>
                     )}
                   </div>
                 </SectionCard>

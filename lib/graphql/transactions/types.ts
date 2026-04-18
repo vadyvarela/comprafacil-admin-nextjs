@@ -59,6 +59,17 @@ export interface InstallmentPlan {
   dueDate: string
 }
 
+export interface CheckoutSessionShippingAddress {
+  address1?: string | null
+  address2?: string | null
+  city?: string | null
+  state?: string | null
+  zip?: string | null
+  postalCode?: string | null
+  country?: string | null
+  phone?: string | null
+}
+
 export interface CheckoutSession {
   id: string
   paymentMode: string
@@ -66,6 +77,7 @@ export interface CheckoutSession {
   maximumNumberOfInstallments: number | null
   installmentPlans: InstallmentPlan[]
   amountDiscount: number | null
+  metadata?: string | null
 }
 
 export interface PaymentInvoice {

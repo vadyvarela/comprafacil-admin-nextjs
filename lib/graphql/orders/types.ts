@@ -12,6 +12,7 @@ export interface CustomerResponse {
   customerExternalId?: string
   name?: string
   email?: string
+  phone?: string
   identifier?: string
 }
 
@@ -78,6 +79,7 @@ export interface ShippingAddressFromMetadata {
   state?: string | null
   zip?: string | null
   country?: string | null
+  phone?: string | null
 }
 
 export interface CheckoutSessionPageResponse {

@@ -15,6 +15,8 @@ import {
   XCircle,
   AlertCircle,
   ShieldCheck,
+  MapPin,
+  Phone,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -22,7 +24,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatCurrency } from "@/lib/utils/currency"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
-import { invoicePdfHref, receiptPdfHref } from "@/lib/gateway-origin"
+import { invoicePdfHref, receiptPdfHref, ensurePdfExtension } from "@/lib/gateway-origin"
 
 type TransactionDetailProps = {
   tx: PaymentIntent
@@ -69,6 +71,16 @@ function StatusIcon({ code }: { code: string }) {
   if (c.includes("AUTHORIZED"))
     return <ShieldCheck className="h-5 w-5 text-blue-500" />
   return <AlertCircle className="h-5 w-5 text-muted-foreground" />
+}
+
+function extractShippingAddress(metadata: string | null | undefined) {
+  if (!metadata) return null
+  try {
+    const parsed = typeof metadata === "string" ? JSON.parse(metadata) : metadata
+    return (parsed?.basePayload?.shippingAddress as Record<string, string> | null | undefined) ?? null
+  } catch {
+    return null
+  }
 }
 
 function tryParseJson(raw: string | null | undefined | Record<string, unknown>): string {
@@ -219,10 +231,10 @@ export function TransactionDetail({
   gatewayOrigin = null,
 }: TransactionDetailProps) {
   const invoicePdfLink =
-    (tx.invoice?.url?.trim() ? tx.invoice.url : null) ||
+    ensurePdfExtension(tx.invoice?.url?.trim() ? tx.invoice.url : null) ||
     invoicePdfHref(gatewayOrigin, tx.invoice?.id ?? null)
   const receiptPdfLink =
-    (tx.receipt?.url?.trim() ? tx.receipt.url : null) ||
+    ensurePdfExtension(tx.receipt?.url?.trim() ? tx.receipt.url : null) ||
     receiptPdfHref(gatewayOrigin, tx.receipt?.id ?? null)
   const discount = tx.checkoutSession?.amountDiscount ?? 0
   const hasInstallments =
@@ -439,6 +451,38 @@ export function TransactionDetail({
                   )}
                 </SectionCard>
               )}
+
+              {/* Endereço de entrega */}
+              {(() => {
+                const addr = extractShippingAddress(tx.checkoutSession?.metadata)
+                const phone = addr?.phone ?? tx.customer?.phone
+                if (!addr && !phone) return null
+                return (
+                  <SectionCard icon={MapPin} title="Endereço de entrega">
+                    <div className="px-4 py-1">
+                      {addr?.address1 && <InfoRow label="Rua" value={addr.address1} />}
+                      {addr?.address2 && <InfoRow label="Complemento" value={addr.address2} />}
+                      {addr?.city && <InfoRow label="Cidade" value={addr.city} />}
+                      {addr?.state && <InfoRow label="Estado" value={addr.state} />}
+                      {(addr?.zip || addr?.postalCode) && (
+                        <InfoRow label="Código postal" value={addr.zip ?? addr.postalCode} />
+                      )}
+                      {addr?.country && <InfoRow label="País" value={addr.country} />}
+                      {phone && (
+                        <InfoRow
+                          label="Telefone"
+                          value={
+                            <span className="inline-flex items-center gap-1">
+                              <Phone className="h-3 w-3 text-muted-foreground" />
+                              {phone}
+                            </span>
+                          }
+                        />
+                      )}
+                    </div>
+                  </SectionCard>
+                )
+              })()}
             </div>
 
             {/* ── Right column (2/3) ── */}

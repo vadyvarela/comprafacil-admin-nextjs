@@ -27,3 +27,12 @@ export function receiptPdfHref(origin: string | null | undefined, receiptId: str
   if (!origin?.trim() || !receiptId?.trim()) return null
   return `${origin.replace(/\/$/, "")}/api/receipt/pdf/${receiptId}`
 }
+
+/** Garante extensão .pdf em URLs Cloudinary raw sem extensão. */
+export function ensurePdfExtension(url: string | null | undefined): string | null {
+  if (!url?.trim()) return null
+  if (url.includes("res.cloudinary.com") && url.includes("/raw/upload/") && !url.endsWith(".pdf")) {
+    return url + ".pdf"
+  }
+  return url
+}
