@@ -96,7 +96,7 @@ export function TransactionList({ transactions, gatewayOrigin = null }: Transact
       header: "Valor",
       headerClassName: "text-right w-[120px]",
       cellClassName: "text-right tabular-nums font-semibold text-foreground",
-      render: (tx: PaymentIntent) => formatCurrency(tx.amount, tx.currency),
+      render: (tx: PaymentIntent) => formatCurrency(tx.amount / 100, tx.currency),
     },
     {
       id: "customer",
@@ -202,7 +202,7 @@ export function TransactionList({ transactions, gatewayOrigin = null }: Transact
                     <StatusBadge tx={tx} />
                   </div>
                   <p className="text-sm font-bold tabular-nums text-foreground mb-1">
-                    {formatCurrency(tx.amount, tx.currency)}
+                    {formatCurrency(tx.amount / 100, tx.currency)}
                   </p>
                   <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
                     {(tx.customer?.name || tx.customer?.email) && (

@@ -282,7 +282,7 @@ export function TransactionDetail({
                     </p>
                   )}
                   <div className="mt-3 flex items-baseline gap-2">
-                    <span className="text-2xl font-extrabold tabular-nums">{formatCurrency(tx.amount, tx.currency)}</span>
+                    <span className="text-2xl font-extrabold tabular-nums">{formatCurrency(tx.amount / 100, tx.currency)}</span>
                     {discount > 0 && (
                       <span className="text-xs font-medium text-emerald-400">
                         −{formatCurrency(discount, tx.currency)} desc.
@@ -540,7 +540,7 @@ export function TransactionDetail({
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Valor cobrado</span>
-                    <span className="tabular-nums font-semibold text-foreground">{formatCurrency(tx.amount, tx.currency)}</span>
+                    <span className="tabular-nums font-semibold text-foreground">{formatCurrency(tx.amount / 100, tx.currency)}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm text-emerald-400">
@@ -551,7 +551,7 @@ export function TransactionDetail({
                   <Separator />
                   <div className="flex justify-between text-base font-bold text-foreground pt-1">
                     <span>Total</span>
-                    <span className="tabular-nums">{formatCurrency(tx.amount, tx.currency)}</span>
+                    <span className="tabular-nums">{formatCurrency(tx.amount / 100, tx.currency)}</span>
                   </div>
                 </div>
               </SectionCard>
@@ -581,7 +581,7 @@ export function TransactionDetail({
                           <tr key={i} className="hover:bg-muted/20 transition-colors">
                             <td className="px-4 py-2.5 text-muted-foreground font-mono">{i + 1}ª</td>
                             <td className="px-4 py-2.5 text-right font-semibold tabular-nums text-foreground">
-                              {formatCurrency(plan.amount, tx.currency)}
+                              {formatCurrency(plan.amount / 100, tx.currency)}
                             </td>
                             <td className="px-4 py-2.5 text-right text-muted-foreground tabular-nums">
                               {formatDate(plan.dueDate)}
@@ -594,7 +594,7 @@ export function TransactionDetail({
                           <td className="px-4 py-2.5 text-xs font-bold text-foreground">Total</td>
                           <td className="px-4 py-2.5 text-right text-xs font-bold tabular-nums text-foreground">
                             {formatCurrency(
-                              tx.checkoutSession!.installmentPlans.reduce((s, p) => s + p.amount, 0),
+                              tx.checkoutSession!.installmentPlans.reduce((s, p) => s + p.amount, 0) / 100,
                               tx.currency
                             )}
                           </td>
@@ -621,7 +621,7 @@ export function TransactionDetail({
                         label="Total fatura"
                         value={
                           <span className="font-bold tabular-nums">
-                            {formatCurrency(tx.invoice.amountTotal, tx.invoice.currency)}
+                            {formatCurrency(tx.invoice.amountTotal / 100, tx.invoice.currency)}
                           </span>
                         }
                       />
@@ -629,7 +629,7 @@ export function TransactionDetail({
                         label="Total pago"
                         value={
                           <span className="tabular-nums text-emerald-400 font-bold">
-                            {formatCurrency(tx.invoice.amountPaid, tx.invoice.currency)}
+                            {formatCurrency(tx.invoice.amountPaid / 100, tx.invoice.currency)}
                           </span>
                         }
                       />

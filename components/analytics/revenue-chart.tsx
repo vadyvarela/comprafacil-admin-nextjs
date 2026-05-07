@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts"
+import { formatCurrency } from "@/lib/utils/currency"
 
 interface RevenueDataPoint {
   label: string
@@ -28,7 +29,7 @@ function CustomTooltip({ active, payload, label }: any) {
       {payload.map((entry: any) => (
         <p key={entry.name} style={{ color: entry.color }} className="tabular-nums">
           {entry.name === "revenue"
-            ? `Receita: ${new Intl.NumberFormat("pt-PT", { style: "currency", currency: "CVE" }).format(entry.value / 100)}`
+            ? `Receita: ${formatCurrency(entry.value)}`
             : `Pedidos: ${entry.value}`}
         </p>
       ))}
@@ -60,7 +61,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
             new Intl.NumberFormat("pt-PT", {
               notation: "compact",
               maximumFractionDigits: 1,
-            }).format(v / 100)
+            }).format(v)
           }
           tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
           axisLine={false}

@@ -72,12 +72,12 @@ async function getAnalyticsData(from: Date | null, to: Date | null) {
     const txDate = startOfDay(new Date(tx.createdAt))
     const dayEntry = days.find((d) => d.date.getTime() === txDate.getTime())
     if (dayEntry) {
-      dayEntry.revenue += tx.amount
+      dayEntry.revenue += tx.amount / 100
       dayEntry.orders++
     }
   }
 
-  const totalRevenue = transactions.reduce((sum, tx) => sum + (tx.amount ?? 0), 0)
+  const totalRevenue = transactions.reduce((sum, tx) => sum + (tx.amount ?? 0) / 100, 0)
   const avgTicket = transactions.length > 0 ? Math.round(totalRevenue / transactions.length) : 0
 
   const productMap: Record<string, { name: string; revenue: number; qty: number }> = {}
@@ -87,7 +87,7 @@ async function getAnalyticsData(from: Date | null, to: Date | null) {
       const title = line.productVariant?.product?.title ?? "Produto desconhecido"
       const key = title
       if (!productMap[key]) productMap[key] = { name: title, revenue: 0, qty: 0 }
-      productMap[key].revenue += (tx.amount ?? 0)
+      productMap[key].revenue += (tx.amount ?? 0) / 100
       productMap[key].qty += line.quantity ?? 1
     }
   }
@@ -341,7 +341,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
                       </p>
                     </div>
                     <span className="text-sm font-bold tabular-nums text-foreground shrink-0 font-mono">
-                      {formatCurrency(tx.amount ?? 0, tx.currency)}
+                      {formatCurrency((tx.amount ?? 0) / 100, tx.currency)}
                     </span>
                   </div>
                 ))}

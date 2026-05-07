@@ -13,7 +13,24 @@
       "Bash(rmdir \"c:/Users/vadyy/Desktop/work/VADY/2025/loja/techstore-backoffice/app/dashboard/transactions/[id]\")",
       "Bash(node -e \"const auth0 = require\\('c:/Users/vadyy/Desktop/work/VADY/2025/loja/techarena/node_modules/@auth0/nextjs-auth0/dist/server/index.js'\\); console.log\\(Object.keys\\(auth0\\)\\)\")",
       "Bash(node -e \"const m = require\\('c:/Users/vadyy/Desktop/work/VADY/2025/loja/techarena/node_modules/@auth0/nextjs-auth0'\\); console.log\\(Object.keys\\(m\\)\\)\")",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\techarena\" -Type Directory | Where-Object { $_.Name -notin @\\('node_modules', '.next', '.claude'\\) } | Select-Object -ExpandProperty Name)",
+      "Bash(findstr -i search)",
+      "Bash(npm install *)",
+      "Bash(Get-ChildItem -Recurse \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\payment-gateway\\\\src\\\\main\\\\resources\")",
+      "Bash(Select-Object FullName)",
+      "Bash(Get-ChildItem -Recurse -Path \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\techarena\" -Filter \"*.ts\" -o ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -First 20)",
+      "Bash(xargs ls -la)",
+      "WebFetch(domain:github.com)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\techstore-backoffice\" -Exclude node_modules, .next -Directory)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\techarena\" -Recurse -Include \"*.tsx\", \"*.ts\" -Depth 3)",
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Recurse \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\payment-gateway\\\\src\\\\main\" -Include \"*.java\")",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\payment-gateway\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\techarena\" -Recurse -Name)",
+      "Bash(Select-String -Pattern \"page\\\\.tsx|page\\\\.jsx|layout\\\\.tsx\")"
     ]
   }
 }
