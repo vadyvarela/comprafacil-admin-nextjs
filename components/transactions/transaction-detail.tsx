@@ -150,7 +150,7 @@ function SispTable({ raw, labels }: { raw: string; labels: Record<string, string
   }
   if (!parsed || typeof parsed !== "object") {
     return (
-      <pre className="text-[10px] font-mono bg-muted/50 rounded-xl p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
+      <pre className="text-[10px] font-mono bg-muted/50 rounded-lg border border-border/60 p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
         {raw}
       </pre>
     )
@@ -191,12 +191,12 @@ function SectionCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
-        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-muted">
-          <Icon className="h-3 w-3 text-muted-foreground" />
+    <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border/80 bg-muted/25">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/60 bg-card">
+          <Icon className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
-        <span className="text-xs font-semibold text-foreground">{title}</span>
+        <span className="text-xs font-medium text-foreground">{title}</span>
         {badge && <span className="ml-auto">{badge}</span>}
       </div>
       {children}
@@ -244,21 +244,20 @@ export function TransactionDetail({
     tx.checkoutSession?.lines && tx.checkoutSession.lines.length > 0
 
   return (
-    <div className="flex flex-1 flex-col min-h-0 bg-grid">
+    <div className="flex flex-1 flex-col min-h-0 bg-background">
       <div className="flex-1 overflow-auto">
-        <div className="max-w-6xl mx-auto px-5 py-6 md:px-6 space-y-5">
+        <div className="max-w-6xl mx-auto px-4 py-5 md:px-5 md:py-6 space-y-5">
 
           {/* Hero */}
-          <div className="animate-enter relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-emerald-500/[0.04] p-6">
-            <div className="absolute inset-0 bg-grid opacity-30" />
-            <div className="relative flex flex-wrap items-start justify-between gap-4">
-              <div className="flex items-start gap-4 min-w-0">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 border border-emerald-500/20">
-                  <CreditCard className="h-6 w-6 text-emerald-400" />
+          <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-none">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-emerald-50">
+                  <CreditCard className="h-5 w-5 text-emerald-700" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap mb-1">
-                    <h1 className="text-xl font-bold font-mono tracking-tight">
+                    <h1 className="text-lg font-semibold font-mono tracking-tight">
                       #{tx.id.slice(0, 8)}…
                     </h1>
                     {tx.status && (
@@ -284,7 +283,7 @@ export function TransactionDetail({
                   <div className="mt-3 flex items-baseline gap-2">
                     <span className="text-2xl font-extrabold tabular-nums">{formatCurrency(tx.amount / 100, tx.currency)}</span>
                     {discount > 0 && (
-                      <span className="text-xs font-medium text-emerald-400">
+                      <span className="text-xs font-medium text-emerald-700">
                         −{formatCurrency(discount, tx.currency)} desc.
                       </span>
                     )}
@@ -301,12 +300,12 @@ export function TransactionDetail({
           </div>
 
           {(tx.createdAt || tx.authorizedAt || tx.capturedAt || tx.canceledAt) && (
-            <div className="animate-enter-delay-1 rounded-xl border border-border bg-card overflow-hidden">
-              <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-blue-500/10">
-                  <Calendar className="h-3 w-3 text-blue-400" />
+            <div className="animate-enter-delay-1 rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-border/80 bg-muted/25">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/50 bg-blue-50">
+                  <Calendar className="h-3.5 w-3.5 text-blue-700" />
                 </div>
-                <span className="text-xs font-semibold text-foreground">Linha do tempo</span>
+                <span className="text-xs font-medium text-foreground">Linha do tempo</span>
               </div>
               <div className="px-4 py-3">
                 <ol className="relative border-l border-border ml-3 space-y-4">
@@ -502,7 +501,7 @@ export function TransactionDetail({
                   <div className="divide-y divide-border">
                     {tx.checkoutSession!.lines.map((line, i) => (
                       <div key={i} className="flex items-center gap-4 px-4 py-3.5">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted overflow-hidden">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/50 overflow-hidden">
                           {line.productVariant?.image || line.productVariant?.product?.image ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -743,7 +742,7 @@ export function TransactionDetail({
               {tx.metadata && (
                 <SectionCard icon={Hash} title="Metadata">
                   <div className="px-4 py-3">
-                    <pre className="text-[10px] font-mono bg-muted/50 rounded-xl p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
+                    <pre className="text-[10px] font-mono bg-muted/50 rounded-lg border border-border/60 p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
                       {tryParseJson(tx.metadata)}
                     </pre>
                   </div>

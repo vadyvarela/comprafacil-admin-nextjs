@@ -113,10 +113,10 @@ export default function CouponDetailPage() {
       <>
         <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons", href: "/dashboard/coupons" }, { label: "…" }]} />
         <div className="flex flex-col gap-4 p-6">
-          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-lg" />
           <div className="grid grid-cols-3 gap-4">
-            <Skeleton className="h-48 rounded-xl" />
-            <Skeleton className="col-span-2 h-48 rounded-xl" />
+            <Skeleton className="h-48 rounded-lg" />
+            <Skeleton className="col-span-2 h-48 rounded-lg" />
           </div>
         </div>
       </>
@@ -129,7 +129,7 @@ export default function CouponDetailPage() {
         <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons", href: "/dashboard/coupons" }, { label: "Detalhe" }]} />
         <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
           <div className="text-center space-y-4 max-w-md">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-border/80 bg-muted/40">
               <TicketPercent className="h-8 w-8 text-muted-foreground/40" />
             </div>
             <div>
@@ -157,21 +157,20 @@ export default function CouponDetailPage() {
   return (
     <>
       <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons", href: "/dashboard/coupons" }, { label: coupon.name }]} />
-      <div className="flex flex-1 flex-col bg-grid">
+      <div className="flex flex-1 flex-col bg-background">
         <div className="flex-1 overflow-auto">
-          <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-6 space-y-6">
+          <div className="mx-auto w-full max-w-5xl px-4 py-5 md:px-5 md:py-6 space-y-5">
 
             {/* Hero */}
-            <div className="animate-enter relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-amber-500/[0.04] p-6">
-              <div className="absolute inset-0 bg-grid opacity-30" />
-              <div className="relative flex flex-wrap items-start justify-between gap-4">
-                <div className="flex items-start gap-4 min-w-0">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/10 border border-amber-500/20">
-                    <TicketPercent className="h-6 w-6 text-amber-400" />
+            <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-none">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-amber-50">
+                    <TicketPercent className="h-5 w-5 text-amber-800" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2.5 flex-wrap mb-1">
-                      <h1 className="text-xl font-bold tracking-tight truncate">{coupon.name}</h1>
+                      <h1 className="text-lg font-semibold tracking-tight truncate">{coupon.name}</h1>
                       {coupon.defaultCoupon && (
                         <Badge variant="secondary" className="text-[10px]">Padrão</Badge>
                       )}
@@ -240,12 +239,12 @@ export default function CouponDetailPage() {
             <div className="grid gap-5 lg:grid-cols-3 animate-enter-delay-1">
               {/* Sidebar */}
               <div className="space-y-5">
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
-                      <Info className="h-3 w-3 text-primary" />
+                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+                  <div className="flex items-center gap-2 px-3 py-2 border-b border-border/80 bg-muted/25">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-primary/10">
+                      <Info className="h-3.5 w-3.5 text-primary" />
                     </div>
-                    <span className="text-xs font-semibold">Informações</span>
+                    <span className="text-xs font-medium">Informações</span>
                   </div>
                   <div className="p-4 space-y-0 text-xs">
                     <div className="flex items-start justify-between gap-3 py-2.5 border-b border-border/50">
@@ -282,14 +281,14 @@ export default function CouponDetailPage() {
 
               {/* Main: promo codes */}
               <div className="lg:col-span-2">
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10">
-                        <Copy className="h-4 w-4 text-amber-400" />
+                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 bg-muted/25">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-amber-50">
+                        <Copy className="h-4 w-4 text-amber-900" />
                       </div>
                       <div>
-                        <h2 className="text-sm font-bold">Códigos de Promoção</h2>
+                        <h2 className="text-sm font-medium">Códigos de Promoção</h2>
                         <p className="text-[11px] text-muted-foreground">
                           {coupon.promotionCodes?.length ?? 0} código{(coupon.promotionCodes?.length ?? 0) !== 1 ? "s" : ""} associado{(coupon.promotionCodes?.length ?? 0) !== 1 ? "s" : ""}
                         </p>
@@ -311,7 +310,7 @@ export default function CouponDetailPage() {
                       {coupon.promotionCodes.map((code) => (
                         <div
                           key={code.id}
-                          className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/10"
+                          className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/25"
                         >
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/50">
                             <TicketPercent className="h-4 w-4 text-muted-foreground" />
@@ -348,7 +347,7 @@ export default function CouponDetailPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 mb-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
                         <TicketPercent className="h-7 w-7 text-muted-foreground/40" />
                       </div>
                       <h3 className="text-sm font-bold mb-1">Nenhum código</h3>

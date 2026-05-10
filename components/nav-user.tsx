@@ -53,13 +53,13 @@ export function NavUser({
             >
               <Avatar className="h-7 w-7 rounded-full ring-2 ring-sidebar-primary/30">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-full text-xs bg-gradient-to-br from-indigo-400 to-violet-500 text-white font-bold">
+                <AvatarFallback className="rounded-full text-xs bg-primary text-primary-foreground font-semibold">
                   {getInitials(user.name || "A")}
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight min-w-0">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                <span className="truncate text-xs text-sidebar-foreground/60">{user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4 shrink-0" />
             </SidebarMenuButton>
@@ -74,7 +74,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-2 py-2 text-left text-sm">
                 <Avatar className="h-9 w-9 rounded-full">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-full text-xs bg-gradient-to-br from-indigo-400 to-violet-500 text-white font-bold">
+                  <AvatarFallback className="rounded-full text-xs bg-primary text-primary-foreground font-semibold">
                     {getInitials(user.name || "A")}
                   </AvatarFallback>
                 </Avatar>

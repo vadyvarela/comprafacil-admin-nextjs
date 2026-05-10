@@ -90,12 +90,12 @@ export function AppSidebar({ user: sessionUser, ...props }: AppSidebarProps) {
       {/* Logo */}
       <SidebarHeader className="border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-2.5 px-2 py-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 via-indigo-500 to-violet-600 shadow-md shadow-indigo-900/40">
-            <Zap className="h-4 w-4 text-white" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary">
+            <Zap className="h-4 w-4 text-primary-foreground" />
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-bold text-white leading-none">KumpraFacil</p>
-            <p className="truncate text-[10px] text-sidebar-foreground/45 mt-0.5 font-medium tracking-wide uppercase">Admin</p>
+            <p className="truncate text-sm font-semibold text-sidebar-foreground leading-none tracking-tight">KumpraFacil</p>
+            <p className="truncate text-[10px] text-sidebar-foreground/55 mt-0.5 font-medium tracking-wide uppercase">Admin</p>
           </div>
         </Link>
       </SidebarHeader>
@@ -105,7 +105,7 @@ export function AppSidebar({ user: sessionUser, ...props }: AppSidebarProps) {
         {NAV.map((group, gi) => (
           <SidebarGroup key={gi} className={gi > 0 ? "mt-0.5" : ""}>
             {group.section && (
-              <SidebarGroupLabel className="px-3 text-[9px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/30 mb-0.5">
+              <SidebarGroupLabel className="px-3 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45 mb-0.5">
                 {group.section}
               </SidebarGroupLabel>
             )}

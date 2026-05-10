@@ -148,7 +148,7 @@ export default function ProductsPage() {
           )}
 
           {error && (
-            <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-xs">
+            <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 text-xs">
               <p className="font-semibold text-destructive mb-1">Erro ao carregar produtos</p>
               <p className="text-muted-foreground mb-3">{error.message}</p>
               <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -161,7 +161,7 @@ export default function ProductsPage() {
             <>
               {filteredProducts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-sm mx-auto">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
                     <Package className="h-7 w-7 text-muted-foreground/40" />
                   </div>
                   <h2 className="text-sm font-semibold text-foreground mb-1">
@@ -180,10 +180,10 @@ export default function ProductsPage() {
                   )}
                 </div>
               ) : (
-                <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
+                <div className="rounded-lg border border-border/80 overflow-hidden bg-card shadow-none">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableRow className="border-b border-border/60 bg-background hover:bg-background">
                         <TableHead className="w-14 text-xs">Img</TableHead>
                         <TableHead className="text-xs">Produto</TableHead>
                         <TableHead className="text-xs hidden md:table-cell">Categoria</TableHead>

@@ -93,12 +93,12 @@ function SectionCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
-      <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border">
-        <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md ${iconBg ?? "bg-muted"}`}>
-          <Icon className={`h-3 w-3 ${iconColor ?? "text-muted-foreground"}`} />
+    <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border/80 bg-muted/25">
+        <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/50 ${iconBg ?? "bg-muted/50"}`}>
+          <Icon className={`h-3.5 w-3.5 ${iconColor ?? "text-muted-foreground"}`} />
         </div>
-        <span className="text-xs font-semibold text-foreground">{title}</span>
+        <span className="text-xs font-medium text-foreground">{title}</span>
         {badge && <span className="ml-auto">{badge}</span>}
       </div>
       {children}
@@ -119,21 +119,20 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
   const currency = order.currency ?? "CVE"
 
   return (
-    <div className="flex flex-1 flex-col min-h-0 bg-grid">
+    <div className="flex flex-1 flex-col min-h-0 bg-background">
       <div className="flex-1 overflow-auto">
-        <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-6 space-y-5">
+        <div className="mx-auto w-full max-w-6xl px-4 py-5 md:px-5 md:py-6 space-y-5">
 
           {/* Hero */}
-          <div className="animate-enter relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-blue-500/[0.04] p-6">
-            <div className="absolute inset-0 bg-grid opacity-30" />
-            <div className="relative flex flex-wrap items-start justify-between gap-4">
-              <div className="flex items-start gap-4 min-w-0">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/10">
-                  <Package className="h-6 w-6 text-blue-400" />
+          <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-none">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-blue-50">
+                  <Package className="h-5 w-5 text-blue-700" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap mb-1">
-                    <h1 className="text-xl font-bold font-mono tracking-tight">
+                    <h1 className="text-lg font-semibold font-mono tracking-tight">
                       #{order.id.slice(0, 8)}
                     </h1>
                     {order.status && (
@@ -157,7 +156,7 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                   <div className="mt-3 flex items-baseline gap-2">
                     <span className="text-2xl font-extrabold tabular-nums">{formatCurrency(total, currency)}</span>
                     {discount > 0 && (
-                      <span className="text-xs font-medium text-emerald-400">
+                      <span className="text-xs font-medium text-emerald-700">
                         −{formatCurrency(discount, currency)} desc.
                       </span>
                     )}
@@ -188,7 +187,7 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
           <div className="grid gap-5 lg:grid-cols-3 animate-enter-delay-2">
             {/* Left sidebar */}
             <div className="space-y-5">
-              <SectionCard icon={Info} iconBg="bg-primary/10" iconColor="text-primary" title="Informações">
+              <SectionCard icon={Info} iconBg="bg-muted/80" iconColor="text-primary" title="Informações">
                 <div className="px-4 py-1">
                   <InfoRow
                     label="ID completo"
@@ -203,7 +202,7 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
               </SectionCard>
 
               {order.customer && (
-                <SectionCard icon={User} iconBg="bg-violet-500/10" iconColor="text-violet-400" title="Cliente">
+                <SectionCard icon={User} iconBg="bg-violet-50" iconColor="text-violet-700" title="Cliente">
                   <div className="px-4 py-1">
                     {order.customer.name && (
                       <InfoRow label="Nome" value={<span className="font-semibold">{order.customer.name}</span>} />
@@ -232,7 +231,7 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
               )}
 
               {(shippingFromMetadata || customerPhone || order.customer?.id) && (
-                <SectionCard icon={MapPin} iconBg="bg-amber-500/10" iconColor="text-amber-400" title="Endereço de entrega">
+                <SectionCard icon={MapPin} iconBg="bg-amber-50" iconColor="text-amber-800" title="Endereço de entrega">
                   <div className="px-4 py-3">
                     {shippingFromMetadata ? (
                       <div className="space-y-0.5">
@@ -270,8 +269,8 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
             <div className="lg:col-span-2 space-y-5">
               <SectionCard
                 icon={Package}
-                iconBg="bg-indigo-500/10"
-                iconColor="text-indigo-400"
+                iconBg="bg-indigo-50"
+                iconColor="text-indigo-700"
                 title="Itens do pedido"
                 badge={
                   order.lines && order.lines.length > 0 ? (
@@ -314,7 +313,7 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12 text-sm text-muted-foreground">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted/50 mb-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-3">
                       <Package className="h-6 w-6 text-muted-foreground/30" />
                     </div>
                     Nenhum item neste pedido.
@@ -322,7 +321,7 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                 )}
               </SectionCard>
 
-              <SectionCard icon={CreditCard} iconBg="bg-emerald-500/10" iconColor="text-emerald-400" title="Resumo do pagamento">
+              <SectionCard icon={CreditCard} iconBg="bg-emerald-50" iconColor="text-emerald-700" title="Resumo do pagamento">
                 <div className="px-4 py-4 space-y-2.5">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
@@ -330,8 +329,8 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-emerald-400">Desconto</span>
-                      <span className="tabular-nums font-medium text-emerald-400">−{formatCurrency(discount, currency)}</span>
+                      <span className="text-emerald-700">Desconto</span>
+                      <span className="tabular-nums font-medium text-emerald-700">−{formatCurrency(discount, currency)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-base font-bold pt-3 border-t border-border">

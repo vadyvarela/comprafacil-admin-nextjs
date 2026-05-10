@@ -54,8 +54,8 @@ export default function CouponsPage() {
       <div className="flex flex-1 flex-col min-h-0">
         <PageToolbar
           icon={TicketPercent}
-          iconBg="bg-emerald-500/10"
-          iconColor="text-emerald-400"
+          iconBg="bg-emerald-50"
+          iconColor="text-emerald-700"
           title="Cupons"
           subtitle={loading ? "A carregar…" : `${total} cupom${total !== 1 ? "s" : ""}`}
         >
@@ -74,17 +74,17 @@ export default function CouponsPage() {
           </Button>
         </PageToolbar>
 
-        <div className="flex-1 overflow-auto p-5">
+        <div className="flex-1 overflow-auto p-4 md:p-5 bg-background">
           {loading && (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-40 rounded-xl" />
+                <Skeleton key={i} className="h-40 rounded-lg" />
               ))}
             </div>
           )}
 
           {error && (
-            <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-xs">
+            <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 text-xs">
               <p className="font-semibold text-destructive mb-1">Erro ao carregar</p>
               <p className="text-muted-foreground mb-3">{error.message}</p>
               <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -97,7 +97,7 @@ export default function CouponsPage() {
             <>
               {filteredCoupons.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
                     <TicketPercent className="h-7 w-7 text-muted-foreground/40" />
                   </div>
                   <h2 className="text-sm font-semibold mb-1">
@@ -126,10 +126,10 @@ export default function CouponsPage() {
                         href={`/dashboard/coupons/${coupon.id}`}
                         className="group block"
                       >
-                        <div className="rounded-xl border border-border bg-card p-4 hover:border-primary/20 hover:shadow-sm transition-all">
+                        <div className="rounded-lg border border-border/80 bg-card p-3.5 shadow-none transition-colors hover:border-border hover:bg-muted/25">
                           <div className="flex items-start justify-between mb-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10">
-                              <TicketPercent className="h-5 w-5 text-emerald-400" />
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-emerald-50">
+                              <TicketPercent className="h-4 w-4 text-emerald-800" />
                             </div>
                             <div className="flex items-center gap-1.5">
                               {coupon.defaultCoupon && (
@@ -160,13 +160,13 @@ export default function CouponsPage() {
                           </h3>
 
                           {discountType === "percent" && (
-                            <div className="flex items-center gap-1 text-lg font-bold text-emerald-400 mb-2 font-mono">
+                            <div className="flex items-center gap-1 text-lg font-semibold text-emerald-800 mb-2 font-mono">
                               <Percent className="h-4 w-4" />
                               {coupon.percentOff}% OFF
                             </div>
                           )}
                           {discountType === "amount" && (
-                            <div className="flex items-center gap-1 text-lg font-bold text-emerald-400 mb-2 font-mono">
+                            <div className="flex items-center gap-1 text-lg font-semibold text-emerald-800 mb-2 font-mono">
                               <DollarSign className="h-4 w-4" />
                               {coupon.amountOff} {coupon.currency}
                             </div>

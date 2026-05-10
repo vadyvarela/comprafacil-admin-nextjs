@@ -89,8 +89,8 @@ export default function BannersPage() {
       <div className="flex flex-1 flex-col min-h-0">
         <PageToolbar
           icon={ImageIcon}
-          iconBg="bg-pink-500/10"
-          iconColor="text-pink-400"
+          iconBg="bg-primary/10"
+          iconColor="text-primary"
           title="Banners"
           subtitle={loading ? "A carregar…" : `${total} banner${total !== 1 ? "s" : ""} · ${activeTotal} ativo${activeTotal !== 1 ? "s" : ""}`}
         >
@@ -109,17 +109,17 @@ export default function BannersPage() {
           </Button>
         </PageToolbar>
 
-        <div className="flex-1 overflow-auto p-5">
+        <div className="flex-1 overflow-auto p-4 md:p-5 bg-background">
           {loading && (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-48 rounded-xl" />
+                <Skeleton key={i} className="h-48 rounded-lg" />
               ))}
             </div>
           )}
 
           {error && (
-            <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-xs">
+            <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 text-xs">
               <p className="font-semibold text-destructive mb-1">Erro ao carregar</p>
               <p className="text-muted-foreground mb-3">{error.message}</p>
               <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -132,7 +132,7 @@ export default function BannersPage() {
             <>
               {filteredBanners.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
                     <ImageIcon className="h-7 w-7 text-muted-foreground/40" />
                   </div>
                   <h2 className="text-sm font-semibold mb-1">
@@ -149,18 +149,18 @@ export default function BannersPage() {
                   )}
                 </div>
               ) : (
-                <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
                   {/* Desktop table */}
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-muted/40 border-b border-border">
+                      <thead className="border-b border-border/60 bg-background">
                         <tr>
-                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Banner</th>
-                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
-                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Posição</th>
-                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Período</th>
-                          <th className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ordem</th>
-                          <th className="text-right px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Ações</th>
+                          <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground">Banner</th>
+                          <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground">Status</th>
+                          <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground">Posição</th>
+                          <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground">Período</th>
+                          <th className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground">Ordem</th>
+                          <th className="text-right px-4 py-2.5 text-[11px] font-medium text-muted-foreground">Ações</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -168,7 +168,7 @@ export default function BannersPage() {
                           const isActive = banner.status?.code === "ACTIVE"
                           const isDeleting = deletingBannerId === banner.id
                           return (
-                            <tr key={banner.id} className="border-b border-border last:border-b-0 hover:bg-muted/20 transition-colors">
+                            <tr key={banner.id} className="border-b border-border/50 last:border-b-0 hover:bg-muted/25 transition-colors">
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-3 min-w-[260px]">
                                   <div className="h-12 w-20 rounded-lg overflow-hidden border border-border bg-muted shrink-0">
@@ -190,7 +190,7 @@ export default function BannersPage() {
                                         href={banner.link}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="inline-flex items-center gap-1 mt-0.5 text-[11px] text-primary hover:underline"
+                                        className="inline-flex items-center gap-1 mt-0.5 text-[11px] text-muted-foreground hover:text-primary transition-colors"
                                       >
                                         Ver link
                                         <ExternalLink className="h-3 w-3" />
@@ -258,13 +258,13 @@ export default function BannersPage() {
                   </div>
 
                   {/* Mobile cards */}
-                  <div className="md:hidden grid gap-3 p-4">
+                  <div className="md:hidden grid gap-2.5 p-3">
                     {filteredBanners.map((banner) => {
                       const isActive = banner.status?.code === "ACTIVE"
                       const isDeleting = deletingBannerId === banner.id
 
                       return (
-                        <div key={banner.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                        <div key={banner.id} className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
                           <div className="relative h-36 bg-muted">
                             {banner.image ? (
                               <img

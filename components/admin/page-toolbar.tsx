@@ -21,18 +21,26 @@ export function PageToolbar({
   className,
 }: PageToolbarProps) {
   return (
-    <div className={cn("border-b border-border bg-background/60 backdrop-blur-sm sticky top-14 z-30", className)}>
-      <div className="px-5 py-3">
+    <div
+      className={cn(
+        "border-b border-border bg-muted/30 sticky top-12 z-30",
+        className
+      )}
+    >
+      <div className="px-4 py-2.5 md:px-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className={cn("flex h-9 w-9 items-center justify-center rounded-lg shrink-0", iconBg)}>
-              <Icon className={cn("h-4.5 w-4.5", iconColor)} />
+          <div className="flex items-center gap-2.5">
+            <div
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-md border border-border/60 shrink-0 bg-card",
+                iconBg
+              )}
+            >
+              <Icon className={cn("h-4 w-4", iconColor)} />
             </div>
             <div>
-              <h1 className="text-base font-bold tracking-tight text-foreground">{title}</h1>
-              {subtitle && (
-                <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
-              )}
+              <h1 className="text-sm font-semibold tracking-tight text-foreground">{title}</h1>
+              {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
             </div>
           </div>
           {children && (

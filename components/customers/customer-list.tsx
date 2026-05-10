@@ -45,12 +45,12 @@ function shortId(id: string): string {
 }
 
 const AVATAR_COLORS = [
-  "bg-gradient-to-br from-indigo-400 to-blue-600 text-white",
-  "bg-gradient-to-br from-violet-400 to-purple-600 text-white",
-  "bg-gradient-to-br from-emerald-400 to-teal-600 text-white",
-  "bg-gradient-to-br from-amber-400 to-orange-500 text-white",
-  "bg-gradient-to-br from-rose-400 to-pink-600 text-white",
-  "bg-gradient-to-br from-cyan-400 to-sky-600 text-white",
+  "bg-violet-100 text-violet-900",
+  "bg-blue-100 text-blue-900",
+  "bg-emerald-100 text-emerald-900",
+  "bg-amber-100 text-amber-900",
+  "bg-rose-100 text-rose-900",
+  "bg-sky-100 text-sky-900",
 ]
 
 function avatarColor(id: string): string {
@@ -62,10 +62,10 @@ export function CustomerList({ customers }: CustomerListProps) {
   return (
     <div>
       {/* Desktop */}
-      <div className="hidden lg:block rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+      <div className="hidden lg:block rounded-lg border border-border/80 bg-card shadow-none overflow-hidden">
         <Table role="grid" aria-label="Lista de clientes">
           <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50">
+            <TableRow className="border-b border-border/60 bg-background hover:bg-background">
               <TableHead className="min-w-[200px] text-xs font-semibold text-muted-foreground">Cliente</TableHead>
               <TableHead className="min-w-[180px] text-xs font-semibold text-muted-foreground">Email</TableHead>
               <TableHead className="w-[130px] text-xs font-semibold text-muted-foreground">Telefone</TableHead>
@@ -129,8 +129,8 @@ export function CustomerList({ customers }: CustomerListProps) {
             key={customer.id}
             href={`/dashboard/customers/${customer.id}`}
             className={cn(
-              "flex items-center gap-3 rounded-xl border border-border bg-card p-4 shadow-sm transition-all",
-              "hover:border-primary/30 hover:shadow-md active:scale-[0.99]"
+              "flex items-center gap-3 rounded-lg border border-border/80 bg-card p-3.5 shadow-none transition-colors",
+              "hover:border-border hover:bg-muted/30 active:scale-[0.995]"
             )}
           >
             <div
