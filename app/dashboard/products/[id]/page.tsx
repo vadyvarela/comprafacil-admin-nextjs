@@ -122,11 +122,11 @@ export default function ProductDetailPage() {
         <div className="flex flex-col gap-4 p-6">
           <Skeleton className="h-10 w-72" />
           <div className="grid grid-cols-3 gap-4">
-            <Skeleton className="h-24 rounded-xl" />
-            <Skeleton className="h-24 rounded-xl" />
-            <Skeleton className="h-24 rounded-xl" />
+            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-24 rounded-lg" />
+            <Skeleton className="h-24 rounded-lg" />
           </div>
-          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-64 rounded-lg" />
         </div>
       </>
     )
@@ -138,7 +138,7 @@ export default function ProductDetailPage() {
         <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "Detalhe" }]} />
         <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
           <div className="text-center space-y-4 max-w-md">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/50">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-border/80 bg-muted/40">
               <Package className="h-8 w-8 text-muted-foreground/50" />
             </div>
             <div>
@@ -162,14 +162,13 @@ export default function ProductDetailPage() {
   return (
     <>
       <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: product.title ?? "Produto" }]} />
-      <div className="flex flex-1 flex-col bg-grid">
+      <div className="flex flex-1 flex-col bg-background">
         <div className="flex-1 overflow-auto">
           <div className="mx-auto w-full max-w-7xl px-5 py-6 md:px-6 space-y-6">
 
             {/* Hero section */}
-            <div className="animate-enter relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-card via-card to-primary/[0.03] p-6">
-              <div className="absolute inset-0 bg-grid opacity-40" />
-              <div className="relative flex flex-wrap items-start justify-between gap-4">
+            <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-none">
+              <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0 flex-1 space-y-3">
                   <Button
                     variant="ghost"
@@ -181,7 +180,7 @@ export default function ProductDetailPage() {
                     Produtos
                   </Button>
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <h1 className="truncate text-2xl font-bold md:text-3xl">
+                    <h1 className="truncate text-xl font-semibold md:text-2xl">
                       {product.title}
                     </h1>
                     {product.category && (
@@ -232,27 +231,27 @@ export default function ProductDetailPage() {
 
               {/* Mini KPIs */}
               <div className="relative mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="group flex items-center gap-3 rounded-xl glass-card p-3.5 transition-colors hover:bg-white/[0.05]">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-500/10">
-                    <Layers className="h-4 w-4 text-blue-400" />
+                <div className="group flex items-center gap-3 glass-card p-3.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/50 bg-blue-50">
+                    <Layers className="h-3.5 w-3.5 text-blue-700" />
                   </div>
                   <div>
                     <p className="text-[11px] text-muted-foreground">Variantes</p>
                     <p className="text-xl font-bold tabular-nums leading-tight">{variantCount}</p>
                   </div>
                 </div>
-                <div className="group flex items-center gap-3 rounded-xl glass-card p-3.5 transition-colors hover:bg-white/[0.05]">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/10">
-                    <BoxesIcon className="h-4 w-4 text-violet-400" />
+                <div className="group flex items-center gap-3 glass-card p-3.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/50 bg-violet-50">
+                    <BoxesIcon className="h-3.5 w-3.5 text-violet-700" />
                   </div>
                   <div>
                     <p className="text-[11px] text-muted-foreground">Stock variantes</p>
                     <p className="text-xl font-bold tabular-nums leading-tight">{totalVariantStock}</p>
                   </div>
                 </div>
-                <div className="group flex items-center gap-3 rounded-xl glass-card p-3.5 transition-colors hover:bg-white/[0.05]">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
-                    <Warehouse className="h-4 w-4 text-emerald-400" />
+                <div className="group flex items-center gap-3 glass-card p-3.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/50 bg-emerald-50">
+                    <Warehouse className="h-3.5 w-3.5 text-emerald-700" />
                   </div>
                   <div>
                     <p className="text-[11px] text-muted-foreground">Stock total</p>
@@ -266,17 +265,17 @@ export default function ProductDetailPage() {
             <div className="grid gap-5 lg:grid-cols-3 animate-enter-delay-1">
               {/* Left sidebar */}
               <div className="space-y-5 lg:col-span-1">
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
                   <ProductImageUpload productId={productId} currentImage={product.image} />
                 </div>
 
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+                  <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/80 bg-muted/25">
                     <div className="flex items-center gap-2">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10">
-                        <Warehouse className="h-3 w-3 text-emerald-400" />
+                      <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-emerald-50">
+                        <Warehouse className="h-3.5 w-3.5 text-emerald-800" />
                       </div>
-                      <span className="text-xs font-semibold">Estoque</span>
+                      <span className="text-xs font-medium">Estoque</span>
                     </div>
                     {product.stock && (
                       <Button
@@ -313,46 +312,46 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
-                      <Info className="h-3 w-3 text-primary" />
+                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+                  <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/80 bg-muted/25">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-primary/10">
+                      <Info className="h-3.5 w-3.5 text-primary" />
                     </div>
-                    <span className="text-xs font-semibold">Informações</span>
+                    <span className="text-xs font-medium">Informações</span>
                   </div>
                   <div className="p-4 space-y-3 text-xs">
-                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-border">
+                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/50">
                       <span className="text-muted-foreground shrink-0">ID</span>
                       <span className="break-all font-mono text-[10px] text-right">{product.id}</span>
                     </div>
                     {product.discount !== undefined && product.discount !== null && product.discount > 0 && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border">
+                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground">Desconto</span>
-                        <span className="inline-flex items-center rounded-full bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 text-[11px] font-semibold text-rose-400">
+                        <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-[11px] font-medium text-rose-800">
                           -{product.discount}%
                         </span>
                       </div>
                     )}
                     {metadata?.sku && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border">
+                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />SKU</span>
                         <span className="font-mono font-medium">{metadata.sku}</span>
                       </div>
                     )}
                     {metadata?.model && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border">
+                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground">Modelo</span>
                         <span className="font-medium">{metadata.model}</span>
                       </div>
                     )}
                     {metadata?.weight && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border">
+                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground">Peso</span>
                         <span className="font-medium">{metadata.weight}</span>
                       </div>
                     )}
                     {metadata?.color && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border">
+                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground">Cor</span>
                         <span className="font-medium">{metadata.color}</span>
                       </div>
@@ -369,14 +368,14 @@ export default function ProductDetailPage() {
 
               {/* Variants */}
               <div className="lg:col-span-2">
-                <div className="rounded-xl border border-border bg-card overflow-hidden">
-                  <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
-                        <Settings className="h-4 w-4 text-blue-400" />
+                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 bg-muted/25">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
+                        <Settings className="h-4 w-4 text-blue-800" />
                       </div>
                       <div>
-                        <h2 className="text-sm font-bold">Variantes</h2>
+                        <h2 className="text-sm font-medium">Variantes</h2>
                         <p className="text-[11px] text-muted-foreground">
                           {variantCount} variante{variantCount !== 1 ? "s" : ""} registada{variantCount !== 1 ? "s" : ""}
                         </p>
@@ -448,7 +447,7 @@ export default function ProductDetailPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 mb-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
                         <Package className="h-7 w-7 text-muted-foreground/40" />
                       </div>
                       <h3 className="text-sm font-bold mb-1">Nenhuma variante</h3>

@@ -153,7 +153,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
           { label: "Analytics" },
         ]}
       />
-      <div className="flex flex-1 flex-col gap-6 p-5 md:p-6 bg-grid">
+      <div className="flex flex-1 flex-col gap-5 p-4 md:p-5 bg-background">
         {/* Header + filter */}
         <div className="animate-enter">
           <PageHeader
@@ -205,7 +205,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
         </div>
 
         {/* Revenue chart */}
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden animate-enter">
+        <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
           <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
               <BarChart3 className="h-4 w-4 text-primary" />
@@ -222,7 +222,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
 
         <div className="grid gap-4 md:grid-cols-2">
           {/* Top products */}
-          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden animate-enter">
+          <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -262,7 +262,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
           </div>
 
           {/* Status breakdown */}
-          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden animate-enter">
+          <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
             <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                 <CreditCard className="h-4 w-4 text-primary" />
@@ -305,7 +305,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
         </div>
 
         {/* Recent transactions */}
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden animate-enter">
+        <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">

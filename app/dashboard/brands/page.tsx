@@ -63,8 +63,8 @@ export default function BrandsPage() {
       <div className="flex flex-1 flex-col min-h-0">
         <PageToolbar
           icon={Tag}
-          iconBg="bg-amber-500/10"
-          iconColor="text-amber-400"
+          iconBg="bg-amber-50"
+          iconColor="text-amber-900"
           title="Marcas"
           subtitle={loading ? "A carregar…" : `${brands.length} marca${brands.length !== 1 ? "s" : ""}`}
         >
@@ -74,17 +74,17 @@ export default function BrandsPage() {
           </Button>
         </PageToolbar>
 
-        <div className="flex-1 overflow-auto p-5">
+        <div className="flex-1 overflow-auto p-4 md:p-5 bg-background">
           {loading && (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {[...Array(8)].map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
+                <Skeleton key={i} className="h-32 rounded-lg" />
               ))}
             </div>
           )}
 
           {error && (
-            <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-xs">
+            <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 text-xs">
               <p className="font-semibold text-destructive mb-1">Erro ao carregar</p>
               <p className="text-muted-foreground mb-3">{error.message}</p>
               <Button variant="outline" size="sm" onClick={() => refetch()}>Tentar novamente</Button>
@@ -94,7 +94,7 @@ export default function BrandsPage() {
           {!loading && !error && (
             brands.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
                   <Tag className="h-7 w-7 text-muted-foreground/40" />
                 </div>
                 <h2 className="text-sm font-semibold mb-1">Sem marcas</h2>
@@ -109,14 +109,14 @@ export default function BrandsPage() {
                 {brands.map((brand: Brand) => (
                   <div
                     key={brand.id}
-                    className="group relative rounded-xl border border-border bg-card p-4 hover:border-primary/20 hover:shadow-sm transition-all"
+                    className="group relative rounded-lg border border-border/80 bg-card p-3.5 shadow-none transition-colors hover:border-border hover:bg-muted/25"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 overflow-hidden">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-amber-50 overflow-hidden">
                         {brand.logo ? (
-                          <img src={brand.logo} alt={brand.name} className="h-8 w-8 object-contain" />
+                          <img src={brand.logo} alt={brand.name} className="h-7 w-7 object-contain" />
                         ) : (
-                          <Tag className="h-5 w-5 text-amber-400" />
+                          <Tag className="h-4 w-4 text-amber-900" />
                         )}
                       </div>
                       <DropdownMenu>

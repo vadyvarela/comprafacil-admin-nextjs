@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldAlert, Zap } from "lucide-react";
+import { ShieldAlert } from "lucide-react";
 
 export const metadata = {
   title: "Acesso negado - KumpraFacil Admin",
@@ -9,9 +9,9 @@ export const metadata = {
 export default function UnauthorizedPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-      <main className="flex w-full max-w-md flex-col items-center gap-6 rounded-2xl border border-border bg-card p-8 shadow-lg mx-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-          <ShieldAlert className="h-6 w-6 text-amber-400" />
+      <main className="flex w-full max-w-md flex-col items-center gap-6 rounded-lg border border-border/80 bg-card p-8 shadow-none mx-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/10">
+          <ShieldAlert className="h-6 w-6 text-amber-600" />
         </div>
         <div className="text-center space-y-1">
           <h1 className="text-xl font-bold text-foreground">Acesso negado</h1>

@@ -46,7 +46,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus }: Props) {
 
   if (isCancelled) {
     return (
-      <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+      <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
           <span className="text-xs font-bold text-foreground uppercase tracking-wide">Estado do envio</span>
         </div>
@@ -72,7 +72,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+    <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
         <span className="text-xs font-bold text-foreground uppercase tracking-wide">Estado do envio</span>
@@ -108,9 +108,10 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus }: Props) {
                   disabled={!!loading || isActive}
                   title={step.label}
                   className={cn(
-                    "flex flex-col items-center gap-2 flex-1 min-w-0 rounded-xl p-2.5 transition-all duration-150",
-                    isActive && "cursor-default",
-                    !isActive && !loading && "hover:bg-muted/50 cursor-pointer",
+                    "flex flex-col items-center gap-2 flex-1 min-w-0 rounded-lg border p-2.5 transition-all duration-150",
+                    isActive && "cursor-default border-border/80 bg-muted/20",
+                    !isActive && "border-transparent",
+                    !isActive && !loading && "hover:bg-muted/50 hover:border-border/60 cursor-pointer",
                     loading && !isActive && "opacity-40 cursor-not-allowed pointer-events-none"
                   )}
                 >

@@ -64,16 +64,16 @@ export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: Ord
   const hasDateFilter = dateFrom || dateTo
 
   return (
-    <div className="border-b border-border bg-background/60 backdrop-blur-sm sticky top-14 z-30">
-      <div className="px-5 py-3.5 space-y-3">
+    <div className="border-b border-border bg-muted/30 sticky top-12 z-30">
+      <div className="px-4 py-2.5 md:px-5 space-y-2.5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-              <ShoppingCart className="h-4.5 w-4.5 text-blue-400" />
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
+              <ShoppingCart className="h-4 w-4 text-blue-700" />
             </div>
             <div>
-              <h1 className="text-base font-bold tracking-tight text-foreground">Pedidos</h1>
-              <p className="text-xs text-muted-foreground">
+              <h1 className="text-sm font-semibold tracking-tight text-foreground">Pedidos</h1>
+              <p className="text-[11px] text-muted-foreground">
                 {totalElements.toLocaleString("pt-PT")} pedido{totalElements !== 1 ? "s" : ""} com pagamento efetuado
                 {hasDateFilter && <span className="ml-1 text-primary font-semibold">· filtrado</span>}
               </p>
@@ -124,7 +124,7 @@ export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: Ord
             <button
               key={p.days}
               onClick={() => applyPreset(p.days)}
-              className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border bg-card hover:bg-muted hover:border-primary/30 transition-colors text-muted-foreground hover:text-foreground"
+              className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border/80 bg-card hover:bg-muted hover:border-border transition-colors text-muted-foreground hover:text-foreground"
             >
               {p.label}
             </button>

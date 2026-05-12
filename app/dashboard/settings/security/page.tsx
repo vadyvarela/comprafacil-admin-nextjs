@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
+import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -140,13 +141,14 @@ export default function SecurityPage() {
           { label: "Segurança" },
         ]}
       />
+      <SettingsSubnav />
 
-      <div className="flex flex-1 flex-col gap-6 p-5 md:p-6">
-        <div className="flex items-center justify-between">
+      <div className="flex flex-1 flex-col gap-5 p-4 md:p-5 bg-background">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold text-foreground">Tokens de API</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Gere e revoga tokens de autenticação para o frontend e integrações externas.
+            <h1 className="text-lg font-semibold text-foreground">Tokens de API</h1>
+            <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
+              Crie e revogue tokens de autenticação para o frontend e integrações externas.
             </p>
           </div>
           <Button onClick={() => setGenerateOpen(true)} size="sm">
@@ -159,7 +161,7 @@ export default function SecurityPage() {
         <div className="flex flex-col gap-3">
           {loading ? (
             Array.from({ length: 2 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 rounded-xl" />
+              <Skeleton key={i} className="h-20 rounded-lg" />
             ))
           ) : tokens.length === 0 ? (
             <Card className="border-dashed">
@@ -177,9 +179,9 @@ export default function SecurityPage() {
             </Card>
           ) : (
             tokens.map((token) => (
-              <Card key={token.id} className="border-border shadow-sm">
+              <Card key={token.id} className="border-border/80 shadow-none">
                 <CardContent className="flex items-center gap-4 p-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-primary/10">
                     <Key className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -229,9 +231,9 @@ export default function SecurityPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-          <div className="px-4 py-3 border-b border-border bg-muted/30">
-            <h3 className="text-sm font-bold text-foreground">Como usar o token</h3>
+        <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden">
+          <div className="px-4 py-2.5 border-b border-border/80 bg-muted/25">
+            <h3 className="text-sm font-medium text-foreground">Como usar o token</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Adiciona o header em todas as chamadas ao backend.
             </p>

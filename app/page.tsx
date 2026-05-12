@@ -15,8 +15,8 @@ export default async function HomePage({
   if (!session?.user) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-        <main className="flex w-full max-w-md flex-col items-center gap-6 rounded-2xl border border-border bg-card p-8 shadow-lg mx-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 via-indigo-500 to-violet-600 shadow-md shadow-indigo-900/40">
+        <main className="flex w-full max-w-md flex-col items-center gap-6 rounded-lg border border-border/80 bg-card p-8 shadow-none mx-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
             <Zap className="h-6 w-6 text-white" />
           </div>
           <div className="text-center space-y-1">

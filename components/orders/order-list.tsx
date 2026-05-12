@@ -72,7 +72,7 @@ function OrderProductPreview({ order }: { order: OrderSummary }) {
     <div className="flex items-center gap-3 min-w-0">
       <div
         className={cn(
-          "relative shrink-0 overflow-hidden rounded-xl border-2 border-border bg-muted shadow-sm",
+          "relative shrink-0 overflow-hidden rounded-md border border-border/80 bg-muted/50 shadow-none",
           "h-[52px] w-[52px] sm:h-15 sm:w-15"
         )}
       >
@@ -85,7 +85,7 @@ function OrderProductPreview({ order }: { order: OrderSummary }) {
           </div>
         )}
         {showMulti && (
-          <span className="absolute bottom-1 right-1 rounded-md bg-background/95 px-1.5 py-0.5 text-[10px] font-bold tabular-nums shadow-sm ring-1 ring-border">
+          <span className="absolute bottom-1 right-1 rounded-md bg-background/95 px-1.5 py-0.5 text-[10px] font-bold tabular-nums ring-1 ring-border/80">
             +{lineCount - 1}
           </span>
         )}
@@ -104,14 +104,14 @@ function OrderProductPreview({ order }: { order: OrderSummary }) {
 
 export function OrderList({ orders }: OrderListProps) {
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+    <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden">
       {/* Desktop header */}
-      <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,1.25fr)_minmax(0,1fr)_128px_104px_40px] border-b border-border bg-muted/50 px-4 py-2.5 gap-3">
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Pedido</span>
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Produto</span>
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Cliente</span>
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">Estado envio</span>
-        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide text-right">Valor</span>
+      <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,1.25fr)_minmax(0,1fr)_128px_104px_40px] border-b border-border/60 bg-background px-4 py-2.5 gap-3">
+        <span className="text-[11px] font-medium text-muted-foreground">Pedido</span>
+        <span className="text-[11px] font-medium text-muted-foreground">Produto</span>
+        <span className="text-[11px] font-medium text-muted-foreground">Cliente</span>
+        <span className="text-[11px] font-medium text-muted-foreground">Estado envio</span>
+        <span className="text-[11px] font-medium text-muted-foreground text-right">Valor</span>
         <span />
       </div>
 
@@ -129,7 +129,7 @@ export function OrderList({ orders }: OrderListProps) {
             >
               {/* Order ref + date */}
               <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/8 ring-1 ring-primary/15 group-hover:bg-primary/12 transition-colors">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-primary/10 group-hover:bg-primary/15 transition-colors">
                   <ShoppingCart className="h-4 w-4 text-primary" />
                 </div>
                 <div className="min-w-0">

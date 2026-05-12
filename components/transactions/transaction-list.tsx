@@ -153,10 +153,10 @@ export function TransactionList({ transactions, gatewayOrigin = null }: Transact
     <>
       <div>
         {/* Desktop */}
-        <div className="hidden lg:block rounded-xl border border-border overflow-hidden bg-card shadow-sm">
+        <div className="hidden lg:block rounded-lg border border-border/80 overflow-hidden bg-card shadow-none">
           <Table role="grid" aria-label="Lista de transações">
             <TableHeader>
-              <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableRow className="border-b border-border/60 bg-background hover:bg-background">
                 {columns.map((col) => (
                   <TableHead key={col.id} className={cn(col.headerClassName, "text-xs font-semibold text-muted-foreground")}>
                     {col.header}
@@ -187,7 +187,7 @@ export function TransactionList({ transactions, gatewayOrigin = null }: Transact
           {transactions.map((tx) => (
             <div
               key={tx.id}
-              className="rounded-xl border border-border bg-card p-4 shadow-sm cursor-pointer hover:bg-muted/30 transition-colors"
+              className="rounded-lg border border-border/80 bg-card p-3.5 shadow-none cursor-pointer hover:bg-muted/25 transition-colors"
               onClick={() => openDetail(tx)}
             >
               <div className="flex items-start gap-3">

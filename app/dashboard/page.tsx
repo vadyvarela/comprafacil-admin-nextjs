@@ -91,7 +91,7 @@ export default async function DashboardPage() {
   return (
     <>
       <DashboardHeader items={[{ label: "Dashboard" }]} />
-      <div className="flex flex-1 flex-col gap-6 p-5 md:p-6 bg-grid">
+      <div className="flex flex-1 flex-col gap-5 p-4 md:p-5 bg-background">
         {/* Page header */}
         <div className="animate-enter">
           <PageHeader
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
           >
             <Link
               href="/dashboard/analytics"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
               <Sparkles className="h-3.5 w-3.5" />
               Analytics
@@ -110,7 +110,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* KPI cards */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Link href="/dashboard/transactions" className="block animate-enter">
             <StatsCard
               label="Receita (30 dias)"
@@ -150,28 +150,28 @@ export default async function DashboardPage() {
         </div>
 
         {/* Recent orders */}
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden animate-enter">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <ShoppingCart className="h-4 w-4 text-primary" />
+        <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 bg-muted/25">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-card">
+                <ShoppingCart className="h-3.5 w-3.5 text-primary" />
               </div>
               <div>
-                <span className="text-sm font-semibold text-foreground">Pedidos recentes</span>
+                <span className="text-sm font-medium text-foreground">Pedidos recentes</span>
                 <p className="text-[11px] text-muted-foreground">Últimas transações processadas</p>
               </div>
             </div>
             <Link
               href="/dashboard/orders"
-              className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+              className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors"
             >
               Ver todos
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
           {recentOrders.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 px-4 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted mb-3">
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted/50 mb-2.5">
                 <ShoppingCart className="h-6 w-6 text-muted-foreground/40" />
               </div>
               <p className="text-sm font-medium text-muted-foreground">Nenhum pedido ainda</p>
@@ -188,10 +188,10 @@ export default async function DashboardPage() {
                   <Link
                     key={order.id}
                     href={`/dashboard/orders/${order.id}`}
-                    className="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors group"
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-muted/35 transition-colors group"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/8 ring-1 ring-primary/15 group-hover:bg-primary/12 transition-colors">
-                      <ShoppingCart className="h-4 w-4 text-primary" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
+                      <ShoppingCart className="h-3.5 w-3.5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
@@ -224,46 +224,48 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick actions */}
-        <div className="grid gap-3 sm:grid-cols-3 animate-enter">
+        <div className="grid gap-2 sm:grid-cols-3 animate-enter">
           {[
             {
               href: "/dashboard/products/new",
               icon: Package,
               label: "Novo produto",
               sub: "Adicionar ao catálogo",
-              iconBg: "bg-indigo-500/10",
-              iconColor: "text-indigo-400",
+              iconBg: "bg-indigo-50",
+              iconColor: "text-indigo-700",
             },
             {
               href: "/dashboard/coupons",
               icon: Sparkles,
               label: "Criar cupão",
               sub: "Promoção ou desconto",
-              iconBg: "bg-emerald-500/10",
-              iconColor: "text-emerald-400",
+              iconBg: "bg-emerald-50",
+              iconColor: "text-emerald-700",
             },
             {
               href: "/dashboard/orders",
               icon: Clock,
               label: "Pedidos pendentes",
               sub: "Ver a processar",
-              iconBg: "bg-amber-500/10",
-              iconColor: "text-amber-400",
+              iconBg: "bg-amber-50",
+              iconColor: "text-amber-800",
             },
           ].map((action) => (
             <Link
               key={action.href}
               href={action.href}
-              className="flex items-center gap-3.5 rounded-xl border border-border bg-card p-4 hover:border-primary/20 hover:bg-card/80 transition-all group"
+              className="flex items-center gap-3 rounded-lg border border-border/80 bg-card p-3.5 hover:border-border hover:bg-muted/25 transition-colors group"
             >
-              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${action.iconBg}`}>
-                <action.icon className={`h-5 w-5 ${action.iconColor}`} />
+              <div
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/60 ${action.iconBg}`}
+              >
+                <action.icon className={`h-4 w-4 ${action.iconColor}`} />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground">{action.label}</p>
-                <p className="text-xs text-muted-foreground">{action.sub}</p>
+                <p className="text-sm font-medium text-foreground">{action.label}</p>
+                <p className="text-[11px] text-muted-foreground">{action.sub}</p>
               </div>
-              <ArrowRight className="h-4 w-4 text-muted-foreground/30 ml-auto group-hover:text-muted-foreground transition-colors" />
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-auto group-hover:text-muted-foreground transition-colors" />
             </Link>
           ))}
         </div>

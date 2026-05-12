@@ -74,7 +74,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
                   role="status"
                   aria-label={empty.title}
                 >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
                     <empty.icon className="h-7 w-7 text-muted-foreground/50" />
                   </div>
                   <h2 className="text-sm font-bold text-foreground mb-1">

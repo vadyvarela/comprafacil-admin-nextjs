@@ -98,24 +98,24 @@ export default function NewProductPage() {
         ]}
       />
 
-      <div className="flex flex-1 flex-col gap-6 p-5 md:p-6 max-w-3xl mx-auto w-full">
+      <div className="flex flex-1 flex-col gap-5 p-4 md:p-5 max-w-3xl mx-auto w-full bg-background">
         {/* Page title */}
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-border/80 hover:bg-muted/60 transition-colors"
           >
             <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           </button>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Novo produto</h1>
+            <h1 className="text-lg font-semibold text-foreground">Novo produto</h1>
             <p className="text-xs text-muted-foreground mt-0.5">Preencha as informações básicas do produto</p>
           </div>
         </div>
 
         {error && (
-          <div className="flex items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/5">
+          <div className="flex items-start gap-3 p-3.5 rounded-lg border border-destructive/30 bg-destructive/5">
             <AlertCircle className="h-4 w-4 text-destructive mt-0.5 shrink-0" />
             <div>
               <p className="text-xs font-semibold text-destructive">Erro ao criar produto</p>
@@ -126,14 +126,14 @@ export default function NewProductPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Informações básicas */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border bg-muted/30">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10">
+          <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/80 bg-muted/25">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-primary/10">
                 <Package className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-sm font-semibold text-foreground">Informações básicas</span>
+              <span className="text-sm font-medium text-foreground">Informações básicas</span>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-4 space-y-4">
               <div>
                 <label htmlFor="title" className="block text-xs font-medium text-foreground mb-1.5">
                   Título <span className="text-destructive">*</span>
@@ -165,14 +165,14 @@ export default function NewProductPage() {
           </div>
 
           {/* Preço e stock */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border bg-muted/30">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10">
-                <Tag className="h-3.5 w-3.5 text-emerald-400" />
+          <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/80 bg-muted/25">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-emerald-50">
+                <Tag className="h-3.5 w-3.5 text-emerald-800" />
               </div>
-              <span className="text-sm font-semibold text-foreground">Preço e stock</span>
+              <span className="text-sm font-medium text-foreground">Preço e stock</span>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-4 space-y-4">
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
@@ -223,7 +223,7 @@ export default function NewProductPage() {
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+                <p className="text-xs text-muted-foreground bg-muted/40 rounded-md border border-border/60 px-3 py-2">
                   O produto será criado sem variantes. Pode adicionar variantes na página de detalhes.
                 </p>
               )}
@@ -231,14 +231,14 @@ export default function NewProductPage() {
           </div>
 
           {/* Identificação */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-border bg-muted/30">
-              <div className="flex h-6 w-6 items-center justify-center rounded-md bg-violet-500/10">
-                <Layers className="h-3.5 w-3.5 text-violet-400" />
+          <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
+            <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border/80 bg-muted/25">
+              <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-violet-50">
+                <Layers className="h-3.5 w-3.5 text-violet-800" />
               </div>
-              <span className="text-sm font-semibold text-foreground">Identificação</span>
+              <span className="text-sm font-medium text-foreground">Identificação</span>
             </div>
-            <div className="p-5">
+            <div className="p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="sku" className="block text-xs font-medium text-foreground mb-1.5">

@@ -24,7 +24,7 @@ interface RevenueChartProps {
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 shadow-md text-xs">
+    <div className="rounded-lg border border-border/80 bg-popover px-3 py-2 shadow-none text-xs">
       <p className="font-semibold text-foreground mb-1">{label}</p>
       {payload.map((entry: any) => (
         <p key={entry.name} style={{ color: entry.color }} className="tabular-nums">

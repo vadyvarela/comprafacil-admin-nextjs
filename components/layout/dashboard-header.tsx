@@ -26,7 +26,7 @@ type DashboardHeaderProps = {
 
 export function DashboardHeader({ items, actions }: DashboardHeaderProps) {
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-sm supports-backdrop-filter:bg-background/60 sticky top-0 z-40">
+    <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-border/80 bg-background px-3 md:px-4 sticky top-0 z-40">
       <div className="flex items-center gap-3 min-w-0">
         <SidebarTrigger className="-ml-0.5 size-8 shrink-0" />
         <Separator orientation="vertical" className="h-5 shrink-0" />
@@ -43,10 +43,7 @@ export function DashboardHeader({ items, actions }: DashboardHeaderProps) {
                         {item.label}
                       </BreadcrumbPage>
                     ) : item.href ? (
-                      <BreadcrumbLink
-                        href={item.href}
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                      >
+                      <BreadcrumbLink href={item.href}>
                         {item.label}
                       </BreadcrumbLink>
                     ) : (
@@ -64,7 +61,7 @@ export function DashboardHeader({ items, actions }: DashboardHeaderProps) {
 
       <div className="flex items-center gap-2 shrink-0">
         {/* Search trigger */}
-        <div className="hidden md:flex items-center gap-2 bg-muted/50 border border-border rounded-lg px-3 py-1.5 text-muted-foreground hover:border-border/80 transition-colors cursor-pointer max-w-[220px]">
+        <div className="hidden md:flex items-center gap-2 bg-muted/40 border border-border/80 rounded-md px-2.5 py-1 text-muted-foreground hover:bg-muted/55 transition-colors cursor-pointer max-w-[220px]">
           <Search className="h-3.5 w-3.5 shrink-0" />
           <span className="text-xs truncate">Buscar...</span>
           <kbd className="ml-auto text-[10px] bg-background/80 px-1.5 py-0.5 rounded text-muted-foreground/60 border border-border font-mono shrink-0">

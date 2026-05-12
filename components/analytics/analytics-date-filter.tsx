@@ -61,7 +61,7 @@ export function AnalyticsDateFilter({ from, to }: AnalyticsDateFilterProps) {
           <button
             key={p.days}
             onClick={() => applyPreset(p.days)}
-            className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border bg-card hover:bg-muted hover:border-primary/30 transition-colors text-muted-foreground hover:text-foreground"
+            className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border/80 bg-card hover:bg-muted hover:border-border transition-colors text-muted-foreground hover:text-foreground"
           >
             {p.label}
           </button>

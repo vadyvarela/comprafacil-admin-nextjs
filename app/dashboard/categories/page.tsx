@@ -41,8 +41,8 @@ export default function CategoriesPage() {
       <div className="flex flex-1 flex-col min-h-0">
         <PageToolbar
           icon={FolderTree}
-          iconBg="bg-blue-500/10"
-          iconColor="text-blue-400"
+          iconBg="bg-blue-50"
+          iconColor="text-blue-800"
           title="Categorias"
           subtitle={loading ? "A carregar…" : `${categories.length} categoria${categories.length !== 1 ? "s" : ""}`}
         >
@@ -52,17 +52,17 @@ export default function CategoriesPage() {
           </Button>
         </PageToolbar>
 
-        <div className="flex-1 overflow-auto p-5">
+        <div className="flex-1 overflow-auto p-4 md:p-5 bg-background">
           {loading && (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {[...Array(8)].map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
+                <Skeleton key={i} className="h-32 rounded-lg" />
               ))}
             </div>
           )}
 
           {error && (
-            <div className="p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-xs">
+            <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 text-xs">
               <p className="font-semibold text-destructive mb-1">Erro ao carregar</p>
               <p className="text-muted-foreground mb-3">{error.message}</p>
               <Button variant="outline" size="sm" onClick={() => refetch()}>Tentar novamente</Button>
@@ -72,7 +72,7 @@ export default function CategoriesPage() {
           {!loading && !error && (
             categories.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted mb-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
                   <FolderTree className="h-7 w-7 text-muted-foreground/40" />
                 </div>
                 <h2 className="text-sm font-semibold mb-1">Sem categorias</h2>
@@ -87,11 +87,11 @@ export default function CategoriesPage() {
                 {categories.map((category: Category) => (
                   <div
                     key={category.id}
-                    className="group relative rounded-xl border border-border bg-card p-4 hover:border-primary/20 hover:shadow-sm transition-all"
+                    className="group relative rounded-lg border border-border/80 bg-card p-3.5 shadow-none transition-colors hover:border-border hover:bg-muted/25"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-xl">
-                        {category.icon || <FolderTree className="h-5 w-5 text-blue-400" />}
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-blue-50 text-lg">
+                        {category.icon || <FolderTree className="h-4 w-4 text-blue-800" />}
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
