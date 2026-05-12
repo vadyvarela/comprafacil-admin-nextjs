@@ -70,8 +70,13 @@ export function EditProductModal({
     skip: !open,
   })
 
-  const categories = (categoriesData as { categoryList?: unknown[] } | undefined)?.categoryList || []
-  const brands = (brandsData as { brandList?: unknown[] } | undefined)?.brandList || []
+  type CategoryOption = { id: string; name: string; slug: string }
+  type BrandOption = { id: string; name: string; slug: string }
+
+  const categories: CategoryOption[] =
+    (categoriesData as { categoryList?: CategoryOption[] } | undefined)?.categoryList ?? []
+  const brands: BrandOption[] =
+    (brandsData as { brandList?: BrandOption[] } | undefined)?.brandList ?? []
 
   const [updateProduct, { loading, error }] = useMutation(UPDATE_PRODUCT, {
     refetchQueries: [
@@ -126,13 +131,8 @@ export function EditProductModal({
   }, [product, open])
 
   const showIphoneSeminovoFields = useMemo(() => {
-    const catList =
-      (categoriesData as { categoryList?: { id: string; name: string; slug: string }[] } | undefined)
-        ?.categoryList ?? []
-    const brandList =
-      (brandsData as { brandList?: { id: string; name: string; slug: string }[] } | undefined)?.brandList ?? []
-    const cat = catList.find((c) => c.id === formData.categoryId)
-    const br = brandList.find((b) => b.id === formData.brandId)
+    const cat = categories.find((c) => c.id === formData.categoryId)
+    const br = brands.find((b) => b.id === formData.brandId)
     return (
       formData.condition === "seminovo" &&
       looksLikeIphoneProduct({
@@ -142,7 +142,7 @@ export function EditProductModal({
         brandName: br?.name,
       })
     )
-  }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categoriesData, brandsData])
+  }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categories, brands])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -314,7 +314,7 @@ export function EditProductModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem categoria</SelectItem>
-                    {categories.map((category: { id: string; name: string }) => (
+                    {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
@@ -337,7 +337,7 @@ export function EditProductModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem marca</SelectItem>
-                    {brands.map((brand: { id: string; name: string }) => (
+                    {brands.map((brand) => (
                       <SelectItem key={brand.id} value={brand.id}>
                         {brand.name}
                       </SelectItem>
