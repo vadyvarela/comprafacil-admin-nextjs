@@ -35,6 +35,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { showToast } from "@/lib/utils/toast"
+import { looksLikeIphoneProduct } from "@/lib/utils/iphone-seminovo-metadata"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -95,6 +96,17 @@ export default function ProductDetailPage() {
   const variantCount = product?.variants?.length ?? 0
   const totalVariantStock =
     product?.variants?.reduce((total, variant) => total + (variant.quantity || 0), 0) ?? 0
+
+  const showIphoneSeminovoRead = !!(
+    product &&
+    product.condition === "seminovo" &&
+    looksLikeIphoneProduct({
+      title: product.title || "",
+      categoryName: product.category?.name,
+      categorySlug: product.category?.slug,
+      brandName: product.brand?.name,
+    })
+  )
 
   const handleDeleteProduct = async () => {
     if (
@@ -357,11 +369,25 @@ export default function ProductDetailPage() {
                       </div>
                     )}
                     {metadata?.warranty && (
-                      <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground">Garantia</span>
                         <span className="font-medium">{metadata.warranty}</span>
                       </div>
                     )}
+                    {showIphoneSeminovoRead && metadata?.semFaceId === true && (
+                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
+                        <span className="text-muted-foreground">Face ID</span>
+                        <span className="font-medium text-amber-800">Sem Face ID</span>
+                      </div>
+                    )}
+                    {showIphoneSeminovoRead &&
+                      metadata?.batteryHealthPercent !== undefined &&
+                      metadata?.batteryHealthPercent !== null && (
+                        <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
+                          <span className="text-muted-foreground">Bateria</span>
+                          <span className="font-medium">{String(metadata.batteryHealthPercent)}%</span>
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { useRouter } from "next/navigation"
 import { CREATE_PRODUCT } from "@/lib/graphql/products/mutations"
@@ -29,8 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
 import { showToast } from "@/lib/utils/toast"
+import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 
 interface CreateProductModalProps {
   open: boolean
@@ -62,6 +62,8 @@ export function CreateProductModal({
     material: "",
     warranty: "",
     notes: "",
+    semFaceId: false,
+    batteryHealthPercent: "",
   })
 
   const { data: categoriesData, loading: categoriesLoading } = useQuery<{
@@ -78,6 +80,25 @@ export function CreateProductModal({
 
   const categories = categoriesData?.categoryList || []
   const brands = brandsData?.brandList || []
+
+  const showIphoneSeminovoFields = useMemo(() => {
+    const catList =
+      (categoriesData as { categoryList?: { id: string; name: string; slug: string }[] } | undefined)
+        ?.categoryList ?? []
+    const brandList =
+      (brandsData as { brandList?: { id: string; name: string; slug: string }[] } | undefined)?.brandList ?? []
+    const cat = catList.find((c) => c.id === formData.categoryId)
+    const br = brandList.find((b) => b.id === formData.brandId)
+    return (
+      formData.condition === "seminovo" &&
+      looksLikeIphoneProduct({
+        title: formData.title,
+        categoryName: cat?.name,
+        categorySlug: cat?.slug,
+        brandName: br?.name,
+      })
+    )
+  }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categoriesData, brandsData])
 
   const [createProduct, { loading, error }] = useMutation<{
     createProduct: { id: string }
@@ -113,6 +134,8 @@ export function CreateProductModal({
       material: "",
       warranty: "",
       notes: "",
+      semFaceId: false,
+      batteryHealthPercent: "",
     })
   }
 
@@ -124,7 +147,7 @@ export function CreateProductModal({
     }
 
     // Construir metadata com todos os campos preenchidos
-    const metadata: Record<string, any> = {}
+    const metadata: Record<string, unknown> = {}
     
     if (formData.sku?.trim()) metadata.sku = formData.sku.trim()
     if (formData.model?.trim()) metadata.model = formData.model.trim()
@@ -134,6 +157,12 @@ export function CreateProductModal({
     if (formData.material?.trim()) metadata.material = formData.material.trim()
     if (formData.warranty?.trim()) metadata.warranty = formData.warranty.trim()
     if (formData.notes?.trim()) metadata.notes = formData.notes.trim()
+
+    if (showIphoneSeminovoFields) {
+      if (formData.semFaceId) metadata.semFaceId = true
+      const pct = normalizeBatteryHealthPercent(formData.batteryHealthPercent)
+      if (pct !== null) metadata.batteryHealthPercent = pct
+    }
 
     const categoryId =
       formData.categoryId && formData.categoryId !== "none"
@@ -182,7 +211,7 @@ export function CreateProductModal({
 
         if (priceAmount > 0) {
           // Criar variante padrão
-          const variantMetadata: Record<string, any> = {}
+          const variantMetadata: Record<string, unknown> = {}
           if (formData.sku) {
             variantMetadata.sku = formData.sku.trim()
           }
@@ -209,9 +238,12 @@ export function CreateProductModal({
       onOpenChange(false)
       resetForm()
       router.push(`/dashboard/products/${productId}`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error creating product:", err)
-      showToast.error("Erro ao criar produto", err.message || "Ocorreu um erro ao criar o produto")
+      showToast.error(
+        "Erro ao criar produto",
+        err instanceof Error ? err.message : "Ocorreu um erro ao criar o produto"
+      )
     }
   }
 
@@ -297,7 +329,7 @@ export function CreateProductModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem categoria</SelectItem>
-                    {categories.map((category: any) => (
+                    {categories.map((category: { id: string; name: string }) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
@@ -320,7 +352,7 @@ export function CreateProductModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem marca</SelectItem>
-                    {brands.map((brand: any) => (
+                    {brands.map((brand: { id: string; name: string }) => (
                       <SelectItem key={brand.id} value={brand.id}>
                         {brand.name}
                       </SelectItem>
@@ -366,6 +398,47 @@ export function CreateProductModal({
                 </Select>
               </div>
             </div>
+
+            {showIphoneSeminovoFields && (
+              <div className="rounded-md border border-border/80 bg-muted/20 p-3 space-y-3">
+                <p className="text-xs font-medium text-foreground">iPhone seminovo (informativo)</p>
+                <p className="text-[11px] text-muted-foreground">
+                  Aparece na ficha da loja só nesta combinação. Opcional.
+                </p>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="create-semFaceId"
+                    checked={formData.semFaceId}
+                    onChange={(e) =>
+                      setFormData({ ...formData, semFaceId: e.target.checked })
+                    }
+                    className="h-4 w-4 rounded border-input accent-primary"
+                    disabled={isLoading}
+                  />
+                  <Label htmlFor="create-semFaceId" className="text-sm font-normal cursor-pointer">
+                    Sem Face ID
+                  </Label>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="create-batteryHealthPercent">Saúde da bateria (%)</Label>
+                  <Input
+                    id="create-batteryHealthPercent"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={formData.batteryHealthPercent}
+                    onChange={(e) =>
+                      setFormData({ ...formData, batteryHealthPercent: e.target.value })
+                    }
+                    placeholder="Ex: 87"
+                    disabled={isLoading}
+                    className="max-w-[120px]"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Seção de Variante Padrão */}
             <div className="border-t pt-4 space-y-4">

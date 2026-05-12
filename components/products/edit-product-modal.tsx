@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
@@ -29,6 +29,7 @@ import {
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { RichTextEditor } from "../ui/rich-text-editor"
+import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 
 interface EditProductModalProps {
   product: Product | null
@@ -57,6 +58,8 @@ export function EditProductModal({
     material: "",
     warranty: "",
     notes: "",
+    semFaceId: false,
+    batteryHealthPercent: "",
   })
 
   const { data: categoriesData } = useQuery(GET_CATEGORY_LIST, {
@@ -83,51 +86,102 @@ export function EditProductModal({
 
   useEffect(() => {
     if (product && open) {
-      let metadata = null
+      let metadata: Record<string, unknown> | null = null
       try {
         metadata = product.metadata ? JSON.parse(product.metadata) : null
-      } catch (e) {
+      } catch {
         // Ignore parse errors
       }
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- preencher formulário ao abrir o modal
       setFormData({
         title: product.title || "",
         summary: product.summary || "",
         discount: product.discount?.toString() || "",
-        condition: product.condition || metadata?.condition || "novo",
-        sku: metadata?.sku || "",
+        condition: product.condition || "novo",
+        sku: typeof metadata?.sku === "string" ? metadata.sku : "",
         categoryId: product.category?.id || "none",
         brandId: product.brand?.id || "none",
-        model: metadata?.model || "",
-        weight: metadata?.weight || "",
-        dimensions: metadata?.dimensions || "",
-        color: metadata?.color || "",
-        material: metadata?.material || "",
-        warranty: metadata?.warranty || "",
-        notes: metadata?.notes || "",
+        model: typeof metadata?.model === "string" ? metadata.model : "",
+        weight: typeof metadata?.weight === "string" ? metadata.weight : "",
+        dimensions: typeof metadata?.dimensions === "string" ? metadata.dimensions : "",
+        color: typeof metadata?.color === "string" ? metadata.color : "",
+        material: typeof metadata?.material === "string" ? metadata.material : "",
+        warranty: typeof metadata?.warranty === "string" ? metadata.warranty : "",
+        notes: typeof metadata?.notes === "string" ? metadata.notes : "",
+        semFaceId: metadata?.semFaceId === true,
+        batteryHealthPercent:
+          metadata?.batteryHealthPercent !== undefined && metadata?.batteryHealthPercent !== null
+            ? String(metadata.batteryHealthPercent)
+            : "",
       })
       
-      // Mostrar seção avançada se houver metadata
-      setShowAdvanced(!!metadata && Object.keys(metadata).length > 0)
+      setShowAdvanced(
+        !!metadata &&
+          (Object.keys(metadata).length > 0 ||
+            metadata?.semFaceId === true ||
+            (metadata?.batteryHealthPercent !== undefined && metadata?.batteryHealthPercent !== null && metadata?.batteryHealthPercent !== ""))
+      )
     }
   }, [product, open])
+
+  const showIphoneSeminovoFields = useMemo(() => {
+    const catList =
+      (categoriesData as { categoryList?: { id: string; name: string; slug: string }[] } | undefined)
+        ?.categoryList ?? []
+    const brandList =
+      (brandsData as { brandList?: { id: string; name: string; slug: string }[] } | undefined)?.brandList ?? []
+    const cat = catList.find((c) => c.id === formData.categoryId)
+    const br = brandList.find((b) => b.id === formData.brandId)
+    return (
+      formData.condition === "seminovo" &&
+      looksLikeIphoneProduct({
+        title: formData.title,
+        categoryName: cat?.name,
+        categorySlug: cat?.slug,
+        brandName: br?.name,
+      })
+    )
+  }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categoriesData, brandsData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!product) return
 
-    // Construir metadata com todos os campos preenchidos
-    const metadata: Record<string, any> = {}
-    
-    if (formData.sku?.trim()) metadata.sku = formData.sku.trim()
-    if (formData.model?.trim()) metadata.model = formData.model.trim()
-    if (formData.weight?.trim()) metadata.weight = formData.weight.trim()
-    if (formData.dimensions?.trim()) metadata.dimensions = formData.dimensions.trim()
-    if (formData.color?.trim()) metadata.color = formData.color.trim()
-    if (formData.material?.trim()) metadata.material = formData.material.trim()
-    if (formData.warranty?.trim()) metadata.warranty = formData.warranty.trim()
-    if (formData.notes?.trim()) metadata.notes = formData.notes.trim()
+    const base: Record<string, unknown> = {}
+    try {
+      if (product.metadata) Object.assign(base, JSON.parse(product.metadata))
+    } catch {
+      /* manter base vazio */
+    }
+
+    const setOrDel = (key: string, val: string | undefined) => {
+      const t = val?.trim()
+      if (t) base[key] = t
+      else delete base[key]
+    }
+    setOrDel("sku", formData.sku)
+    setOrDel("model", formData.model)
+    setOrDel("weight", formData.weight)
+    setOrDel("dimensions", formData.dimensions)
+    setOrDel("color", formData.color)
+    setOrDel("material", formData.material)
+    setOrDel("warranty", formData.warranty)
+    setOrDel("notes", formData.notes)
+
+    if (showIphoneSeminovoFields) {
+      if (formData.semFaceId) base.semFaceId = true
+      else delete base.semFaceId
+      const pct = normalizeBatteryHealthPercent(formData.batteryHealthPercent)
+      if (pct !== null) base.batteryHealthPercent = pct
+      else delete base.batteryHealthPercent
+    } else {
+      delete base.semFaceId
+      delete base.batteryHealthPercent
+    }
+
+    const metadataJson = Object.keys(base).length > 0 ? JSON.stringify(base) : null
 
     try {
       // Sempre usar GraphQL para atualizar o produto (sem imagem)
@@ -145,7 +199,7 @@ export function EditProductModal({
             discount: formData.discount ? parseInt(formData.discount) : null,
             condition: formData.condition,
             type: productType,
-            metadata: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
+            metadata: metadataJson,
             categoryId: formData.categoryId && formData.categoryId !== "none" ? formData.categoryId : null,
             brandId: formData.brandId && formData.brandId !== "none" ? formData.brandId : null,
           },
@@ -153,9 +207,12 @@ export function EditProductModal({
       })
 
       showToast.success("Produto atualizado", "As alterações foram salvas com sucesso")
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error updating product:", err)
-      showToast.error("Erro ao atualizar produto", err.message || "Ocorreu um erro ao atualizar o produto")
+      showToast.error(
+        "Erro ao atualizar produto",
+        err instanceof Error ? err.message : "Ocorreu um erro ao atualizar o produto"
+      )
     }
   }
 
@@ -257,7 +314,7 @@ export function EditProductModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem categoria</SelectItem>
-                    {categories.map((category: any) => (
+                    {categories.map((category: { id: string; name: string }) => (
                       <SelectItem key={category.id} value={category.id}>
                         {category.name}
                       </SelectItem>
@@ -280,7 +337,7 @@ export function EditProductModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Sem marca</SelectItem>
-                    {brands.map((brand: any) => (
+                    {brands.map((brand: { id: string; name: string }) => (
                       <SelectItem key={brand.id} value={brand.id}>
                         {brand.name}
                       </SelectItem>
@@ -428,6 +485,47 @@ export function EditProductModal({
                     className="min-h-[80px] resize-none"
                   />
                 </div>
+
+                {showIphoneSeminovoFields && (
+                  <div className="rounded-md border border-border/80 bg-muted/20 p-3 space-y-3">
+                    <p className="text-xs font-medium text-foreground">iPhone seminovo (informativo)</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Visível na loja só em iPhone em estado seminovo. Não afeta preço nem stock.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="semFaceId"
+                        checked={formData.semFaceId}
+                        onChange={(e) =>
+                          setFormData({ ...formData, semFaceId: e.target.checked })
+                        }
+                        disabled={loading}
+                        className="h-4 w-4 rounded border-input accent-primary"
+                      />
+                      <Label htmlFor="semFaceId" className="text-sm font-normal cursor-pointer">
+                        Sem Face ID
+                      </Label>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="batteryHealthPercent">Saúde da bateria (%)</Label>
+                      <Input
+                        id="batteryHealthPercent"
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={formData.batteryHealthPercent}
+                        onChange={(e) =>
+                          setFormData({ ...formData, batteryHealthPercent: e.target.value })
+                        }
+                        placeholder="Ex: 87"
+                        disabled={loading}
+                        className="max-w-[120px]"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

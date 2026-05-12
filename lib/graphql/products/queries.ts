@@ -57,6 +57,11 @@ export const GET_PRODUCT = gql`
         name
         slug
       }
+      brand {
+        id
+        name
+        slug
+      }
       variants {
         id
         title

@@ -17,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Package, Tag, Layers, ArrowLeft, AlertCircle } from "lucide-react"
+import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
+import { Label } from "@/components/ui/label"
 
 export default function NewProductPage() {
   const router = useRouter()
@@ -29,6 +31,8 @@ export default function NewProductPage() {
     price: "",
     quantity: "",
     createDefaultVariant: true,
+    semFaceId: false,
+    batteryHealthPercent: "",
   })
 
   const [createProduct, { loading, error }] = useMutation<{
@@ -42,6 +46,17 @@ export default function NewProductPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
+      const meta: Record<string, unknown> = {}
+      if (formData.sku?.trim()) meta.sku = formData.sku.trim()
+      const showIphoneSeminovo =
+        formData.condition === "seminovo" &&
+        looksLikeIphoneProduct({ title: formData.title })
+      if (showIphoneSeminovo) {
+        if (formData.semFaceId) meta.semFaceId = true
+        const pct = normalizeBatteryHealthPercent(formData.batteryHealthPercent)
+        if (pct !== null) meta.batteryHealthPercent = pct
+      }
+
       const { data: productData } = await createProduct({
         variables: {
           input: {
@@ -50,7 +65,7 @@ export default function NewProductPage() {
             discount: formData.discount ? parseInt(formData.discount) : null,
             condition: formData.condition,
             type: { code: "TICKET" },
-            metadata: JSON.stringify({ sku: formData.sku || null }),
+            metadata: Object.keys(meta).length > 0 ? JSON.stringify(meta) : null,
           },
         },
       })
@@ -285,6 +300,40 @@ export default function NewProductPage() {
                   </Select>
                 </div>
               </div>
+
+              {formData.condition === "seminovo" && looksLikeIphoneProduct({ title: formData.title }) && (
+                <div className="rounded-md border border-border/80 bg-muted/25 p-3 space-y-3 mt-2">
+                  <p className="text-xs font-medium text-foreground">iPhone seminovo (informativo)</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="new-semFaceId"
+                      checked={formData.semFaceId}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, semFaceId: e.target.checked }))}
+                      className="h-4 w-4 rounded border-input accent-primary"
+                    />
+                    <Label htmlFor="new-semFaceId" className="text-xs font-normal cursor-pointer">
+                      Sem Face ID
+                    </Label>
+                  </div>
+                  <div>
+                    <label htmlFor="new-battery" className="block text-xs font-medium text-foreground mb-1.5">
+                      Saúde da bateria (%)
+                    </label>
+                    <Input
+                      id="new-battery"
+                      type="number"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={formData.batteryHealthPercent}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, batteryHealthPercent: e.target.value }))}
+                      placeholder="Ex: 87"
+                      className="h-9 max-w-[120px]"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
