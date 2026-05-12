@@ -1,3 +1,12 @@
+/** Alinhado a `ProductFilterInput` no gateway GraphQL. */
+export interface ProductFilterInput {
+  search?: string | null
+  categoryId?: string | null
+  brandId?: string | null
+  withoutCategory?: boolean | null
+  withoutBrand?: boolean | null
+}
+
 export interface Product {
   id: string
   title: string
@@ -6,9 +15,10 @@ export interface Product {
   image?: string | null
   discount?: number | null
   condition?: string | null
-  type: {
+  /** Incluído em queries de detalhe; omitido na listagem. */
+  type?: {
     code: string
-  }
+  } | null
   metadata?: string | null
   brand?: {
     id: string

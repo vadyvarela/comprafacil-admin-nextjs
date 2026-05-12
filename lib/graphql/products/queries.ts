@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client"
 
 export const GET_PRODUCTS = gql`
-  query GetProducts($page: PageInput!) {
-    products(page: $page) {
+  query GetProducts($filter: ProductFilterInput, $page: PageInput!) {
+    products(filter: $filter, page: $page) {
       data {
         id
         title
@@ -10,9 +10,6 @@ export const GET_PRODUCTS = gql`
         image
         discount
         condition
-        type {
-          code
-        }
         metadata
         brand {
           id
@@ -79,8 +76,8 @@ export const GET_PRODUCT = gql`
 `
 
 export const GET_PRODUCT_LIST = gql`
-  query GetProductList($page: PageInput!) {
-    products(page: $page) {
+  query GetProductList($filter: ProductFilterInput, $page: PageInput!) {
+    products(filter: $filter, page: $page) {
       data {
         id
         title

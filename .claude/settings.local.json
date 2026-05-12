@@ -30,7 +30,12 @@
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\payment-gateway\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\techarena\" -Recurse -Name)",
-      "Bash(Select-String -Pattern \"page\\\\.tsx|page\\\\.jsx|layout\\\\.tsx\")"
+      "Bash(Select-String -Pattern \"page\\\\.tsx|page\\\\.jsx|layout\\\\.tsx\")",
+      "PowerShell(head -20)",
+      "Bash(ls \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\")",
+      "Read(//c/Users/vadyy/Desktop/work/VADY/2025/loja/**)",
+      "Bash(Get-ChildItem \"c:\\\\Users\\\\vadyy\\\\Desktop\\\\work\\\\VADY\\\\2025\\\\loja\\\\techarena\" -Directory -Depth 1)",
+      "Bash(Select-Object Name)"
     ]
   }
 }

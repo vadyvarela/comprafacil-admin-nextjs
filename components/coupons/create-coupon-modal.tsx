@@ -55,7 +55,7 @@ export function CreateCouponModal({
   })
 
   const { data: productsData } = useQuery(GET_PRODUCT_LIST, {
-    variables: { page: { page: 0, size: 100 } },
+    variables: { filter: null, page: { page: 0, size: 100 } },
     skip: !open,
   })
 

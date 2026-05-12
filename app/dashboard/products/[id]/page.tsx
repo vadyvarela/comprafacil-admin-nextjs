@@ -62,6 +62,7 @@ export default function ProductDetailPage() {
     products?: { data?: Array<{ id: string; brand?: Product["brand"] }> }
   }>(GET_PRODUCTS, {
     variables: {
+      filter: null,
       page: {
         page: 0,
         size: 1000,
@@ -188,9 +189,6 @@ export default function ProductDetailPage() {
                         {product.category.name}
                       </Badge>
                     )}
-                    <Badge variant="outline" className="text-xs font-mono text-muted-foreground">
-                      {product.type.code}
-                    </Badge>
                   </div>
                   {product.brand && (
                     <p className="text-sm text-muted-foreground">
