@@ -38,6 +38,8 @@ export function VariantImageUpload({ value, onChange, disabled }: VariantImageUp
       // Criar FormData
       const formData = new FormData()
       formData.append("image", file)
+      formData.append("source", "VARIANT")
+      formData.append("group", "variantes")
 
       // Fazer upload via API
       const response = await fetch("/api/upload/image", {

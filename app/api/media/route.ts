@@ -21,7 +21,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const page = searchParams.get("page") ?? "0"
     const size = searchParams.get("size") ?? "24"
-    const qs = new URLSearchParams({ page, size }).toString()
+    const group = searchParams.get("group")
+    const qsParams: Record<string, string> = { page, size }
+    if (group != null && group !== "") qsParams.group = group
+    const qs = new URLSearchParams(qsParams).toString()
 
     const response = await fetch(`${cfg.gtwUrl}/api/media?${qs}`, {
       method: "GET",
@@ -54,6 +57,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nenhum ficheiro fornecido" }, { status: 400 })
     }
     outbound.append("file", file)
+    const group = formData.get("group")
+    if (typeof group === "string" && group.trim()) outbound.append("group", group.trim())
+    const source = formData.get("source")
+    if (typeof source === "string" && source.trim()) outbound.append("source", source.trim())
 
     const response = await fetch(`${cfg.gtwUrl}/api/media`, {
       method: "POST",

@@ -54,6 +54,10 @@ export async function POST(request: NextRequest) {
 
     const uploadFormData = new FormData()
     uploadFormData.append("file", imageFile)
+    const src = formData.get("source")
+    if (typeof src === "string" && src.trim()) uploadFormData.append("source", src.trim())
+    const grp = formData.get("group")
+    if (typeof grp === "string" && grp.trim()) uploadFormData.append("group", grp.trim())
 
     const response = await fetch(`${gtwUrl}/api/media`, {
       method: "POST",
