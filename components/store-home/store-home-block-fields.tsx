@@ -7,6 +7,8 @@ import { GET_CATEGORY_LIST } from "@/lib/graphql/categories/queries"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
 import {
   Select,
   SelectContent,
@@ -37,6 +39,14 @@ function parseProductIdsFromText(raw: string, max: number): string[] {
     if (out.length >= max) break
   }
   return out
+}
+
+const PRODUCT_RAIL_VARIANT_HELP: Record<string, string> = {
+  newest: "Mostra os produtos mais recentes do gateway (sem escolha manual).",
+  featured: "Só produtos marcados como destaque no metadata do produto no gateway.",
+  curated: "Escolhes produtos no picker; a ordem na lista é a ordem na loja.",
+  bestsellers: "Ordenação por vendas no gateway (quando o campo existe).",
+  on_sale: "Produtos em promoção (desconto ou preço original vs. actual).",
 }
 
 type CategoryRailBlock = Extract<HomeBlock, { type: "categoryRail" }>
@@ -192,31 +202,12 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
               <SelectContent>
                 <SelectItem value="newest">Novidades</SelectItem>
                 <SelectItem value="featured">Destaques (metadata)</SelectItem>
-                <SelectItem value="curated">Seleção manual (UUIDs)</SelectItem>
+                <SelectItem value="curated">Seleção manual</SelectItem>
                 <SelectItem value="bestsellers">Mais vendidos</SelectItem>
                 <SelectItem value="on_sale">Em promoção</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {block.props.variant === "curated" ? (
-            <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">
-                IDs de produto (UUID) — um por linha ou vírgulas · máx. {HOME_LAYOUT_RULES.railLimitMax}
-              </Label>
-              <Textarea
-                className="min-h-[88px] font-mono text-[11px] leading-relaxed"
-                placeholder="Cola os UUID da lista de produtos (coluna id)."
-                value={(block.props.productIds ?? []).join("\n")}
-                onChange={(e) => {
-                  const productIds = parseProductIdsFromText(
-                    e.target.value,
-                    HOME_LAYOUT_RULES.railLimitMax
-                  )
-                  onChange({ ...block, props: { ...block.props, productIds } })
-                }}
-              />
-            </div>
-          ) : null}
           <div className="space-y-1">
             <Label className="text-[10px]">Limite</Label>
             <Input
@@ -233,6 +224,40 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
               }
             />
           </div>
+          <p className="text-[10px] text-muted-foreground leading-snug sm:col-span-2">
+            {PRODUCT_RAIL_VARIANT_HELP[block.props.variant] ?? ""}
+          </p>
+          {block.props.variant === "curated" ? (
+            <>
+              <CuratedProductPicker
+                value={block.props.productIds ?? []}
+                max={HOME_LAYOUT_RULES.railLimitMax}
+                onChange={(productIds) => onChange({ ...block, props: { ...block.props, productIds } })}
+              />
+              <Collapsible className="sm:col-span-2">
+                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md border border-dashed border-border/70 px-2 py-1.5 text-left text-[10px] text-muted-foreground hover:bg-muted/30">
+                  <span>Lista em texto (UUID) — avançado</span>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-1.5">
+                  <Label className="text-[10px] text-muted-foreground">
+                    Um por linha ou separados por vírgula · máx. {HOME_LAYOUT_RULES.railLimitMax}
+                  </Label>
+                  <Textarea
+                    className="mt-1 min-h-[72px] font-mono text-[11px] leading-relaxed"
+                    placeholder="Opcional: cola UUID se preferires editar em massa."
+                    value={(block.props.productIds ?? []).join("\n")}
+                    onChange={(e) => {
+                      const productIds = parseProductIdsFromText(
+                        e.target.value,
+                        HOME_LAYOUT_RULES.railLimitMax
+                      )
+                      onChange({ ...block, props: { ...block.props, productIds } })
+                    }}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+            </>
+          ) : null}
           <div className="space-y-1 sm:col-span-2">
             <Label className="text-[10px]">Título</Label>
             <Input

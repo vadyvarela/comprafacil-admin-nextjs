@@ -17,7 +17,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable"
-import { LayoutGrid, Loader2, Plus, Trash2, ChevronUp, ChevronDown, Copy, RotateCcw } from "lucide-react"
+import { LayoutGrid, Loader2, Plus, Trash2, ChevronUp, ChevronDown, Copy, RotateCcw, Eye } from "lucide-react"
 import { GET_STORE_HOME_LAYOUT } from "@/lib/graphql/store-home-layout/queries"
 import {
   PUBLISH_STORE_HOME_LAYOUT,
@@ -36,6 +36,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { showToast } from "@/lib/utils/toast"
 import type { HomeBlock, HomeLayoutDocument } from "@/lib/home-layout/schema"
 import { parseHomeLayoutDocument, homeLayoutDocumentSchema, homeBlockSchema } from "@/lib/home-layout/schema"
@@ -45,6 +52,7 @@ import { createEmptyBlock } from "@/lib/home-layout/block-factory"
 import { StoreHomeBlockFields } from "@/components/store-home/store-home-block-fields"
 import { StoreHomeSortableBlockShell } from "@/components/store-home/store-home-sortable-block-shell"
 import { revalidateTecharenaHome } from "@/app/dashboard/store-home/actions"
+import { buildHomePreviewUrl } from "@/app/dashboard/store-home/preview-actions"
 
 function layoutFromServerRow(row: StoreHomeLayoutQueryData["storeHomeLayout"]): HomeLayoutDocument {
   if (!row) return structuredClone(DEFAULT_HOME_LAYOUT)
@@ -87,6 +95,9 @@ export default function StoreHomePage() {
   const [doc, setDoc] = useState<HomeLayoutDocument>(() => structuredClone(DEFAULT_HOME_LAYOUT))
   const [addType, setAddType] = useState<HomeBlockType>("productRail")
   const [dirty, setDirty] = useState(false)
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [previewBusy, setPreviewBusy] = useState(false)
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -119,6 +130,23 @@ export default function StoreHomePage() {
     }
     return parsed.data
   }, [doc])
+
+  const handlePreview = async () => {
+    const payload = validateAndGetPayload()
+    if (!payload) return
+    setPreviewBusy(true)
+    try {
+      const res = await buildHomePreviewUrl(payload)
+      if (!res.ok) {
+        showToast.error("Preview", res.message)
+        return
+      }
+      setPreviewUrl(res.url)
+      setPreviewOpen(true)
+    } finally {
+      setPreviewBusy(false)
+    }
+  }
 
   const handleSaveDraft = async () => {
     const payload = validateAndGetPayload()
@@ -199,6 +227,41 @@ export default function StoreHomePage() {
 
   return (
     <>
+      <Dialog
+        open={previewOpen}
+        onOpenChange={(o) => {
+          setPreviewOpen(o)
+          if (!o) setPreviewUrl(null)
+        }}
+      >
+        <DialogContent className="max-w-[min(96vw,1120px)] w-full gap-0 overflow-hidden p-0 sm:max-w-[min(96vw,1120px)]">
+          <DialogHeader className="border-b border-border/60 px-4 py-3 text-left">
+            <DialogTitle className="text-base">Preview da home</DialogTitle>
+           
+          </DialogHeader>
+          {previewUrl ? (
+            <div className="flex flex-col gap-2 px-4 py-3">
+              <a
+                href={previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+              >
+                Abrir em novo separador
+              </a>
+              <div className="h-[min(78vh,760px)] w-full overflow-hidden rounded-md border border-border/80 bg-muted/20">
+                <iframe
+                  key={previewUrl}
+                  title="Preview da home da loja"
+                  src={previewUrl}
+                  className="h-full w-full border-0 bg-[#f7f8fc]"
+                />
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
       <DashboardHeader
         items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Home da loja" }]}
       />
@@ -220,11 +283,19 @@ export default function StoreHomePage() {
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
               <SelectContent>
-                {HOME_BLOCK_TYPES.map((t) => (
-                  <SelectItem key={t} value={t} className="text-xs">
-                    {HOME_BLOCK_REGISTRY[t].label}
-                  </SelectItem>
-                ))}
+                {HOME_BLOCK_TYPES.map((t) => {
+                  const meta = HOME_BLOCK_REGISTRY[t]
+                  return (
+                    <SelectItem key={t} value={t} className="text-xs py-2 [&>span]:items-start">
+                      <span className="flex flex-col gap-0.5 text-left">
+                        <span className="font-medium leading-tight">{meta.label}</span>
+                        <span className="line-clamp-2 text-[10px] font-normal text-muted-foreground leading-snug">
+                          {meta.hint ?? meta.description}
+                        </span>
+                      </span>
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
             <Button type="button" variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={addBlock}>
@@ -241,6 +312,17 @@ export default function StoreHomePage() {
             >
               <RotateCcw className="h-3.5 w-3.5" />
               Descartar
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1"
+              disabled={previewBusy}
+              onClick={() => void handlePreview()}
+            >
+              {previewBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5" />}
+              Preview
             </Button>
             <Button
               type="button"
@@ -298,7 +380,8 @@ export default function StoreHomePage() {
                   <StoreHomeSortableBlockShell key={block.id} id={block.id}>
                     {(dragHandle) => (
               <Card className="border-border/80 shadow-none py-3 gap-0">
-                <div className="flex flex-row items-start justify-between gap-2 px-3 pb-2 border-b border-border/60">
+                <div className="flex flex-col gap-1.5 px-3 pb-2 border-b border-border/60">
+                  <div className="flex flex-row items-start justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
                     {dragHandle}
                     <Badge variant="secondary" className="text-[10px] shrink-0">
@@ -367,6 +450,10 @@ export default function StoreHomePage() {
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-snug pl-0.5">
+                    {HOME_BLOCK_REGISTRY[block.type].hint ?? HOME_BLOCK_REGISTRY[block.type].description}
+                  </p>
                 </div>
                 <CardContent className="px-3 pt-3 pb-0">
                   <StoreHomeBlockFields block={block} onChange={(next) => updateBlock(index, next)} />

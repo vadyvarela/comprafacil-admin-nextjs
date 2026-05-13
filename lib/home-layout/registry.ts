@@ -11,34 +11,39 @@ export type HomeBlockType = (typeof HOME_BLOCK_TYPES)[number]
 
 export const HOME_BLOCK_REGISTRY: Record<
   HomeBlockType,
-  { label: string; description: string }
+  { label: string; description: string; hint?: string }
 > = {
   hero: {
     label: "Hero",
-    description: "Carrossel (banners hero / hero-side).",
+    description: "Carrossel principal no topo da home.",
+    hint: "Imagens vêm de Marketing → Banners (posições hero e hero-side). Não escolhes ficheiros aqui.",
   },
   productRail: {
     label: "Rail de produtos",
     description:
-      "Novidades, mais vendidos, promoções, destaques (metadata no GTW) ou seleção manual por UUID — filtrado no gateway.",
+      "Uma fila horizontal de cartões de produto (novidades, destaques, promoções, lista manual, etc.).",
+    hint: "Escolhe a variante: define a origem dos produtos. «Seleção manual» abre o picker; não precisas de colar UUID.",
   },
   categoryRail: {
     label: "Rail por categoria",
     description:
-      "Escolhe a categoria na lista do GTW e mostra produtos. Para mais secções, adiciona vários blocos deste tipo.",
+      "Lista produtos de uma única categoria do gateway.",
+    hint: "Escolhe a categoria no menu; a loja mostra essa lista. Várias categorias = vários blocos deste tipo.",
   },
   multiCategoryRails: {
     label: "Várias categorias (legado)",
     description:
-      "Modo antigo (slugs ou N categorias). Preferível usar vários blocos «Rail por categoria».",
+      "Várias secções de categoria num só bloco (slugs ou categorias «na home»).",
+    hint: "Preferível vários «Rail por categoria» — mais simples de perceber e de reordenar.",
   },
   newsletter: {
     label: "CTA newsletter",
-    description:
-      "Faixa promocional com formulário de email; título e subtítulo opcionais em props.",
+    description: "Faixa com formulário de email na home.",
+    hint: "Textos opcionais aqui; o formulário é o mesmo da loja.",
   },
   recentlyViewed: {
     label: "Vistos recentemente",
-    description: "Histórico no browser do cliente.",
+    description: "Mostra produtos que o visitante já abriu neste browser.",
+    hint: "Não usa dados do backoffice — só histórico local do cliente.",
   },
 }
