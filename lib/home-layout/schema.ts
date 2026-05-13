@@ -265,10 +265,13 @@ const splitDealRailBlockSchema = z.object({
   props: splitDealRailPropsSchema,
 })
 
+const headerNavToneSchema = z.enum(["default", "promo"]).optional()
+
 const headerNavCategoryItemSchema = z
   .object({
     kind: z.literal("category"),
     slug: slugSchema,
+    tone: headerNavToneSchema,
   })
   .strict()
 
@@ -277,6 +280,7 @@ const headerNavLinkItemSchema = z
     kind: z.literal("link"),
     label: z.string().min(1).max(80),
     href: internalHrefSchema,
+    tone: headerNavToneSchema,
   })
   .strict()
 
@@ -305,9 +309,8 @@ export const homeLayoutDocumentSchema = z
     schemaVersion: z.literal(1),
     headerNavItems: z
       .array(headerNavItemSchema)
-      .min(1)
       .max(HOME_LAYOUT_RULES.maxHeaderNavItems)
-      .optional(),
+      .default([]),
     blocks: z.array(homeBlockSchema).max(HOME_LAYOUT_RULES.maxBlocks),
   })
   .strict()

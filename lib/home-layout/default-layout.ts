@@ -5,6 +5,7 @@ import { migrateHomeLayoutDocumentRaw } from "./migrate-raw-layout"
 /** Igual à techarena — ponto de partida no editor quando não há rascunho/publicação. */
 export const DEFAULT_HOME_LAYOUT: HomeLayoutDocument = {
   schemaVersion: 1,
+  headerNavItems: [],
   blocks: [
     {
       id: "f47ac10b-58cc-4372-a567-0e02b2c3d401",

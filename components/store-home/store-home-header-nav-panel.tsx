@@ -20,16 +20,18 @@ import { InternalPathField } from "@/components/store-home/internal-path-field"
 
 type CatRow = { id: string; name: string; slug: string }
 
-function defaultLinkItem(): HeaderNavItem {
-  return { kind: "link", label: "Novo link", href: "/produtos" }
+function defaultLinkItem(tone?: "promo"): HeaderNavItem {
+  return tone === "promo"
+    ? { kind: "link", label: "Novo link", href: "/produtos", tone: "promo" }
+    : { kind: "link", label: "Novo link", href: "/produtos" }
 }
 
 export function StoreHomeHeaderNavPanel({
   items,
   onChange,
 }: {
-  items: HeaderNavItem[] | undefined
-  onChange: (next: HeaderNavItem[] | undefined) => void
+  items: HeaderNavItem[]
+  onChange: (next: HeaderNavItem[]) => void
 }) {
   const { data, loading } = useQuery<{ categoryList: CatRow[] }>(GET_CATEGORY_LIST, {
     fetchPolicy: "cache-and-network",
@@ -41,14 +43,12 @@ export function StoreHomeHeaderNavPanel({
     )
   }, [data?.categoryList])
 
-  const rows = items ?? []
+  const rows = items
   const max = HOME_LAYOUT_RULES.maxHeaderNavItems
 
   const firstUnusedCategorySlug = useMemo(() => {
     const used = new Set(
-      (items ?? [])
-        .filter((r): r is Extract<HeaderNavItem, { kind: "category" }> => r.kind === "category")
-        .map((r) => r.slug)
+      items.filter((r): r is Extract<HeaderNavItem, { kind: "category" }> => r.kind === "category").map((r) => r.slug)
     )
     return list.find((c) => !used.has(c.slug))?.slug ?? list[0]?.slug
   }, [list, items])
@@ -70,8 +70,7 @@ export function StoreHomeHeaderNavPanel({
   }
 
   const removeAt = (index: number) => {
-    const next = rows.filter((_, i) => i !== index)
-    onChange(next.length ? next : undefined)
+    onChange(rows.filter((_, i) => i !== index))
   }
 
   const addCategory = () => {
@@ -84,6 +83,8 @@ export function StoreHomeHeaderNavPanel({
     onChange([...rows, defaultLinkItem()])
   }
 
+  const promoTone = (row: HeaderNavItem) => (row.tone === "promo" ? "promo" : "default")
+
   return (
     <Card className="border-border/60 py-0 shadow-sm">
       <CardHeader className="flex flex-row items-center gap-2 space-y-0 border-b border-border/50 bg-muted/20 px-4 py-2.5">
@@ -93,8 +94,8 @@ export function StoreHomeHeaderNavPanel({
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold leading-tight">Menu horizontal (header)</p>
           <p className="text-[10px] leading-snug text-muted-foreground">
-            Lista vazia = todas as categorias raiz. Com entradas = ordem exacta: categoria do catálogo ou link
-            (texto + path interno). Máx. {max}.
+            Só aparecem na loja as entradas que adicionares (ordem = menu). «Destaque» = fundo tipo promoções. Máx.{" "}
+            {max}.
           </p>
         </div>
       </CardHeader>
@@ -122,16 +123,6 @@ export function StoreHomeHeaderNavPanel({
             <Plus className="h-3.5 w-3.5" />
             Link
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 shrink-0 text-xs"
-            disabled={!rows.length}
-            onClick={() => onChange(undefined)}
-          >
-            Catálogo completo
-          </Button>
         </div>
 
         {rows.length ? (
@@ -142,17 +133,18 @@ export function StoreHomeHeaderNavPanel({
                 className="rounded-md border border-border/50 bg-muted/10 p-2"
               >
                 <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <div className="min-w-[120px] flex-1 space-y-1">
+                  <div className="min-w-[100px] flex-1 space-y-1">
                     <Label className="text-[10px]">Tipo</Label>
                     <Select
                       value={row.kind}
                       onValueChange={(v) => {
+                        const tone = row.tone === "promo" ? ("promo" as const) : undefined
                         if (v === "category") {
                           const slug = row.kind === "category" ? row.slug : firstUnusedCategorySlug
-                          if (slug) patchRow(i, { kind: "category", slug })
+                          if (slug) patchRow(i, tone ? { kind: "category", slug, tone } : { kind: "category", slug })
                           return
                         }
-                        patchRow(i, defaultLinkItem())
+                        patchRow(i, defaultLinkItem(tone))
                       }}
                     >
                       <SelectTrigger className="h-8 text-xs">
@@ -164,6 +156,32 @@ export function StoreHomeHeaderNavPanel({
                         </SelectItem>
                         <SelectItem value="link" className="text-xs">
                           Link personalizado
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="min-w-[100px] flex-1 space-y-1">
+                    <Label className="text-[10px]">Estilo</Label>
+                    <Select
+                      value={promoTone(row)}
+                      onValueChange={(v) => {
+                        const tone = v === "promo" ? ("promo" as const) : undefined
+                        if (row.kind === "category") {
+                          patchRow(i, tone ? { kind: "category", slug: row.slug, tone } : { kind: "category", slug: row.slug })
+                        } else {
+                          patchRow(i, tone ? { ...row, tone } : { kind: "link", label: row.label, href: row.href })
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="default" className="text-xs">
+                          Normal
+                        </SelectItem>
+                        <SelectItem value="promo" className="text-xs">
+                          Destaque (promo)
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -213,7 +231,12 @@ export function StoreHomeHeaderNavPanel({
                       onValueChange={(id) => {
                         const cat = list.find((c) => c.id === id)
                         if (!cat) return
-                        patchRow(i, { kind: "category", slug: cat.slug })
+                        patchRow(
+                          i,
+                          row.tone === "promo"
+                            ? { kind: "category", slug: cat.slug, tone: "promo" }
+                            : { kind: "category", slug: cat.slug }
+                        )
                       }}
                     >
                       <SelectTrigger className="h-8 text-xs">
@@ -257,7 +280,7 @@ export function StoreHomeHeaderNavPanel({
           </ul>
         ) : (
           <p className="text-[10px] text-muted-foreground">
-            Sem linhas — o menu mostra todas as categorias raiz do catálogo.
+            Sem entradas — o menu horizontal na loja fica vazio até adicionares itens.
           </p>
         )}
       </CardContent>

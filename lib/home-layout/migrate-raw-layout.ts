@@ -16,6 +16,10 @@ export function migrateHomeLayoutDocumentRaw(data: unknown): unknown {
     }
   }
 
+  if (!Array.isArray(doc.headerNavItems)) {
+    doc = { ...doc, headerNavItems: [] }
+  }
+
   if (!Array.isArray(doc.blocks)) return doc
 
   return {

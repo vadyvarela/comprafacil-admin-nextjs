@@ -13,6 +13,7 @@ import {
   Palette,
   ChevronRight,
   Construction,
+  LayoutGrid,
 } from "lucide-react"
 
 const SETTINGS_SECTIONS = [
@@ -79,6 +80,14 @@ const SETTINGS_SECTIONS = [
     color: "text-primary",
     bg: "bg-primary/10 border border-primary/20",
     href: "/dashboard/settings/security",
+  },
+  {
+    title: "Page Builder",
+    description: "Home da loja, menu do header e publicação",
+    icon: LayoutGrid,
+    color: "text-fuchsia-800",
+    bg: "bg-fuchsia-50 border border-border/60",
+    href: "/dashboard/settings/page-builder",
   },
 ]
 
