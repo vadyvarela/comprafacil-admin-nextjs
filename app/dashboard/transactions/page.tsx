@@ -8,6 +8,8 @@ import { TransactionDetail } from "@/components/transactions/transaction-detail"
 import { gatewayOriginFromEnv } from "@/lib/gateway-origin"
 import { CreditCard } from "lucide-react"
 
+export const dynamic = "force-dynamic"
+
 const PAGE_SIZE = 20
 
 type PageProps = {

@@ -5,6 +5,10 @@ export interface ProductFilterInput {
   brandId?: string | null
   withoutCategory?: boolean | null
   withoutBrand?: boolean | null
+  /** Listagem só produtos com `metadata.featured === true` (gateway). */
+  featured?: boolean | null
+  /** Filtra por estes IDs; ordem da resposta segue a lista no gateway. */
+  ids?: string[] | null
 }
 
 export interface Product {

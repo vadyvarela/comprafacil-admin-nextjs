@@ -11,6 +11,8 @@ export interface Category {
     description: string
   }
   orderIndex?: number
+  showOnHome?: boolean
+  homeOrder?: number | null
   parentCategory?: Category
   createdAt?: string
   updatedAt?: string
@@ -35,6 +37,8 @@ export interface CategoryInput {
     code: string
   }
   orderIndex?: number
+  showOnHome?: boolean
+  homeOrder?: number | null
   parentCategoryId?: string
 }
 
@@ -44,5 +48,6 @@ export interface CategoryFilterInput {
   status?: string
   search?: string
   parentCategoryId?: string
+  showOnHome?: boolean
 }
 

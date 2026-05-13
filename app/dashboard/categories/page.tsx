@@ -30,7 +30,7 @@ export default function CategoriesPage() {
 
   const { data, loading, error, refetch } = useQuery<{ categories: { data: Category[] } }>(
     GET_CATEGORIES,
-    { variables: { page: { page: 0, size: 100 } } }
+    { variables: { filter: null, page: { page: 0, size: 100 } } }
   )
 
   const categories = data?.categories?.data || []
@@ -124,6 +124,15 @@ export default function CategoriesPage() {
                     )}
 
                     <div className="flex items-center gap-1.5 flex-wrap">
+                      {category.showOnHome !== false ? (
+                        <span className="inline-flex items-center rounded-full border border-blue-200/80 bg-blue-50/80 px-2 py-0.5 text-[10px] font-medium text-blue-800">
+                          Home
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
+                          Sem home
+                        </span>
+                      )}
                       {category.status && (
                         <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${categoryStatusClass(category.status.code)}`}>
                           {category.status.code}
