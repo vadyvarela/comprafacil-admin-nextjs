@@ -19,16 +19,18 @@ export const HOME_BLOCK_REGISTRY: Record<
   },
   productRail: {
     label: "Rail de produtos",
-    description: "Novidades, destaques, mais vendidos ou promoções.",
+    description:
+      "Novidades, mais vendidos, promoções, destaques (metadata no GTW) ou seleção manual por UUID — filtrado no gateway.",
   },
   categoryRail: {
     label: "Rail por categoria",
-    description: "Produtos de uma categoria (slug).",
+    description:
+      "Escolhe a categoria na lista do GTW e mostra produtos. Para mais secções, adiciona vários blocos deste tipo.",
   },
   multiCategoryRails: {
-    label: "Várias categorias",
+    label: "Várias categorias (legado)",
     description:
-      "Slugs explícitos ou só número máximo: nesse caso usam-se categorias com «mostrar na home» e ordem definida no gateway.",
+      "Modo antigo (slugs ou N categorias). Preferível usar vários blocos «Rail por categoria».",
   },
   newsletter: {
     label: "CTA newsletter",

@@ -38,19 +38,39 @@ const heroBlockSchema = z.object({
   props: z.object({}).strict(),
 })
 
+const productRailPropsSchema = z
+  .object({
+    variant: z.enum(["newest", "featured", "bestsellers", "on_sale", "curated"]),
+    title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
+    subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
+    limit: railLimitSchema,
+    seeAllHref: internalHrefSchema.optional(),
+    productIds: z.array(z.string().uuid()).max(HOME_LAYOUT_RULES.railLimitMax).optional(),
+  })
+  .strict()
+  .superRefine((p, ctx) => {
+    if (p.variant === "curated") {
+      if (!p.productIds?.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Variante «curated» exige pelo menos um UUID em productIds.",
+          path: ["productIds"],
+        })
+      }
+    } else if (p.productIds != null && p.productIds.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "productIds só pode ser usado com variante «curated».",
+        path: ["productIds"],
+      })
+    }
+  })
+
 const productRailBlockSchema = z.object({
   id: z.string().uuid(),
   type: z.literal("productRail"),
   enabled: z.boolean().default(true),
-  props: z
-    .object({
-      variant: z.enum(["newest", "featured", "bestsellers", "on_sale"]),
-      title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
-      subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
-      limit: railLimitSchema,
-      seeAllHref: internalHrefSchema.optional(),
-    })
-    .strict(),
+  props: productRailPropsSchema,
 })
 
 const categoryRailBlockSchema = z.object({
@@ -59,6 +79,8 @@ const categoryRailBlockSchema = z.object({
   enabled: z.boolean().default(true),
   props: z
     .object({
+      /** UUID no GTW — preenchido ao escolher na lista no editor. */
+      categoryId: z.string().uuid().optional(),
       categorySlug: slugSchema,
       title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax).optional(),
       subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),

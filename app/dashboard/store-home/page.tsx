@@ -141,12 +141,15 @@ export default function StoreHomePage() {
       await publishLayout({ variables: { payload } })
       setDirty(false)
       const rev = await revalidateTecharenaHome()
-      if (rev.skipped) {
+      if ("skipped" in rev && rev.skipped) {
         showToast.success("Publicado", "Define TECHARENA_REVALIDATE_URL e SECRET para invalidar cache automaticamente.")
       } else if (rev.ok) {
         showToast.success("Publicado", "Cache da home invalidado.")
       } else {
-        showToast.success("Publicado", "Não foi possível invalidar o cache da loja (ver URL/secret).")
+        showToast.warning(
+          "Publicado — cache não invalidado",
+          "message" in rev ? rev.message : "Ver TECHARENA_REVALIDATE_URL e TECHARENA_REVALIDATE_SECRET (iguais na techarena e no backoffice)."
+        )
       }
     } catch (e: unknown) {
       const m = e instanceof Error ? e.message : "Erro ao publicar"

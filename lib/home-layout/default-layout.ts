@@ -66,10 +66,13 @@ export const DEFAULT_HOME_LAYOUT: HomeLayoutDocument = {
     },
     {
       id: "f47ac10b-58cc-4372-a567-0e02b2c3d407",
-      type: "multiCategoryRails",
+      type: "categoryRail",
       enabled: true,
       props: {
-        maxSections: 3,
+        categorySlug: "smartphones",
+        title: "Por categoria",
+        limit: 8,
+        seeAllHref: "/categoria/smartphones",
       },
     },
     {
