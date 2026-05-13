@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
   Copy,
   Images,
@@ -65,9 +65,8 @@ function extractError(body: Record<string, unknown>): string {
   return "Pedido falhou"
 }
 
-function groupRank(slug: string | null | undefined): string {
-  return slug && slug.trim() ? slug : ""
-}
+const gridMedia =
+  "grid gap-1.5 sm:gap-2 grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-10"
 
 export default function MediaLibraryPage() {
   const [page, setPage] = useState(0)
@@ -212,32 +211,6 @@ export default function MediaLibraryPage() {
   const current = (pagination?.page ?? 0) + 1
   const maxPage = Math.max(pageCount - 1, 0)
 
-  const showSectionHeaders = !groupFilter
-
-  const sortedItems = useMemo(() => {
-    const list = [...items]
-    list.sort((a, b) => {
-      const ga = groupRank(a.groupSlug)
-      const gb = groupRank(b.groupSlug)
-      if (ga !== gb) return ga.localeCompare(gb)
-      const da = a.createdAt ?? ""
-      const db = b.createdAt ?? ""
-      return db.localeCompare(da)
-    })
-    return list
-  }, [items])
-
-  let lastSection = ""
-  const rowsWithSections: { key: string; header?: string; row?: MediaRow }[] = []
-  for (const row of sortedItems) {
-    const sec = groupRank(row.groupSlug) || "— sem grupo —"
-    if (showSectionHeaders && sec !== lastSection) {
-      lastSection = sec
-      rowsWithSections.push({ key: `h-${row.id}-${sec}`, header: sec })
-    }
-    rowsWithSections.push({ key: row.id, row })
-  }
-
   return (
     <>
       <DashboardHeader
@@ -280,7 +253,7 @@ export default function MediaLibraryPage() {
         <div className="flex-1 overflow-auto p-4 md:p-5 bg-background">
           <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
             <div className="space-y-1 min-w-[140px]">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Filtrar grupo</p>
+              <p className="text-[10px] text-muted-foreground">Grupo</p>
               <Select
                 value={groupFilter || "all"}
                 onValueChange={(v) => setGroupFilter(v === "all" ? "" : v)}
@@ -304,11 +277,11 @@ export default function MediaLibraryPage() {
               </Select>
             </div>
             <div className="space-y-1 flex-1 min-w-[160px] max-w-xs">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Grupo no próximo envio</p>
+              <p className="text-[10px] text-muted-foreground">Pasta ao enviar (opcional)</p>
               <Input
                 value={uploadGroup}
                 onChange={(e) => setUploadGroup(e.target.value)}
-                placeholder="ex.: campanhas-verao"
+                placeholder="ex. campanhas-verao"
                 className="h-8 text-xs"
               />
             </div>
@@ -327,8 +300,8 @@ export default function MediaLibraryPage() {
           </div>
 
           {loading && (
-            <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {[...Array(12)].map((_, i) => (
+            <div className={gridMedia}>
+              {[...Array(20)].map((_, i) => (
                 <Skeleton key={i} className="aspect-square rounded-md" />
               ))}
             </div>
@@ -339,62 +312,51 @@ export default function MediaLibraryPage() {
           )}
 
           {!loading && items.length > 0 && (
-            <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              {rowsWithSections.map((entry) => {
-                if (entry.header != null) {
-                  return (
-                    <div
-                      key={entry.key}
-                      className="col-span-full text-[10px] font-medium text-muted-foreground pt-1 border-b border-border/50 pb-0.5"
-                    >
-                      {entry.header}
-                    </div>
-                  )
-                }
-                const row = entry.row
-                if (!row) return null
+            <div className={gridMedia}>
+              {items.map((row) => {
                 const src = row.url || row.imageUrl || ""
                 const name = row.originalFilename || "imagem"
+                const metaBits = [row.groupSlug, row.source].filter(
+                  (x): x is string => typeof x === "string" && x.length > 0
+                )
+                const meta = metaBits.length > 0 ? metaBits.join(" · ") : null
                 return (
                   <div
-                    key={entry.key}
+                    key={row.id}
                     className="group relative flex flex-col rounded-md border border-border/70 bg-card overflow-hidden"
                   >
                     <div className="aspect-square bg-muted/40 relative">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                     </div>
-                    <div className="p-1.5 space-y-1 min-h-0">
-                      <p className="text-[10px] leading-tight truncate font-medium text-foreground/90" title={name}>
+                    <div className="p-1 sm:p-1.5 space-y-0.5 min-h-0">
+                      <p className="text-[9px] sm:text-[10px] leading-tight truncate font-medium text-foreground/90" title={name}>
                         {name}
                       </p>
-                      <div className="flex flex-wrap gap-0.5">
-                        {row.source ? (
-                          <span className="rounded bg-muted px-1 py-0 text-[9px] text-muted-foreground">{row.source}</span>
-                        ) : null}
-                        {row.groupSlug ? (
-                          <span className="rounded bg-primary/10 px-1 py-0 text-[9px] text-primary/90">{row.groupSlug}</span>
-                        ) : null}
-                      </div>
-                      <p className="text-[9px] text-muted-foreground tabular-nums">
+                      {meta ? (
+                        <p className="text-[8px] sm:text-[9px] text-muted-foreground truncate" title={meta}>
+                          {meta}
+                        </p>
+                      ) : null}
+                      <p className="text-[8px] text-muted-foreground/80 tabular-nums">
                         {formatBytes(row.byteSize ?? null)}
                       </p>
-                      <div className="flex flex-col gap-1 pt-0.5">
+                      <div className="flex flex-col gap-0.5 pt-0.5">
                         <Button
                           type="button"
                           variant="secondary"
                           size="sm"
-                          className="h-7 w-full justify-center gap-1.5 text-[10px] font-medium"
+                          className="h-6 sm:h-7 w-full justify-center gap-1 px-1 text-[9px] sm:text-[10px] font-medium"
                           onClick={() => void copyUrl(src)}
                         >
                           <Copy className="h-3 w-3 shrink-0" />
-                          Copiar link
+                          Copiar
                         </Button>
                         <Button
                           type="button"
                           variant="destructive"
                           size="sm"
-                          className="h-6 px-1.5 w-full text-[10px]"
+                          className="h-6 px-1 w-full text-[9px] sm:text-[10px]"
                           disabled={deletingId === row.id}
                           onClick={() => void remove(row)}
                         >
@@ -402,7 +364,7 @@ export default function MediaLibraryPage() {
                             <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
                             <>
-                              <Trash2 className="h-3 w-3 inline mr-1" />
+                              <Trash2 className="h-3 w-3 inline mr-0.5" />
                               Apagar
                             </>
                           )}
