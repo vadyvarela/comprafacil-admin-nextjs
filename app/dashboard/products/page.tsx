@@ -16,6 +16,7 @@ import Image from "next/image"
 import {
   Package,
   Plus,
+  FileJson,
   Search,
   Tag,
   MoreVertical,
@@ -242,6 +243,12 @@ export default function ProductsPage() {
               </SelectContent>
             </Select>
           </div>
+          <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
+            <Link href="/dashboard/products/importar">
+              <FileJson className="h-3.5 w-3.5" />
+              Importar JSON
+            </Link>
+          </Button>
           <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
             <Plus className="h-3.5 w-3.5" />
             Novo produto
