@@ -14,6 +14,8 @@ export const CREATE_CATEGORY = gql`
         description
       }
       orderIndex
+      showOnHome
+      homeOrder
       parentCategory {
         id
         name
@@ -36,6 +38,8 @@ export const UPDATE_CATEGORY = gql`
         description
       }
       orderIndex
+      showOnHome
+      homeOrder
       parentCategory {
         id
         name

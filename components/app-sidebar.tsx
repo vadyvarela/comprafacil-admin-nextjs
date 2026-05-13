@@ -12,6 +12,7 @@ import {
   ShoppingCart,
   CreditCard,
   LayoutDashboard,
+  LayoutGrid,
   Users,
   BarChart3,
   Settings,
@@ -62,6 +63,7 @@ const NAV = [
     items: [
       { title: "Cupons", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
       { title: "Banners", url: "/dashboard/banners", icon: ImageIcon, exact: false },
+      { title: "Home da loja", url: "/dashboard/store-home", icon: LayoutGrid, exact: false },
     ],
   },
 ]

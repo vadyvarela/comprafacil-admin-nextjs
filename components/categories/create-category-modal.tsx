@@ -47,6 +47,8 @@ export function CreateCategoryModal({
     image: "",
     icon: "",
     orderIndex: 0,
+    showOnHome: true,
+    homeOrder: "" as string | number,
     parentCategoryId: "",
     status: "ACTIVE",
   })
@@ -83,6 +85,8 @@ export function CreateCategoryModal({
         image: category.image || "",
         icon: category.icon || "",
         orderIndex: category.orderIndex || 0,
+        showOnHome: category.showOnHome !== false,
+        homeOrder: category.homeOrder ?? "",
         parentCategoryId: category.parentCategory?.id || "",
         status: category.status?.code || "ACTIVE",
       })
@@ -99,6 +103,8 @@ export function CreateCategoryModal({
       image: "",
       icon: "",
       orderIndex: 0,
+      showOnHome: true,
+      homeOrder: "",
       parentCategoryId: "",
       status: "ACTIVE",
     })
@@ -134,6 +140,11 @@ export function CreateCategoryModal({
       image: formData.image || null,
       icon: formData.icon || null,
       orderIndex: formData.orderIndex || null,
+      showOnHome: formData.showOnHome,
+      homeOrder:
+        formData.homeOrder === "" || formData.homeOrder === undefined
+          ? null
+          : Number(formData.homeOrder),
       parentCategoryId: formData.parentCategoryId || null,
       status: {
         code: formData.status,
@@ -280,6 +291,35 @@ export function CreateCategoryModal({
                   })
                 }
                 placeholder="0"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 items-end">
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={formData.showOnHome}
+                onChange={(e) =>
+                  setFormData({ ...formData, showOnHome: e.target.checked })
+                }
+                className="rounded border-input"
+              />
+              <span>Mostrar na home (rails multi-categoria)</span>
+            </label>
+            <div className="space-y-2">
+              <Label htmlFor="homeOrder">Ordem na home</Label>
+              <Input
+                id="homeOrder"
+                type="number"
+                value={formData.homeOrder}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    homeOrder: e.target.value === "" ? "" : parseInt(e.target.value, 10) || 0,
+                  })
+                }
+                placeholder="vazio = usar só ordem geral"
               />
             </div>
           </div>
