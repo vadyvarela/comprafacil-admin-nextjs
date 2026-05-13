@@ -28,6 +28,9 @@ function Tooltip({
   )
 }
 
+/** Raiz Radix sem Provider — usar vários itens dentro de um único `TooltipProvider` (melhor desempenho). */
+const TooltipRoot = TooltipPrimitive.Root
+
 function TooltipTrigger({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
@@ -58,4 +61,4 @@ function TooltipContent({
   )
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+export { Tooltip, TooltipRoot, TooltipTrigger, TooltipContent, TooltipProvider }

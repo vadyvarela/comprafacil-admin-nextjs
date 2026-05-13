@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import { type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -6,8 +7,9 @@ interface PageToolbarProps {
   iconColor?: string
   iconBg?: string
   title: string
-  subtitle?: string
-  children?: React.ReactNode
+  /** Texto simples ou conteúdo composto (ex.: badge de estado). */
+  subtitle?: ReactNode
+  children?: ReactNode
   className?: string
 }
 
@@ -23,7 +25,7 @@ export function PageToolbar({
   return (
     <div
       className={cn(
-        "border-b border-border bg-muted/30 sticky top-12 z-30",
+        "border-b border-border bg-muted/100 sticky top-12 z-30",
         className
       )}
     >
@@ -40,7 +42,11 @@ export function PageToolbar({
             </div>
             <div>
               <h1 className="text-sm font-semibold tracking-tight text-foreground">{title}</h1>
-              {subtitle && <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>}
+              {subtitle != null && subtitle !== "" ? (
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                  {subtitle}
+                </div>
+              ) : null}
             </div>
           </div>
           {children && (

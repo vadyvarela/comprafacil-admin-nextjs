@@ -10,6 +10,16 @@ const ALLOWED_FIRST_SEGMENTS = new Set([
   "busca",
 ])
 
+/** Atalhos para o editor (todos passam `isAllowedInternalHref`). */
+export const INTERNAL_PATH_PRESETS: readonly { href: string; label: string }[] = [
+  { href: "/produtos", label: "Produtos" },
+  { href: "/produtos?sort=newest", label: "Produtos — novidades" },
+  { href: "/produtos?sort=bestsellers", label: "Produtos — mais vendidos" },
+  { href: "/ofertas", label: "Ofertas" },
+  { href: "/categorias", label: "Categorias" },
+  { href: "/busca", label: "Busca" },
+] as const
+
 export function isAllowedInternalHref(href: string): boolean {
   if (typeof href !== "string" || href.length === 0) return false
   if (href.includes("://")) return false

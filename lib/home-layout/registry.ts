@@ -1,5 +1,9 @@
 export const HOME_BLOCK_TYPES = [
   "hero",
+  "trustStrip",
+  "productPair",
+  "promoDuo",
+  "splitDealRail",
   "productRail",
   "categoryRail",
   "multiCategoryRails",
@@ -18,11 +22,31 @@ export const HOME_BLOCK_REGISTRY: Record<
     description: "Carrossel principal no topo da home.",
     hint: "Imagens vêm de Marketing → Banners (posições hero e hero-side). Não escolhes ficheiros aqui.",
   },
+  trustStrip: {
+    label: "Faixa de confiança",
+    description: "Ícones + mensagens curtas (envio, pagamento, loja física, apoio).",
+    hint: "Entre 2 e 4 itens. Boa secção logo abaixo do hero para variar o layout.",
+  },
+  productPair: {
+    label: "Dois produtos em destaque",
+    description: "Dois cartões grandes lado a lado (ou destaque + secundário).",
+    hint: "Escolhe exactamente dois produtos no picker. Layout «assimétrico» = primeiro cartão mais largo em desktop.",
+  },
+  promoDuo: {
+    label: "Banners promocionais (2–4)",
+    description: "Gradiente + texto + link; 2 a 4 cartões; imagem opcional por cartão.",
+    hint: "Links só em paths internos. Imagem: URL https (CDN) ou path absoluto tipo /ficheiro.png.",
+  },
+  splitDealRail: {
+    label: "Painel + grelha de produtos",
+    description: "Painel com gradiente e grelha de produtos; imagem opcional no painel.",
+    hint: "Ideal para «hot deals». Imagem do painel: URL https ou path /…",
+  },
   productRail: {
     label: "Rail de produtos",
     description:
-      "Uma fila horizontal de cartões de produto (novidades, destaques, promoções, lista manual, etc.).",
-    hint: "Escolhe a variante: define a origem dos produtos. «Seleção manual» abre o picker; não precisas de colar UUID.",
+      "Uma fila ou grelha de produtos (novidades, destaques, promoções, lista manual). Formato «tile» = cartão vertical; «row» = cartão horizontal (imagem + texto + botão).",
+    hint: "Variante define a origem dos produtos. «Formato» escolhe tile vs. row. «Seleção manual» abre o picker.",
   },
   categoryRail: {
     label: "Rail por categoria",

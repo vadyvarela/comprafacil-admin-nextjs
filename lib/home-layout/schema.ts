@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { isAllowedInternalHref } from "./internal-href"
+import { migrateHomeLayoutDocumentRaw } from "./migrate-raw-layout"
 
 /** Regra Fase 0 — manter alinhado com techarena/lib/home-layout/schema.ts */
 export const HOME_LAYOUT_RULES = {
@@ -41,6 +42,8 @@ const heroBlockSchema = z.object({
 const productRailPropsSchema = z
   .object({
     variant: z.enum(["newest", "featured", "bestsellers", "on_sale", "curated"]),
+    /** tile = cartões verticais (scroll no mobile); row = cartão horizontal em grelha. */
+    railCardStyle: z.enum(["tile", "row"]).default("tile"),
     title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
     subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
     limit: railLimitSchema,
@@ -135,6 +138,132 @@ const recentlyViewedBlockSchema = z.object({
     .strict(),
 })
 
+const trustStripItemSchema = z
+  .object({
+    icon: z.enum(["truck", "shield", "store", "card", "support"]),
+    label: z.string().min(1).max(90),
+    sublabel: z.string().max(140).optional(),
+  })
+  .strict()
+
+const trustStripBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("trustStrip"),
+  enabled: z.boolean().default(true),
+  props: z
+    .object({
+      items: z.array(trustStripItemSchema).min(2).max(4),
+    })
+    .strict(),
+})
+
+const productPairPropsSchema = z
+  .object({
+    eyebrow: z.string().max(48).optional(),
+    title: z.string().max(HOME_LAYOUT_RULES.titleMax).optional(),
+    subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
+    leftProductId: z.string().uuid(),
+    rightProductId: z.string().uuid(),
+    layout: z.enum(["equal", "asymmetric"]).default("equal"),
+  })
+  .strict()
+  .refine((p) => p.leftProductId !== p.rightProductId, {
+    message: "Os dois produtos devem ser diferentes.",
+    path: ["rightProductId"],
+  })
+
+const productPairBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("productPair"),
+  enabled: z.boolean().default(true),
+  props: productPairPropsSchema,
+})
+
+const promoGradientSchema = z.enum(["blue", "purple", "orange", "green", "slate", "rose"])
+
+const promoDuoCellSchema = z
+  .object({
+    title: z.string().min(1).max(100),
+    subtitle: z.string().max(180).optional(),
+    ctaLabel: z.string().min(1).max(40),
+    href: internalHrefSchema,
+    gradient: promoGradientSchema,
+    imageUrl: z.string().max(2048).optional(),
+  })
+  .strict()
+  .superRefine((cell, ctx) => {
+    const raw = cell.imageUrl?.trim()
+    if (!raw) return
+    if (!/^https?:\/\//i.test(raw) && !(raw.startsWith("/") && raw.length > 1)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Imagem: URL https ou path a começar por /",
+        path: ["imageUrl"],
+      })
+    }
+  })
+
+const promoDuoBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("promoDuo"),
+  enabled: z.boolean().default(true),
+  props: z
+    .object({
+      items: z.array(promoDuoCellSchema).min(2).max(4),
+    })
+    .strict(),
+})
+
+const splitDealLimitSchema = z.number().int().min(4).max(8)
+
+const splitDealRailPropsSchema = z
+  .object({
+    panelEyebrow: z.string().max(48).optional(),
+    panelTitle: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
+    panelDescription: z.string().max(400).optional(),
+    panelCtaLabel: z.string().min(1).max(40),
+    panelCtaHref: internalHrefSchema,
+    panelGradient: promoGradientSchema,
+    panelImageUrl: z.string().max(2048).optional(),
+    variant: z.enum(["newest", "featured", "bestsellers", "on_sale", "curated"]),
+    limit: splitDealLimitSchema,
+    seeAllHref: internalHrefSchema.optional(),
+    productIds: z.array(z.string().uuid()).max(8).optional(),
+  })
+  .strict()
+  .superRefine((p, ctx) => {
+    const img = p.panelImageUrl?.trim()
+    if (img && !/^https?:\/\//i.test(img) && !(img.startsWith("/") && img.length > 1)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Imagem do painel: URL https ou path a começar por /",
+        path: ["panelImageUrl"],
+      })
+    }
+    if (p.variant === "curated") {
+      if (!p.productIds?.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Variante «curated» exige pelo menos um UUID em productIds.",
+          path: ["productIds"],
+        })
+      }
+    } else if (p.productIds != null && p.productIds.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "productIds só pode ser usado com variante «curated».",
+        path: ["productIds"],
+      })
+    }
+  })
+
+const splitDealRailBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("splitDealRail"),
+  enabled: z.boolean().default(true),
+  props: splitDealRailPropsSchema,
+})
+
 export const homeBlockSchema = z.discriminatedUnion("type", [
   heroBlockSchema,
   productRailBlockSchema,
@@ -142,6 +271,10 @@ export const homeBlockSchema = z.discriminatedUnion("type", [
   multiCategoryRailsBlockSchema,
   newsletterBlockSchema,
   recentlyViewedBlockSchema,
+  trustStripBlockSchema,
+  productPairBlockSchema,
+  promoDuoBlockSchema,
+  splitDealRailBlockSchema,
 ])
 
 export const homeLayoutDocumentSchema = z
@@ -159,7 +292,7 @@ export type ParseHomeLayoutResult =
   | { success: false; error: z.ZodError }
 
 export function parseHomeLayoutDocument(data: unknown): ParseHomeLayoutResult {
-  const parsed = homeLayoutDocumentSchema.safeParse(data)
+  const parsed = homeLayoutDocumentSchema.safeParse(migrateHomeLayoutDocumentRaw(data))
   if (parsed.success) return { success: true, data: parsed.data }
   return { success: false, error: parsed.error }
 }

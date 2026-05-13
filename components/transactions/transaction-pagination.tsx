@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
@@ -18,6 +18,7 @@ export function TransactionPagination({
   totalElements,
   pageSize,
 }: TransactionPaginationProps) {
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const hasPrev = currentPage > 0
   const hasNext = currentPage < Math.max(1, totalPages) - 1
@@ -27,7 +28,8 @@ export function TransactionPagination({
   function pageUrl(page: number) {
     const p = new URLSearchParams(searchParams.toString())
     p.set("page", String(page))
-    return `?${p.toString()}`
+    const qs = p.toString()
+    return qs ? `${pathname}?${qs}` : pathname
   }
 
   if (totalPages <= 1 && totalElements <= pageSize) return null

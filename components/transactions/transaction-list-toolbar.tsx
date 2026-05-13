@@ -1,18 +1,21 @@
 "use client"
 
-import { useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Search, CreditCard, X, CalendarDays } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useRef } from "react"
 
+/** Códigos alinhados a `PaymentIntentStatusEnum` no payment-gateway (coluna `status`). */
 const STATUS_TABS = [
   { label: "Todas", value: "" },
-  { label: "Autorizada", value: "AUTHORIZED" },
-  { label: "Capturada", value: "CAPTURED" },
-  { label: "Pendente", value: "PENDING" },
-  { label: "Cancelada", value: "CANCELLED" },
-  { label: "Falhada", value: "FAILED" },
+  { label: "Sucesso", value: "PS" },
+  { label: "Processando", value: "PP" },
+  { label: "Requer confirmação", value: "RPC" },
+  { label: "Requer método", value: "RPM" },
+  { label: "Requer ação", value: "RA" },
+  { label: "Falhou", value: "PF" },
+  { label: "Cancelado", value: "PC" },
 ]
 
 const DATE_PRESETS = [
@@ -39,6 +42,7 @@ export function TransactionListToolbar({
   error,
 }: TransactionListToolbarProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const fromRef = useRef<HTMLInputElement>(null)
   const toRef = useRef<HTMLInputElement>(null)
@@ -50,7 +54,8 @@ export function TransactionListToolbar({
       if (v) params.set(k, v)
       else params.delete(k)
     }
-    router.push(`?${params.toString()}`)
+    const qs = params.toString()
+    router.push(qs ? `${pathname}?${qs}` : pathname)
   }
 
   function applyDates() {
@@ -91,7 +96,7 @@ export function TransactionListToolbar({
         </div>
 
         {/* Search */}
-        <form method="GET" className="flex gap-2" role="search">
+        <form method="GET" action={pathname} className="flex gap-2" role="search">
           <input type="hidden" name="page" value="0" />
           {status && <input type="hidden" name="status" value={status} />}
           {dateFrom && <input type="hidden" name="from" value={dateFrom} />}
