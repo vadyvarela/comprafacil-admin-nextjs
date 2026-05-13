@@ -2,13 +2,13 @@
 
 import { useCallback, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { useMutation, useQuery } from "@apollo/client/react"
+import { useQuery } from "@apollo/client/react"
 import { Upload, FileJson, Play, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import { CREATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { CREATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
-import { GET_PRODUCTS } from "@/lib/graphql/products/queries"
 import { GET_CATEGORY_LIST } from "@/lib/graphql/categories/queries"
 import { GET_BRAND_LIST } from "@/lib/graphql/brands/queries"
+import { gtwClient } from "@/lib/gtw-client"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/utils/toast"
@@ -82,11 +82,6 @@ export default function ImportCatalogPage() {
     []
   )
 
-  const [createProduct] = useMutation<{ createProduct: { id: string } }>(CREATE_PRODUCT, {
-    refetchQueries: [{ query: GET_PRODUCTS }],
-  })
-  const [createVariant] = useMutation(CREATE_PRODUCT_VARIANT)
-
   const runImport = async () => {
     if (!parsed || !ready) return
     setImporting(true)
@@ -110,7 +105,10 @@ export default function ImportCatalogPage() {
           p.discount != null && Number.isFinite(p.discount)
             ? Math.min(100, Math.max(0, Math.round(p.discount)))
             : null
-        const { data } = await createProduct({
+        const result = await gtwClient.mutate<{
+          createProduct: { id: string }
+        }>({
+          mutation: CREATE_PRODUCT,
           variables: {
             input: {
               title: p.title.trim(),
@@ -127,14 +125,19 @@ export default function ImportCatalogPage() {
               },
             },
           },
+          errorPolicy: "all",
         })
-        const productId = data?.createProduct?.id as string | undefined
+        if (result.error) {
+          throw new Error(result.error.message)
+        }
+        const productId = result.data?.createProduct?.id
         if (!productId) throw new Error("Gateway não devolveu id do produto")
 
         for (const v of p.variants) {
           const variantMeta: Record<string, unknown> = {}
           if (v.sku?.trim()) variantMeta.sku = v.sku.trim()
-          await createVariant({
+          const vr = await gtwClient.mutate({
+            mutation: CREATE_PRODUCT_VARIANT,
             variables: {
               input: {
                 productId,
@@ -148,7 +151,11 @@ export default function ImportCatalogPage() {
                 },
               },
             },
+            errorPolicy: "all",
           })
+          if (vr.error) {
+            throw new Error(vr.error.message)
+          }
         }
         ok++
         setLog((l) => [...l, { kind: "ok", text: `✓ ${p.title} (${p.variants.length} variantes)` }])
@@ -157,6 +164,12 @@ export default function ImportCatalogPage() {
         const msg = e instanceof Error ? e.message : String(e)
         setLog((l) => [...l, { kind: "err", text: `✗ ${p.title}: ${msg}` }])
       }
+    }
+
+    try {
+      await gtwClient.refetchQueries({ include: "active" })
+    } catch {
+      /* lista de produtos actualiza ao navegar */
     }
 
     setImporting(false)
