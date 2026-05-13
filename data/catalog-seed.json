@@ -2,10 +2,10 @@
   "meta": {
     "version": 2,
     "productCount": 32,
-    "note": "Importar no backoffice: /dashboard/products/importar. Um createProduct + N createProductVariant por produto (preço CVE → unitAmount = price * 100). Ajusta categorySlug/brandSlug ao gateway.",
+    "note": "Importar no backoffice: /dashboard/products/importar. Cada variante grava metadata.attributes (eixo variantOptionTitle + title, ou attributes explícito) para o selector na loja. Preço CVE → unitAmount = price * 100. Neste ficheiro exemplo, quantity das variantes está a 0 (preenche stock no backoffice ou no JSON antes de importar).",
     "schema": {
-      "product": "title, summary?, condition, categorySlug, brandSlug, sku? (fallback produto), discount?, variants[]",
-      "variant": "title, price (CVE), quantity, sku?"
+      "product": "title, summary?, condition, categorySlug, brandSlug, sku?, discount?, variantOptionTitle? (eixo único; omissão = «Modelo»), variants[]",
+      "variant": "title?, price (CVE), quantity, sku?, attributes? (ex.: {\"Cor\":\"Azul\"}; se omitido, title + variantOptionTitle)"
     }
   },
   "products": [
@@ -16,9 +16,24 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "256GB — Titânio natural", "price": 124990, "quantity": 2, "sku": "IP16PM-256-TN" },
-        { "title": "512GB — Titânio preto", "price": 139990, "quantity": 1, "sku": "IP16PM-512-TB" },
-        { "title": "1TB — Titânio branco", "price": 159990, "quantity": 1, "sku": "IP16PM-1TB-TW" }
+        {
+          "title": "256GB — Titânio natural",
+          "price": 124990,
+          "quantity": 0,
+          "sku": "IP16PM-256-TN"
+        },
+        {
+          "title": "512GB — Titânio preto",
+          "price": 139990,
+          "quantity": 0,
+          "sku": "IP16PM-512-TB"
+        },
+        {
+          "title": "1TB — Titânio branco",
+          "price": 159990,
+          "quantity": 0,
+          "sku": "IP16PM-1TB-TW"
+        }
       ]
     },
     {
@@ -28,9 +43,24 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "128GB — Titânio natural", "price": 99990, "quantity": 3, "sku": "IP16P-128-TN" },
-        { "title": "256GB — Titânio azul", "price": 108990, "quantity": 4, "sku": "IP16P-256-TB" },
-        { "title": "512GB — Titânio preto", "price": 124990, "quantity": 2, "sku": "IP16P-512-BK" }
+        {
+          "title": "128GB — Titânio natural",
+          "price": 99990,
+          "quantity": 0,
+          "sku": "IP16P-128-TN"
+        },
+        {
+          "title": "256GB — Titânio azul",
+          "price": 108990,
+          "quantity": 0,
+          "sku": "IP16P-256-TB"
+        },
+        {
+          "title": "512GB — Titânio preto",
+          "price": 124990,
+          "quantity": 0,
+          "sku": "IP16P-512-BK"
+        }
       ]
     },
     {
@@ -40,9 +70,24 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "128GB — Ultramarine", "price": 89990, "quantity": 5, "sku": "IP16-128-UM" },
-        { "title": "256GB — Preto", "price": 98990, "quantity": 4, "sku": "IP16-256-BK" },
-        { "title": "512GB — Branco", "price": 112990, "quantity": 2, "sku": "IP16-512-WH" }
+        {
+          "title": "128GB — Ultramarine",
+          "price": 89990,
+          "quantity": 0,
+          "sku": "IP16-128-UM"
+        },
+        {
+          "title": "256GB — Preto",
+          "price": 98990,
+          "quantity": 0,
+          "sku": "IP16-256-BK"
+        },
+        {
+          "title": "512GB — Branco",
+          "price": 112990,
+          "quantity": 0,
+          "sku": "IP16-512-WH"
+        }
       ]
     },
     {
@@ -52,8 +97,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "256GB — Titânio azul", "price": 104990, "quantity": 3, "sku": "IP15PM-256-TB" },
-        { "title": "512GB — Titânio natural", "price": 118990, "quantity": 2, "sku": "IP15PM-512-TN" }
+        {
+          "title": "256GB — Titânio azul",
+          "price": 104990,
+          "quantity": 0,
+          "sku": "IP15PM-256-TB"
+        },
+        {
+          "title": "512GB — Titânio natural",
+          "price": 118990,
+          "quantity": 0,
+          "sku": "IP15PM-512-TN"
+        }
       ]
     },
     {
@@ -63,8 +118,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "128GB", "price": 74990, "quantity": 8, "sku": "IP15-128" },
-        { "title": "256GB", "price": 83990, "quantity": 6, "sku": "IP15-256" }
+        {
+          "title": "128GB",
+          "price": 74990,
+          "quantity": 0,
+          "sku": "IP15-128"
+        },
+        {
+          "title": "256GB",
+          "price": 83990,
+          "quantity": 0,
+          "sku": "IP15-256"
+        }
       ]
     },
     {
@@ -74,8 +139,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "128GB — Deep Purple", "price": 59990, "quantity": 2, "sku": "IP14P-128-DP-SN" },
-        { "title": "256GB — Space Black", "price": 67990, "quantity": 2, "sku": "IP14P-256-SB-SN" }
+        {
+          "title": "128GB — Deep Purple",
+          "price": 59990,
+          "quantity": 0,
+          "sku": "IP14P-128-DP-SN"
+        },
+        {
+          "title": "256GB — Space Black",
+          "price": 67990,
+          "quantity": 0,
+          "sku": "IP14P-256-SB-SN"
+        }
       ]
     },
     {
@@ -85,8 +160,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "128GB — Meia-noite", "price": 54990, "quantity": 6, "sku": "IP13-128-MN" },
-        { "title": "256GB — Estelar", "price": 62990, "quantity": 4, "sku": "IP13-256-ST" }
+        {
+          "title": "128GB — Meia-noite",
+          "price": 54990,
+          "quantity": 0,
+          "sku": "IP13-128-MN"
+        },
+        {
+          "title": "256GB — Estelar",
+          "price": 62990,
+          "quantity": 0,
+          "sku": "IP13-256-ST"
+        }
       ]
     },
     {
@@ -96,9 +181,24 @@
       "categorySlug": "smartphones",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "256GB — Titânio cinzento", "price": 104990, "quantity": 3, "sku": "S24U-256-GY" },
-        { "title": "512GB — Titânio preto", "price": 112990, "quantity": 2, "sku": "S24U-512-BK" },
-        { "title": "1TB — Titânio violeta", "price": 128990, "quantity": 1, "sku": "S24U-1TB-VT" }
+        {
+          "title": "256GB — Titânio cinzento",
+          "price": 104990,
+          "quantity": 0,
+          "sku": "S24U-256-GY"
+        },
+        {
+          "title": "512GB — Titânio preto",
+          "price": 112990,
+          "quantity": 0,
+          "sku": "S24U-512-BK"
+        },
+        {
+          "title": "1TB — Titânio violeta",
+          "price": 128990,
+          "quantity": 0,
+          "sku": "S24U-1TB-VT"
+        }
       ]
     },
     {
@@ -108,8 +208,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "256GB — Violeta", "price": 88990, "quantity": 4, "sku": "S24P-256-VT" },
-        { "title": "512GB — Preto", "price": 96990, "quantity": 2, "sku": "S24P-512-BK" }
+        {
+          "title": "256GB — Violeta",
+          "price": 88990,
+          "quantity": 0,
+          "sku": "S24P-256-VT"
+        },
+        {
+          "title": "512GB — Preto",
+          "price": 96990,
+          "quantity": 0,
+          "sku": "S24P-512-BK"
+        }
       ]
     },
     {
@@ -119,8 +229,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "128GB — Amber Yellow", "price": 74990, "quantity": 5, "sku": "S24-128-AY" },
-        { "title": "256GB — Marble Gray", "price": 81990, "quantity": 4, "sku": "S24-256-MG" }
+        {
+          "title": "128GB — Amber Yellow",
+          "price": 74990,
+          "quantity": 0,
+          "sku": "S24-128-AY"
+        },
+        {
+          "title": "256GB — Marble Gray",
+          "price": 81990,
+          "quantity": 0,
+          "sku": "S24-256-MG"
+        }
       ]
     },
     {
@@ -130,8 +250,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "128GB — Awesome Graphite", "price": 36990, "quantity": 12, "sku": "A55-128-AG" },
-        { "title": "256GB — Awesome Iceblue", "price": 42990, "quantity": 10, "sku": "A55-256-IB" }
+        {
+          "title": "128GB — Awesome Graphite",
+          "price": 36990,
+          "quantity": 0,
+          "sku": "A55-128-AG"
+        },
+        {
+          "title": "256GB — Awesome Iceblue",
+          "price": 42990,
+          "quantity": 0,
+          "sku": "A55-256-IB"
+        }
       ]
     },
     {
@@ -141,8 +271,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "256GB — Silver Shadow", "price": 124990, "quantity": 1, "sku": "ZF6-256-SS" },
-        { "title": "512GB — Pink", "price": 134990, "quantity": 1, "sku": "ZF6-512-PK" }
+        {
+          "title": "256GB — Silver Shadow",
+          "price": 124990,
+          "quantity": 0,
+          "sku": "ZF6-256-SS"
+        },
+        {
+          "title": "512GB — Pink",
+          "price": 134990,
+          "quantity": 0,
+          "sku": "ZF6-512-PK"
+        }
       ]
     },
     {
@@ -152,8 +292,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "256GB — Yellow", "price": 94990, "quantity": 2, "sku": "ZFL6-256-YW" },
-        { "title": "512GB — Blue", "price": 102990, "quantity": 1, "sku": "ZFL6-512-BL" }
+        {
+          "title": "256GB — Yellow",
+          "price": 94990,
+          "quantity": 0,
+          "sku": "ZFL6-256-YW"
+        },
+        {
+          "title": "512GB — Blue",
+          "price": 102990,
+          "quantity": 0,
+          "sku": "ZFL6-512-BL"
+        }
       ]
     },
     {
@@ -163,8 +313,18 @@
       "categorySlug": "tablets",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "128GB Wi-Fi — Bege", "price": 58990, "quantity": 4, "sku": "TABS9-128-WF-BG" },
-        { "title": "256GB Wi-Fi — Grafite", "price": 65990, "quantity": 3, "sku": "TABS9-256-WF-GF" }
+        {
+          "title": "128GB Wi-Fi — Bege",
+          "price": 58990,
+          "quantity": 0,
+          "sku": "TABS9-128-WF-BG"
+        },
+        {
+          "title": "256GB Wi-Fi — Grafite",
+          "price": 65990,
+          "quantity": 0,
+          "sku": "TABS9-256-WF-GF"
+        }
       ]
     },
     {
@@ -174,8 +334,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "512GB — Preto", "price": 98990, "quantity": 2, "sku": "XM14U-512-BK" },
-        { "title": "16GB/1TB — Branco", "price": 109990, "quantity": 1, "sku": "XM14U-1TB-WH" }
+        {
+          "title": "512GB — Preto",
+          "price": 98990,
+          "quantity": 0,
+          "sku": "XM14U-512-BK"
+        },
+        {
+          "title": "16GB/1TB — Branco",
+          "price": 109990,
+          "quantity": 0,
+          "sku": "XM14U-1TB-WH"
+        }
       ]
     },
     {
@@ -185,8 +355,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "256GB — Preto", "price": 74990, "quantity": 5, "sku": "XM14-256-BK" },
-        { "title": "512GB — Jade Green", "price": 82990, "quantity": 3, "sku": "XM14-512-JG" }
+        {
+          "title": "256GB — Preto",
+          "price": 74990,
+          "quantity": 0,
+          "sku": "XM14-256-BK"
+        },
+        {
+          "title": "512GB — Jade Green",
+          "price": 82990,
+          "quantity": 0,
+          "sku": "XM14-512-JG"
+        }
       ]
     },
     {
@@ -196,9 +376,24 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "256GB — Meadow Green", "price": 56990, "quantity": 5, "sku": "XM13TP-256-MG" },
-        { "title": "512GB — Black", "price": 62990, "quantity": 4, "sku": "XM13TP-512-BK" },
-        { "title": "1TB — Alpine Blue", "price": 71990, "quantity": 2, "sku": "XM13TP-1TB-AB" }
+        {
+          "title": "256GB — Meadow Green",
+          "price": 56990,
+          "quantity": 0,
+          "sku": "XM13TP-256-MG"
+        },
+        {
+          "title": "512GB — Black",
+          "price": 62990,
+          "quantity": 0,
+          "sku": "XM13TP-512-BK"
+        },
+        {
+          "title": "1TB — Alpine Blue",
+          "price": 71990,
+          "quantity": 0,
+          "sku": "XM13TP-1TB-AB"
+        }
       ]
     },
     {
@@ -208,8 +403,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "256GB — Fusion Purple", "price": 38990, "quantity": 8, "sku": "RN13PP-256-PR" },
-        { "title": "512GB — Midnight Black", "price": 42990, "quantity": 6, "sku": "RN13PP-512-BK" }
+        {
+          "title": "256GB — Fusion Purple",
+          "price": 38990,
+          "quantity": 0,
+          "sku": "RN13PP-256-PR"
+        },
+        {
+          "title": "512GB — Midnight Black",
+          "price": 42990,
+          "quantity": 0,
+          "sku": "RN13PP-512-BK"
+        }
       ]
     },
     {
@@ -219,9 +424,24 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "128GB — Ocean Teal", "price": 28990, "quantity": 14, "sku": "RN13P-128-OT" },
-        { "title": "256GB — Arctic White", "price": 32990, "quantity": 12, "sku": "RN13P-256-AW" },
-        { "title": "512GB — Midnight Black", "price": 37990, "quantity": 6, "sku": "RN13P-512-BK" }
+        {
+          "title": "128GB — Ocean Teal",
+          "price": 28990,
+          "quantity": 0,
+          "sku": "RN13P-128-OT"
+        },
+        {
+          "title": "256GB — Arctic White",
+          "price": 32990,
+          "quantity": 0,
+          "sku": "RN13P-256-AW"
+        },
+        {
+          "title": "512GB — Midnight Black",
+          "price": 37990,
+          "quantity": 0,
+          "sku": "RN13P-512-BK"
+        }
       ]
     },
     {
@@ -231,8 +451,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "256GB — Amarelo", "price": 27990, "quantity": 10, "sku": "POCOX6P-256-YL" },
-        { "title": "512GB — Cinzento", "price": 31990, "quantity": 6, "sku": "POCOX6P-512-GY" }
+        {
+          "title": "256GB — Amarelo",
+          "price": 27990,
+          "quantity": 0,
+          "sku": "POCOX6P-256-YL"
+        },
+        {
+          "title": "512GB — Cinzento",
+          "price": 31990,
+          "quantity": 0,
+          "sku": "POCOX6P-512-GY"
+        }
       ]
     },
     {
@@ -241,9 +471,20 @@
       "condition": "novo",
       "categorySlug": "tablets",
       "brandSlug": "xiaomi",
+      "variantOptionTitle": "Configuração",
       "variants": [
-        { "title": "128GB Wi-Fi — Grafite", "price": 31990, "quantity": 5, "sku": "PAD6-128-GF" },
-        { "title": "256GB Wi-Fi — Azul", "price": 36990, "quantity": 4, "sku": "PAD6-256-BL" }
+        {
+          "title": "128GB Wi-Fi — Grafite",
+          "price": 31990,
+          "quantity": 0,
+          "sku": "PAD6-128-GF"
+        },
+        {
+          "title": "256GB Wi-Fi — Azul",
+          "price": 36990,
+          "quantity": 0,
+          "sku": "PAD6-256-BL"
+        }
       ]
     },
     {
@@ -253,8 +494,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "64GB — Meia-noite", "price": 34990, "quantity": 10, "sku": "IPSE3-64-MN" },
-        { "title": "128GB — Estelar", "price": 39990, "quantity": 8, "sku": "IPSE3-128-ST" }
+        {
+          "title": "64GB — Meia-noite",
+          "price": 34990,
+          "quantity": 0,
+          "sku": "IPSE3-64-MN"
+        },
+        {
+          "title": "128GB — Estelar",
+          "price": 39990,
+          "quantity": 0,
+          "sku": "IPSE3-128-ST"
+        }
       ]
     },
     {
@@ -264,8 +515,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "apple",
       "variants": [
-        { "title": "64GB — Branco", "price": 38990, "quantity": 4, "sku": "IP12-64-WH-SN" },
-        { "title": "128GB — Azul", "price": 42990, "quantity": 3, "sku": "IP12-128-BL-SN" }
+        {
+          "title": "64GB — Branco",
+          "price": 38990,
+          "quantity": 0,
+          "sku": "IP12-64-WH-SN"
+        },
+        {
+          "title": "128GB — Azul",
+          "price": 42990,
+          "quantity": 0,
+          "sku": "IP12-128-BL-SN"
+        }
       ]
     },
     {
@@ -275,8 +536,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "128GB — Mint", "price": 47990, "quantity": 7, "sku": "S23FE-128-MT" },
-        { "title": "256GB — Graphite", "price": 52990, "quantity": 6, "sku": "S23FE-256-GF" }
+        {
+          "title": "128GB — Mint",
+          "price": 47990,
+          "quantity": 0,
+          "sku": "S23FE-128-MT"
+        },
+        {
+          "title": "256GB — Graphite",
+          "price": 52990,
+          "quantity": 0,
+          "sku": "S23FE-256-GF"
+        }
       ]
     },
     {
@@ -286,8 +557,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "samsung",
       "variants": [
-        { "title": "128GB — Awesome Lilac", "price": 31990, "quantity": 14, "sku": "A35-128-LC" },
-        { "title": "256GB — Awesome Navy", "price": 35990, "quantity": 10, "sku": "A35-256-NV" }
+        {
+          "title": "128GB — Awesome Lilac",
+          "price": 31990,
+          "quantity": 0,
+          "sku": "A35-128-LC"
+        },
+        {
+          "title": "256GB — Awesome Navy",
+          "price": 35990,
+          "quantity": 0,
+          "sku": "A35-256-NV"
+        }
       ]
     },
     {
@@ -297,8 +578,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "256GB — Black", "price": 47990, "quantity": 6, "sku": "XM13T-256-BK" },
-        { "title": "256GB — Meadow Green", "price": 47990, "quantity": 5, "sku": "XM13T-256-MG" }
+        {
+          "title": "256GB — Black",
+          "price": 47990,
+          "quantity": 0,
+          "sku": "XM13T-256-BK"
+        },
+        {
+          "title": "256GB — Meadow Green",
+          "price": 47990,
+          "quantity": 0,
+          "sku": "XM13T-256-MG"
+        }
       ]
     },
     {
@@ -308,8 +599,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "256GB — Verde", "price": 35990, "quantity": 8, "sku": "POCOF6-256-GR" },
-        { "title": "512GB — Preto", "price": 39990, "quantity": 5, "sku": "POCOF6-512-BK" }
+        {
+          "title": "256GB — Verde",
+          "price": 35990,
+          "quantity": 0,
+          "sku": "POCOF6-256-GR"
+        },
+        {
+          "title": "512GB — Preto",
+          "price": 39990,
+          "quantity": 0,
+          "sku": "POCOF6-512-BK"
+        }
       ]
     },
     {
@@ -319,8 +620,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "xiaomi",
       "variants": [
-        { "title": "128GB — Azul", "price": 18990, "quantity": 20, "sku": "R13-128-BL" },
-        { "title": "256GB — Preto", "price": 21990, "quantity": 15, "sku": "R13-256-BK" }
+        {
+          "title": "128GB — Azul",
+          "price": 18990,
+          "quantity": 0,
+          "sku": "R13-128-BL"
+        },
+        {
+          "title": "256GB — Preto",
+          "price": 21990,
+          "quantity": 0,
+          "sku": "R13-256-BK"
+        }
       ]
     },
     {
@@ -330,8 +641,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "motorola",
       "variants": [
-        { "title": "256GB — Roxo", "price": 44990, "quantity": 4, "sku": "MOTOE50P-256-VT" },
-        { "title": "512GB — Preto", "price": 49990, "quantity": 3, "sku": "MOTOE50P-512-BK" }
+        {
+          "title": "256GB — Roxo",
+          "price": 44990,
+          "quantity": 0,
+          "sku": "MOTOE50P-256-VT"
+        },
+        {
+          "title": "512GB — Preto",
+          "price": 49990,
+          "quantity": 0,
+          "sku": "MOTOE50P-512-BK"
+        }
       ]
     },
     {
@@ -341,8 +662,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "nothing",
       "variants": [
-        { "title": "128GB — Branco", "price": 28990, "quantity": 6, "sku": "NTH2A-128-WH" },
-        { "title": "256GB — Preto", "price": 31990, "quantity": 5, "sku": "NTH2A-256-BK" }
+        {
+          "title": "128GB — Branco",
+          "price": 28990,
+          "quantity": 0,
+          "sku": "NTH2A-128-WH"
+        },
+        {
+          "title": "256GB — Preto",
+          "price": 31990,
+          "quantity": 0,
+          "sku": "NTH2A-256-BK"
+        }
       ]
     },
     {
@@ -352,8 +683,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "google",
       "variants": [
-        { "title": "128GB — Obsidian", "price": 82990, "quantity": 2, "sku": "P8P-128-OBS" },
-        { "title": "256GB — Bay", "price": 89990, "quantity": 2, "sku": "P8P-256-BAY" }
+        {
+          "title": "128GB — Obsidian",
+          "price": 82990,
+          "quantity": 0,
+          "sku": "P8P-128-OBS"
+        },
+        {
+          "title": "256GB — Bay",
+          "price": 89990,
+          "quantity": 0,
+          "sku": "P8P-256-BAY"
+        }
       ]
     },
     {
@@ -363,8 +704,18 @@
       "categorySlug": "smartphones",
       "brandSlug": "oneplus",
       "variants": [
-        { "title": "256GB — Flowy Emerald", "price": 71990, "quantity": 3, "sku": "OP12-256-FE" },
-        { "title": "512GB — Silky Black", "price": 79990, "quantity": 2, "sku": "OP12-512-SB" }
+        {
+          "title": "256GB — Flowy Emerald",
+          "price": 71990,
+          "quantity": 0,
+          "sku": "OP12-256-FE"
+        },
+        {
+          "title": "512GB — Silky Black",
+          "price": 79990,
+          "quantity": 0,
+          "sku": "OP12-512-SB"
+        }
       ]
     }
   ]

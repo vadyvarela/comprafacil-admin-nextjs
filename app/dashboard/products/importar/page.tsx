@@ -20,6 +20,11 @@ import {
 } from "@/lib/catalog-import/parse-catalog-seed"
 import { getDefaultCatalogSeedText } from "@/lib/catalog-import/default-seed-text"
 import type { CatalogSeedFile, CatalogSeedProduct } from "@/lib/catalog-import/types"
+import {
+  productOptionCatalogFromVariants,
+  seedVariantAttributes,
+  variantTitleFromAttributes,
+} from "@/lib/catalog-import/variant-metadata"
 
 type LogLine =
   | { kind: "ok"; text: string }
@@ -32,6 +37,12 @@ function buildProductMetadata(p: CatalogSeedProduct): string | null {
   else {
     const first = p.variants[0]?.sku?.trim()
     if (first) m.sku = first
+  }
+  try {
+    const optCatalog = productOptionCatalogFromVariants(p)
+    if (optCatalog.length) m.attributes = optCatalog
+  } catch {
+    /* validação em collectImportIssues */
   }
   return Object.keys(m).length ? JSON.stringify(m) : null
 }
@@ -134,14 +145,16 @@ export default function ImportCatalogPage() {
         if (!productId) throw new Error("Gateway não devolveu id do produto")
 
         for (const v of p.variants) {
-          const variantMeta: Record<string, unknown> = {}
+          const attrs = seedVariantAttributes(p, v)
+          const variantMeta: Record<string, unknown> = { attributes: attrs }
           if (v.sku?.trim()) variantMeta.sku = v.sku.trim()
+          const variantTitle = v.title?.trim() || variantTitleFromAttributes(attrs)
           const vr = await gtwClient.mutate({
             mutation: CREATE_PRODUCT_VARIANT,
             variables: {
               input: {
                 productId,
-                title: v.title.trim(),
+                title: variantTitle,
                 quantity: v.quantity,
                 metadata: JSON.stringify(variantMeta),
                 priceData: {
@@ -207,8 +220,12 @@ export default function ImportCatalogPage() {
         <div>
           <h1 className="text-lg font-semibold text-foreground">Importar catálogo (JSON)</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Cada produto com array <code className="text-[11px]">variants</code> (preço CVE, stock). Categoria e marca
-            por <code className="text-[11px]">slug</code> ou nome igual ao backoffice.
+            Cada produto com <code className="text-[11px]">variants</code> (preço CVE, stock). Por omissão gera-se{" "}
+            <code className="text-[11px]">metadata.attributes</code> na variante com o eixo{" "}
+            <code className="text-[11px]">variantOptionTitle</code> (p.ex. «Armazenamento») +{" "}
+            <code className="text-[11px]">title</code> em cada variante — necessário para o selector na loja. Opcional:{" "}
+            <code className="text-[11px]">attributes</code> por variante para várias dimensões. Categoria e marca por{" "}
+            <code className="text-[11px]">slug</code> ou nome.
           </p>
         </div>
 

@@ -4,6 +4,7 @@ import type {
   CatalogSeedFile,
   CatalogSeedProduct,
 } from "./types"
+import { seedVariantAttributes } from "./variant-metadata"
 
 export function getCategoryHint(p: CatalogSeedProduct): string {
   return (p.categorySlug ?? p.categoryName ?? "").trim()
@@ -45,7 +46,26 @@ function validateVariant(v: unknown, path: string): string[] {
   const err: string[] = []
   if (v == null || typeof v !== "object") return [`${path}: variante inválida`]
   const o = v as Record<string, unknown>
-  if (typeof o.title !== "string" || !o.title.trim()) err.push(`${path}: title obrigatório`)
+  const hasAttrs =
+    o.attributes != null &&
+    typeof o.attributes === "object" &&
+    !Array.isArray(o.attributes) &&
+    Object.keys(o.attributes as object).length > 0
+
+  if (hasAttrs) {
+    const attrs = o.attributes as Record<string, unknown>
+    for (const [k, val] of Object.entries(attrs)) {
+      if (typeof k !== "string" || !k.trim()) err.push(`${path}.attributes: chave inválida`)
+      if (typeof val !== "string" || !String(val).trim()) {
+        err.push(`${path}.attributes[${k}]: valor deve ser texto não vazio`)
+      }
+    }
+  } else {
+    if (typeof o.title !== "string" || !o.title.trim()) {
+      err.push(`${path}: «title» obrigatório (ou define «attributes» com pelo menos uma chave)`)
+    }
+  }
+  if (o.title != null && typeof o.title !== "string") err.push(`${path}.title deve ser texto`)
   const price = o.price
   if (typeof price !== "number" || !Number.isFinite(price) || price <= 0) {
     err.push(`${path}: price deve ser um número > 0 (CVE)`)
@@ -76,6 +96,13 @@ export function validateProductShape(p: unknown, index: number): string[] {
     const d = o.discount
     if (typeof d !== "number" || !Number.isInteger(d) || d < 0 || d > 100) {
       err.push(`${path}.discount deve ser inteiro 0–100`)
+    }
+  }
+  if (o.variantOptionTitle != null) {
+    if (typeof o.variantOptionTitle !== "string") {
+      err.push(`${path}.variantOptionTitle deve ser texto`)
+    } else if (!o.variantOptionTitle.trim()) {
+      err.push(`${path}.variantOptionTitle não pode ser vazio`)
     }
   }
   const vars = o.variants
@@ -121,6 +148,20 @@ export function collectImportIssues(
       const r = resolveProductRefs(p, categories, brands)
       if (!r.categoryId) messages.push(`Categoria não encontrada: «${r.categoryHint}»`)
       if (!r.brandId) messages.push(`Marca não encontrada: «${r.brandHint}»`)
+      if (r.categoryId && r.brandId && p.variants.length > 1) {
+        try {
+          const keySets = p.variants.map((v) =>
+            Object.keys(seedVariantAttributes(p, v)).sort().join("|")
+          )
+          if (new Set(keySets).size > 1) {
+            messages.push(
+              "Todas as variantes devem partilhar as mesmas chaves em «attributes» (ou o mesmo eixo «variantOptionTitle» + «title»)."
+            )
+          }
+        } catch (e) {
+          messages.push(e instanceof Error ? e.message : String(e))
+        }
+      }
     }
     if (messages.length) issues.push({ productIndex: i, title, messages })
   })
