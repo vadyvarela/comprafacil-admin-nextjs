@@ -8,6 +8,8 @@ const ALLOWED_FIRST_SEGMENTS = new Set([
   "categorias",
   "ofertas",
   "busca",
+  "perfil",
+  "auth",
 ])
 
 /** Atalhos para o editor (todos passam `isAllowedInternalHref`). */
@@ -18,6 +20,7 @@ export const INTERNAL_PATH_PRESETS: readonly { href: string; label: string }[] =
   { href: "/ofertas", label: "Ofertas" },
   { href: "/categorias", label: "Categorias" },
   { href: "/busca", label: "Busca" },
+  { href: "/perfil", label: "Perfil" },
 ] as const
 
 export function isAllowedInternalHref(href: string): boolean {

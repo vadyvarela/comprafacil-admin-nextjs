@@ -87,6 +87,7 @@ import { DEFAULT_HOME_LAYOUT } from "@/lib/home-layout/default-layout"
 import { HOME_BLOCK_REGISTRY, HOME_BLOCK_TYPES, type HomeBlockType } from "@/lib/home-layout/registry"
 import { createEmptyBlock } from "@/lib/home-layout/block-factory"
 import { StoreHomeSortableBlockShell } from "@/components/store-home/store-home-sortable-block-shell"
+import { StoreHomeHeaderNavPanel } from "@/components/store-home/store-home-header-nav-panel"
 import { revalidateTecharenaHome } from "@/app/dashboard/store-home/actions"
 import { buildHomePreviewUrl } from "@/app/dashboard/store-home/preview-actions"
 import { cn } from "@/lib/utils"
@@ -985,6 +986,16 @@ export default function StoreHomePage() {
                     </div>
                   </CardContent>
                 </Card>
+
+                <StoreHomeHeaderNavPanel
+                  items={doc.headerNavItems}
+                  onChange={(next) =>
+                    mutateDoc((d) => ({
+                      ...d,
+                      headerNavItems: next?.length ? next : undefined,
+                    }))
+                  }
+                />
 
                 {doc.blocks.length === 0 ? (
                   <StoreHomeEmptyBlocks addType={addType} onAdd={addBlock} />

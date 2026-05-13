@@ -93,8 +93,8 @@ export function InternalPathField({
       />
       {trimmed && !isAllowedInternalHref(trimmed) ? (
         <p className="text-[10px] text-destructive leading-snug">
-          Path não permitido: o primeiro segmento tem de ser um de produtos, categoria, categorias, ofertas ou
-          busca.
+          Path não permitido: o primeiro segmento tem de ser um dos permitidos (produtos, categoria, ofertas,
+          busca, perfil, auth, …).
         </p>
       ) : null}
     </div>

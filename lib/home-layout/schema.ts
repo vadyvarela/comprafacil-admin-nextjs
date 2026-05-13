@@ -11,6 +11,7 @@ export const HOME_LAYOUT_RULES = {
   subtitleMax: 200,
   slugPattern: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
   maxCategorySlugs: 10,
+  maxHeaderNavItems: 12,
   maxSectionsMin: 1,
   maxSectionsMax: 10,
 } as const
@@ -264,6 +265,28 @@ const splitDealRailBlockSchema = z.object({
   props: splitDealRailPropsSchema,
 })
 
+const headerNavCategoryItemSchema = z
+  .object({
+    kind: z.literal("category"),
+    slug: slugSchema,
+  })
+  .strict()
+
+const headerNavLinkItemSchema = z
+  .object({
+    kind: z.literal("link"),
+    label: z.string().min(1).max(80),
+    href: internalHrefSchema,
+  })
+  .strict()
+
+export const headerNavItemSchema = z.discriminatedUnion("kind", [
+  headerNavCategoryItemSchema,
+  headerNavLinkItemSchema,
+])
+
+export type HeaderNavItem = z.infer<typeof headerNavItemSchema>
+
 export const homeBlockSchema = z.discriminatedUnion("type", [
   heroBlockSchema,
   productRailBlockSchema,
@@ -280,6 +303,11 @@ export const homeBlockSchema = z.discriminatedUnion("type", [
 export const homeLayoutDocumentSchema = z
   .object({
     schemaVersion: z.literal(1),
+    headerNavItems: z
+      .array(headerNavItemSchema)
+      .min(1)
+      .max(HOME_LAYOUT_RULES.maxHeaderNavItems)
+      .optional(),
     blocks: z.array(homeBlockSchema).max(HOME_LAYOUT_RULES.maxBlocks),
   })
   .strict()
