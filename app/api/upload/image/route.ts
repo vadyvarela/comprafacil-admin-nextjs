@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
 
+function extractApiError(data: Record<string, unknown>): string {
+  const d = data?.data as Record<string, unknown> | undefined
+  if (d && typeof d.uiMessage === "string" && d.uiMessage) return d.uiMessage
+  if (d && typeof d.technicalMessage === "string" && d.technicalMessage) return d.technicalMessage
+  if (typeof data?.error === "string") return data.error
+  if (typeof data?.data === "string") return data.data
+  return "Erro ao fazer upload da imagem"
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { error } = await requireAdminSession()
@@ -17,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     const formData = await request.formData()
-    const imageFile = formData.get("image") as File
+    const imageFile = formData.get("image") as File | null
 
     if (!imageFile) {
       return NextResponse.json(
@@ -43,34 +52,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Criar novo FormData para enviar ao backend
-    // Usar o endpoint de banner como workaround para fazer upload da imagem
-    // Criar um banner temporário, obter a URL da imagem, e deletar o banner
     const uploadFormData = new FormData()
-    uploadFormData.append("image", imageFile)
-    
-    // Criar um banner temporário apenas para fazer upload da imagem
-    const bannerJson = JSON.stringify({
-      title: `temp_upload_${Date.now()}`,
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 86400000).toISOString(), // +1 dia
-      active: false,
-    })
-    uploadFormData.append("banner", bannerJson)
+    uploadFormData.append("file", imageFile)
 
-    // Fazer upload via endpoint de banner
-    const response = await fetch(`${gtwUrl}/api/banner/create`, {
+    const response = await fetch(`${gtwUrl}/api/media`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${cmsAccessToken}`,
       },
       body: uploadFormData,
+      signal: AbortSignal.timeout(120000),
     })
 
-    let data
+    let data: Record<string, unknown>
     try {
-      data = await response.json()
-    } catch (e) {
+      data = (await response.json()) as Record<string, unknown>
+    } catch {
       return NextResponse.json(
         { error: "Failed to upload image" },
         { status: response.status }
@@ -79,55 +76,28 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       return NextResponse.json(
-        { error: "Failed to upload image" },
+        { error: extractApiError(data) },
         { status: response.status }
       )
     }
 
-    // Extrair a URL da imagem do banner criado
-    const imageUrl = data.data?.image
+    const payload = data.data as Record<string, unknown> | undefined
+    const imageUrl =
+      (typeof payload?.url === "string" && payload.url) ||
+      (typeof payload?.imageUrl === "string" && payload.imageUrl) ||
+      ""
 
     if (!imageUrl) {
-      // Tentar deletar o banner temporário
-      if (data.data?.id) {
-        try {
-          await fetch(`${gtwUrl}/api/banner/${data.data.id}`, {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${cmsAccessToken}`,
-            },
-          })
-        } catch {
-          // Ignore deletion errors
-        }
-      }
       return NextResponse.json(
         { error: "URL da imagem não retornada pelo servidor" },
         { status: 500 }
       )
     }
 
-    // Deletar o banner temporário após obter a URL
-    if (data.data?.id) {
-      try {
-        await fetch(`${gtwUrl}/api/banner/${data.data.id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${cmsAccessToken}`,
-          },
-        })
-      } catch {
-        // Ignore deletion errors - a imagem já foi uploadada com sucesso
-      }
-    }
-
     return NextResponse.json({ url: imageUrl, imageUrl }, { status: 200 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Image upload API error:", error)
-    return NextResponse.json(
-      { error: error.message || "Internal server error" },
-      { status: 500 }
-    )
+    const message = error instanceof Error ? error.message : "Internal server error"
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
-

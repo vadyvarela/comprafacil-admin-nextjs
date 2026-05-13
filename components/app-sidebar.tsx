@@ -8,6 +8,7 @@ import {
   FolderTree,
   TicketPercent,
   Image as ImageIcon,
+  Images,
   Tag,
   ShoppingCart,
   CreditCard,
@@ -63,6 +64,7 @@ const NAV = [
     items: [
       { title: "Cupons", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
       { title: "Banners", url: "/dashboard/banners", icon: ImageIcon, exact: false },
+      { title: "Biblioteca", url: "/dashboard/media", icon: Images, exact: false },
       { title: "Home da loja", url: "/dashboard/store-home", icon: LayoutGrid, exact: false },
     ],
   },
