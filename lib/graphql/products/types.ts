@@ -1,5 +1,7 @@
 /** Alinhado a `ProductFilterInput` no gateway GraphQL. */
 export interface ProductFilterInput {
+  /** LIKE case-insensitive no gateway (ex.: título completo do produto). */
+  title?: string | null
   search?: string | null
   categoryId?: string | null
   brandId?: string | null

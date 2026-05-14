@@ -6,6 +6,12 @@ import { useQuery } from "@apollo/client/react"
 import { Upload, Play, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import { CREATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { CREATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
+import {
+  combineMutationErrors,
+  findExistingProductIdByExactTitle,
+  isDuplicateProductTitleMessage,
+  syncExistingProductFromCatalog,
+} from "@/lib/catalog-import/reconcile-import-product"
 import { GET_CATEGORY_LIST } from "@/lib/graphql/categories/queries"
 import { GET_BRAND_LIST } from "@/lib/graphql/brands/queries"
 import { gtwClient } from "@/lib/gtw-client"
@@ -122,6 +128,7 @@ export default function ImportCatalogPage() {
     const products = parsed.products
     setProgress({ current: 0, total: products.length })
     let ok = 0
+    let synced = 0
     let fail = 0
 
     for (let i = 0; i < products.length; i++) {
@@ -170,7 +177,10 @@ export default function ImportCatalogPage() {
                 brandId,
                 stockData: {
                   name: `Stock - ${p.title.trim()}`,
-                  quantity: 0,
+                  quantity: p.variants.reduce(
+                    (sum, vv) => sum + Math.max(0, Math.floor(Number(vv.quantity)) || 0),
+                    0
+                  ),
                 },
               },
             },
@@ -178,11 +188,40 @@ export default function ImportCatalogPage() {
           })
         )
         await sleep(120)
-        if (result.error) {
-          throw new Error(result.error.message)
+        const errMsg = combineMutationErrors(result)
+        const createdId = result.data?.createProduct?.id
+
+        if (!createdId) {
+          if (isDuplicateProductTitleMessage(errMsg)) {
+            const existingId = await with429Retry(`findProduct:${p.title}`, () =>
+              findExistingProductIdByExactTitle(gtwClient, p.title.trim())
+            )
+            if (!existingId) {
+              throw new Error(
+                errMsg || "Produto com este título já existe, mas não foi encontrado na pesquisa."
+              )
+            }
+            const sync = await with429Retry(`syncProduct:${p.title}`, () =>
+              syncExistingProductFromCatalog(gtwClient, existingId, p)
+            )
+            await sleep(120)
+            synced++
+            const w = sync.warnings.length ? ` — ${sync.warnings.join("; ")}` : ""
+            setLog((l) => [
+              ...l,
+              {
+                kind: "ok",
+                text: `↻ ${p.title}: ${sync.updated} variante(s) stock/preço actualizado(s)${
+                  sync.created ? `, ${sync.created} nova(s)` : ""
+                }${w}`,
+              },
+            ])
+            continue
+          }
+          throw new Error(errMsg || "Gateway não devolveu id do produto")
         }
-        const productId = result.data?.createProduct?.id
-        if (!productId) throw new Error("Gateway não devolveu id do produto")
+
+        const productId = createdId
 
         for (const v of p.variants) {
           const attrs = seedVariantAttributes(p, v)
@@ -232,7 +271,13 @@ export default function ImportCatalogPage() {
     setImporting(false)
     showToast.success(
       "Importação concluída",
-      `${ok} produto(s) criados${fail ? `, ${fail} falha(s)` : ""}.`
+      [
+        ok ? `${ok} novo(s)` : null,
+        synced ? `${synced} existente(s) actualizado(s) (stock)` : null,
+        fail ? `${fail} falha(s)` : null,
+      ]
+        .filter(Boolean)
+        .join(" · ")
     )
   }
 
@@ -262,7 +307,9 @@ export default function ImportCatalogPage() {
         <div>
           <h1 className="text-lg font-semibold text-foreground">Importar catálogo (JSON)</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Cada produto com <code className="text-[11px]">variants</code> (preço CVE, stock). Por omissão gera-se{" "}
+            Cada produto com <code className="text-[11px]">variants</code> (preço CVE, stock). Se o título já existir no
+            gateway, a importação <strong>actualiza stock e preço</strong> das variantes (casamento por SKU ou título) em
+            vez de falhar. Por omissão gera-se{" "}
             <code className="text-[11px]">metadata.attributes</code> na variante com o eixo{" "}
             <code className="text-[11px]">variantOptionTitle</code> (p.ex. «Armazenamento») +{" "}
             <code className="text-[11px]">title</code> em cada variante — necessário para o selector na loja. Opcional:{" "}

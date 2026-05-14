@@ -2,7 +2,7 @@
   "meta": {
     "version": 2,
     "productCount": 32,
-    "note": "Importar no backoffice: /dashboard/products/importar. Cada variante grava metadata.attributes (eixo variantOptionTitle + title, ou attributes explícito) para o selector na loja. Preço CVE → unitAmount = price * 100. Neste ficheiro exemplo, quantity das variantes está a 0 (preenche stock no backoffice ou no JSON antes de importar).",
+    "note": "Importar no backoffice: /dashboard/products/importar. Cada variante grava metadata.attributes (eixo variantOptionTitle + title, ou attributes explícito) para o selector na loja. Preço CVE → unitAmount = price * 100. Stock inicial por variante em quantity (6–20 unidades neste seed).",
     "schema": {
       "product": "title, summary?, condition, categorySlug, brandSlug, sku?, discount?, variantOptionTitle? (eixo único; omissão = «Modelo»), variants[]",
       "variant": "title?, price (CVE), quantity, sku?, attributes? (ex.: {\"Cor\":\"Azul\"}; se omitido, title + variantOptionTitle)"
@@ -19,19 +19,19 @@
         {
           "title": "256GB — Titânio natural",
           "price": 124990,
-          "quantity": 0,
+          "quantity": 6,
           "sku": "IP16PM-256-TN"
         },
         {
           "title": "512GB — Titânio preto",
           "price": 139990,
-          "quantity": 0,
+          "quantity": 13,
           "sku": "IP16PM-512-TB"
         },
         {
           "title": "1TB — Titânio branco",
           "price": 159990,
-          "quantity": 0,
+          "quantity": 20,
           "sku": "IP16PM-1TB-TW"
         }
       ]
@@ -46,19 +46,19 @@
         {
           "title": "128GB — Titânio natural",
           "price": 99990,
-          "quantity": 0,
+          "quantity": 12,
           "sku": "IP16P-128-TN"
         },
         {
           "title": "256GB — Titânio azul",
           "price": 108990,
-          "quantity": 0,
+          "quantity": 19,
           "sku": "IP16P-256-TB"
         },
         {
           "title": "512GB — Titânio preto",
           "price": 124990,
-          "quantity": 0,
+          "quantity": 11,
           "sku": "IP16P-512-BK"
         }
       ]
@@ -73,19 +73,19 @@
         {
           "title": "128GB — Ultramarine",
           "price": 89990,
-          "quantity": 0,
+          "quantity": 18,
           "sku": "IP16-128-UM"
         },
         {
           "title": "256GB — Preto",
           "price": 98990,
-          "quantity": 0,
+          "quantity": 10,
           "sku": "IP16-256-BK"
         },
         {
           "title": "512GB — Branco",
           "price": 112990,
-          "quantity": 0,
+          "quantity": 17,
           "sku": "IP16-512-WH"
         }
       ]
@@ -100,13 +100,13 @@
         {
           "title": "256GB — Titânio azul",
           "price": 104990,
-          "quantity": 0,
+          "quantity": 9,
           "sku": "IP15PM-256-TB"
         },
         {
           "title": "512GB — Titânio natural",
           "price": 118990,
-          "quantity": 0,
+          "quantity": 16,
           "sku": "IP15PM-512-TN"
         }
       ]
@@ -121,13 +121,13 @@
         {
           "title": "128GB",
           "price": 74990,
-          "quantity": 0,
+          "quantity": 8,
           "sku": "IP15-128"
         },
         {
           "title": "256GB",
           "price": 83990,
-          "quantity": 0,
+          "quantity": 15,
           "sku": "IP15-256"
         }
       ]
@@ -142,13 +142,13 @@
         {
           "title": "128GB — Deep Purple",
           "price": 59990,
-          "quantity": 0,
+          "quantity": 7,
           "sku": "IP14P-128-DP-SN"
         },
         {
           "title": "256GB — Space Black",
           "price": 67990,
-          "quantity": 0,
+          "quantity": 14,
           "sku": "IP14P-256-SB-SN"
         }
       ]
@@ -163,13 +163,13 @@
         {
           "title": "128GB — Meia-noite",
           "price": 54990,
-          "quantity": 0,
+          "quantity": 6,
           "sku": "IP13-128-MN"
         },
         {
           "title": "256GB — Estelar",
           "price": 62990,
-          "quantity": 0,
+          "quantity": 13,
           "sku": "IP13-256-ST"
         }
       ]
@@ -184,19 +184,19 @@
         {
           "title": "256GB — Titânio cinzento",
           "price": 104990,
-          "quantity": 0,
+          "quantity": 20,
           "sku": "S24U-256-GY"
         },
         {
           "title": "512GB — Titânio preto",
           "price": 112990,
-          "quantity": 0,
+          "quantity": 12,
           "sku": "S24U-512-BK"
         },
         {
           "title": "1TB — Titânio violeta",
           "price": 128990,
-          "quantity": 0,
+          "quantity": 19,
           "sku": "S24U-1TB-VT"
         }
       ]
@@ -211,13 +211,13 @@
         {
           "title": "256GB — Violeta",
           "price": 88990,
-          "quantity": 0,
+          "quantity": 11,
           "sku": "S24P-256-VT"
         },
         {
           "title": "512GB — Preto",
           "price": 96990,
-          "quantity": 0,
+          "quantity": 18,
           "sku": "S24P-512-BK"
         }
       ]
@@ -232,13 +232,13 @@
         {
           "title": "128GB — Amber Yellow",
           "price": 74990,
-          "quantity": 0,
+          "quantity": 10,
           "sku": "S24-128-AY"
         },
         {
           "title": "256GB — Marble Gray",
           "price": 81990,
-          "quantity": 0,
+          "quantity": 17,
           "sku": "S24-256-MG"
         }
       ]
@@ -253,13 +253,13 @@
         {
           "title": "128GB — Awesome Graphite",
           "price": 36990,
-          "quantity": 0,
+          "quantity": 9,
           "sku": "A55-128-AG"
         },
         {
           "title": "256GB — Awesome Iceblue",
           "price": 42990,
-          "quantity": 0,
+          "quantity": 16,
           "sku": "A55-256-IB"
         }
       ]
@@ -274,13 +274,13 @@
         {
           "title": "256GB — Silver Shadow",
           "price": 124990,
-          "quantity": 0,
+          "quantity": 8,
           "sku": "ZF6-256-SS"
         },
         {
           "title": "512GB — Pink",
           "price": 134990,
-          "quantity": 0,
+          "quantity": 15,
           "sku": "ZF6-512-PK"
         }
       ]
@@ -295,13 +295,13 @@
         {
           "title": "256GB — Yellow",
           "price": 94990,
-          "quantity": 0,
+          "quantity": 7,
           "sku": "ZFL6-256-YW"
         },
         {
           "title": "512GB — Blue",
           "price": 102990,
-          "quantity": 0,
+          "quantity": 14,
           "sku": "ZFL6-512-BL"
         }
       ]
@@ -316,13 +316,13 @@
         {
           "title": "128GB Wi-Fi — Bege",
           "price": 58990,
-          "quantity": 0,
+          "quantity": 6,
           "sku": "TABS9-128-WF-BG"
         },
         {
           "title": "256GB Wi-Fi — Grafite",
           "price": 65990,
-          "quantity": 0,
+          "quantity": 13,
           "sku": "TABS9-256-WF-GF"
         }
       ]
@@ -337,13 +337,13 @@
         {
           "title": "512GB — Preto",
           "price": 98990,
-          "quantity": 0,
+          "quantity": 20,
           "sku": "XM14U-512-BK"
         },
         {
           "title": "16GB/1TB — Branco",
           "price": 109990,
-          "quantity": 0,
+          "quantity": 12,
           "sku": "XM14U-1TB-WH"
         }
       ]
@@ -358,13 +358,13 @@
         {
           "title": "256GB — Preto",
           "price": 74990,
-          "quantity": 0,
+          "quantity": 19,
           "sku": "XM14-256-BK"
         },
         {
           "title": "512GB — Jade Green",
           "price": 82990,
-          "quantity": 0,
+          "quantity": 11,
           "sku": "XM14-512-JG"
         }
       ]
@@ -379,19 +379,19 @@
         {
           "title": "256GB — Meadow Green",
           "price": 56990,
-          "quantity": 0,
+          "quantity": 18,
           "sku": "XM13TP-256-MG"
         },
         {
           "title": "512GB — Black",
           "price": 62990,
-          "quantity": 0,
+          "quantity": 10,
           "sku": "XM13TP-512-BK"
         },
         {
           "title": "1TB — Alpine Blue",
           "price": 71990,
-          "quantity": 0,
+          "quantity": 17,
           "sku": "XM13TP-1TB-AB"
         }
       ]
@@ -406,13 +406,13 @@
         {
           "title": "256GB — Fusion Purple",
           "price": 38990,
-          "quantity": 0,
+          "quantity": 9,
           "sku": "RN13PP-256-PR"
         },
         {
           "title": "512GB — Midnight Black",
           "price": 42990,
-          "quantity": 0,
+          "quantity": 16,
           "sku": "RN13PP-512-BK"
         }
       ]
@@ -427,19 +427,19 @@
         {
           "title": "128GB — Ocean Teal",
           "price": 28990,
-          "quantity": 0,
+          "quantity": 8,
           "sku": "RN13P-128-OT"
         },
         {
           "title": "256GB — Arctic White",
           "price": 32990,
-          "quantity": 0,
+          "quantity": 15,
           "sku": "RN13P-256-AW"
         },
         {
           "title": "512GB — Midnight Black",
           "price": 37990,
-          "quantity": 0,
+          "quantity": 7,
           "sku": "RN13P-512-BK"
         }
       ]
@@ -454,13 +454,13 @@
         {
           "title": "256GB — Amarelo",
           "price": 27990,
-          "quantity": 0,
+          "quantity": 14,
           "sku": "POCOX6P-256-YL"
         },
         {
           "title": "512GB — Cinzento",
           "price": 31990,
-          "quantity": 0,
+          "quantity": 6,
           "sku": "POCOX6P-512-GY"
         }
       ]
@@ -476,13 +476,13 @@
         {
           "title": "128GB Wi-Fi — Grafite",
           "price": 31990,
-          "quantity": 0,
+          "quantity": 13,
           "sku": "PAD6-128-GF"
         },
         {
           "title": "256GB Wi-Fi — Azul",
           "price": 36990,
-          "quantity": 0,
+          "quantity": 20,
           "sku": "PAD6-256-BL"
         }
       ]
@@ -497,13 +497,13 @@
         {
           "title": "64GB — Meia-noite",
           "price": 34990,
-          "quantity": 0,
+          "quantity": 12,
           "sku": "IPSE3-64-MN"
         },
         {
           "title": "128GB — Estelar",
           "price": 39990,
-          "quantity": 0,
+          "quantity": 19,
           "sku": "IPSE3-128-ST"
         }
       ]
@@ -518,13 +518,13 @@
         {
           "title": "64GB — Branco",
           "price": 38990,
-          "quantity": 0,
+          "quantity": 11,
           "sku": "IP12-64-WH-SN"
         },
         {
           "title": "128GB — Azul",
           "price": 42990,
-          "quantity": 0,
+          "quantity": 18,
           "sku": "IP12-128-BL-SN"
         }
       ]
@@ -539,13 +539,13 @@
         {
           "title": "128GB — Mint",
           "price": 47990,
-          "quantity": 0,
+          "quantity": 10,
           "sku": "S23FE-128-MT"
         },
         {
           "title": "256GB — Graphite",
           "price": 52990,
-          "quantity": 0,
+          "quantity": 17,
           "sku": "S23FE-256-GF"
         }
       ]
@@ -560,13 +560,13 @@
         {
           "title": "128GB — Awesome Lilac",
           "price": 31990,
-          "quantity": 0,
+          "quantity": 9,
           "sku": "A35-128-LC"
         },
         {
           "title": "256GB — Awesome Navy",
           "price": 35990,
-          "quantity": 0,
+          "quantity": 16,
           "sku": "A35-256-NV"
         }
       ]
@@ -581,13 +581,13 @@
         {
           "title": "256GB — Black",
           "price": 47990,
-          "quantity": 0,
+          "quantity": 8,
           "sku": "XM13T-256-BK"
         },
         {
           "title": "256GB — Meadow Green",
           "price": 47990,
-          "quantity": 0,
+          "quantity": 15,
           "sku": "XM13T-256-MG"
         }
       ]
@@ -602,13 +602,13 @@
         {
           "title": "256GB — Verde",
           "price": 35990,
-          "quantity": 0,
+          "quantity": 7,
           "sku": "POCOF6-256-GR"
         },
         {
           "title": "512GB — Preto",
           "price": 39990,
-          "quantity": 0,
+          "quantity": 14,
           "sku": "POCOF6-512-BK"
         }
       ]
@@ -623,13 +623,13 @@
         {
           "title": "128GB — Azul",
           "price": 18990,
-          "quantity": 0,
+          "quantity": 6,
           "sku": "R13-128-BL"
         },
         {
           "title": "256GB — Preto",
           "price": 21990,
-          "quantity": 0,
+          "quantity": 13,
           "sku": "R13-256-BK"
         }
       ]
@@ -644,13 +644,13 @@
         {
           "title": "256GB — Roxo",
           "price": 44990,
-          "quantity": 0,
+          "quantity": 20,
           "sku": "MOTOE50P-256-VT"
         },
         {
           "title": "512GB — Preto",
           "price": 49990,
-          "quantity": 0,
+          "quantity": 12,
           "sku": "MOTOE50P-512-BK"
         }
       ]
@@ -665,13 +665,13 @@
         {
           "title": "128GB — Branco",
           "price": 28990,
-          "quantity": 0,
+          "quantity": 19,
           "sku": "NTH2A-128-WH"
         },
         {
           "title": "256GB — Preto",
           "price": 31990,
-          "quantity": 0,
+          "quantity": 11,
           "sku": "NTH2A-256-BK"
         }
       ]
@@ -686,13 +686,13 @@
         {
           "title": "128GB — Obsidian",
           "price": 82990,
-          "quantity": 0,
+          "quantity": 18,
           "sku": "P8P-128-OBS"
         },
         {
           "title": "256GB — Bay",
           "price": 89990,
-          "quantity": 0,
+          "quantity": 10,
           "sku": "P8P-256-BAY"
         }
       ]
@@ -707,13 +707,13 @@
         {
           "title": "256GB — Flowy Emerald",
           "price": 71990,
-          "quantity": 0,
+          "quantity": 17,
           "sku": "OP12-256-FE"
         },
         {
           "title": "512GB — Silky Black",
           "price": 79990,
-          "quantity": 0,
+          "quantity": 9,
           "sku": "OP12-512-SB"
         }
       ]
