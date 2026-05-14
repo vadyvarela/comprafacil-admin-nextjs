@@ -39,6 +39,7 @@ export const CUSTOMER_DETAILS = gql`
         state
         zip
         country
+        phone
         isDefault
       }
     }
@@ -63,6 +64,7 @@ export const CUSTOMER_DETAILS_BY_EXTERNAL_ID = gql`
         state
         zip
         country
+        phone
         isDefault
       }
     }

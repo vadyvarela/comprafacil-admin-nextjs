@@ -16,6 +16,7 @@ export interface AddressResponse {
   state?: string
   zip?: string
   country?: string
+  phone?: string | null
   metadata?: string
   status?: DomainModel
   isDefault?: boolean

@@ -19,7 +19,10 @@ import type {
   OrderItemResponse,
   ShippingAddressFromMetadata,
 } from "@/lib/graphql/orders/types"
-import type { CustomerDetailsResponse } from "@/lib/graphql/customers/types"
+import type {
+  AddressResponse,
+  CustomerDetailsResponse,
+} from "@/lib/graphql/customers/types"
 import {
   getOrderStatusLabel,
   getOrderStatusClass,
@@ -32,22 +35,50 @@ type OrderDetailProps = {
   customerDetails?: CustomerDetailsResponse | null
 }
 
-function formatAddressLine(addr: {
-  address1?: string | null
-  address2?: string | null
-  city?: string | null
-  state?: string | null
-  zip?: string | null
-  country?: string | null
-}): string[] {
-  const lines: string[] = []
-  if (addr.address1?.trim()) lines.push(addr.address1.trim())
-  if (addr.address2?.trim()) lines.push(addr.address2.trim())
-  const cityState = [addr.city, addr.state].filter(Boolean).join(", ")
-  const zipCountry = [addr.zip, addr.country].filter(Boolean).join(" ")
-  const loc = [cityState, zipCountry].filter(Boolean).join(" — ")
-  if (loc) lines.push(loc)
-  return lines
+function phoneFromAddressLegacy(metadata: string | null | undefined): string | null {
+  if (!metadata?.trim()) return null
+  try {
+    const o = JSON.parse(metadata) as { phone?: string }
+    const p = o?.phone
+    return typeof p === "string" && p.trim() ? p.trim() : null
+  } catch {
+    return null
+  }
+}
+
+function addressToShippingView(addr: AddressResponse): ShippingAddressFromMetadata {
+  const phone =
+    (typeof addr.phone === "string" && addr.phone.trim() ? addr.phone.trim() : null) ??
+    phoneFromAddressLegacy(addr.metadata)
+  return {
+    address1: addr.address1 ?? null,
+    address2: addr.address2 ?? null,
+    city: addr.city ?? null,
+    state: addr.state ?? null,
+    zip: addr.zip ?? null,
+    country: addr.country ?? null,
+    phone,
+  }
+}
+
+function resolveDisplayShipping(
+  sessionAddr: ShippingAddressFromMetadata | null,
+  customerDetails: CustomerDetailsResponse | null | undefined
+): { source: "session" | "profile"; addr: ShippingAddressFromMetadata } | null {
+  if (
+    sessionAddr &&
+    (sessionAddr.address1?.trim() ||
+      sessionAddr.city?.trim() ||
+      sessionAddr.zip?.trim() ||
+      sessionAddr.country?.trim() ||
+      sessionAddr.phone?.trim())
+  ) {
+    return { source: "session", addr: sessionAddr }
+  }
+  const list = customerDetails?.addresses
+  if (!list?.length) return null
+  const pick = list.find((a) => a.isDefault) ?? list[0]
+  return { source: "profile", addr: addressToShippingView(pick) }
 }
 
 function getShippingAddressFromMetadata(
@@ -61,7 +92,8 @@ function getShippingAddressFromMetadata(
     }
     const addr = parsed.basePayload?.shippingAddress ?? parsed.shippingAddress ?? null
     if (!addr || typeof addr !== "object") return null
-    if (addr.address1 || addr.city || addr.zip || addr.country) return addr as ShippingAddressFromMetadata
+    const s = addr as ShippingAddressFromMetadata
+    if (s.address1 || s.city || s.zip || s.country || s.phone?.trim()) return s
     return null
   } catch {
     return null
@@ -108,7 +140,11 @@ function SectionCard({
 
 export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
   const shippingFromMetadata = getShippingAddressFromMetadata(order.metadata)
-  const customerPhone = shippingFromMetadata?.phone ?? order.customer?.phone ?? customerDetails?.phone
+  const displayShipping = resolveDisplayShipping(shippingFromMetadata, customerDetails)
+  const accountPhone =
+    order.customer?.phone?.trim() || customerDetails?.phone?.trim() || null
+  const deliveryPhone =
+    displayShipping?.addr.phone?.trim() || accountPhone || null
   const totalLines =
     order.lines?.reduce(
       (sum: number, line: OrderItemResponse) => sum + line.quantity * line.unitAmount,
@@ -201,26 +237,57 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                 </div>
               </SectionCard>
 
-              {order.customer && (
-                <SectionCard icon={User} iconBg="bg-violet-50" iconColor="text-violet-700" title="Cliente">
+              {(order.customer || customerDetails) && (
+                <SectionCard icon={User} iconBg="bg-violet-50" iconColor="text-violet-700" title="Dados do cliente">
                   <div className="px-4 py-1">
-                    {order.customer.name && (
-                      <InfoRow label="Nome" value={<span className="font-semibold">{order.customer.name}</span>} />
+                    {(order.customer?.name || customerDetails?.name) && (
+                      <InfoRow
+                        label="Nome"
+                        value={
+                          <span className="font-semibold">
+                            {order.customer?.name || customerDetails?.name}
+                          </span>
+                        }
+                      />
                     )}
-                    {order.customer.email && (
-                      <InfoRow label="Email" value={<span className="break-all">{order.customer.email}</span>} />
+                    {(order.customer?.email || customerDetails?.email) && (
+                      <InfoRow
+                        label="Email"
+                        value={
+                          <span className="break-all">
+                            {order.customer?.email || customerDetails?.email}
+                          </span>
+                        }
+                      />
                     )}
-                    {order.customer.identifier && (
+                    <InfoRow
+                      label="Telefone"
+                      value={
+                        accountPhone ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
+                            {accountPhone}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground font-normal">—</span>
+                        )
+                      }
+                    />
+                    {(order.customer?.identifier || customerDetails?.identifier) && (
                       <InfoRow
                         label="Identificador"
-                        value={<span className="font-mono text-[10px] break-all">{order.customer.identifier}</span>}
+                        value={
+                          <span className="font-mono text-[10px] break-all">
+                            {order.customer?.identifier || customerDetails?.identifier}
+                          </span>
+                        }
                       />
                     )}
                   </div>
-                  {order.customer.id && (
+                  {(order.customer?.id || customerDetails?.id) && (
                     <div className="px-4 pb-3">
                       <Button variant="outline" size="sm" className="h-7 text-xs gap-1.5 w-full" asChild>
-                        <Link href={`/dashboard/customers/${order.customer.id}`}>
+                        <Link href={`/dashboard/customers/${order.customer?.id ?? customerDetails?.id}`}>
                           <ExternalLink className="h-3 w-3" />
                           Ver perfil do cliente
                         </Link>
@@ -230,34 +297,89 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                 </SectionCard>
               )}
 
-              {(shippingFromMetadata || customerPhone || order.customer?.id) && (
-                <SectionCard icon={MapPin} iconBg="bg-amber-50" iconColor="text-amber-800" title="Endereço de entrega">
-                  <div className="px-4 py-3">
-                    {shippingFromMetadata ? (
-                      <div className="space-y-0.5">
-                        {formatAddressLine(shippingFromMetadata).map((line, i) => (
-                          <p key={i} className="text-xs font-medium text-foreground">{line}</p>
-                        ))}
-                      </div>
-                    ) : (
+              {(displayShipping || deliveryPhone || order.customer?.id || customerDetails?.id) && (
+                <SectionCard
+                  icon={MapPin}
+                  iconBg="bg-amber-50"
+                  iconColor="text-amber-800"
+                  title="Morada de entrega"
+                  badge={
+                    displayShipping ? (
+                      <span className="text-[10px] font-medium text-muted-foreground rounded border border-border/60 bg-muted/30 px-1.5 py-0.5">
+                        {displayShipping.source === "session" ? "No pedido" : "Perfil"}
+                      </span>
+                    ) : undefined
+                  }
+                >
+                  <div className="px-4 py-1">
+                    {displayShipping ? (
                       <>
+                        <InfoRow
+                          label="Morada"
+                          value={displayShipping.addr.address1?.trim() || "—"}
+                        />
+                        <InfoRow
+                          label="Complemento"
+                          value={displayShipping.addr.address2?.trim() || "—"}
+                        />
+                        <InfoRow
+                          label="Cidade"
+                          value={displayShipping.addr.city?.trim() || "—"}
+                        />
+                        <InfoRow
+                          label="Ilha"
+                          value={displayShipping.addr.state?.trim() || "—"}
+                        />
+                        <InfoRow
+                          label="Cód. postal"
+                          value={displayShipping.addr.zip?.trim() || "—"}
+                        />
+                        <InfoRow
+                          label="País"
+                          value={displayShipping.addr.country?.trim() || "—"}
+                        />
+                        <InfoRow
+                          label="Telefone (contacto entrega)"
+                          value={
+                            deliveryPhone ? (
+                              <span className="inline-flex items-center gap-1.5">
+                                <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
+                                {deliveryPhone}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground font-normal">—</span>
+                            )
+                          }
+                        />
+                      </>
+                    ) : (
+                      <div className="py-2">
                         <p className="text-xs text-muted-foreground mb-2">
-                          Endereço não registado neste pedido.
+                          Morada não registada no pedido nem no perfil.
                         </p>
-                        {order.customer?.id && (
+                        {order.customer?.id || customerDetails?.id ? (
                           <Button variant="ghost" size="sm" className="h-7 text-xs gap-1.5 -ml-2" asChild>
-                            <Link href={`/dashboard/customers/${order.customer.id}`}>
+                            <Link
+                              href={`/dashboard/customers/${order.customer?.id ?? customerDetails?.id}`}
+                            >
                               <ExternalLink className="h-3 w-3" />
-                              Ver endereços do cliente
+                              Ver dados do cliente
                             </Link>
                           </Button>
+                        ) : null}
+                        {deliveryPhone && (
+                          <div className="mt-3 pt-2 border-t border-border/50">
+                            <InfoRow
+                              label="Telefone (conta)"
+                              value={
+                                <span className="inline-flex items-center gap-1.5">
+                                  <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
+                                  {deliveryPhone}
+                                </span>
+                              }
+                            />
+                          </div>
                         )}
-                      </>
-                    )}
-                    {customerPhone && (
-                      <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-border/50">
-                        <Phone className="h-3 w-3 text-muted-foreground shrink-0" />
-                        <span className="text-xs font-medium text-foreground">{customerPhone}</span>
                       </div>
                     )}
                   </div>
