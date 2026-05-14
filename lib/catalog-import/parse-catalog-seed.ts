@@ -6,6 +6,37 @@ import type {
 } from "./types"
 import { seedVariantAttributes } from "./variant-metadata"
 
+/** Normaliza texto de referência (slug ou nome vindo do JSON). */
+export function normalizeCatalogRef(s: string): string {
+  return String(s ?? "")
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+}
+
+/** Gera variantes comuns (singular/plural) para casar com slugs na BD (ex.: smartphone ↔ smartphones). */
+function refMatchCandidates(hint: string): string[] {
+  const base = normalizeCatalogRef(hint)
+  if (!base) return []
+  const out: string[] = []
+  const push = (x: string) => {
+    if (x && !out.includes(x)) out.push(x)
+  }
+  push(base)
+  if (base.endsWith("s") && base.length > 2) {
+    push(base.slice(0, -1))
+    if (base.endsWith("es") && base.length > 3) push(base.slice(0, -2))
+  } else {
+    push(`${base}s`)
+    push(`${base}es`)
+  }
+  return out
+}
+
 export function getCategoryHint(p: CatalogSeedProduct): string {
   return (p.categorySlug ?? p.categoryName ?? "").trim()
 }
@@ -18,12 +49,16 @@ function matchEntityId(
   hint: string,
   list: { id: string; name: string; slug: string }[]
 ): string | null {
-  const q = hint.trim().toLowerCase()
-  if (!q) return null
-  const bySlug = list.find((x) => (x.slug ?? "").toLowerCase() === q)
-  if (bySlug) return bySlug.id
-  const byName = list.find((x) => x.name.toLowerCase() === q)
-  if (byName) return byName.id
+  const candidates = refMatchCandidates(hint)
+  if (!candidates.length) return null
+  for (const q of candidates) {
+    const bySlug = list.find((x) => normalizeCatalogRef(x.slug ?? "") === q)
+    if (bySlug) return bySlug.id
+  }
+  for (const q of candidates) {
+    const byName = list.find((x) => normalizeCatalogRef(x.name) === q)
+    if (byName) return byName.id
+  }
   return null
 }
 
@@ -134,10 +169,26 @@ export function parseCatalogSeedJson(raw: string): { ok: true; data: CatalogSeed
   return { ok: true, data: { meta: root.meta, products: products as CatalogSeedProduct[] } }
 }
 
+function checkVariantAxisConsistency(p: CatalogSeedProduct): string | null {
+  if (!p.variants || p.variants.length <= 1) return null
+  try {
+    const keySets = p.variants.map((v) =>
+      Object.keys(seedVariantAttributes(p, v)).sort().join("|")
+    )
+    if (new Set(keySets).size > 1) {
+      return "Todas as variantes devem partilhar as mesmas chaves em «attributes» (ou o mesmo eixo «variantOptionTitle» + «title»)."
+    }
+  } catch (e) {
+    return e instanceof Error ? e.message : String(e)
+  }
+  return null
+}
+
 export function collectImportIssues(
   data: CatalogSeedFile,
   categories: { id: string; name: string; slug: string }[],
-  brands: { id: string; name: string; slug: string }[]
+  brands: { id: string; name: string; slug: string }[],
+  opts?: { skipEntityResolution?: boolean }
 ): CatalogImportRowIssue[] {
   const issues: CatalogImportRowIssue[] = []
   data.products.forEach((p, i) => {
@@ -145,22 +196,17 @@ export function collectImportIssues(
     const title = typeof p?.title === "string" ? p.title : `(índice ${i})`
     const messages = [...shape]
     if (shape.length === 0) {
-      const r = resolveProductRefs(p, categories, brands)
-      if (!r.categoryId) messages.push(`Categoria não encontrada: «${r.categoryHint}»`)
-      if (!r.brandId) messages.push(`Marca não encontrada: «${r.brandHint}»`)
-      if (r.categoryId && r.brandId && p.variants.length > 1) {
-        try {
-          const keySets = p.variants.map((v) =>
-            Object.keys(seedVariantAttributes(p, v)).sort().join("|")
-          )
-          if (new Set(keySets).size > 1) {
-            messages.push(
-              "Todas as variantes devem partilhar as mesmas chaves em «attributes» (ou o mesmo eixo «variantOptionTitle» + «title»)."
-            )
-          }
-        } catch (e) {
-          messages.push(e instanceof Error ? e.message : String(e))
+      if (!opts?.skipEntityResolution) {
+        const r = resolveProductRefs(p, categories, brands)
+        if (!r.categoryId) messages.push(`Categoria não encontrada: «${r.categoryHint}»`)
+        if (!r.brandId) messages.push(`Marca não encontrada: «${r.brandHint}»`)
+        if (r.categoryId && r.brandId) {
+          const axis = checkVariantAxisConsistency(p)
+          if (axis) messages.push(axis)
         }
+      } else {
+        const axis = checkVariantAxisConsistency(p)
+        if (axis) messages.push(axis)
       }
     }
     if (messages.length) issues.push({ productIndex: i, title, messages })

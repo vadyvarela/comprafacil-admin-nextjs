@@ -1,7 +1,6 @@
 "use client"
 
 import { ApolloClient, InMemoryCache, createHttpLink, from } from "@apollo/client"
-import { onError } from "@apollo/client/link/error"
 import { RetryLink } from "@apollo/client/link/retry"
 
 // Link de retry configurado para tentar novamente em caso de erros temporários
@@ -39,28 +38,9 @@ const httpLink = createHttpLink({
 
 export const gtwClient = new ApolloClient({
   ssrMode: false,
-  link: from([
-    onError((arg) => {
-      const { graphQLErrors, networkError, forward } = arg as unknown as {
-        graphQLErrors?: { message: string; locations?: unknown; path?: unknown }[]
-        networkError?: unknown
-        forward: () => unknown
-      }
-      if (graphQLErrors) {
-        graphQLErrors.forEach(({ message, locations, path }) => {
-          console.error(
-            `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-          )
-        })
-      }
-      if (networkError) {
-        console.error(`[Network error]: ${networkError}`)
-      }
-      return forward() as ReturnType<Parameters<typeof onError>[0]>
-    }),
-    retryLink,
-    httpLink,
-  ]),
+  // Não usar ErrorLink/onError aqui: no Apollo 4 o link de erro acede a `operation.client`
+  // antes de estar definido em algumas operações, o que rebenta o `mutate` (ex.: import JSON).
+  link: from([retryLink, httpLink]),
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {

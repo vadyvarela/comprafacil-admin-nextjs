@@ -68,10 +68,12 @@ export default function ImportCatalogPage() {
 
   const issues = useMemo(() => {
     if (!parsed) return []
-    return collectImportIssues(parsed, categories, brands)
-  }, [parsed, categories, brands])
+    return collectImportIssues(parsed, categories, brands, {
+      skipEntityResolution: listsLoading,
+    })
+  }, [parsed, categories, brands, listsLoading])
 
-  const ready = Boolean(parsed) && isCatalogImportReady(issues) && !parseError
+  const ready = Boolean(parsed) && !listsLoading && isCatalogImportReady(issues) && !parseError
 
   const validateText = useCallback(
     (text: string) => {
@@ -225,7 +227,9 @@ export default function ImportCatalogPage() {
             <code className="text-[11px]">variantOptionTitle</code> (p.ex. «Armazenamento») +{" "}
             <code className="text-[11px]">title</code> em cada variante — necessário para o selector na loja. Opcional:{" "}
             <code className="text-[11px]">attributes</code> por variante para várias dimensões. Categoria e marca por{" "}
-            <code className="text-[11px]">slug</code> ou nome.
+            <code className="text-[11px]">slug</code> ou nome (aceita singular/plural e traços; ex.{" "}
+            <code className="text-[11px]">smartphone</code> casa com slug <code className="text-[11px]">smartphones</code>
+            ).
           </p>
         </div>
 
@@ -283,6 +287,12 @@ export default function ImportCatalogPage() {
 
         {parsed && (
           <div className="rounded-lg border border-border/80 bg-card px-3 py-2 text-xs space-y-1">
+            {listsLoading ? (
+              <p className="text-muted-foreground flex items-center gap-1.5">
+                <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                A carregar categorias e marcas para validar slugs…
+              </p>
+            ) : null}
             <p className="font-medium text-foreground">
               {parsed.products.length} produto(s) · {issues.length ? `${issues.length} com erros` : "pronto a importar"}
             </p>
