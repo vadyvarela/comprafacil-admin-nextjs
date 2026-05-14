@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useQuery } from "@apollo/client/react"
-import { Upload, FileJson, Play, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
+import { Upload, Play, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import { CREATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { CREATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
 import { GET_CATEGORY_LIST } from "@/lib/graphql/categories/queries"
@@ -18,7 +18,6 @@ import {
   isCatalogImportReady,
   resolveProductRefs,
 } from "@/lib/catalog-import/parse-catalog-seed"
-import { getDefaultCatalogSeedText } from "@/lib/catalog-import/default-seed-text"
 import type { CatalogSeedFile, CatalogSeedProduct } from "@/lib/catalog-import/types"
 import {
   productOptionCatalogFromVariants,
@@ -29,6 +28,26 @@ import {
 type LogLine =
   | { kind: "ok"; text: string }
   | { kind: "err"; text: string }
+
+const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms))
+
+/** Mutations em série podem receber 429 do proxy; espera e repete. */
+async function with429Retry<T>(label: string, fn: () => Promise<T>): Promise<T> {
+  let last: unknown
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      return await fn()
+    } catch (e) {
+      last = e
+      const msg = e instanceof Error ? e.message : String(e)
+      if (!/429|too many|rate limit/i.test(msg)) throw e
+      const backoff = Math.min(2000 + attempt * 1500, 20_000)
+      await sleep(backoff)
+    }
+  }
+  if (last instanceof Error) throw last
+  throw new Error(`${label}: limite de pedidos (429) após várias tentativas`)
+}
 
 function buildProductMetadata(p: CatalogSeedProduct): string | null {
   const m: Record<string, unknown> = {}
@@ -108,39 +127,57 @@ export default function ImportCatalogPage() {
     for (let i = 0; i < products.length; i++) {
       const p = products[i]
       setProgress({ current: i + 1, total: products.length })
+
+      const preflight = collectImportIssues(
+        { meta: parsed.meta, products: [p] },
+        categories,
+        brands,
+        { skipEntityResolution: false }
+      )
+      if (preflight.length > 0) {
+        fail++
+        const detail = preflight.flatMap((row) => row.messages).join("; ")
+        setLog((l) => [...l, { kind: "err", text: `✗ ${p.title}: ${detail}` }])
+        continue
+      }
+
       const { categoryId, brandId } = resolveProductRefs(p, categories, brands)
       if (!categoryId || !brandId) {
         fail++
-        setLog((l) => [...l, { kind: "err", text: `✗ ${p.title}: categoria ou marca não resolvida` }])
+        setLog((l) => [...l, { kind: "err", text: `✗ ${p.title}: categoria ou marca não resolvida (interno)` }])
         continue
       }
+
       try {
         const discount =
           p.discount != null && Number.isFinite(p.discount)
             ? Math.min(100, Math.max(0, Math.round(p.discount)))
             : null
-        const result = await gtwClient.mutate<{
-          createProduct: { id: string }
-        }>({
-          mutation: CREATE_PRODUCT,
-          variables: {
-            input: {
-              title: p.title.trim(),
-              summary: p.summary?.trim() || null,
-              discount,
-              type: { code: "TICKET" },
-              metadata: buildProductMetadata(p),
-              condition: p.condition,
-              categoryId,
-              brandId,
-              stockData: {
-                name: `Stock - ${p.title.trim()}`,
-                quantity: 0,
+        const result = await with429Retry(`createProduct: ${p.title}`, () =>
+          gtwClient.mutate<{
+            createProduct: { id: string }
+          }>({
+            mutation: CREATE_PRODUCT,
+            variables: {
+              input: {
+                title: p.title.trim(),
+                summary: p.summary?.trim() || null,
+                discount,
+                type: { code: "TICKET" },
+                metadata: buildProductMetadata(p),
+                condition: p.condition,
+                categoryId,
+                brandId,
+                stockData: {
+                  name: `Stock - ${p.title.trim()}`,
+                  quantity: 0,
+                },
               },
             },
-          },
-          errorPolicy: "all",
-        })
+            errorPolicy: "all",
+          })
+        )
+        await sleep(120)
         if (result.error) {
           throw new Error(result.error.message)
         }
@@ -152,23 +189,26 @@ export default function ImportCatalogPage() {
           const variantMeta: Record<string, unknown> = { attributes: attrs }
           if (v.sku?.trim()) variantMeta.sku = v.sku.trim()
           const variantTitle = v.title?.trim() || variantTitleFromAttributes(attrs)
-          const vr = await gtwClient.mutate({
-            mutation: CREATE_PRODUCT_VARIANT,
-            variables: {
-              input: {
-                productId,
-                title: variantTitle,
-                quantity: v.quantity,
-                metadata: JSON.stringify(variantMeta),
-                priceData: {
-                  nickname: "Preço",
-                  unitAmount: Math.round(v.price * 100),
-                  currency: "CVE",
+          const vr = await with429Retry(`variant: ${p.title}`, () =>
+            gtwClient.mutate({
+              mutation: CREATE_PRODUCT_VARIANT,
+              variables: {
+                input: {
+                  productId,
+                  title: variantTitle,
+                  quantity: v.quantity,
+                  metadata: JSON.stringify(variantMeta),
+                  priceData: {
+                    nickname: "Preço",
+                    unitAmount: Math.round(v.price * 100),
+                    currency: "CVE",
+                  },
                 },
               },
-            },
-            errorPolicy: "all",
-          })
+              errorPolicy: "all",
+            })
+          )
+          await sleep(120)
           if (vr.error) {
             throw new Error(vr.error.message)
           }
@@ -180,6 +220,7 @@ export default function ImportCatalogPage() {
         const msg = e instanceof Error ? e.message : String(e)
         setLog((l) => [...l, { kind: "err", text: `✗ ${p.title}: ${msg}` }])
       }
+      await sleep(80)
     }
 
     try {
@@ -233,20 +274,6 @@ export default function ImportCatalogPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={listsLoading}
-            onClick={() => {
-              const t = getDefaultCatalogSeedText()
-              setJsonText(t)
-              validateText(t)
-            }}
-          >
-            <FileJson className="h-3.5 w-3.5 mr-1.5" />
-            Carregar exemplo do repositório
-          </Button>
           <Button
             type="button"
             variant="outline"

@@ -2,13 +2,22 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
 import { rateLimit } from "@/lib/security/rate-limit"
 
+/** Limite por IP só depois de sessão admin: import JSON gera 1+N mutações por produto; 30/min rebentava o fluxo. */
+const ADMIN_GRAPHQL_BURST: { maxRequests: number; windowMs: number } = {
+  maxRequests: 800,
+  windowMs: 60_000,
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null)
-    if (rateLimited) return rateLimited
-
     const { error } = await requireAdminSession()
     if (error) return error
+
+    const rateLimited = rateLimit(
+      request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null,
+      ADMIN_GRAPHQL_BURST
+    )
+    if (rateLimited) return rateLimited
 
     const body = await request.json()
 
