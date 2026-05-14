@@ -63,8 +63,9 @@ export default function ImportCatalogPage() {
     brandList: { id: string; name: string; slug: string }[]
   }>(GET_BRAND_LIST)
 
-  const categories = catData?.categoryList ?? []
-  const brands = brandData?.brandList ?? []
+  const categories = useMemo(() => catData?.categoryList ?? [], [catData])
+  const brands = useMemo(() => brandData?.brandList ?? [], [brandData])
+  const listsLoading = catLoading || brandLoading
 
   const issues = useMemo(() => {
     if (!parsed) return []
@@ -206,8 +207,6 @@ export default function ImportCatalogPage() {
     reader.readAsText(file, "UTF-8")
     e.target.value = ""
   }
-
-  const listsLoading = catLoading || brandLoading
 
   return (
     <>
