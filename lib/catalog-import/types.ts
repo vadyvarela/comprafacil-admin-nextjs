@@ -17,6 +17,9 @@ export interface CatalogSeedProduct {
   condition: string
   categorySlug?: string
   brandSlug?: string
+  /** Alternativas aceites na importação: «category», «categoria», ou objeto { slug, name }. */
+  category?: string | { slug?: string; name?: string }
+  brand?: string | { slug?: string; name?: string }
   categoryName?: string
   brandName?: string
   discount?: number | null

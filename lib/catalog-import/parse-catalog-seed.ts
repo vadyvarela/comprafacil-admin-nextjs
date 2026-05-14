@@ -9,6 +9,7 @@ import { seedVariantAttributes } from "./variant-metadata"
 /** Normaliza texto de referência (slug ou nome vindo do JSON). */
 export function normalizeCatalogRef(s: string): string {
   return String(s ?? "")
+    .replace(/[\u2018\u2019\u201C\u201D\u00AB\u00BB\uFEFF]/g, "")
     .normalize("NFD")
     .replace(/\p{M}/gu, "")
     .trim()
@@ -37,12 +38,42 @@ function refMatchCandidates(hint: string): string[] {
   return out
 }
 
+/** Lê referência de categoria a partir de vários nomes de campo (JSON de export ou à mão). */
+function pickCategoryRef(o: Record<string, unknown>): string {
+  const keys = ["categorySlug", "categoryName", "category", "categoria"]
+  for (const k of keys) {
+    const v = o[k]
+    if (typeof v === "string" && v.trim()) return v.trim()
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      const nested = v as Record<string, unknown>
+      if (typeof nested.slug === "string" && nested.slug.trim()) return nested.slug.trim()
+      if (typeof nested.name === "string" && nested.name.trim()) return nested.name.trim()
+    }
+  }
+  return ""
+}
+
+/** Lê referência de marca a partir de vários nomes de campo. */
+function pickBrandRef(o: Record<string, unknown>): string {
+  const keys = ["brandSlug", "brandName", "brand", "marca"]
+  for (const k of keys) {
+    const v = o[k]
+    if (typeof v === "string" && v.trim()) return v.trim()
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      const nested = v as Record<string, unknown>
+      if (typeof nested.slug === "string" && nested.slug.trim()) return nested.slug.trim()
+      if (typeof nested.name === "string" && nested.name.trim()) return nested.name.trim()
+    }
+  }
+  return ""
+}
+
 export function getCategoryHint(p: CatalogSeedProduct): string {
-  return (p.categorySlug ?? p.categoryName ?? "").trim()
+  return pickCategoryRef(p as unknown as Record<string, unknown>)
 }
 
 export function getBrandHint(p: CatalogSeedProduct): string {
-  return (p.brandSlug ?? p.brandName ?? "").trim()
+  return pickBrandRef(p as unknown as Record<string, unknown>)
 }
 
 function matchEntityId(
@@ -123,10 +154,10 @@ export function validateProductShape(p: unknown, index: number): string[] {
   if (cond !== "novo" && cond !== "seminovo") {
     err.push(`${path}.condition deve ser "novo" ou "seminovo"`)
   }
-  const ch = String(o.categorySlug ?? o.categoryName ?? "").trim()
-  const bh = String(o.brandSlug ?? o.brandName ?? "").trim()
-  if (!ch) err.push(`${path}: categorySlug ou categoryName obrigatório`)
-  if (!bh) err.push(`${path}: brandSlug ou brandName obrigatório`)
+  const ch = pickCategoryRef(o)
+  const bh = pickBrandRef(o)
+  if (!ch) err.push(`${path}: categorySlug, categoryName, category ou categoria (texto/slug) obrigatório`)
+  if (!bh) err.push(`${path}: brandSlug, brandName, brand ou marca (texto/slug) obrigatório`)
   if (o.discount != null) {
     const d = o.discount
     if (typeof d !== "number" || !Number.isInteger(d) || d < 0 || d > 100) {

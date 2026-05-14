@@ -1,6 +1,7 @@
 "use client"
 
-import { ApolloClient, InMemoryCache, createHttpLink, from } from "@apollo/client"
+import { ApolloClient, InMemoryCache, from } from "@apollo/client"
+import { BaseHttpLink } from "@apollo/client/link/http"
 import { RetryLink } from "@apollo/client/link/retry"
 
 // Link de retry configurado para tentar novamente em caso de erros temporários
@@ -12,7 +13,7 @@ const retryLink = new RetryLink({
   },
   attempts: {
     max: 3,
-      retryIf: (error, _operation) => {
+      retryIf: (error) => {
       const err = error as { networkError?: unknown; graphQLErrors?: { message?: string }[] }
       // Retry apenas para erros de rede ou erros JDBC temporários
       if (err?.networkError) {
@@ -30,16 +31,15 @@ const retryLink = new RetryLink({
   },
 })
 
-// Cliente Apollo que usa API routes do Next.js
-// As variáveis de ambiente ficam no servidor (API routes)
-const httpLink = createHttpLink({
-  uri: "/api/graphql", // API route que faz proxy para o gateway
+// BaseHttpLink em vez de createHttpLink/HttpLink: o HttpLink do Apollo 4 inclui
+// ClientAwarenessLink, que acede a `operation.client` — em mutações sequenciais
+// isso pode falhar intermitentemente ("Cannot read properties of undefined (reading 'client')").
+const httpLink = new BaseHttpLink({
+  uri: "/api/graphql",
 })
 
 export const gtwClient = new ApolloClient({
   ssrMode: false,
-  // Não usar ErrorLink/onError aqui: no Apollo 4 o link de erro acede a `operation.client`
-  // antes de estar definido em algumas operações, o que rebenta o `mutate` (ex.: import JSON).
   link: from([retryLink, httpLink]),
   cache: new InMemoryCache(),
   defaultOptions: {
