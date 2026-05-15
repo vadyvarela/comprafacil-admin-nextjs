@@ -188,7 +188,7 @@ export function ProductGalleryUpload({
           <span className="text-xs font-medium text-muted-foreground">
             Galeria ({images.length}/{MAX_IMAGES})
           </span>
-        </motion.div>
+        </div>
         {busy && (
           <span className="text-[10px] text-muted-foreground flex items-center gap-1">
             <Loader2 className="h-3 w-3 animate-spin" />
