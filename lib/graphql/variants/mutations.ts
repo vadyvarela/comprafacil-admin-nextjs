@@ -6,6 +6,7 @@ export const CREATE_PRODUCT_VARIANT = gql`
       id
       title
       quantity
+      image
       price {
         id
         unitAmount
@@ -22,6 +23,7 @@ export const UPDATE_PRODUCT_VARIANT = gql`
       id
       title
       quantity
+      image
       price {
         id
         unitAmount

@@ -9,7 +9,7 @@ import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { EditProductModal } from "@/components/products/edit-product-modal"
 import { VariantManager } from "@/components/products/variant-manager"
-import { ProductImageUpload } from "@/components/products/product-image-upload"
+import { ProductGalleryUpload } from "@/components/products/product-gallery-upload"
 import { StockModal } from "@/components/products/stock-modal"
 import { Button } from "@/components/ui/button"
 import {
@@ -54,10 +54,13 @@ export default function ProductDetailPage() {
     }
   )
 
-  const { data, loading, error } = useQuery<{ productDetails?: Product }>(GET_PRODUCT, {
-    variables: { id: productId },
-    skip: !productId,
-  })
+  const { data, loading, error, refetch } = useQuery<{ productDetails?: Product }>(
+    GET_PRODUCT,
+    {
+      variables: { id: productId },
+      skip: !productId,
+    },
+  )
 
   const { data: productsData } = useQuery<{
     products?: { data?: Array<{ id: string; brand?: Product["brand"] }> }
@@ -278,7 +281,12 @@ export default function ProductDetailPage() {
               {/* Left sidebar */}
               <div className="space-y-5 lg:col-span-1">
                 <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-                  <ProductImageUpload productId={productId} currentImage={product.image} />
+                  <ProductGalleryUpload
+                    productId={productId}
+                    primaryImage={product.image}
+                    metadata={product.metadata}
+                    onSaved={() => void refetch()}
+                  />
                 </div>
 
                 <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">

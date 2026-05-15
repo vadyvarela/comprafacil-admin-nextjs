@@ -67,6 +67,7 @@ export const GET_PRODUCT = gql`
         id
         title
         quantity
+        image
         price {
           id
           nickname

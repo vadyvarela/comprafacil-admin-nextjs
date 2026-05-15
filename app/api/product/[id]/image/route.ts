@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import {
+  metadataWithGallery,
+  parseProductGalleryUrls,
+} from "@/lib/products/product-gallery-metadata"
 
 export async function PUT(
   request: NextRequest,
@@ -109,6 +113,51 @@ export async function PUT(
         },
         { status: response.status }
       )
+    }
+
+    const newImageUrl =
+      (data?.data?.image as string | undefined) ??
+      (typeof data?.data === "object" &&
+      data.data &&
+      "image" in (data.data as object)
+        ? String((data.data as { image?: string }).image ?? "")
+        : "")
+
+    if (newImageUrl && currentProduct) {
+      const existing = parseProductGalleryUrls(
+        currentProduct.image,
+        currentProduct.metadata,
+      )
+      const withoutDup = existing.filter((u) => u !== newImageUrl)
+      const gallery = [newImageUrl, ...withoutDup]
+      const metadata = metadataWithGallery(currentProduct.metadata, gallery)
+
+      await fetch(`${gtwUrl}/${gtwToken}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${cmsAccessToken}`,
+        },
+        body: JSON.stringify({
+          query: `
+            mutation SyncGalleryMeta($id: UUID!, $input: ProductInput!) {
+              updateProduct(id: $id, input: $input) { id image metadata }
+            }
+          `,
+          variables: {
+            id: productId,
+            input: {
+              title: currentProduct.title,
+              description: currentProduct.description ?? null,
+              type: currentProduct.type ?? { code: "TICKET" },
+              metadata,
+              image: newImageUrl,
+              categoryId: currentProduct.category?.id ?? null,
+              discount: currentProduct.discount ?? null,
+            },
+          },
+        }),
+      })
     }
 
     return NextResponse.json(data, { status: response.status })

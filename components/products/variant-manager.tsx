@@ -132,7 +132,7 @@ export function VariantManager({
           optionValues,
           price: variant.price ? (variant.price.unitAmount / 100).toFixed(2) : "",
           stock: variant.quantity || 0,
-          image: metadata.image || undefined,
+          image: variant.image || metadata.image || undefined,
           sku: metadata.sku || undefined,
         }
       })
@@ -280,6 +280,135 @@ export function VariantManager({
     setVariantCombinations(updated)
   }
 
+  const buildVariantMetadata = (
+    combo: ProductVariantCombination,
+    imageOverride?: string | null,
+  ): string => {
+    const existing = combo.id
+      ? existingVariants.find((v) => v.id === combo.id)
+      : undefined
+    let existingMeta: Record<string, unknown> = {}
+    if (existing?.metadata) {
+      try {
+        existingMeta = JSON.parse(existing.metadata) as Record<string, unknown>
+      } catch {
+        existingMeta = {}
+      }
+    }
+
+    const resolvedImage =
+      imageOverride !== undefined
+        ? (imageOverride ?? "").trim()
+        : combo.image?.trim() ||
+          (typeof existingMeta.image === "string" ? existingMeta.image : "") ||
+          existing?.image?.trim() ||
+          ""
+
+    const metadata: Record<string, unknown> = {
+      ...existingMeta,
+      attributes: combo.optionValues,
+    }
+    if (combo.sku?.trim()) {
+      metadata.sku = combo.sku.trim()
+    } else {
+      delete metadata.sku
+    }
+    if (resolvedImage) {
+      metadata.image = resolvedImage
+    } else {
+      delete metadata.image
+    }
+
+    return JSON.stringify(metadata)
+  }
+
+  const resolveVariantImage = (combo: ProductVariantCombination): string | undefined => {
+    const fromCombo = combo.image?.trim()
+    if (fromCombo) return fromCombo
+    if (!combo.id) return undefined
+    const existing = existingVariants.find((v) => v.id === combo.id)
+    if (existing?.image?.trim()) return existing.image.trim()
+    if (existing?.metadata) {
+      try {
+        const meta = JSON.parse(existing.metadata) as { image?: string }
+        if (typeof meta.image === "string" && meta.image.trim()) return meta.image.trim()
+      } catch {
+        /* ignore */
+      }
+    }
+    return undefined
+  }
+
+  const persistVariantImage = async (
+    combo: ProductVariantCombination,
+    imageUrl: string,
+  ) => {
+    if (!combo.id || !imageUrl.trim()) return
+
+    const comboWithImage = { ...combo, image: imageUrl.trim() }
+    await updateVariant({
+      variables: {
+        id: combo.id,
+        input: {
+          title: Object.values(combo.optionValues).join(" / "),
+          quantity: combo.stock || 0,
+          image: imageUrl.trim(),
+          metadata: buildVariantMetadata(comboWithImage, imageUrl.trim()),
+          productId,
+        },
+      },
+    })
+  }
+
+  const handleVariantImageChange = async (
+    index: number,
+    imageUrl: string,
+  ) => {
+    const combo = variantCombinations[index]
+    if (!combo) return
+
+    updateCombination(index, "image", imageUrl)
+
+    if (!imageUrl.trim()) {
+      if (combo.id) {
+        try {
+          await updateVariant({
+            variables: {
+              id: combo.id,
+              input: {
+                title: Object.values(combo.optionValues).join(" / "),
+                quantity: combo.stock || 0,
+                image: "",
+                metadata: buildVariantMetadata({ ...combo, image: "" }, null),
+                productId,
+              },
+            },
+          })
+        } catch {
+          /* ignore */
+        }
+      }
+      return
+    }
+
+    if (!combo.id) {
+      showToast.info(
+        "Imagem carregada",
+        "Clica «Salvar Todas as Variantes» para gravar esta combinação na API.",
+      )
+      return
+    }
+
+    try {
+      await persistVariantImage({ ...combo, image: imageUrl.trim() }, imageUrl.trim())
+      showToast.success("Imagem guardada", "A imagem da variante foi gravada na API.")
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Erro ao guardar imagem da variante"
+      showToast.error("Erro", message)
+    }
+  }
+
   const saveAllVariants = async () => {
     if (savingVariants) return
 
@@ -294,15 +423,8 @@ export function VariantManager({
           return
         }
 
-        const metadata: Record<string, any> = {
-          attributes: combo.optionValues,
-        }
-        if (combo.sku) {
-          metadata.sku = combo.sku
-        }
-        if (combo.image) {
-          metadata.image = combo.image
-        }
+        const imageUrl = resolveVariantImage(combo)
+        const metadataJson = buildVariantMetadata(combo, imageUrl)
 
         const priceData = {
           nickname: "Preço padrão",
@@ -318,7 +440,8 @@ export function VariantManager({
               input: {
                 title: Object.values(combo.optionValues).join(" / "),
                 quantity: combo.stock || 0,
-                metadata: JSON.stringify(metadata),
+                ...(imageUrl ? { image: imageUrl } : {}),
+                metadata: metadataJson,
                 productId,
               },
             },
@@ -343,7 +466,8 @@ export function VariantManager({
                 productId,
                 title: Object.values(combo.optionValues).join(" / "),
                 quantity: combo.stock || 0,
-                metadata: JSON.stringify(metadata),
+                ...(imageUrl ? { image: imageUrl } : {}),
+                metadata: metadataJson,
                 priceData,
               },
             },
@@ -553,7 +677,7 @@ export function VariantManager({
                           <tbody>
                             {variantCombinations.map((combo, index) => (
                               <tr
-                                key={index}
+                                key={combo.id ?? `combo-${index}`}
                                 className="border-b hover:bg-muted/30 transition-colors"
                               >
                                 <td className="p-3">
@@ -590,9 +714,12 @@ export function VariantManager({
                                 </td>
                                 <td className="p-3">
                                   <VariantImageUpload
+                                    key={`${combo.id ?? index}-${combo.image ?? "empty"}`}
                                     value={combo.image || ""}
-                                    onChange={(imageUrl) => updateCombination(index, "image", imageUrl)}
-                                    disabled={false}
+                                    onChange={(imageUrl) =>
+                                      void handleVariantImageChange(index, imageUrl)
+                                    }
+                                    disabled={savingVariants}
                                   />
                                 </td>
                                 <td className="p-3">

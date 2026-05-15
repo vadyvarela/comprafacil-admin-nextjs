@@ -51,6 +51,7 @@ export interface ProductVariant {
   id: string
   title: string
   quantity: number
+  image?: string | null
   price?: {
     id: string
     nickname?: string
@@ -86,12 +87,20 @@ export interface ProductVariantInput {
   productId: string
   title: string
   quantity: number
+  image?: string | null
   metadata?: string | null
+  priceData?: {
+    nickname: string
+    unitAmount: number
+    currency: string
+  }
 }
 
 export interface ProductVariantUpdateInput {
+  productId: string
   title?: string
   quantity?: number
+  image?: string | null
   metadata?: string | null
 }
 
