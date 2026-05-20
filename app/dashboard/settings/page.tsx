@@ -18,6 +18,14 @@ import {
 
 const SETTINGS_SECTIONS = [
   {
+    title: "Manutenção",
+    description: "Modo manutenção da loja pública e mensagem",
+    icon: Construction,
+    color: "text-amber-900",
+    bg: "bg-amber-50 border border-border/60",
+    href: "/dashboard/settings/maintenance",
+  },
+  {
     title: "Loja",
     description: "Nome, logo, moeda e informações gerais",
     icon: Store,
