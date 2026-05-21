@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useMemo, useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
@@ -44,7 +44,7 @@ const EMPTY_TIER = {
 }
 
 export default function ShippingSettingsPage() {
-  const [islandId, setIslandId] = useState("")
+  const [selectedIslandId, setSelectedIslandId] = useState<string | null>(null)
   const [method, setMethod] = useState<DeliveryMethod>("HOME")
   const [tierForm, setTierForm] = useState(EMPTY_TIER)
   const [editingTierId, setEditingTierId] = useState<string | null>(null)
@@ -53,13 +53,22 @@ export default function ShippingSettingsPage() {
   const cvCountryId = useMemo(() => {
     const list = countriesData?.countries ?? []
     const cv = list.find((c) => c.name?.toLowerCase().includes("cabo"))
-    return cv?.id ?? list[0]?.id ?? ""
+    return cv?.id ?? ""
   }, [countriesData])
 
   const { data: statesData, loading: statesLoading } = useQuery<StatesQueryData>(GET_STATES, {
     variables: { countryId: cvCountryId },
     skip: !cvCountryId,
   })
+
+  const { states, islandId } = useMemo(() => {
+    const list = statesData?.states ?? []
+    const id =
+      selectedIslandId && list.some((s) => s.id === selectedIslandId)
+        ? selectedIslandId
+        : (list[0]?.id ?? "")
+    return { states: list, islandId: id }
+  }, [selectedIslandId, statesData?.states])
 
   const {
     data: tiersData,
@@ -84,12 +93,6 @@ export default function ShippingSettingsPage() {
   const [deletePickup] = useMutation(DELETE_PICKUP_POINT)
 
   const [pickupName, setPickupName] = useState("")
-
-  useEffect(() => {
-    if (!islandId && statesData?.states?.[0]?.id) {
-      setIslandId(statesData.states[0].id)
-    }
-  }, [islandId, statesData])
 
   const tiers = tiersData?.shippingTiers ?? []
 
@@ -194,10 +197,10 @@ export default function ShippingSettingsPage() {
               ) : (
                 <select
                   value={islandId}
-                  onChange={(e) => setIslandId(e.target.value)}
+                  onChange={(e) => setSelectedIslandId(e.target.value)}
                   className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
                 >
-                  {(statesData?.states ?? []).map((s) => (
+                  {states.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
                     </option>
