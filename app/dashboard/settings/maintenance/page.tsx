@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
@@ -22,6 +22,11 @@ import { toast } from "sonner"
 const DEFAULT_MESSAGE =
   "Estamos a melhorar a loja. Voltamos em breve — obrigado pela paciência."
 
+type MaintenanceDraft = {
+  enabled: boolean
+  message: string
+}
+
 export default function MaintenanceSettingsPage() {
   const { data, loading, error, refetch } = useQuery<StoreMaintenanceQueryData>(
     GET_STORE_MAINTENANCE
@@ -31,17 +36,14 @@ export default function MaintenanceSettingsPage() {
       refetchQueries: [{ query: GET_STORE_MAINTENANCE }],
     })
 
-  const [enabled, setEnabled] = useState(false)
-  const [message, setMessage] = useState("")
-  const [dirty, setDirty] = useState(false)
+  const [draft, setDraft] = useState<MaintenanceDraft | null>(null)
 
   const row = data?.storeMaintenance
-
-  useEffect(() => {
-    if (!row || dirty) return
-    setEnabled(Boolean(row.enabled))
-    setMessage(row.message?.trim() ?? "")
-  }, [row, dirty])
+  const serverEnabled = Boolean(row?.enabled)
+  const serverMessage = row?.message?.trim() ?? ""
+  const enabled = draft?.enabled ?? serverEnabled
+  const message = draft?.message ?? serverMessage
+  const dirty = draft !== null
 
   async function handleSave() {
     try {
@@ -51,7 +53,7 @@ export default function MaintenanceSettingsPage() {
           message: message.trim() || null,
         },
       })
-      setDirty(false)
+      setDraft(null)
       toast.success("Manutenção actualizada", {
         description: enabled
           ? "A loja pública está em manutenção."
@@ -116,8 +118,10 @@ export default function MaintenanceSettingsPage() {
                     type="checkbox"
                     checked={enabled}
                     onChange={(e) => {
-                      setEnabled(e.target.checked)
-                      setDirty(true)
+                      setDraft({
+                        enabled: e.target.checked,
+                        message,
+                      })
                     }}
                     className="h-4 w-4 rounded border-input accent-primary"
                   />
@@ -133,8 +137,10 @@ export default function MaintenanceSettingsPage() {
                     placeholder={DEFAULT_MESSAGE}
                     value={message}
                     onChange={(e) => {
-                      setMessage(e.target.value)
-                      setDirty(true)
+                      setDraft({
+                        enabled,
+                        message: e.target.value,
+                      })
                     }}
                     className="text-sm resize-y min-h-[88px]"
                   />
