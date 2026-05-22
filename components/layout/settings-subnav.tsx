@@ -21,6 +21,11 @@ const TABS = [
     isActive: (p: string) => p.startsWith("/dashboard/settings/maintenance"),
   },
   {
+    href: "/dashboard/settings/shipping",
+    label: "Envios",
+    isActive: (p: string) => p.startsWith("/dashboard/settings/shipping"),
+  },
+  {
     href: "/dashboard/settings/security",
     label: "Segurança",
     isActive: (p: string) => p.startsWith("/dashboard/settings/security"),

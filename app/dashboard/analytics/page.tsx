@@ -158,7 +158,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
         <div className="animate-enter">
           <PageHeader
             title="Analytics"
-            description="Métricas e desempenho da loja"
+            description="Métricas e desempenho"
           >
             <AnalyticsDateFilter from={params.from} to={params.to} />
           </PageHeader>
