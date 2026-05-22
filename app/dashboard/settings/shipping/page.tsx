@@ -11,10 +11,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  GET_COUNTRIES,
+  GET_ISLANDS,
   GET_PICKUP_POINTS,
   GET_SHIPPING_TIERS,
-  GET_STATES,
 } from "@/lib/graphql/shipping/queries"
 import {
   DELETE_PICKUP_POINT,
@@ -23,12 +22,11 @@ import {
   UPSERT_SHIPPING_TIER,
 } from "@/lib/graphql/shipping/mutations"
 import type {
-  CountriesQueryData,
   DeliveryMethod,
+  IslandsQueryData,
   PickupPointsQueryData,
   ShippingTierGql,
   ShippingTiersQueryData,
-  StatesQueryData,
 } from "@/lib/graphql/shipping/types"
 import { Loader2, Plus, Trash2, Truck } from "lucide-react"
 import { toast } from "sonner"
@@ -49,26 +47,20 @@ export default function ShippingSettingsPage() {
   const [tierForm, setTierForm] = useState(EMPTY_TIER)
   const [editingTierId, setEditingTierId] = useState<string | null>(null)
 
-  const { data: countriesData } = useQuery<CountriesQueryData>(GET_COUNTRIES)
-  const cvCountryId = useMemo(() => {
-    const list = countriesData?.countries ?? []
-    const cv = list.find((c) => c.name?.toLowerCase().includes("cabo"))
-    return cv?.id ?? ""
-  }, [countriesData])
-
-  const { data: statesData, loading: statesLoading } = useQuery<StatesQueryData>(GET_STATES, {
-    variables: { countryId: cvCountryId },
-    skip: !cvCountryId,
-  })
+  const {
+    data: islandsData,
+    loading: islandsLoading,
+    error: islandsError,
+  } = useQuery<IslandsQueryData>(GET_ISLANDS)
 
   const { states, islandId } = useMemo(() => {
-    const list = statesData?.states ?? []
+    const list = islandsData?.locations ?? []
     const id =
       selectedIslandId && list.some((s) => s.id === selectedIslandId)
         ? selectedIslandId
         : (list[0]?.id ?? "")
     return { states: list, islandId: id }
-  }, [selectedIslandId, statesData?.states])
+  }, [selectedIslandId, islandsData?.locations])
 
   const {
     data: tiersData,
@@ -188,18 +180,30 @@ export default function ShippingSettingsPage() {
           description="Tarifas por ilha e valor de compra (subtotal). Preços em ECV."
         />
 
+        {states.length === 0 && !islandsLoading ? (
+          <p className="text-xs text-amber-700 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+            {islandsError
+              ? `Erro ao carregar ilhas: ${islandsError.message}`
+              : "Nenhuma ilha no GTW (tabela locations). Reinicia o payment-gateway para criar as ilhas de Cabo Verde."}
+          </p>
+        ) : null}
+
         <Card>
           <CardContent className="pt-5 flex flex-wrap gap-4 items-end">
             <div className="space-y-1.5 min-w-[200px]">
               <Label className="text-xs">Ilha</Label>
-              {statesLoading ? (
+              {islandsLoading ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
                 <select
                   value={islandId}
                   onChange={(e) => setSelectedIslandId(e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  disabled={states.length === 0}
+                  className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
                 >
+                  {states.length === 0 ? (
+                    <option value="">Sem ilhas</option>
+                  ) : null}
                   {states.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
