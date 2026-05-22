@@ -51,11 +51,11 @@ const SETTINGS_SECTIONS = [
   },
   {
     title: "Envios",
-    description: "Transportadoras, zonas e tarifas",
+    description: "Tarifas por ilha e valor de compra",
     icon: Truck,
     color: "text-amber-900",
     bg: "bg-amber-50 border border-border/60",
-    href: null,
+    href: "/dashboard/settings/shipping",
   },
   {
     title: "Notificações",
