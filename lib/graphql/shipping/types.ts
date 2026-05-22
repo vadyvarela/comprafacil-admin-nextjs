@@ -43,3 +43,7 @@ export interface CountriesQueryData {
 export interface StatesQueryData {
   states: LocationGql[]
 }
+
+export interface IslandsQueryData {
+  locations: LocationGql[]
+}
