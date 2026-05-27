@@ -31,7 +31,7 @@ const SETTINGS_SECTIONS = [
     icon: Store,
     color: "text-blue-800",
     bg: "bg-blue-50 border border-border/60",
-    href: null,
+    href: "/dashboard/settings/store",
   },
   {
     title: "Aparência",
