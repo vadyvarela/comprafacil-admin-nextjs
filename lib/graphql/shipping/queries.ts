@@ -9,6 +9,16 @@ export const GET_COUNTRIES = gql`
   }
 `
 
+/** Todas as ilhas (STATE) — não depende de encontrar o país Cabo Verde por nome. */
+export const GET_ISLANDS = gql`
+  query GetIslands {
+    locations(locationType: STATE) {
+      id
+      name
+    }
+  }
+`
+
 export const GET_STATES = gql`
   query GetStates($countryId: UUID!) {
     states(countryId: $countryId) {
