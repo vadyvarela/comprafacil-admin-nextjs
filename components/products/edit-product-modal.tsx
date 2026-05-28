@@ -30,6 +30,7 @@ import { Loader2, ChevronDown, ChevronUp } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { RichTextEditor } from "../ui/rich-text-editor"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
+import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
 
 interface EditProductModalProps {
   product: Product | null
@@ -60,6 +61,7 @@ export function EditProductModal({
     notes: "",
     semFaceId: false,
     batteryHealthPercent: "",
+    addOnProductIds: [] as string[],
   })
 
   const { data: categoriesData } = useQuery(GET_CATEGORY_LIST, {
@@ -123,6 +125,9 @@ export function EditProductModal({
           metadata?.batteryHealthPercent !== undefined && metadata?.batteryHealthPercent !== null
             ? String(metadata.batteryHealthPercent)
             : "",
+        addOnProductIds: Array.isArray(metadata?.addOnProductIds)
+          ? metadata.addOnProductIds.filter((id): id is string => typeof id === "string" && id !== product.id)
+          : [],
       })
       
       setShowAdvanced(
@@ -173,6 +178,10 @@ export function EditProductModal({
     setOrDel("material", formData.material)
     setOrDel("warranty", formData.warranty)
     setOrDel("notes", formData.notes)
+
+    const addOnProductIds = formData.addOnProductIds.filter((id) => id !== product.id)
+    if (addOnProductIds.length > 0) base.addOnProductIds = addOnProductIds
+    else delete base.addOnProductIds
 
     if (showIphoneSeminovoFields) {
       if (formData.semFaceId) base.semFaceId = true
@@ -532,6 +541,27 @@ export function EditProductModal({
                 )}
               </div>
             )}
+          </div>
+
+          <div className="space-y-3 rounded-md border border-border/80 bg-muted/15 p-3">
+            <div>
+              <Label className="text-sm font-medium">Produtos complementares</Label>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Escolhe acessórios para aparecerem na página do produto como compra opcional.
+              </p>
+            </div>
+            <CuratedProductPicker
+              value={formData.addOnProductIds}
+              max={4}
+              orderLabel="Ordem dos acessórios"
+              description="Pesquisa e clica nas linhas para incluir ou remover acessórios opcionais."
+              onChange={(ids) =>
+                setFormData({
+                  ...formData,
+                  addOnProductIds: ids.filter((id) => id !== product?.id),
+                })
+              }
+            />
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">

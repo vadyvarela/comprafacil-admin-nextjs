@@ -30,9 +30,17 @@ interface CuratedProductPickerProps {
   value: string[]
   max: number
   onChange: (ids: string[]) => void
+  orderLabel?: string
+  description?: string
 }
 
-export function CuratedProductPicker({ value, max, onChange }: CuratedProductPickerProps) {
+export function CuratedProductPicker({
+  value,
+  max,
+  onChange,
+  orderLabel = "Ordem na home",
+  description,
+}: CuratedProductPickerProps) {
   const client = useApolloClient()
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState<DraftRow[]>([])
@@ -188,8 +196,8 @@ export function CuratedProductPicker({ value, max, onChange }: CuratedProductPic
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-base">Seleccionar produtos</DialogTitle>
             <DialogDescription className="text-xs">
-              Pesquisa e clica nas linhas para incluir ou remover. Ordem na home = ordem na lista à
-              direita (máx. {max}).
+              {description ??
+                `Pesquisa e clica nas linhas para incluir ou remover. ${orderLabel} = ordem na lista à direita (máx. ${max}).`}
             </DialogDescription>
           </DialogHeader>
 
@@ -247,7 +255,7 @@ export function CuratedProductPicker({ value, max, onChange }: CuratedProductPic
             </div>
 
             <div className="space-y-2 min-w-0 flex flex-col">
-              <Label className="text-[10px]">Ordem na home ({draft.length}/{max})</Label>
+              <Label className="text-[10px]">{orderLabel} ({draft.length}/{max})</Label>
               <div className="max-h-[min(52vh,320px)] flex-1 overflow-y-auto rounded-md border border-border/60 bg-muted/15">
                 {draft.length === 0 ? (
                   <p className="p-3 text-[11px] text-muted-foreground">Escolhe produtos à esquerda.</p>
