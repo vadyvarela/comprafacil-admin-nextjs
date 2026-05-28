@@ -30,6 +30,7 @@ import {
   TriangleAlert,
 } from "lucide-react"
 import { toast } from "sonner"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 interface ApiToken {
   id: string
@@ -63,8 +64,8 @@ export default function SecurityPage() {
         return
       }
       setTokens(Array.isArray(data) ? data : [])
-    } catch (err: any) {
-      toast.error("Erro ao carregar tokens", { description: err.message })
+    } catch (err: unknown) {
+      toast.error("Erro ao carregar tokens", { description: getErrorMessage(err) })
     } finally {
       setLoading(false)
     }
@@ -91,8 +92,8 @@ export default function SecurityPage() {
       setGenerateOpen(false)
       setTokenName("KUMPRAFACIL_API_TOKEN")
       await loadTokens()
-    } catch (err: any) {
-      toast.error("Erro ao gerar token", { description: err.message })
+    } catch (err: unknown) {
+      toast.error("Erro ao gerar token", { description: getErrorMessage(err) })
     } finally {
       setGenerating(false)
     }

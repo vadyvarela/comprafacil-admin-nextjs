@@ -7,10 +7,7 @@ import type {
   CheckoutSessionPageResponse,
   OrderSummary,
 } from "@/lib/graphql/orders/types"
-import {
-  getOrderStatusLabel,
-  getOrderStatusVariant,
-} from "@/lib/orders/status"
+import { minorToMajorCurrencyAmount } from "@/lib/utils/currency"
 import type { OrdersTab } from "@/lib/orders/types"
 
 /** Status da checkout session no gateway: COMPLETED = pagamento com sucesso. */
@@ -150,7 +147,7 @@ export function enrichOrderWithDetails(
       fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
     }
   }
-  const total = details.lines.reduce(
+  const totalMinor = details.lines.reduce(
     (sum, line) => sum + (line.quantity ?? 0) * (Number(line.unitAmount) ?? 0),
     0
   )
@@ -177,7 +174,7 @@ export function enrichOrderWithDetails(
     null
   return {
     ...order,
-    totalAmount: total,
+    totalAmount: minorToMajorCurrencyAmount(totalMinor),
     currency: details.currency ?? order.currency,
     productSummary: productSummary ?? null,
     primaryProductImageUrl,

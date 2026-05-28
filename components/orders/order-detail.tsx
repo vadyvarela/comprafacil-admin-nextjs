@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { formatCurrency } from "@/lib/utils/currency"
+import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency"
 import type {
   CheckoutSessionDetailsResponse,
   OrderItemResponse,
@@ -145,13 +145,16 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
     order.customer?.phone?.trim() || customerDetails?.phone?.trim() || null
   const deliveryPhone =
     displayShipping?.addr.phone?.trim() || accountPhone || null
-  const totalLines =
+  const totalLinesMinor =
     order.lines?.reduce(
       (sum: number, line: OrderItemResponse) => sum + line.quantity * line.unitAmount,
       0
     ) ?? 0
-  const discount = order.amountDiscount ?? 0
-  const total = Math.max(0, totalLines - discount)
+  const discountMinor = order.amountDiscount ?? 0
+  const totalMinor = Math.max(0, totalLinesMinor - discountMinor)
+  const totalLines = minorToMajorCurrencyAmount(totalLinesMinor)
+  const discount = minorToMajorCurrencyAmount(discountMinor)
+  const total = minorToMajorCurrencyAmount(totalMinor)
   const currency = order.currency ?? "CVE"
 
   return (
@@ -417,12 +420,12 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                             <p className="text-[11px] text-muted-foreground">{line.productVariant.title}</p>
                           )}
                           <p className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
-                            {line.quantity} × {formatCurrency(line.unitAmount, line.currency)}
+                            {line.quantity} × {formatCurrency(minorToMajorCurrencyAmount(line.unitAmount), line.currency)}
                           </p>
                         </div>
                         <div className="text-right shrink-0">
                           <p className="font-bold text-sm tabular-nums">
-                            {formatCurrency(line.quantity * line.unitAmount, line.currency)}
+                            {formatCurrency(minorToMajorCurrencyAmount(line.quantity * line.unitAmount), line.currency)}
                           </p>
                           {line.status && (
                             <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium mt-1 ${getOrderStatusClass(line.status.code)}`}>

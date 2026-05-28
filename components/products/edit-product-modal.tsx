@@ -73,10 +73,14 @@ export function EditProductModal({
   type CategoryOption = { id: string; name: string; slug: string }
   type BrandOption = { id: string; name: string; slug: string }
 
-  const categories: CategoryOption[] =
-    (categoriesData as { categoryList?: CategoryOption[] } | undefined)?.categoryList ?? []
-  const brands: BrandOption[] =
-    (brandsData as { brandList?: BrandOption[] } | undefined)?.brandList ?? []
+  const categories: CategoryOption[] = useMemo(
+    () => (categoriesData as { categoryList?: CategoryOption[] } | undefined)?.categoryList ?? [],
+    [categoriesData]
+  )
+  const brands: BrandOption[] = useMemo(
+    () => (brandsData as { brandList?: BrandOption[] } | undefined)?.brandList ?? [],
+    [brandsData]
+  )
 
   const [updateProduct, { loading, error }] = useMutation(UPDATE_PRODUCT, {
     refetchQueries: [

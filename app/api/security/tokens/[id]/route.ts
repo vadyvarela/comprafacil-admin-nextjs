@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 const ALLOWED_TOKEN_ACTIONS = ["activate", "deactivate"] as const
 
@@ -27,8 +28,8 @@ export async function DELETE(
     if (res.status === 204) return new NextResponse(null, { status: 204 })
     const data = await res.json()
     return NextResponse.json(data, { status: res.status })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
   }
 }
 
@@ -54,7 +55,7 @@ export async function PUT(
     })
     const data = await res.json()
     return NextResponse.json(data, { status: res.status })
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+  } catch (error: unknown) {
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
   }
 }

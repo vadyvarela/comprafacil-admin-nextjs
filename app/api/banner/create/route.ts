@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,10 +39,10 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(data, { status: response.status })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Banner creation API error:", error)
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error) },
       { status: 500 }
     )
   }

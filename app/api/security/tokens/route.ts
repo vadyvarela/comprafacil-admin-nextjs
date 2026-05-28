@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 function gtwHeaders() {
   return {
@@ -33,8 +34,8 @@ export async function GET() {
     }
 
     return NextResponse.json(data, { status: res.status })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[security/tokens] fetch error:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
   }
 }

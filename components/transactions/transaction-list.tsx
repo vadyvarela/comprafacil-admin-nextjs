@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -10,7 +9,6 @@ import { cn } from "@/lib/utils"
 import { CreditCard, User, Calendar } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { TransactionDetailSheet } from "./transaction-detail-sheet"
 
 type TransactionListProps = {
   transactions: PaymentIntent[]
@@ -81,10 +79,8 @@ function StatusBadge({ tx }: { tx: PaymentIntent }) {
   )
 }
 
-export function TransactionList({ transactions, gatewayOrigin = null }: TransactionListProps) {
+export function TransactionList({ transactions }: TransactionListProps) {
   const router = useRouter()
-  const [selected, setSelected] = useState<PaymentIntent | null>(null)
-  const [sheetOpen, setSheetOpen] = useState(false)
 
   function openDetail(tx: PaymentIntent) {
     router.push(`/dashboard/transactions?id=${tx.id}`)
@@ -225,13 +221,6 @@ export function TransactionList({ transactions, gatewayOrigin = null }: Transact
           ))}
         </div>
       </div>
-
-      <TransactionDetailSheet
-        tx={selected}
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        gatewayOrigin={gatewayOrigin}
-      />
     </>
   )
 }

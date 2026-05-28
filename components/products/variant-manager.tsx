@@ -7,9 +7,9 @@ import {
   UPDATE_PRODUCT_VARIANT,
   DELETE_PRODUCT_VARIANT,
 } from "@/lib/graphql/variants/mutations"
-import { CREATE_PRICE, UPDATE_PRICE } from "@/lib/graphql/prices/mutations"
+import { UPDATE_PRICE } from "@/lib/graphql/prices/mutations"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
-import type { Product, ProductVariant } from "@/lib/graphql/products/types"
+import type { Product } from "@/lib/graphql/products/types"
 import {
   Dialog,
   DialogContent,
@@ -21,16 +21,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
 import { showToast } from "@/lib/utils/toast"
-import { Plus, Trash2, Pencil, X, Check, Warehouse, X as XIcon } from "lucide-react"
+import { getErrorMessage } from "@/lib/utils/errors"
+import { Plus, Trash2, X as XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { VariantImageUpload } from "./variant-image-upload"
 
@@ -55,12 +48,6 @@ interface ProductVariantCombination {
   sku?: string
 }
 
-const CURRENCIES = [
-  { code: "CVE", name: "Escudo Cabo-verdiano" },
-  { code: "EUR", name: "Euro" },
-  { code: "USD", name: "Dólar Americano" },
-]
-
 export function VariantManager({
   productId,
   open,
@@ -72,7 +59,7 @@ export function VariantManager({
   })
 
   const product = data?.productDetails
-  const existingVariants = product?.variants || []
+  const existingVariants = useMemo(() => product?.variants ?? [], [product?.variants])
 
   const [options, setOptions] = useState<ProductOption[]>([])
   const [variantCombinations, setVariantCombinations] = useState<ProductVariantCombination[]>([])
@@ -179,10 +166,6 @@ export function VariantManager({
     },
   })
 
-  const [createPrice] = useMutation(CREATE_PRICE, {
-    refetchQueries: [{ query: GET_PRODUCT, variables: { id: productId } }],
-  })
-
   const [updatePrice] = useMutation(UPDATE_PRICE, {
     refetchQueries: [{ query: GET_PRODUCT, variables: { id: productId } }],
   })
@@ -274,7 +257,11 @@ export function VariantManager({
     showToast.success("Variantes geradas", `${newCombinations.length} variantes foram geradas`)
   }
 
-  const updateCombination = (index: number, field: keyof ProductVariantCombination, value: any) => {
+  const updateCombination = <K extends keyof ProductVariantCombination>(
+    index: number,
+    field: K,
+    value: ProductVariantCombination[K]
+  ) => {
     const updated = [...variantCombinations]
     updated[index] = { ...updated[index], [field]: value }
     setVariantCombinations(updated)
@@ -481,8 +468,8 @@ export function VariantManager({
       if (updatedCount > 0) parts.push(`${updatedCount} atualizada${updatedCount > 1 ? "s" : ""}`)
       const description = parts.length > 0 ? parts.join(" • ") : "Nenhuma alteração detectada"
       showToast.success("Variantes salvas", description)
-    } catch (error: any) {
-      showToast.error("Erro", error.message || "Erro ao salvar variantes")
+    } catch (error: unknown) {
+      showToast.error("Erro", getErrorMessage(error, "Erro ao salvar variantes"))
     } finally {
       setSavingVariants(false)
     }

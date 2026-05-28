@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { CREATE_CATEGORY, UPDATE_CATEGORY } from "@/lib/graphql/categories/mutations"
 import { GET_CATEGORY_LIST } from "@/lib/graphql/categories/queries"
@@ -32,15 +32,21 @@ interface CreateCategoryModalProps {
   onSuccess?: () => void
 }
 
-export function CreateCategoryModal({
-  open,
-  onOpenChange,
-  category,
-  onSuccess,
-}: CreateCategoryModalProps) {
-  const isEditMode = !!category
+type CategoryFormData = {
+  name: string
+  slug: string
+  description: string
+  image: string
+  icon: string
+  orderIndex: number
+  showOnHome: boolean
+  homeOrder: string | number
+  parentCategoryId: string
+  status: string
+}
 
-  const [formData, setFormData] = useState({
+function emptyCategoryForm(): CategoryFormData {
+  return {
     name: "",
     slug: "",
     description: "",
@@ -48,10 +54,54 @@ export function CreateCategoryModal({
     icon: "",
     orderIndex: 0,
     showOnHome: true,
-    homeOrder: "" as string | number,
+    homeOrder: "",
     parentCategoryId: "",
     status: "ACTIVE",
-  })
+  }
+}
+
+function categoryToForm(category: Category | null | undefined): CategoryFormData {
+  if (!category) return emptyCategoryForm()
+  return {
+    name: category.name || "",
+    slug: category.slug || "",
+    description: category.description || "",
+    image: category.image || "",
+    icon: category.icon || "",
+    orderIndex: category.orderIndex || 0,
+    showOnHome: category.showOnHome !== false,
+    homeOrder: category.homeOrder ?? "",
+    parentCategoryId: category.parentCategory?.id || "",
+    status: category.status?.code || "ACTIVE",
+  }
+}
+
+export function CreateCategoryModal({
+  open,
+  onOpenChange,
+  category,
+  onSuccess,
+}: CreateCategoryModalProps) {
+  const isEditMode = !!category
+  const formKey = category?.id ?? "new"
+  const baseFormData = categoryToForm(category)
+
+  const [formDraft, setFormDraft] = useState<{ key: string; data: CategoryFormData } | null>(null)
+  const formData = formDraft?.key === formKey ? formDraft.data : baseFormData
+
+  function setFormData(value: React.SetStateAction<CategoryFormData>) {
+    setFormDraft((prev) => {
+      const current = prev?.key === formKey ? prev.data : baseFormData
+      return {
+        key: formKey,
+        data: typeof value === "function" ? value(current) : value,
+      }
+    })
+  }
+
+  function resetForm() {
+    setFormDraft(null)
+  }
 
   // Buscar lista de categorias para o seletor de categoria pai
   const { data: categoriesData } = useQuery<{
@@ -75,40 +125,6 @@ export function CreateCategoryModal({
   })
 
   const loading = creating || updating
-
-  useEffect(() => {
-    if (category) {
-      setFormData({
-        name: category.name || "",
-        slug: category.slug || "",
-        description: category.description || "",
-        image: category.image || "",
-        icon: category.icon || "",
-        orderIndex: category.orderIndex || 0,
-        showOnHome: category.showOnHome !== false,
-        homeOrder: category.homeOrder ?? "",
-        parentCategoryId: category.parentCategory?.id || "",
-        status: category.status?.code || "ACTIVE",
-      })
-    } else {
-      resetForm()
-    }
-  }, [category, open])
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      slug: "",
-      description: "",
-      image: "",
-      icon: "",
-      orderIndex: 0,
-      showOnHome: true,
-      homeOrder: "",
-      parentCategoryId: "",
-      status: "ACTIVE",
-    })
-  }
 
   // Gerar slug automaticamente a partir do nome
   const generateSlug = (name: string) => {
@@ -173,7 +189,13 @@ export function CreateCategoryModal({
     : categories
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        onOpenChange(nextOpen)
+        if (!nextOpen) resetForm()
+      }}
+    >
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>

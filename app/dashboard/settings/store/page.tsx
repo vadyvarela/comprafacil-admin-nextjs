@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
@@ -65,18 +65,19 @@ export default function StoreSettingsPage() {
     { refetchQueries: [{ query: GET_STORE_SETTINGS }] }
   )
 
-  const [draft, setDraft] = useState<StoreDraft | null>(null)
   const row = data?.storeSettings
+  const serverVersion = row?.updatedAt ?? "__empty__"
+  const [draft, setDraft] = useState<{ version: string; values: StoreDraft } | null>(null)
   const serverDraft = row ? rowToDraft(row) : emptyDraft()
-  const values = draft ?? serverDraft
-  const dirty = draft !== null
-
-  useEffect(() => {
-    setDraft(null)
-  }, [row?.updatedAt])
+  const activeDraft = draft?.version === serverVersion ? draft.values : null
+  const values = activeDraft ?? serverDraft
+  const dirty = activeDraft !== null
 
   function patch(partial: Partial<StoreDraft>) {
-    setDraft((prev) => ({ ...(prev ?? serverDraft), ...partial }))
+    setDraft((prev) => ({
+      version: serverVersion,
+      values: { ...((prev?.version === serverVersion ? prev.values : null) ?? serverDraft), ...partial },
+    }))
   }
 
   async function handleSave() {

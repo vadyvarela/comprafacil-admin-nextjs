@@ -49,7 +49,6 @@ export default function CouponDetailPage() {
   const router = useRouter()
   const couponId = params.id as string
   const [editModalOpen, setEditModalOpen] = useState(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [addCodeOpen, setAddCodeOpen] = useState(false)
   const [newCode, setNewCode] = useState({ code: "", maxRedemptions: "1", expiresAt: "" })
 

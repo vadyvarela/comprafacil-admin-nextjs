@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
 import { rateLimit } from "@/lib/security/rate-limit"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 const STRICT_LIMIT = { maxRequests: 5, windowMs: 60_000 }
 
@@ -39,8 +40,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(data, { status: res.status })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[security/tokens/generate] fetch error:", error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
   }
 }

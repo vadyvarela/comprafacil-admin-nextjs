@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useMutation } from "@apollo/client/react"
 import { UPDATE_STOCK, CREATE_STOCK } from "@/lib/graphql/stocks/mutations"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
@@ -24,11 +24,45 @@ interface StockModalProps {
   productId?: string
 }
 
-export function StockModal({ stock, open, onOpenChange, productId }: StockModalProps) {
-  const [formData, setFormData] = useState({
+type StockFormData = {
+  quantity: number
+  name: string
+}
+
+function emptyStockForm(): StockFormData {
+  return {
     quantity: 0,
     name: "",
-  })
+  }
+}
+
+function stockToForm(stock: Stock | null): StockFormData {
+  if (!stock) return emptyStockForm()
+  return {
+    quantity: stock.quantity || 0,
+    name: stock.name || "",
+  }
+}
+
+export function StockModal({ stock, open, onOpenChange, productId }: StockModalProps) {
+  const formKey = stock?.id ?? "new"
+  const baseFormData = stockToForm(stock)
+  const [formDraft, setFormDraft] = useState<{ key: string; data: StockFormData } | null>(null)
+  const formData = formDraft?.key === formKey ? formDraft.data : baseFormData
+
+  function setFormData(value: React.SetStateAction<StockFormData>) {
+    setFormDraft((prev) => {
+      const current = prev?.key === formKey ? prev.data : baseFormData
+      return {
+        key: formKey,
+        data: typeof value === "function" ? value(current) : value,
+      }
+    })
+  }
+
+  function resetForm() {
+    setFormDraft(null)
+  }
 
   const [updateStock, { loading: updating }] = useMutation(UPDATE_STOCK, {
     refetchQueries: [{ query: GET_PRODUCT, variables: { id: stock?.productId || productId } }],
@@ -48,24 +82,6 @@ export function StockModal({ stock, open, onOpenChange, productId }: StockModalP
 
   const loading = updating || creating
   const isEditMode = !!stock
-
-  useEffect(() => {
-    if (stock) {
-      setFormData({
-        quantity: stock.quantity || 0,
-        name: stock.name || "",
-      })
-    } else {
-      resetForm()
-    }
-  }, [stock, open])
-
-  const resetForm = () => {
-    setFormData({
-      quantity: 0,
-      name: "",
-    })
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,7 +110,13 @@ export function StockModal({ stock, open, onOpenChange, productId }: StockModalP
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        onOpenChange(nextOpen)
+        if (!nextOpen) resetForm()
+      }}
+    >
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{isEditMode ? 'Atualizar Estoque' : 'Criar Estoque'}</DialogTitle>

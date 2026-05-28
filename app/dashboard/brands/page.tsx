@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { GET_BRANDS } from "@/lib/graphql/brands/queries"
@@ -19,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Brand } from "@/lib/graphql/brands/types"
 import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 function brandStatusClass(code: string | undefined): string {
   const c = code?.toUpperCase()
@@ -48,8 +51,8 @@ export default function BrandsPage() {
     try {
       await deleteBrand({ variables: { id: brand.id } })
       showToast.success("Marca excluída", `"${brand.name}" foi excluída`)
-    } catch (err: any) {
-      showToast.error("Erro", err?.message || "Erro ao excluir marca")
+    } catch (err: unknown) {
+      showToast.error("Erro", getErrorMessage(err, "Erro ao excluir marca"))
     } finally {
       setDeletingBrandId(null)
     }

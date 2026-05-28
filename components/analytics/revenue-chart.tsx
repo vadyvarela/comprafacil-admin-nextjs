@@ -21,15 +21,29 @@ interface RevenueChartProps {
   data: RevenueDataPoint[]
 }
 
-function CustomTooltip({ active, payload, label }: any) {
+type ChartTooltipPayload = {
+  name?: string
+  color?: string
+  value?: number | string
+}
+
+function CustomTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean
+  payload?: ChartTooltipPayload[]
+  label?: string | number
+}) {
   if (!active || !payload?.length) return null
   return (
     <div className="rounded-lg border border-border/80 bg-popover px-3 py-2 shadow-none text-xs">
       <p className="font-semibold text-foreground mb-1">{label}</p>
-      {payload.map((entry: any) => (
+      {payload.map((entry) => (
         <p key={entry.name} style={{ color: entry.color }} className="tabular-nums">
           {entry.name === "revenue"
-            ? `Receita: ${formatCurrency(entry.value)}`
+            ? `Receita: ${formatCurrency(Number(entry.value ?? 0))}`
             : `Pedidos: ${entry.value}`}
         </p>
       ))}

@@ -4,6 +4,31 @@ import {
   metadataWithGallery,
   parseProductGalleryUrls,
 } from "@/lib/products/product-gallery-metadata"
+import { getErrorMessage } from "@/lib/utils/errors"
+
+type ProductSnapshot = {
+  title?: string | null
+  description?: string | null
+  image?: string | null
+  discount?: number | null
+  type?: { code?: string } | null
+  metadata?: string | null
+  category?: { id?: string | null } | null
+}
+
+type ProductDetailsGraphQLResponse = {
+  data?: {
+    productDetails?: ProductSnapshot | null
+  }
+}
+
+type ProductImageUpdateResponse = {
+  data?: {
+    image?: string | null
+  } | null
+  error?: string
+  message?: string
+}
 
 export async function PUT(
   request: NextRequest,
@@ -26,7 +51,7 @@ export async function PUT(
     }
 
     // Primeiro, buscar os dados atuais do produto via GraphQL para preservá-los
-    let currentProduct: any = null
+    let currentProduct: ProductSnapshot | null = null
     
     try {
       const graphqlQuery = {
@@ -60,7 +85,7 @@ export async function PUT(
         body: JSON.stringify(graphqlQuery),
       })
 
-      const graphqlData = await graphqlResponse.json()
+      const graphqlData = await graphqlResponse.json() as ProductDetailsGraphQLResponse
       
       if (graphqlData.data?.productDetails) {
         currentProduct = graphqlData.data.productDetails
@@ -95,10 +120,10 @@ export async function PUT(
       body: formData,
     })
 
-    let data
+    let data: ProductImageUpdateResponse
     try {
       data = await response.json()
-    } catch (e) {
+    } catch {
       return NextResponse.json(
         { error: `Failed to update product image: ${response.statusText}` },
         { status: response.status }
@@ -116,12 +141,7 @@ export async function PUT(
     }
 
     const newImageUrl =
-      (data?.data?.image as string | undefined) ??
-      (typeof data?.data === "object" &&
-      data.data &&
-      "image" in (data.data as object)
-        ? String((data.data as { image?: string }).image ?? "")
-        : "")
+      (typeof data.data?.image === "string" ? data.data.image : "")
 
     if (newImageUrl && currentProduct) {
       const existing = parseProductGalleryUrls(
@@ -161,12 +181,11 @@ export async function PUT(
     }
 
     return NextResponse.json(data, { status: response.status })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Product image update API error:", error)
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: getErrorMessage(error) },
       { status: 500 }
     )
   }
 }
-

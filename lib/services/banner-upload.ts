@@ -1,6 +1,18 @@
 /**
  * Service para criação e atualização de banners com imagem
  */
+import { getErrorMessage } from "@/lib/utils/errors"
+
+type BannerUploadResponse = {
+  id?: string
+  image?: string | null
+  error?: string
+  message?: string
+  data?: {
+    id?: string
+    image?: string | null
+  }
+}
 
 /**
  * Cria banner com imagem via API route do Next.js
@@ -53,25 +65,25 @@ export async function createBannerWithImage(
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
+      const errorData = await response.json().catch(() => ({})) as BannerUploadResponse
       throw new Error(
         errorData.error || errorData.message || `Failed to create banner: ${response.statusText}`
       )
     }
 
-    const data = await response.json()
+    const data = await response.json() as BannerUploadResponse
     
-    if (data.data) {
+    if (data.data?.id) {
       return {
         id: data.data.id,
-        image: data.data.image,
+        image: data.data.image ?? undefined,
       }
     }
 
     throw new Error("No banner data in response")
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating banner with image:", error)
-    throw new Error(error.message || "Failed to create banner")
+    throw new Error(getErrorMessage(error, "Failed to create banner"))
   }
 }
 
@@ -125,10 +137,10 @@ export async function updateBannerWithImage(
       })
 
       if (!response.ok) {
-        let errorData: any = {}
+        let errorData: BannerUploadResponse = {}
         try {
           errorData = await response.json()
-        } catch (e) {
+        } catch {
           errorData = { error: response.statusText }
         }
         
@@ -137,7 +149,7 @@ export async function updateBannerWithImage(
         throw new Error(errorMessage)
       }
 
-      const data = await response.json()
+      const data = await response.json() as BannerUploadResponse
       
       if (response.ok) {
         let bannerIdFromResponse = bannerId
@@ -162,9 +174,9 @@ export async function updateBannerWithImage(
       }
 
       throw new Error("No banner data in response")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating banner with image:", error)
-      throw new Error(error.message || "Failed to update banner")
+      throw new Error(getErrorMessage(error, "Failed to update banner"))
     }
   } else {
     // Se não há nova imagem, retornar null para usar GraphQL

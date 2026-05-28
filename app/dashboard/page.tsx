@@ -61,8 +61,6 @@ function customerName(customer: OrderSummary["customer"]) {
   return customer.name?.trim() || customer.email?.trim() || "—"
 }
 
-type FulfillmentCode = "PENDING" | "PREPARING" | "SHIPPED" | "DELIVERED" | "CANCELLED"
-
 function FulfillmentBadge({ code }: { code: string | null | undefined }) {
   if (!code) return <span className="text-muted-foreground text-xs">—</span>
   const variant = getFulfillmentStatusVariant(code)

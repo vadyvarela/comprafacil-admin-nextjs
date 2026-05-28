@@ -77,7 +77,6 @@ function OrderProductPreview({ order }: { order: OrderSummary }) {
         )}
       >
         {url ? (
-          // eslint-disable-next-line @next/next/no-img-element -- URLs de produto podem vir de vários hosts
           <Image src={url} alt="" width={52} height={52} className="h-full w-full object-cover" loading="lazy" />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground/40">

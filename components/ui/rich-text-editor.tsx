@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect, useState } from "react"
+import { useRef, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
 interface RichTextEditorProps {
@@ -19,7 +19,7 @@ export function RichTextEditor({
   disabled = false,
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null)
-  const [isEmpty, setIsEmpty] = useState(!value || value.trim() === "")
+  const isEmpty = !value || value.trim() === "" || value === "<br>"
 
   useEffect(() => {
     if (editorRef.current) {
@@ -27,14 +27,12 @@ export function RichTextEditor({
       if (currentHtml !== value) {
         editorRef.current.innerHTML = value || ""
       }
-      setIsEmpty(!value || value.trim() === "" || value === "<br>")
     }
   }, [value])
 
   const handleInput = () => {
     if (editorRef.current) {
       const html = editorRef.current.innerHTML
-      setIsEmpty(!html || html.trim() === "" || html === "<br>")
       onChange(html)
     }
   }
@@ -167,7 +165,6 @@ export function RichTextEditor({
           onFocus={() => {
             if (editorRef.current && isEmpty) {
               editorRef.current.innerHTML = ""
-              setIsEmpty(false)
             }
           }}
           className={cn(

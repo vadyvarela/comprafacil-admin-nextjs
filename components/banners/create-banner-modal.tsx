@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect, useRef } from "react"
 import { useMutation } from "@apollo/client/react"
 import { CREATE_BANNER } from "@/lib/graphql/banners/mutations"
@@ -28,6 +30,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker"
 import { Loader2 } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 interface CreateBannerModalProps {
   open: boolean
@@ -141,7 +144,7 @@ export function CreateBannerModal({
     try {
       if (selectedImage) {
         // Usar REST API com upload de imagem
-        const result = await createBannerWithImage(
+        await createBannerWithImage(
           {
             title: formData.title.trim(),
             subtitle: formData.subtitle.trim() || null,
@@ -185,9 +188,9 @@ export function CreateBannerModal({
           },
         })
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error creating banner:", err)
-      showToast.error("Erro ao criar banner", err.message || "Ocorreu um erro ao criar o banner")
+      showToast.error("Erro ao criar banner", getErrorMessage(err, "Ocorreu um erro ao criar o banner"))
     } finally {
       setUploading(false)
     }

@@ -1,13 +1,23 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useRef, useEffect } from "react"
-import { Image, X, Upload, Loader2, ImageOff } from "lucide-react"
+import { Image as ImageIcon, X, Upload, Loader2, ImageOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 interface ProductImageUploadProps {
   productId: string
   currentImage?: string | null
+}
+
+type ProductImageUploadResponse = {
+  data?: {
+    image?: string
+  }
+  error?: string
 }
 
 export function ProductImageUpload({ productId, currentImage }: ProductImageUploadProps) {
@@ -78,11 +88,11 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
       })
 
       if (!imageResponse.ok) {
-        const errorData = await imageResponse.json().catch(() => ({}))
+        const errorData = await imageResponse.json().catch(() => ({})) as ProductImageUploadResponse
         throw new Error(errorData.error || "Erro ao atualizar imagem")
       }
 
-      const data = await imageResponse.json()
+      const data = await imageResponse.json() as ProductImageUploadResponse
       
       // Atualizar preview com a nova URL da imagem
       if (data.data?.image) {
@@ -100,9 +110,9 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
 
       // Recarregar a página para atualizar os dados
       window.location.reload()
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading image:", error)
-      showToast.error("Erro ao atualizar imagem", error.message || "Ocorreu um erro ao atualizar a imagem")
+      showToast.error("Erro ao atualizar imagem", getErrorMessage(error, "Ocorreu um erro ao atualizar a imagem"))
     } finally {
       setUploading(false)
     }
@@ -112,7 +122,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Image className="h-3.5 w-3.5 text-muted-foreground" />
+          <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium text-muted-foreground">Imagem do Produto</span>
         </div>
         {selectedImage && (

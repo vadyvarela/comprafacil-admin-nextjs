@@ -29,7 +29,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus }: Props) {
   const rawCode = fulfillmentStatus?.code?.toUpperCase() ?? "PENDING"
   const currentCode = rawCode as FulfillmentCode
   const isCancelled = currentCode === "CANCELLED"
-  const currentStepIndex = STEP_CODES.indexOf(currentCode as any)
+  const currentStepIndex = STEP_CODES.findIndex((code) => code === currentCode)
 
   async function handleChange(code: string) {
     if (code === currentCode || loading) return

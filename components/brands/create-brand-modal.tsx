@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useMutation } from "@apollo/client/react"
 import { CREATE_BRAND, UPDATE_BRAND } from "@/lib/graphql/brands/mutations"
 import { Brand } from "@/lib/graphql/brands/types"
@@ -31,15 +31,18 @@ interface CreateBrandModalProps {
   onSuccess?: () => void
 }
 
-export function CreateBrandModal({
-  open,
-  onOpenChange,
-  brand,
-  onSuccess,
-}: CreateBrandModalProps) {
-  const isEditMode = !!brand
+type BrandFormData = {
+  name: string
+  slug: string
+  description: string
+  image: string
+  logo: string
+  orderIndex: number
+  status: string
+}
 
-  const [formData, setFormData] = useState({
+function emptyBrandForm(): BrandFormData {
+  return {
     name: "",
     slug: "",
     description: "",
@@ -47,7 +50,48 @@ export function CreateBrandModal({
     logo: "",
     orderIndex: 0,
     status: "ACTIVE",
-  })
+  }
+}
+
+function brandToForm(brand: Brand | null | undefined): BrandFormData {
+  if (!brand) return emptyBrandForm()
+  return {
+    name: brand.name || "",
+    slug: brand.slug || "",
+    description: brand.description || "",
+    image: brand.image || "",
+    logo: brand.logo || "",
+    orderIndex: brand.orderIndex || 0,
+    status: brand.status?.code || "ACTIVE",
+  }
+}
+
+export function CreateBrandModal({
+  open,
+  onOpenChange,
+  brand,
+  onSuccess,
+}: CreateBrandModalProps) {
+  const isEditMode = !!brand
+  const formKey = brand?.id ?? "new"
+  const baseFormData = brandToForm(brand)
+
+  const [formDraft, setFormDraft] = useState<{ key: string; data: BrandFormData } | null>(null)
+  const formData = formDraft?.key === formKey ? formDraft.data : baseFormData
+
+  function setFormData(value: React.SetStateAction<BrandFormData>) {
+    setFormDraft((prev) => {
+      const current = prev?.key === formKey ? prev.data : baseFormData
+      return {
+        key: formKey,
+        data: typeof value === "function" ? value(current) : value,
+      }
+    })
+  }
+
+  function resetForm() {
+    setFormDraft(null)
+  }
 
   const [createBrand, { loading: creating }] = useMutation(CREATE_BRAND, {
     onCompleted: () => {
@@ -62,34 +106,6 @@ export function CreateBrandModal({
   })
 
   const loading = creating || updating
-
-  useEffect(() => {
-    if (brand) {
-      setFormData({
-        name: brand.name || "",
-        slug: brand.slug || "",
-        description: brand.description || "",
-        image: brand.image || "",
-        logo: brand.logo || "",
-        orderIndex: brand.orderIndex || 0,
-        status: brand.status?.code || "ACTIVE",
-      })
-    } else {
-      resetForm()
-    }
-  }, [brand, open])
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      slug: "",
-      description: "",
-      image: "",
-      logo: "",
-      orderIndex: 0,
-      status: "ACTIVE",
-    })
-  }
 
   // Gerar slug automaticamente a partir do nome
   const generateSlug = (name: string) => {
@@ -142,7 +158,13 @@ export function CreateBrandModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        onOpenChange(nextOpen)
+        if (!nextOpen) resetForm()
+      }}
+    >
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>

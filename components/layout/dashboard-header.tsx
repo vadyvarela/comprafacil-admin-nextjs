@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { Bell, Search } from "lucide-react"
 import {
   Breadcrumb,

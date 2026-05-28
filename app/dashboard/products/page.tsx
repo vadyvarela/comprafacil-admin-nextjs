@@ -53,10 +53,15 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 const FILTER_ALL = "all"
 const FILTER_NONE = "__none__"
 const PAGE_SIZE = 20
+
+type ProductMetadata = {
+  sku?: string
+}
 
 function buildProductListFilter(
   debouncedSearch: string,
@@ -153,9 +158,9 @@ export default function ProductsPage() {
       await deleteProduct({ variables: { id: productId } })
       await refetch()
       showToast.success("Produto excluído", `O produto "${productTitle}" foi excluído com sucesso`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error deleting product:", err)
-      const errorMessage = err?.message || "Erro ao excluir produto. Tente novamente."
+      const errorMessage = getErrorMessage(err, "Erro ao excluir produto. Tente novamente.")
       showToast.error("Erro ao excluir produto", errorMessage)
     } finally {
       setDeletingProductId(null)
@@ -314,9 +319,9 @@ export default function ProductsPage() {
                     </TableHeader>
                     <TableBody>
                       {productsList.map((product) => {
-                        let metadata: any = null
+                        let metadata: ProductMetadata | null = null
                         try {
-                          metadata = product.metadata ? JSON.parse(product.metadata) : null
+                          metadata = product.metadata ? JSON.parse(product.metadata) as ProductMetadata : null
                         } catch {}
 
                         const isDeleting = deletingProductId === product.id

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { CREATE_COUPON, UPDATE_COUPON } from "@/lib/graphql/coupons/mutations"
 import { GET_COUPONS } from "@/lib/graphql/coupons/queries"
@@ -25,12 +25,65 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
 
 interface CreateCouponModalProps {
   coupon?: Coupon | null
   open: boolean
   onOpenChange: (open: boolean) => void
+}
+
+type CouponProductOption = {
+  id: string
+  title: string
+}
+
+type CouponFormData = {
+  name: string
+  discountType: "percent" | "amount"
+  percentOff: string
+  amountOff: string
+  currency: string
+  duration: "ONCE" | "REPEATING" | "FOREVER"
+  durationInMonths: string
+  maxRedemptions: string
+  redeemBy: string
+  appliesToProductId: string
+  defaultCoupon: boolean
+}
+
+function emptyCouponForm(): CouponFormData {
+  return {
+    name: "",
+    discountType: "percent",
+    percentOff: "",
+    amountOff: "",
+    currency: "CVE",
+    duration: "ONCE",
+    durationInMonths: "",
+    maxRedemptions: "",
+    redeemBy: "",
+    appliesToProductId: "none",
+    defaultCoupon: false,
+  }
+}
+
+function couponToForm(coupon: Coupon | null | undefined): CouponFormData {
+  if (!coupon) return emptyCouponForm()
+  return {
+    name: coupon.name || "",
+    discountType: coupon.percentOff ? "percent" : "amount",
+    percentOff: coupon.percentOff?.toString() || "",
+    amountOff: coupon.amountOff?.toString() || "",
+    currency: coupon.currency || "CVE",
+    duration: (coupon.duration as "ONCE" | "REPEATING" | "FOREVER") || "ONCE",
+    durationInMonths: coupon.durationInMonths?.toString() || "",
+    maxRedemptions: coupon.maxRedemptions?.toString() || "",
+    redeemBy: coupon.redeemBy
+      ? new Date(coupon.redeemBy).toISOString().split("T")[0]
+      : "",
+    appliesToProductId: coupon.appliesToProductId || "none",
+    defaultCoupon: coupon.defaultCoupon || false,
+  }
 }
 
 export function CreateCouponModal({
@@ -39,27 +92,32 @@ export function CreateCouponModal({
   onOpenChange,
 }: CreateCouponModalProps) {
   const isEditMode = !!coupon
+  const formKey = coupon?.id ?? "new"
+  const baseFormData = couponToForm(coupon)
   const [showAdvanced, setShowAdvanced] = useState(false)
-  const [formData, setFormData] = useState({
-    name: "",
-    discountType: "percent" as "percent" | "amount",
-    percentOff: "",
-    amountOff: "",
-    currency: "CVE",
-    duration: "ONCE" as "ONCE" | "REPEATING" | "FOREVER",
-    durationInMonths: "",
-    maxRedemptions: "",
-    redeemBy: "",
-    appliesToProductId: "none",
-    defaultCoupon: false,
-  })
+  const [formDraft, setFormDraft] = useState<{ key: string; data: CouponFormData } | null>(null)
+  const formData = formDraft?.key === formKey ? formDraft.data : baseFormData
+
+  function setFormData(value: React.SetStateAction<CouponFormData>) {
+    setFormDraft((prev) => {
+      const current = prev?.key === formKey ? prev.data : baseFormData
+      return {
+        key: formKey,
+        data: typeof value === "function" ? value(current) : value,
+      }
+    })
+  }
+
+  function resetForm() {
+    setFormDraft(null)
+  }
 
   const { data: productsData } = useQuery(GET_PRODUCT_LIST, {
     variables: { filter: null, page: { page: 0, size: 100 } },
     skip: !open,
   })
 
-  const products = (productsData as { products?: { data: unknown[] } } | undefined)?.products?.data || []
+  const products = (productsData as { products?: { data: CouponProductOption[] } } | undefined)?.products?.data || []
 
   const [createCoupon, { loading: creating }] = useMutation(CREATE_COUPON, {
     refetchQueries: [{ query: GET_COUPONS }],
@@ -75,45 +133,6 @@ export function CreateCouponModal({
       onOpenChange(false)
     },
   })
-
-  useEffect(() => {
-    if (coupon && open) {
-      setFormData({
-        name: coupon.name || "",
-        discountType: coupon.percentOff ? "percent" : "amount",
-        percentOff: coupon.percentOff?.toString() || "",
-        amountOff: coupon.amountOff?.toString() || "",
-        currency: coupon.currency || "CVE",
-        duration: (coupon.duration as "ONCE" | "REPEATING" | "FOREVER") || "ONCE",
-        durationInMonths: coupon.durationInMonths?.toString() || "",
-        maxRedemptions: coupon.maxRedemptions?.toString() || "",
-        redeemBy: coupon.redeemBy
-          ? new Date(coupon.redeemBy).toISOString().split("T")[0]
-          : "",
-        appliesToProductId: coupon.appliesToProductId || "none",
-        defaultCoupon: coupon.defaultCoupon || false,
-      })
-    } else if (!open) {
-      resetForm()
-      setShowAdvanced(false)
-    }
-  }, [coupon, open])
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      discountType: "percent",
-      percentOff: "",
-      amountOff: "",
-      currency: "CVE",
-      duration: "ONCE",
-      durationInMonths: "",
-      maxRedemptions: "",
-      redeemBy: "",
-      appliesToProductId: "none",
-      defaultCoupon: false,
-    })
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -176,7 +195,16 @@ export function CreateCouponModal({
   const loading = creating || updating
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        onOpenChange(nextOpen)
+        if (!nextOpen) {
+          resetForm()
+          setShowAdvanced(false)
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
           <DialogTitle className="text-xl font-semibold">
@@ -390,7 +418,7 @@ export function CreateCouponModal({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Todos os produtos</SelectItem>
-                      {products.map((product: any) => (
+                      {products.map((product) => (
                         <SelectItem key={product.id} value={product.id}>
                           {product.title}
                         </SelectItem>
@@ -443,4 +471,3 @@ export function CreateCouponModal({
     </Dialog>
   )
 }
-

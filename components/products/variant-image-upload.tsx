@@ -1,14 +1,23 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useRef, useEffect } from "react"
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 interface VariantImageUploadProps {
   value: string
   onChange: (imageUrl: string) => void
   disabled?: boolean
+}
+
+type ImageUploadResponse = {
+  url?: string
+  imageUrl?: string
+  error?: string
 }
 
 export function VariantImageUpload({ value, onChange, disabled }: VariantImageUploadProps) {
@@ -52,23 +61,23 @@ export function VariantImageUpload({ value, onChange, disabled }: VariantImageUp
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
+        const errorData = await response.json().catch(() => ({})) as ImageUploadResponse
         throw new Error(errorData.error || "Erro ao fazer upload da imagem")
       }
 
-      const data = await response.json()
+      const data = await response.json() as ImageUploadResponse
       
-      if (data.url || data.imageUrl) {
-        const imageUrl = data.url || data.imageUrl
+      const imageUrl = data.url ?? data.imageUrl
+      if (imageUrl) {
         setPreview(imageUrl)
         onChange(imageUrl)
         showToast.success("Imagem enviada", "A imagem foi carregada com sucesso")
       } else {
         throw new Error("URL da imagem não retornada")
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading image:", error)
-      showToast.error("Erro ao fazer upload", error.message || "Ocorreu um erro ao enviar a imagem")
+      showToast.error("Erro ao fazer upload", getErrorMessage(error, "Ocorreu um erro ao enviar a imagem"))
     } finally {
       setUploading(false)
       if (fileInputRef.current) {

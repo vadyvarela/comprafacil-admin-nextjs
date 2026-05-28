@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { GET_BANNERS } from "@/lib/graphql/banners/queries"
@@ -25,6 +27,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 export default function BannersPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -45,8 +48,8 @@ export default function BannersPage() {
     try {
       await deleteBanner({ variables: { id: bannerId } })
       showToast.success("Banner excluído", `"${bannerTitle}" foi excluído`)
-    } catch (err: any) {
-      showToast.error("Erro", err?.message || "Erro ao excluir banner")
+    } catch (err: unknown) {
+      showToast.error("Erro", getErrorMessage(err, "Erro ao excluir banner"))
     } finally {
       setDeletingBannerId(null)
     }

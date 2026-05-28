@@ -337,8 +337,9 @@ export default function StoreHomePage() {
   const setBlockBodyExpanded = useCallback((id: string, open: boolean) => {
     setBlockBodyOpen((prev) => {
       if (open) return { ...prev, [id]: true }
-      const { [id]: _, ...rest } = prev
-      return rest
+      const next = { ...prev }
+      delete next[id]
+      return next
     })
   }, [])
 
@@ -357,7 +358,7 @@ export default function StoreHomePage() {
     if (dirty) return
     setDoc(layoutFromServerRow(serverRow ?? null))
     clearHistoryStacks()
-  }, [serverRow?.id, serverRow?.updatedAt, serverRow?.draftPayload, serverRow?.publishedPayload, dirty, clearHistoryStacks])
+  }, [serverRow, dirty, clearHistoryStacks])
 
   useLayoutEffect(() => {
     setPreviewBesideState(readPreviewBesideFromStorage())
@@ -601,8 +602,8 @@ export default function StoreHomePage() {
     return () => window.removeEventListener("keydown", onKey)
   }, [handleSaveDraft, undo, redo])
 
-  const canUndo = useMemo(() => pastRef.current.length > 0, [historyTick])
-  const canRedo = useMemo(() => futureRef.current.length > 0, [historyTick])
+  const canUndo = historyTick >= 0 && pastRef.current.length > 0
+  const canRedo = historyTick >= 0 && futureRef.current.length > 0
 
   return (
     <TooltipProvider delayDuration={280}>

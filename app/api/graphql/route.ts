@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
 import { rateLimit } from "@/lib/security/rate-limit"
+import { getErrorMessage } from "@/lib/utils/errors"
+
+type GraphQLErrorPayload = {
+  message?: string
+}
+
+type GraphQLProxyResponse = {
+  errors?: GraphQLErrorPayload[]
+}
 
 /** Limite por IP só depois de sessão admin: import JSON gera 1+N mutações por produto; 30/min rebentava o fluxo. */
 const ADMIN_GRAPHQL_BURST: { maxRequests: number; windowMs: number } = {
@@ -43,14 +52,14 @@ export async function POST(request: NextRequest) {
       signal: AbortSignal.timeout(30000), // 30 segundos timeout
     })
 
-    const data = await response.json()
+    const data = await response.json() as GraphQLProxyResponse
 
     // Log errors for debugging
     if (data.errors) {
       console.error("GraphQL errors:", JSON.stringify(data.errors, null, 2))
       
       // Se for erro de JDBC Connection, tentar novamente uma vez
-      const hasJdbcError = data.errors.some((err: any) => 
+      const hasJdbcError = data.errors.some((err) =>
         err.message?.includes("JDBC Connection") || 
         err.message?.includes("Unable to commit")
       )
@@ -71,10 +80,10 @@ export async function POST(request: NextRequest) {
             signal: AbortSignal.timeout(30000),
           })
           
-          const retryData = await retryResponse.json()
+          const retryData = await retryResponse.json() as GraphQLProxyResponse
           
           // Se ainda tiver erro, retornar o erro original
-          if (retryData.errors && retryData.errors.some((err: any) => 
+          if (retryData.errors && retryData.errors.some((err) =>
             err.message?.includes("JDBC Connection")
           )) {
             console.error("Retry also failed with JDBC error")
@@ -91,8 +100,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data, {
       status: data.errors ? 200 : response.status, // GraphQL returns 200 even with errors
     })
-  } catch (error: any) {
-    console.error("GraphQL API error:", error?.message)
+  } catch (error: unknown) {
+    console.error("GraphQL API error:", getErrorMessage(error))
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

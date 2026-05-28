@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect, useRef } from "react"
 import { useMutation } from "@apollo/client/react"
 import { UPDATE_BANNER } from "@/lib/graphql/banners/mutations"
@@ -29,6 +31,7 @@ import {
 import { DatePicker } from "@/components/ui/date-picker"
 import { Loader2 } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 interface EditBannerModalProps {
   open: boolean
@@ -196,9 +199,9 @@ export function EditBannerModal({
           },
         })
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error updating banner:", err)
-      showToast.error("Erro ao atualizar banner", err.message || "Ocorreu um erro ao atualizar o banner")
+      showToast.error("Erro ao atualizar banner", getErrorMessage(err, "Ocorreu um erro ao atualizar o banner"))
     } finally {
       setUploading(false)
     }
