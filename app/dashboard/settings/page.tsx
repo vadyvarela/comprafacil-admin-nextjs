@@ -160,13 +160,7 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div className="rounded-lg border border-dashed border-border/80 bg-muted/15 p-7 text-center animate-enter">
-          <Construction className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-foreground mb-1">Definições em desenvolvimento</p>
-          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-            As configurações da loja estarão disponíveis em breve. Por agora podes gerir produtos, pedidos e clientes.
-          </p>
-        </div>
+        
       </div>
     </>
   )
