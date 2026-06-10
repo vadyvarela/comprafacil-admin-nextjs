@@ -6,6 +6,7 @@ import {
   format,
 } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import { toGraphQLDateTime } from "@/lib/utils/graphql-datetime"
 
 export interface AnalyticsPeriod {
   from: Date
@@ -26,8 +27,8 @@ export function resolveAnalyticsPeriod(
   return {
     from: fromDate,
     to: toDate,
-    startDate: fromDate.toISOString(),
-    endDate: toDate.toISOString(),
+    startDate: toGraphQLDateTime(fromDate),
+    endDate: toGraphQLDateTime(toDate),
     dayCount,
   }
 }
@@ -40,8 +41,8 @@ export function previousPeriod(period: AnalyticsPeriod): AnalyticsPeriod {
   return {
     from: prevFrom,
     to: prevTo,
-    startDate: prevFrom.toISOString(),
-    endDate: prevTo.toISOString(),
+    startDate: toGraphQLDateTime(prevFrom),
+    endDate: toGraphQLDateTime(prevTo),
     dayCount,
   }
 }
