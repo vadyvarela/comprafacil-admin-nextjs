@@ -55,6 +55,16 @@ export function parseOrdersTab(value?: string | null): OrdersTab {
   return "all"
 }
 
+function toGraphQLDateTime(
+  value: string | null | undefined,
+  boundary: "start" | "end"
+): string | null {
+  const trimmed = value?.trim()
+  if (!trimmed) return null
+  if (trimmed.includes("T")) return trimmed
+  return boundary === "start" ? `${trimmed}T00:00:00` : `${trimmed}T23:59:59`
+}
+
 /**
  * Lista apenas pedidos com sucesso (status COMPLETED).
  * Filtro por payment intent / checkout session: só sucesso.
@@ -69,8 +79,8 @@ export async function getOrdersPage(params: OrdersPageParams): Promise<OrdersPag
       filter: {
         status: STATUS_SUCCESS,
         search: search ?? null,
-        dateFrom: params.dateFrom ?? null,
-        dateTo: params.dateTo ?? null,
+        dateFrom: toGraphQLDateTime(params.dateFrom, "start"),
+        dateTo: toGraphQLDateTime(params.dateTo, "end"),
       },
       page: {
         page,
