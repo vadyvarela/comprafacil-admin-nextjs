@@ -335,6 +335,7 @@ export async function getAnalyticsReport(params: {
     const aovPrevious = ordersPrevious > 0 ? Math.round(revenuePrevious / ordersPrevious) : 0
 
     const topProducts = [...productSales]
+      .filter((p) => (p.totalRevenue ?? 0) > 0)
       .sort((a, b) => b.totalRevenue - a.totalRevenue)
       .slice(0, 5)
       .map((p) => ({
