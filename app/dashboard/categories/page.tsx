@@ -84,14 +84,28 @@ export default function CategoriesPage() {
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {categories.map((category: Category) => (
+                {categories.map((category: Category) => {
+                  const imageUrl = category.image?.trim()
+                  return (
                   <div
                     key={category.id}
                     className="group relative rounded-lg border border-border/80 bg-card p-3.5 shadow-none transition-colors hover:border-border hover:bg-muted/25"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-blue-50 text-lg">
-                        {category.icon || <FolderTree className="h-4 w-4 text-blue-800" />}
+                      <div
+                        className={`flex h-9 w-9 items-center justify-center rounded-md border border-border/60 overflow-hidden shrink-0 ${
+                          imageUrl ? "bg-muted" : "bg-blue-50"
+                        }`}
+                      >
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt={category.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          category.icon || <FolderTree className="h-4 w-4 text-blue-800" />
+                        )}
                       </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -146,7 +160,8 @@ export default function CategoriesPage() {
                       )}
                     </div>
                   </div>
-                ))}
+                  )
+                })}
               </div>
             )
           )}
