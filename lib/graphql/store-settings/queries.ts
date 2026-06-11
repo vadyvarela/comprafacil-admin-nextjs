@@ -29,6 +29,7 @@ const STORE_SETTINGS_FIELDS = `
   layoutMode
   storeVertical
   tagline
+  themeZoneOverrides
   updatedAt
 `
 
