@@ -1,5 +1,37 @@
 import { gql } from "@apollo/client"
 
+const STORE_SETTINGS_FIELDS = `
+  id
+  siteName
+  siteDescription
+  logoUrl
+  faviconUrl
+  ogImageUrl
+  supportEmail
+  supportPhonePrimary
+  supportPhoneSecondary
+  address
+  facebookUrl
+  instagramUrl
+  whatsappNumber
+  colorBackground
+  colorSurface
+  colorPaper
+  colorForeground
+  colorMuted
+  colorInk
+  colorBorder
+  colorBorderSubtle
+  colorPrimary
+  colorPrimaryDark
+  colorPrimaryLight
+  fontFamily
+  layoutMode
+  storeVertical
+  tagline
+  updatedAt
+`
+
 export const UPDATE_STORE_SETTINGS = gql`
   mutation UpdateStoreSettings(
     $siteName: String!
@@ -29,20 +61,47 @@ export const UPDATE_STORE_SETTINGS = gql`
       instagramUrl: $instagramUrl
       whatsappNumber: $whatsappNumber
     ) {
-      id
-      siteName
-      siteDescription
-      logoUrl
-      faviconUrl
-      ogImageUrl
-      supportEmail
-      supportPhonePrimary
-      supportPhoneSecondary
-      address
-      facebookUrl
-      instagramUrl
-      whatsappNumber
-      updatedAt
+      ${STORE_SETTINGS_FIELDS}
+    }
+  }
+`
+
+export const UPDATE_STORE_THEME = gql`
+  mutation UpdateStoreTheme(
+    $colorBackground: String!
+    $colorSurface: String!
+    $colorPaper: String!
+    $colorForeground: String!
+    $colorMuted: String!
+    $colorInk: String!
+    $colorBorder: String!
+    $colorBorderSubtle: String!
+    $colorPrimary: String!
+    $colorPrimaryDark: String!
+    $colorPrimaryLight: String!
+    $fontFamily: String!
+    $layoutMode: String!
+    $storeVertical: String!
+    $tagline: String
+  ) {
+    updateStoreTheme(
+      colorBackground: $colorBackground
+      colorSurface: $colorSurface
+      colorPaper: $colorPaper
+      colorForeground: $colorForeground
+      colorMuted: $colorMuted
+      colorInk: $colorInk
+      colorBorder: $colorBorder
+      colorBorderSubtle: $colorBorderSubtle
+      colorPrimary: $colorPrimary
+      colorPrimaryDark: $colorPrimaryDark
+      colorPrimaryLight: $colorPrimaryLight
+      fontFamily: $fontFamily
+      layoutMode: $layoutMode
+      storeVertical: $storeVertical
+      tagline: $tagline
+    ) {
+      ${STORE_SETTINGS_FIELDS}
     }
   }
 `
