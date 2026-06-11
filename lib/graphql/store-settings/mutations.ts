@@ -29,6 +29,7 @@ const STORE_SETTINGS_FIELDS = `
   layoutMode
   storeVertical
   tagline
+  themeZoneOverrides
   updatedAt
 `
 
@@ -83,6 +84,7 @@ export const UPDATE_STORE_THEME = gql`
     $layoutMode: String!
     $storeVertical: String!
     $tagline: String
+    $themeZoneOverrides: String
   ) {
     updateStoreTheme(
       colorBackground: $colorBackground
@@ -100,6 +102,7 @@ export const UPDATE_STORE_THEME = gql`
       layoutMode: $layoutMode
       storeVertical: $storeVertical
       tagline: $tagline
+      themeZoneOverrides: $themeZoneOverrides
     ) {
       ${STORE_SETTINGS_FIELDS}
     }

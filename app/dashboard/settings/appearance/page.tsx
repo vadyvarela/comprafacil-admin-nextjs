@@ -6,6 +6,8 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { PageHeader } from "@/components/admin/page-header"
 import { ThemeColorField } from "@/components/settings/theme-color-field"
+import { ThemeZoneSurfaceSection } from "@/components/settings/theme-zone-section"
+import { ThemeZoneBadgeSection, ThemeZonePromoSection } from "@/components/settings/theme-zone-promo-badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -30,7 +32,20 @@ import {
   type StoreThemeTokens,
 } from "@/lib/store-presets"
 import { Loader2, RotateCcw, Sparkles } from "lucide-react"
+import {
+  parseThemeZoneOverrides,
+  resolvePromoPreview,
+  resolveZonePreview,
+  serializeThemeZoneOverrides,
+  type ThemeZoneOverrides,
+} from "@/lib/theme-zones"
 import { toast } from "sonner"
+
+type AppearanceDraft = {
+  version: string
+  values: StoreThemeTokens
+  zones: ThemeZoneOverrides
+}
 
 function rowToTheme(row: StoreSettingsGql): StoreThemeTokens {
   return themeTokensFromGql(row)
@@ -44,16 +59,27 @@ export default function AppearanceSettingsPage() {
 
   const row = data?.storeSettings
   const serverVersion = row?.updatedAt ?? "__empty__"
-  const [draft, setDraft] = useState<{ version: string; values: StoreThemeTokens } | null>(null)
+  const [draft, setDraft] = useState<AppearanceDraft | null>(null)
   const serverTheme = row ? rowToTheme(row) : themeTokensFromGql(null)
-  const activeDraft = draft?.version === serverVersion ? draft.values : null
-  const values = activeDraft ?? serverTheme
+  const serverZones = parseThemeZoneOverrides(row?.themeZoneOverrides)
+  const activeDraft = draft?.version === serverVersion ? draft : null
+  const values = activeDraft?.values ?? serverTheme
+  const zones = activeDraft?.zones ?? serverZones
   const dirty = activeDraft !== null
 
   function patch(partial: Partial<StoreThemeTokens>) {
     setDraft((prev) => ({
       version: serverVersion,
       values: { ...((prev?.version === serverVersion ? prev.values : null) ?? serverTheme), ...partial },
+      zones: (prev?.version === serverVersion ? prev.zones : null) ?? serverZones,
+    }))
+  }
+
+  function patchZones(next: ThemeZoneOverrides) {
+    setDraft((prev) => ({
+      version: serverVersion,
+      values: (prev?.version === serverVersion ? prev.values : null) ?? serverTheme,
+      zones: next,
     }))
   }
 
@@ -89,6 +115,7 @@ export default function AppearanceSettingsPage() {
         variables: {
           ...values,
           tagline: values.tagline.trim() || null,
+          themeZoneOverrides: serializeThemeZoneOverrides(zones),
         },
       })
       setDraft(null)
@@ -258,6 +285,21 @@ export default function AppearanceSettingsPage() {
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-semibold">Zonas da loja</CardTitle>
+                </CardHeader>
+                <CardContent className="grid gap-3">
+                  <ThemeZoneSurfaceSection title="Header" zoneKey="header" zones={zones} onChange={patchZones} />
+                  <ThemeZoneSurfaceSection title="Navegação" description="Menu de categorias" zoneKey="navigation" zones={zones} onChange={patchZones} />
+                  <ThemeZoneSurfaceSection title="Footer" zoneKey="footer" zones={zones} onChange={patchZones} />
+                  <ThemeZoneSurfaceSection title="Checkout" zoneKey="checkout" zones={zones} onChange={patchZones} />
+                  <ThemeZoneSurfaceSection title="Cartão de produto" zoneKey="productCard" zones={zones} onChange={patchZones} />
+                  <ThemeZonePromoSection zones={zones} onChange={patchZones} />
+                  <ThemeZoneBadgeSection zones={zones} onChange={patchZones} />
+                </CardContent>
+              </Card>
+
               <div className="flex flex-wrap gap-2">
                 <Button type="button" onClick={handleSave} disabled={saving || !dirty}>
                   {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden /> : null}
@@ -280,6 +322,11 @@ export default function AppearanceSettingsPage() {
                 <CardTitle className="text-sm font-semibold">Pré-visualização</CardTitle>
               </CardHeader>
               <CardContent>
+                {(() => {
+                  const header = resolveZonePreview(values, zones, "header")
+                  const card = resolveZonePreview(values, zones, "productCard")
+                  const promo = resolvePromoPreview(values, zones)
+                  return (
                 <div
                   className="overflow-hidden rounded-lg border"
                   style={{
@@ -290,22 +337,31 @@ export default function AppearanceSettingsPage() {
                 >
                   <div
                     className="border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-wide"
-                    style={{ borderColor: values.colorBorder, background: values.colorPaper }}
+                    style={{ borderColor: header.border, background: header.background, color: header.foreground }}
                   >
                     Header
+                  </div>
+                  <div
+                    className="mx-3 mt-2 rounded-md px-2 py-1 text-[10px] font-semibold"
+                    style={{
+                      background: `linear-gradient(135deg, ${promo.gradientFrom}, ${promo.gradientVia}, ${promo.gradientTo})`,
+                      color: "#fff",
+                    }}
+                  >
+                    Promo
                   </div>
                   <div className="space-y-3 p-3">
                     <div
                       className="rounded-md border p-3"
-                      style={{ background: values.colorSurface, borderColor: values.colorBorder }}
+                      style={{ background: card.background, borderColor: card.border, color: card.foreground }}
                     >
-                      <p className="text-sm font-semibold" style={{ color: values.colorForeground }}>
+                      <p className="text-sm font-semibold">
                         Título do produto
                       </p>
-                      <p className="mt-1 text-xs" style={{ color: values.colorMuted }}>
+                      <p className="mt-1 text-xs" style={{ color: card.muted }}>
                         Descrição curta do produto
                       </p>
-                      <p className="mt-2 text-sm font-bold" style={{ color: values.colorForeground }}>
+                      <p className="mt-2 text-sm font-bold">
                         12 500 CVE
                       </p>
                     </div>
@@ -318,6 +374,8 @@ export default function AppearanceSettingsPage() {
                     </button>
                   </div>
                 </div>
+                  )
+                })()}
               </CardContent>
             </Card>
           </div>

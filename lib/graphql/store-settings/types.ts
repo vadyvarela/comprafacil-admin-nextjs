@@ -29,6 +29,7 @@ export interface StoreSettingsGql {
   layoutMode?: LayoutMode | null
   storeVertical?: StoreVertical | null
   tagline?: string | null
+  themeZoneOverrides?: string | null
   updatedAt?: string | null
 }
 
