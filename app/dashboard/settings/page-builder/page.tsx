@@ -85,8 +85,11 @@ import {
 } from "@/lib/home-layout/schema"
 import { analyzeHomeLayoutEditor } from "@/lib/home-layout/editor-layout-issues"
 import { DEFAULT_HOME_LAYOUT } from "@/lib/home-layout/default-layout"
-import { HOME_BLOCK_REGISTRY, HOME_BLOCK_TYPES, type HomeBlockType } from "@/lib/home-layout/registry"
+import { HOME_BLOCK_REGISTRY, getHomeBlockTypesForVertical, defaultAddBlockTypeForVertical, type HomeBlockType } from "@/lib/home-layout/registry"
 import { createEmptyBlock } from "@/lib/home-layout/block-factory"
+import { GET_STORE_SETTINGS } from "@/lib/graphql/store-settings/queries"
+import type { StoreSettingsQueryData } from "@/lib/graphql/store-settings/types"
+import type { StoreVertical } from "@/lib/store-presets"
 import { StoreHomeSortableBlockShell } from "@/components/store-home/store-home-sortable-block-shell"
 import { StoreHomeHeaderNavPanel } from "@/components/store-home/store-home-header-nav-panel"
 import { revalidateTecharenaHome } from "./actions"
@@ -232,6 +235,12 @@ function writePreviewBesideToStorage(value: boolean) {
 
 export default function StoreHomePage() {
   const { data, loading, error, refetch } = useQuery<StoreHomeLayoutQueryData>(GET_STORE_HOME_LAYOUT)
+  const { data: settingsData } = useQuery<StoreSettingsQueryData>(GET_STORE_SETTINGS)
+  const storeVertical = (settingsData?.storeSettings?.storeVertical ?? "tech") as StoreVertical
+  const availableBlockTypes = useMemo(
+    () => getHomeBlockTypesForVertical(storeVertical),
+    [storeVertical]
+  )
   const [saveDraft, { loading: savingDraft }] = useMutation<StoreHomeLayoutMutationData>(
     SAVE_STORE_HOME_LAYOUT_DRAFT,
     { refetchQueries: [{ query: GET_STORE_HOME_LAYOUT }] }
@@ -247,6 +256,12 @@ export default function StoreHomePage() {
   const docJson = useMemo(() => JSON.stringify(doc), [doc])
 
   const [addType, setAddType] = useState<HomeBlockType>("productRail")
+  useEffect(() => {
+    setAddType((prev) => {
+      if (availableBlockTypes.includes(prev)) return prev
+      return defaultAddBlockTypeForVertical(storeVertical)
+    })
+  }, [availableBlockTypes, storeVertical])
   const [dirty, setDirty] = useState(false)
   const [previewOpen, setPreviewOpen] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -762,7 +777,7 @@ export default function StoreHomePage() {
                 <SelectValue placeholder="Tipo" />
               </SelectTrigger>
               <SelectContent>
-                {HOME_BLOCK_TYPES.map((t) => {
+                {availableBlockTypes.map((t) => {
                   const meta = HOME_BLOCK_REGISTRY[t]
                   return (
                     <SelectItem key={t} value={t} className="text-xs py-2 [&>span]:items-start">
