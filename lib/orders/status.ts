@@ -12,16 +12,6 @@ export function getOrderStatusLabel(code: string): string {
   return labels[code?.toUpperCase() ?? ""] ?? code ?? "—"
 }
 
-/** Variante do Badge por status. */
-export function getOrderStatusVariant(
-  code: string
-): "default" | "secondary" | "destructive" | "outline" {
-  const c = code?.toUpperCase() ?? ""
-  if (c === "COMPLETED") return "default"
-  if (c === "EXPIRED") return "destructive"
-  return "secondary"
-}
-
 /** CSS class para badge colorido de status de pagamento. */
 export function getOrderStatusClass(code: string): string {
   const c = code?.toUpperCase() ?? ""

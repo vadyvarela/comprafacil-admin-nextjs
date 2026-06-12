@@ -125,7 +125,7 @@ export async function getOrderById(id: string): Promise<OrderByIdOutput> {
   return { ok: true, data: order }
 }
 
-export { getOrderStatusLabel, getOrderStatusVariant } from "@/lib/orders/status"
+export { getOrderStatusLabel } from "@/lib/orders/status"
 export type { OrderSummary } from "@/lib/graphql/orders/types"
 
 /**

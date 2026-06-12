@@ -1,4 +1,4 @@
-import type { LayoutMode, StoreThemeTokens } from "@/lib/store-presets"
+import type { StoreThemeTokens } from "@/lib/store-presets"
 
 export type ZoneSurface = {
   custom?: boolean
