@@ -1,5 +1,9 @@
+import type { StoreVertical } from "@/lib/store-presets"
+
 export const HOME_BLOCK_TYPES = [
   "hero",
+  "shoeStoreHero",
+  "shoeStoreExplore",
   "trustStrip",
   "productPair",
   "promoDuo",
@@ -13,14 +17,32 @@ export const HOME_BLOCK_TYPES = [
 
 export type HomeBlockType = (typeof HOME_BLOCK_TYPES)[number]
 
-export const HOME_BLOCK_REGISTRY: Record<
-  HomeBlockType,
-  { label: string; description: string; hint?: string }
-> = {
+export type HomeBlockRegistryEntry = {
+  label: string
+  description: string
+  hint?: string
+  /** Se definido, bloco só aparece nestes verticais. Omitido = todos. */
+  verticals?: StoreVertical[]
+}
+
+export const HOME_BLOCK_REGISTRY: Record<HomeBlockType, HomeBlockRegistryEntry> = {
   hero: {
     label: "Hero",
     description: "Carrossel principal no topo da home.",
     hint: "Imagens vêm de Marketing → Banners (posições hero e hero-side). Não escolhes ficheiros aqui.",
+    verticals: ["tech", "beauty", "automotive", "general"],
+  },
+  shoeStoreHero: {
+    label: "Hero calçado (full-bleed)",
+    description: "Slider lifestyle com fotos grandes, tag, headline e botão «Comprar».",
+    hint: "Ideal para moda / calçado. Cada slide: imagem (URL ou /path), textos curtos e link interno.",
+    verticals: ["fashion", "general"],
+  },
+  shoeStoreExplore: {
+    label: "Explora (grelha bento)",
+    description: "Grelha editorial com tiles Running, Training, Street e faixa larga.",
+    hint: "Coloca abaixo do hero calçado. Cada tile: label, link, tamanho (hero / metade / largo) e imagem.",
+    verticals: ["fashion", "general"],
   },
   trustStrip: {
     label: "Faixa de confiança",
@@ -50,14 +72,12 @@ export const HOME_BLOCK_REGISTRY: Record<
   },
   categoryRail: {
     label: "Rail por categoria",
-    description:
-      "Lista produtos de uma única categoria do gateway.",
+    description: "Lista produtos de uma única categoria do gateway.",
     hint: "Escolhe a categoria no menu; a loja mostra essa lista. Várias categorias = vários blocos deste tipo.",
   },
   multiCategoryRails: {
     label: "Várias categorias (legado)",
-    description:
-      "Várias secções de categoria num só bloco (slugs ou categorias «na home»).",
+    description: "Várias secções de categoria num só bloco (slugs ou categorias «na home»).",
     hint: "Preferível vários «Rail por categoria» — mais simples de perceber e de reordenar.",
   },
   newsletter: {
@@ -70,4 +90,22 @@ export const HOME_BLOCK_REGISTRY: Record<
     description: "Mostra produtos que o visitante já abriu neste browser.",
     hint: "Não usa dados do backoffice — só histórico local do cliente.",
   },
+}
+
+export function isHomeBlockType(value: string): value is HomeBlockType {
+  return (HOME_BLOCK_TYPES as readonly string[]).includes(value)
+}
+
+export function getHomeBlockTypesForVertical(vertical: StoreVertical): HomeBlockType[] {
+  return HOME_BLOCK_TYPES.filter((type) => {
+    const entry = HOME_BLOCK_REGISTRY[type]
+    if (!entry.verticals) return true
+    return entry.verticals.includes(vertical)
+  })
+}
+
+export function defaultAddBlockTypeForVertical(vertical: StoreVertical): HomeBlockType {
+  const available = getHomeBlockTypesForVertical(vertical)
+  if (vertical === "fashion" && available.includes("shoeStoreHero")) return "shoeStoreHero"
+  return available[0] ?? "productRail"
 }

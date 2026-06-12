@@ -265,6 +265,76 @@ const splitDealRailBlockSchema = z.object({
   props: splitDealRailPropsSchema,
 })
 
+const mediaUrlSchema = z
+  .string()
+  .min(1)
+  .max(2048)
+  .superRefine((raw, ctx) => {
+    if (!/^https?:\/\//i.test(raw) && !(raw.startsWith("/") && raw.length > 1)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Imagem: URL https ou path a começar por /",
+      })
+    }
+  })
+
+const shoeStoreHeroSlideSchema = z
+  .object({
+    id: z.string().min(1).max(40),
+    tag: z.string().min(1).max(40),
+    headline: z.string().min(1).max(80),
+    ctaLabel: z.string().min(1).max(40),
+    ctaHref: internalHrefSchema,
+    imageUrl: mediaUrlSchema,
+    imageAlt: z.string().min(1).max(120),
+    imagePosition: z.string().max(48).optional(),
+  })
+  .strict()
+
+const shoeStoreHeroPropsSchema = z
+  .object({
+    slides: z.array(shoeStoreHeroSlideSchema).min(1).max(6),
+    autoplayMs: z.number().int().min(3000).max(15000).optional(),
+  })
+  .strict()
+
+const shoeStoreHeroBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("shoeStoreHero"),
+  enabled: z.boolean().default(true),
+  props: shoeStoreHeroPropsSchema,
+})
+
+const shoeStoreExploreTileSchema = z
+  .object({
+    id: z.string().min(1).max(40),
+    label: z.string().min(1).max(60),
+    href: internalHrefSchema,
+    span: z.enum(["hero", "half", "wide"]),
+    imageUrl: mediaUrlSchema,
+    imageAlt: z.string().min(1).max(120),
+  })
+  .strict()
+
+const shoeStoreExplorePropsSchema = z
+  .object({
+    title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
+    seeAllLabel: z.string().min(1).max(40),
+    seeAllHref: internalHrefSchema,
+    tiles: z.array(shoeStoreExploreTileSchema).min(2).max(6),
+  })
+  .strict()
+
+const shoeStoreExploreBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("shoeStoreExplore"),
+  enabled: z.boolean().default(true),
+  props: shoeStoreExplorePropsSchema,
+})
+
+export type ShoeStoreHeroSlideProps = z.infer<typeof shoeStoreHeroSlideSchema>
+export type ShoeStoreExploreTileProps = z.infer<typeof shoeStoreExploreTileSchema>
+
 const headerNavToneSchema = z.enum(["default", "promo"]).optional()
 
 const headerNavCategoryItemSchema = z
@@ -293,6 +363,8 @@ export type HeaderNavItem = z.infer<typeof headerNavItemSchema>
 
 export const homeBlockSchema = z.discriminatedUnion("type", [
   heroBlockSchema,
+  shoeStoreHeroBlockSchema,
+  shoeStoreExploreBlockSchema,
   productRailBlockSchema,
   categoryRailBlockSchema,
   multiCategoryRailsBlockSchema,

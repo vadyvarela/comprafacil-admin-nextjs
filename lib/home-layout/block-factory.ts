@@ -1,5 +1,9 @@
 import type { HomeBlock } from "./schema"
 import type { HomeBlockType } from "./registry"
+import {
+  defaultShoeStoreExploreProps,
+  defaultShoeStoreHeroProps,
+} from "./shoe-store-defaults"
 
 function newId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -17,6 +21,10 @@ export function createEmptyBlock(type: HomeBlockType): HomeBlock {
   switch (type) {
     case "hero":
       return { id, type: "hero", enabled: true, props: {} }
+    case "shoeStoreHero":
+      return { id, type: "shoeStoreHero", enabled: true, props: defaultShoeStoreHeroProps() }
+    case "shoeStoreExplore":
+      return { id, type: "shoeStoreExplore", enabled: true, props: defaultShoeStoreExploreProps() }
     case "trustStrip":
       return {
         id,
