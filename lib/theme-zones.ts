@@ -7,6 +7,7 @@ export type ZoneSurface = {
   muted?: string
   border?: string
   primary?: string
+  hoverImageSwap?: boolean
 }
 
 export type PromoZone = {
@@ -49,7 +50,8 @@ export function serializeThemeZoneOverrides(zones: ThemeZoneOverrides): string |
   const hasCustom = Object.values(zones).some(
     (z) => z && typeof z === "object" && "custom" in z && z.custom
   )
-  if (!hasCustom) return null
+  const hasHoverSwap = zones.productCard?.hoverImageSwap === true
+  if (!hasCustom && !hasHoverSwap) return null
   return JSON.stringify(zones)
 }
 

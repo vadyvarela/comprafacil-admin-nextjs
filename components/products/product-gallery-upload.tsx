@@ -8,13 +8,17 @@ import {
   GripVertical,
   ImageIcon,
   Loader2,
+  MousePointer2,
   Star,
   Trash2,
   Upload,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/utils/toast"
-import { parseProductGalleryUrls } from "@/lib/products/product-gallery-metadata"
+import {
+  parseHoverImageUrl,
+  parseProductGalleryUrls,
+} from "@/lib/products/product-gallery-metadata"
 
 interface ProductGalleryUploadProps {
   productId: string
@@ -34,21 +38,26 @@ export function ProductGalleryUpload({
 }: ProductGalleryUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [images, setImages] = useState<string[]>([])
+  const [hoverImageUrl, setHoverImageUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     setImages(parseProductGalleryUrls(primaryImage, metadata))
+    setHoverImageUrl(parseHoverImageUrl(metadata))
   }, [primaryImage, metadata])
 
   const persistGallery = useCallback(
-    async (nextImages: string[]) => {
+    async (nextImages: string[], nextHover?: string | null) => {
       setSaving(true)
       try {
         const res = await fetch(`/api/product/${productId}/gallery`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ images: nextImages }),
+          body: JSON.stringify({
+            images: nextImages,
+            hoverImageUrl: nextHover !== undefined ? nextHover : hoverImageUrl,
+          }),
         })
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
@@ -56,15 +65,16 @@ export function ProductGalleryUpload({
             (err as { error?: string }).error ?? "Erro ao guardar galeria",
           )
         }
-        const data = (await res.json()) as { images?: string[] }
+        const data = (await res.json()) as { images?: string[]; hoverImageUrl?: string | null }
         if (Array.isArray(data.images)) setImages(data.images)
+        setHoverImageUrl(data.hoverImageUrl ?? null)
         onSaved?.()
         return true
       } finally {
         setSaving(false)
       }
     },
-    [productId, onSaved],
+    [productId, onSaved, hoverImageUrl],
   )
 
   const uploadFile = async (file: File): Promise<string> => {
@@ -178,6 +188,29 @@ export function ProductGalleryUpload({
     }
   }
 
+  const setAsHover = async (index: number) => {
+    if (index === 0) return
+    const url = images[index]
+    const nextHover = hoverImageUrl === url ? null : url
+    const prevHover = hoverImageUrl
+    setHoverImageUrl(nextHover)
+    try {
+      await persistGallery(images, nextHover)
+      showToast.success(
+        nextHover ? "Imagem de hover definida" : "Imagem de hover removida",
+        nextHover
+          ? "Esta imagem aparece ao passar o rato no card da loja"
+          : "O card voltará a mostrar apenas a capa",
+      )
+    } catch (e: unknown) {
+      setHoverImageUrl(prevHover)
+      showToast.error(
+        "Erro",
+        e instanceof Error ? e.message : "Erro ao guardar imagem de hover",
+      )
+    }
+  }
+
   const busy = uploading || saving
 
   return (
@@ -217,6 +250,12 @@ export function ProductGalleryUpload({
                   Capa
                 </span>
               )}
+              {hoverImageUrl === url && index !== 0 && (
+                <span className="absolute top-1 right-1 flex items-center gap-0.5 rounded bg-violet-600 px-1 py-0.5 text-[9px] font-bold text-white">
+                  <MousePointer2 className="h-2.5 w-2.5" />
+                  Hover
+                </span>
+              )}
               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
                 {index !== 0 && (
                   <Button
@@ -228,6 +267,18 @@ export function ProductGalleryUpload({
                     onClick={() => void setAsCover(index)}
                   >
                     Capa
+                  </Button>
+                )}
+                {index !== 0 && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={hoverImageUrl === url ? "default" : "secondary"}
+                    className="h-6 text-[10px] px-1.5 w-full"
+                    disabled={busy}
+                    onClick={() => void setAsHover(index)}
+                  >
+                    {hoverImageUrl === url ? "Remover hover" : "Hover"}
                   </Button>
                 )}
                 <div className="flex gap-0.5 w-full">
@@ -314,7 +365,8 @@ export function ProductGalleryUpload({
       )}
 
       <p className="text-[10px] text-muted-foreground leading-snug">
-        A primeira imagem é a capa na loja. As restantes aparecem na galeria do produto.
+        A primeira imagem é a capa na loja. Marca outra imagem como &quot;Hover&quot; para trocar no card
+        (requer activação em Aparência → Cartão de produto).
       </p>
     </div>
   )

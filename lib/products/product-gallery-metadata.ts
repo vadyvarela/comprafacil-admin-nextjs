@@ -31,19 +31,34 @@ export function parseProductGalleryUrls(
   return out
 }
 
+/** Lê a URL da imagem de hover no card da loja. */
+export function parseHoverImageUrl(metadataJson?: string | null): string | null {
+  if (!metadataJson) return null
+  try {
+    const meta = JSON.parse(metadataJson) as { hoverImageUrl?: unknown }
+    const url = typeof meta.hoverImageUrl === "string" ? meta.hoverImageUrl.trim() : ""
+    return url || null
+  } catch {
+    return null
+  }
+}
+
+function parseMetadataBase(metadataJson?: string | null): Record<string, unknown> {
+  if (!metadataJson) return {}
+  try {
+    return JSON.parse(metadataJson) as Record<string, unknown>
+  } catch {
+    return {}
+  }
+}
+
 /** Atualiza metadata JSON com array `images` (galeria completa). */
 export function metadataWithGallery(
   metadataJson: string | null | undefined,
   galleryUrls: string[],
+  hoverImageUrl?: string | null,
 ): string {
-  let base: Record<string, unknown> = {}
-  if (metadataJson) {
-    try {
-      base = JSON.parse(metadataJson) as Record<string, unknown>
-    } catch {
-      base = {}
-    }
-  }
+  const base = parseMetadataBase(metadataJson)
 
   const seen = new Set<string>()
   const clean: string[] = []
@@ -60,5 +75,32 @@ export function metadataWithGallery(
     delete base.images
   }
 
+  const cover = clean[0] ?? null
+  const explicitHover =
+    hoverImageUrl !== undefined
+      ? hoverImageUrl?.trim() || null
+      : parseHoverImageUrl(JSON.stringify(base))
+
+  if (explicitHover && clean.includes(explicitHover) && explicitHover !== cover) {
+    base.hoverImageUrl = explicitHover
+  } else {
+    delete base.hoverImageUrl
+  }
+
+  return JSON.stringify(base)
+}
+
+/** Define ou remove `hoverImageUrl` no metadata. */
+export function metadataWithHoverImage(
+  metadataJson: string | null | undefined,
+  url: string | null,
+): string {
+  const base = parseMetadataBase(metadataJson)
+  const trimmed = url?.trim() || null
+  if (trimmed) {
+    base.hoverImageUrl = trimmed
+  } else {
+    delete base.hoverImageUrl
+  }
   return JSON.stringify(base)
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { requireAdminSession } from "@/lib/auth/requireAdmin"
 import {
   metadataWithGallery,
+  parseHoverImageUrl,
   parseProductGalleryUrls,
 } from "@/lib/products/product-gallery-metadata"
 
@@ -66,8 +67,9 @@ async function updateProductGallery(
   productId: string,
   product: ProductDetails,
   galleryUrls: string[],
+  hoverImageUrl?: string | null,
 ) {
-  const metadata = metadataWithGallery(product.metadata, galleryUrls)
+  const metadata = metadataWithGallery(product.metadata, galleryUrls, hoverImageUrl)
   const cover = galleryUrls[0] ?? null
 
   const mutation = {
@@ -139,7 +141,8 @@ export async function GET(
     }
 
     const images = parseProductGalleryUrls(product.image, product.metadata)
-    return NextResponse.json({ images })
+    const hoverImageUrl = parseHoverImageUrl(product.metadata)
+    return NextResponse.json({ images, hoverImageUrl })
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal server error"
     return NextResponse.json({ error: message }, { status: 500 })
@@ -166,7 +169,7 @@ export async function PUT(
       )
     }
 
-    const body = (await request.json()) as { images?: unknown }
+    const body = (await request.json()) as { images?: unknown; hoverImageUrl?: unknown }
     if (!Array.isArray(body.images)) {
       return NextResponse.json(
         { error: "Campo «images» deve ser um array de URLs" },
@@ -177,6 +180,12 @@ export async function PUT(
     const galleryUrls = body.images.filter(
       (x): x is string => typeof x === "string" && x.trim().length > 0,
     )
+    const hoverImageUrl =
+      body.hoverImageUrl === null
+        ? null
+        : typeof body.hoverImageUrl === "string"
+          ? body.hoverImageUrl
+          : undefined
 
     const product = await fetchProduct(gtwUrl, gtwToken, cmsAccessToken, productId)
     if (!product) {
@@ -190,10 +199,12 @@ export async function PUT(
       productId,
       product,
       galleryUrls,
+      hoverImageUrl,
     )
 
     const images = parseProductGalleryUrls(updated?.image, updated?.metadata)
-    return NextResponse.json({ images, image: images[0] ?? null })
+    const savedHoverImageUrl = parseHoverImageUrl(updated?.metadata)
+    return NextResponse.json({ images, image: images[0] ?? null, hoverImageUrl: savedHoverImageUrl })
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Internal server error"
     return NextResponse.json({ error: message }, { status: 500 })
