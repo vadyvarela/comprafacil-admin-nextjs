@@ -45,12 +45,13 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
           </Label>
         </div>
       </div>
+
       {zoneKey === "productCard" ? (
-        <div className="flex items-center justify-between gap-3 rounded-md border border-border/40 bg-muted/20 px-2.5 py-2">
-          <div>
-            <p className="text-[12px] font-medium">Imagem alternativa no hover</p>
-            <p className="text-[10px] text-muted-foreground">
-              Troca a imagem do card ao passar o rato (definida na galeria de cada produto).
+        <div className="flex items-center justify-between gap-3 rounded-md border border-primary/25 bg-primary/5 px-3 py-2.5">
+          <div className="min-w-0">
+            <p className="text-[12px] font-semibold text-foreground">Imagem alternativa no hover</p>
+            <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+              Troca a imagem do card ao passar o rato. Define a imagem de hover na galeria de cada produto.
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -61,12 +62,13 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
               onChange={(e) => patch({ hoverImageSwap: e.target.checked })}
               className="h-4 w-4 rounded border-border accent-primary"
             />
-            <Label htmlFor={`${zoneKey}-hover-swap`} className="text-[11px] text-muted-foreground">
+            <Label htmlFor={`${zoneKey}-hover-swap`} className="text-[11px] font-medium text-foreground">
               Activar
             </Label>
           </div>
         </div>
       ) : null}
+
       {custom ? (
         <div className="grid gap-3 sm:grid-cols-2">
           <ThemeColorField id={`${zoneKey}-bg`} label="Fundo" value={zone.background ?? "#ffffff"} onChange={(v) => patch({ background: v })} />
