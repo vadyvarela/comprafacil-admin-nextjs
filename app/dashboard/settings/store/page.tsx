@@ -35,6 +35,26 @@ type StoreDraft = {
   facebookUrl: string
   instagramUrl: string
   whatsappNumber: string
+  popularSearchQueriesText: string
+}
+
+function queriesToText(queries: string[] | null | undefined): string {
+  return (queries ?? []).join("\n")
+}
+
+function textToQueries(text: string): string[] {
+  const seen = new Set<string>()
+  const result: string[] = []
+  for (const line of text.split("\n")) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+    const key = trimmed.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    result.push(trimmed)
+    if (result.length >= 8) break
+  }
+  return result
 }
 
 function rowToDraft(row: StoreSettingsGql): StoreDraft {
@@ -51,6 +71,7 @@ function rowToDraft(row: StoreSettingsGql): StoreDraft {
     facebookUrl: row.facebookUrl?.trim() ?? "",
     instagramUrl: row.instagramUrl?.trim() ?? "",
     whatsappNumber: row.whatsappNumber?.trim() ?? "",
+    popularSearchQueriesText: queriesToText(row.popularSearchQueries),
   }
 }
 
@@ -101,6 +122,7 @@ export default function StoreSettingsPage() {
           facebookUrl: values.facebookUrl.trim() || null,
           instagramUrl: values.instagramUrl.trim() || null,
           whatsappNumber: values.whatsappNumber.trim() || null,
+          popularSearchQueries: textToQueries(values.popularSearchQueriesText),
         },
       })
       setDraft(null)
@@ -287,6 +309,26 @@ export default function StoreSettingsPage() {
                     Número com indicativo (só dígitos e +). A loja gera o link wa.me.
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold">Pesquisa</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Label htmlFor="popular-search">Sugestões populares</Label>
+                <Textarea
+                  id="popular-search"
+                  rows={4}
+                  value={values.popularSearchQueriesText}
+                  onChange={(e) => patch({ popularSearchQueriesText: e.target.value })}
+                  placeholder={"iPhone\nSamsung\nTV"}
+                  className="resize-y min-h-[88px] text-sm font-mono"
+                />
+                <p className="text-[11px] text-muted-foreground">
+                  Um termo por linha, até 8 sugestões. Aparecem no campo de pesquisa da loja.
+                </p>
               </CardContent>
             </Card>
 

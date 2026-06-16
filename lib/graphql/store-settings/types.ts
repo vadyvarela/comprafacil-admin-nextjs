@@ -30,6 +30,7 @@ export interface StoreSettingsGql {
   storeVertical?: StoreVertical | null
   tagline?: string | null
   themeZoneOverrides?: string | null
+  popularSearchQueries?: string[] | null
   updatedAt?: string | null
 }
 

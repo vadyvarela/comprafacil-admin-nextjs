@@ -30,6 +30,7 @@ const STORE_SETTINGS_FIELDS = `
   storeVertical
   tagline
   themeZoneOverrides
+  popularSearchQueries
   updatedAt
 `
 
@@ -47,6 +48,7 @@ export const UPDATE_STORE_SETTINGS = gql`
     $facebookUrl: String
     $instagramUrl: String
     $whatsappNumber: String
+    $popularSearchQueries: [String!]
   ) {
     updateStoreSettings(
       siteName: $siteName
@@ -61,6 +63,7 @@ export const UPDATE_STORE_SETTINGS = gql`
       facebookUrl: $facebookUrl
       instagramUrl: $instagramUrl
       whatsappNumber: $whatsappNumber
+      popularSearchQueries: $popularSearchQueries
     ) {
       ${STORE_SETTINGS_FIELDS}
     }

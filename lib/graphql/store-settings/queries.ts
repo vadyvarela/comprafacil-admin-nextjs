@@ -30,6 +30,7 @@ const STORE_SETTINGS_FIELDS = `
   storeVertical
   tagline
   themeZoneOverrides
+  popularSearchQueries
   updatedAt
 `
 
