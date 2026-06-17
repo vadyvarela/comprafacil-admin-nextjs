@@ -31,6 +31,7 @@ const STORE_SETTINGS_FIELDS = `
   tagline
   themeZoneOverrides
   popularSearchQueries
+  productPageTrustBadges
   updatedAt
 `
 

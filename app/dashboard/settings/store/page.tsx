@@ -19,6 +19,12 @@ import type {
   StoreSettingsMutationData,
   StoreSettingsQueryData,
 } from "@/lib/graphql/store-settings/types"
+import { ProductPageTrustBadgesSection } from "@/components/settings/product-page-trust-badges-section"
+import {
+  parseProductPageTrustBadges,
+  serializeProductPageTrustBadges,
+  type ProductPageTrustBadges,
+} from "@/lib/product-page-trust-badges"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -36,6 +42,7 @@ type StoreDraft = {
   instagramUrl: string
   whatsappNumber: string
   popularSearchQueriesText: string
+  productPageTrustBadges: ProductPageTrustBadges
 }
 
 function queriesToText(queries: string[] | null | undefined): string {
@@ -72,6 +79,7 @@ function rowToDraft(row: StoreSettingsGql): StoreDraft {
     instagramUrl: row.instagramUrl?.trim() ?? "",
     whatsappNumber: row.whatsappNumber?.trim() ?? "",
     popularSearchQueriesText: queriesToText(row.popularSearchQueries),
+    productPageTrustBadges: parseProductPageTrustBadges(row.productPageTrustBadges),
   }
 }
 
@@ -123,6 +131,7 @@ export default function StoreSettingsPage() {
           instagramUrl: values.instagramUrl.trim() || null,
           whatsappNumber: values.whatsappNumber.trim() || null,
           popularSearchQueries: textToQueries(values.popularSearchQueriesText),
+          productPageTrustBadges: serializeProductPageTrustBadges(values.productPageTrustBadges),
         },
       })
       setDraft(null)
@@ -309,6 +318,18 @@ export default function StoreSettingsPage() {
                     Número com indicativo (só dígitos e +). A loja gera o link wa.me.
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold">Página de produto</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProductPageTrustBadgesSection
+                  badges={values.productPageTrustBadges}
+                  onChange={(productPageTrustBadges) => patch({ productPageTrustBadges })}
+                />
               </CardContent>
             </Card>
 

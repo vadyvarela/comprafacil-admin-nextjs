@@ -31,6 +31,7 @@ export interface StoreSettingsGql {
   tagline?: string | null
   themeZoneOverrides?: string | null
   popularSearchQueries?: string[] | null
+  productPageTrustBadges?: string | null
   updatedAt?: string | null
 }
 
