@@ -32,6 +32,7 @@ const STORE_SETTINGS_FIELDS = `
   themeZoneOverrides
   popularSearchQueries
   productPageTrustBadges
+  productPageLayout
   updatedAt
 `
 

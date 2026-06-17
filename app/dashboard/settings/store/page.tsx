@@ -20,6 +20,12 @@ import type {
   StoreSettingsQueryData,
 } from "@/lib/graphql/store-settings/types"
 import { ProductPageTrustBadgesSection } from "@/components/settings/product-page-trust-badges-section"
+import { ProductPageLayoutSection } from "@/components/settings/product-page-layout-section"
+import {
+  parseProductPageLayout,
+  serializeProductPageLayout,
+  type ProductPageLayout,
+} from "@/lib/product-page-layout"
 import {
   parseProductPageTrustBadges,
   serializeProductPageTrustBadges,
@@ -43,6 +49,7 @@ type StoreDraft = {
   whatsappNumber: string
   popularSearchQueriesText: string
   productPageTrustBadges: ProductPageTrustBadges
+  productPageLayout: ProductPageLayout
 }
 
 function queriesToText(queries: string[] | null | undefined): string {
@@ -80,6 +87,7 @@ function rowToDraft(row: StoreSettingsGql): StoreDraft {
     whatsappNumber: row.whatsappNumber?.trim() ?? "",
     popularSearchQueriesText: queriesToText(row.popularSearchQueries),
     productPageTrustBadges: parseProductPageTrustBadges(row.productPageTrustBadges),
+    productPageLayout: parseProductPageLayout(row.productPageLayout),
   }
 }
 
@@ -132,6 +140,7 @@ export default function StoreSettingsPage() {
           whatsappNumber: values.whatsappNumber.trim() || null,
           popularSearchQueries: textToQueries(values.popularSearchQueriesText),
           productPageTrustBadges: serializeProductPageTrustBadges(values.productPageTrustBadges),
+          productPageLayout: serializeProductPageLayout(values.productPageLayout),
         },
       })
       setDraft(null)
@@ -325,7 +334,11 @@ export default function StoreSettingsPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold">Página de produto</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                <ProductPageLayoutSection
+                  layout={values.productPageLayout}
+                  onChange={(productPageLayout) => patch({ productPageLayout })}
+                />
                 <ProductPageTrustBadgesSection
                   badges={values.productPageTrustBadges}
                   onChange={(productPageTrustBadges) => patch({ productPageTrustBadges })}

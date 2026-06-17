@@ -50,6 +50,7 @@ export const UPDATE_STORE_SETTINGS = gql`
     $whatsappNumber: String
     $popularSearchQueries: [String!]
     $productPageTrustBadges: String
+    $productPageLayout: String
   ) {
     updateStoreSettings(
       siteName: $siteName
@@ -66,6 +67,7 @@ export const UPDATE_STORE_SETTINGS = gql`
       whatsappNumber: $whatsappNumber
       popularSearchQueries: $popularSearchQueries
       productPageTrustBadges: $productPageTrustBadges
+      productPageLayout: $productPageLayout
     ) {
       ${STORE_SETTINGS_FIELDS}
     }
