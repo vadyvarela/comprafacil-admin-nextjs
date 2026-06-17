@@ -3,11 +3,13 @@ import type { StoreThemeTokens } from "@/lib/store-presets"
 export type ZoneSurface = {
   custom?: boolean
   background?: string
+  imageBackground?: string
   foreground?: string
   muted?: string
   border?: string
   primary?: string
   hoverImageSwap?: boolean
+  gridColumns?: number
 }
 
 export type PromoZone = {
@@ -51,7 +53,9 @@ export function serializeThemeZoneOverrides(zones: ThemeZoneOverrides): string |
     (z) => z && typeof z === "object" && "custom" in z && z.custom
   )
   const hasHoverSwap = zones.productCard?.hoverImageSwap === true
-  if (!hasCustom && !hasHoverSwap) return null
+  const hasCardImageBg = Boolean(zones.productCard?.imageBackground?.trim())
+  const hasGridColumns = typeof zones.productCard?.gridColumns === "number"
+  if (!hasCustom && !hasHoverSwap && !hasCardImageBg && !hasGridColumns) return null
   return JSON.stringify(zones)
 }
 
@@ -109,13 +113,27 @@ export function resolveZonePreview(
   }
   const base = defaults[zone] ?? defaults.header
   const o = overrides[zone]
-  if (!o?.custom) return { ...base, background: base.background!, foreground: base.foreground!, muted: base.muted!, border: base.border!, primary: base.primary! }
+  if (!o?.custom) {
+    return {
+      ...base,
+      background: base.background!,
+      foreground: base.foreground!,
+      muted: base.muted!,
+      border: base.border!,
+      primary: base.primary!,
+      imageBackground: zone === "productCard" ? "#efefef" : undefined,
+    }
+  }
   return {
     background: o.background ?? base.background!,
     foreground: o.foreground ?? base.foreground!,
     muted: o.muted ?? base.muted!,
     border: o.border ?? base.border!,
     primary: o.primary ?? base.primary!,
+    imageBackground:
+      zone === "productCard"
+        ? o.imageBackground ?? "#efefef"
+        : o.imageBackground,
   }
 }
 

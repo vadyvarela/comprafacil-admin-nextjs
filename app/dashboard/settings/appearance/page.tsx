@@ -352,18 +352,23 @@ export default function AppearanceSettingsPage() {
                   </div>
                   <div className="space-y-3 p-3">
                     <div
-                      className="rounded-md border p-3"
+                      className="overflow-hidden rounded-md border"
                       style={{ background: card.background, borderColor: card.border, color: card.foreground }}
                     >
-                      <p className="text-sm font-semibold">
-                        Título do produto
-                      </p>
-                      <p className="mt-1 text-xs" style={{ color: card.muted }}>
-                        Descrição curta do produto
-                      </p>
-                      <p className="mt-2 text-sm font-bold">
-                        12 500 CVE
-                      </p>
+                      <div
+                        className="h-14 border-b"
+                        style={{
+                          background: card.imageBackground ?? "#efefef",
+                          borderColor: card.border,
+                        }}
+                      />
+                      <div className="p-3">
+                        <p className="text-sm font-semibold">Título do produto</p>
+                        <p className="mt-1 text-xs" style={{ color: card.muted }}>
+                          Descrição curta do produto
+                        </p>
+                        <p className="mt-2 text-sm font-bold">12 500 CVE</p>
+                      </div>
                     </div>
                     <button
                       type="button"

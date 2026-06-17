@@ -47,7 +47,28 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
       </div>
 
       {zoneKey === "productCard" ? (
-        <div className="flex items-center justify-between gap-3 rounded-md border border-primary/25 bg-primary/5 px-3 py-2.5">
+        <>
+          <div className="space-y-2 rounded-md border border-border/60 bg-muted/10 px-3 py-2.5">
+            <Label htmlFor={`${zoneKey}-grid-cols`} className="text-[12px] font-semibold">
+              Colunas da grelha (desktop)
+            </Label>
+            <select
+              id={`${zoneKey}-grid-cols`}
+              value={zone.gridColumns ?? 4}
+              onChange={(e) => patch({ gridColumns: Number(e.target.value) })}
+              className="h-9 w-full max-w-[12rem] rounded-md border border-border bg-background px-2 text-sm"
+            >
+              {[2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>
+                  {n} colunas
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-muted-foreground leading-snug">
+              Aplica-se à home, categorias, busca e listagem de produtos. No telemóvel mantém 2 colunas.
+            </p>
+          </div>
+          <div className="flex items-center justify-between gap-3 rounded-md border border-primary/25 bg-primary/5 px-3 py-2.5">
           <div className="min-w-0">
             <p className="text-[12px] font-semibold text-foreground">Imagem alternativa no hover</p>
             <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
@@ -66,12 +87,21 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
               Activar
             </Label>
           </div>
-        </div>
+          </div>
+        </>
       ) : null}
 
       {custom ? (
         <div className="grid gap-3 sm:grid-cols-2">
-          <ThemeColorField id={`${zoneKey}-bg`} label="Fundo" value={zone.background ?? "#ffffff"} onChange={(v) => patch({ background: v })} />
+          <ThemeColorField id={`${zoneKey}-bg`} label={zoneKey === "productCard" ? "Fundo (info)" : "Fundo"} value={zone.background ?? "#ffffff"} onChange={(v) => patch({ background: v })} />
+          {zoneKey === "productCard" ? (
+            <ThemeColorField
+              id={`${zoneKey}-image-bg`}
+              label="Fundo da imagem"
+              value={zone.imageBackground ?? "#efefef"}
+              onChange={(v) => patch({ imageBackground: v })}
+            />
+          ) : null}
           <ThemeColorField id={`${zoneKey}-fg`} label="Texto" value={zone.foreground ?? "#171717"} onChange={(v) => patch({ foreground: v })} />
           <ThemeColorField id={`${zoneKey}-muted`} label="Descrição" value={zone.muted ?? "#6b7280"} onChange={(v) => patch({ muted: v })} />
           <ThemeColorField id={`${zoneKey}-border`} label="Borda" value={zone.border ?? "#e5e7eb"} onChange={(v) => patch({ border: v })} />
