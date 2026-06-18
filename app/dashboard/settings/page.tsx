@@ -2,6 +2,7 @@ import Link from "next/link"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { PageHeader } from "@/components/admin/page-header"
+import { getStoreBrand } from "@/lib/services/get-store-brand"
 import {
   Store,
   Globe,
@@ -99,7 +100,9 @@ const SETTINGS_SECTIONS = [
   },
 ]
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const storeBrand = await getStoreBrand()
+
   return (
     <>
       <DashboardHeader
@@ -113,7 +116,7 @@ export default function SettingsPage() {
         <div className="animate-enter">
           <PageHeader
             title="Definições"
-            description="Configurações gerais da loja KumpraFacil"
+            description={`Configurações gerais da loja ${storeBrand.siteName}`}
           />
         </div>
 

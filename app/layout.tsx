@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ApolloClientProvider } from "@/lib/providers/apollo-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { adminTitle } from "@/lib/store-brand";
+import { getStoreBrand } from "@/lib/services/get-store-brand";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,10 +16,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "KumpraFacil Admin",
-  description: "Admin panel for KumpraFacil",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getStoreBrand();
+  const title = adminTitle(brand.siteName);
+
+  return {
+    title: {
+      default: title,
+      template: `%s · ${title}`,
+    },
+    description: `Painel de administração de ${brand.siteName}`,
+    ...(brand.faviconUrl ? { icons: { icon: brand.faviconUrl } } : {}),
+  };
+}
 
 export default function RootLayout({
   children,

@@ -195,7 +195,7 @@ export default function StoreSettingsPage() {
                     id="site-name"
                     value={values.siteName}
                     onChange={(e) => patch({ siteName: e.target.value })}
-                    placeholder="Kumpra Facil"
+                    placeholder="Nome da loja"
                   />
                 </div>
                 <div className="space-y-2">
@@ -231,7 +231,7 @@ export default function StoreSettingsPage() {
                     type="email"
                     value={values.supportEmail}
                     onChange={(e) => patch({ supportEmail: e.target.value })}
-                    placeholder="geral@kumprafacil.cv"
+                    placeholder="suporte@exemplo.com"
                   />
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">

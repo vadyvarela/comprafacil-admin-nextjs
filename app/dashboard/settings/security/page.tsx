@@ -52,7 +52,7 @@ export default function SecurityPage() {
 
   // Modal de geração
   const [generateOpen, setGenerateOpen] = useState(false)
-  const [tokenName, setTokenName] = useState("KUMPRAFACIL_API_TOKEN")
+  const [tokenName, setTokenName] = useState("STORE_API_TOKEN")
 
   async function loadTokens() {
     try {
@@ -90,7 +90,7 @@ export default function SecurityPage() {
       }
       setGeneratedToken(data)
       setGenerateOpen(false)
-      setTokenName("KUMPRAFACIL_API_TOKEN")
+      setTokenName("STORE_API_TOKEN")
       await loadTokens()
     } catch (err: unknown) {
       toast.error("Erro ao gerar token", { description: getErrorMessage(err) })
@@ -261,7 +261,7 @@ export default function SecurityPage() {
               <Label htmlFor="token-name">Nome do token</Label>
               <Input
                 id="token-name"
-                placeholder="Ex: KUMPRAFACIL_API_TOKEN"
+                placeholder="Ex: STORE_API_TOKEN"
                 value={tokenName}
                 onChange={(e) => setTokenName(e.target.value)}
               />
@@ -319,7 +319,7 @@ export default function SecurityPage() {
               <p className="text-xs text-amber-700 dark:text-amber-400">
                 Adiciona este valor como <span className="font-mono font-semibold">CMS_ACCESS_TOKEN</span> nas
                 variáveis de ambiente do backoffice e como{" "}
-                <span className="font-mono font-semibold">KUMPRAFACIL_API_TOKEN</span> no frontend.
+                <span className="font-mono font-semibold">STORE_API_TOKEN</span> no frontend da loja.
               </p>
             </div>
           </div>

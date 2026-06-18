@@ -16,10 +16,11 @@ import {
   Users,
   BarChart3,
   Settings,
-  Zap,
 } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
+import { StoreBrandLogo } from "@/components/store-brand-mark"
+import type { StoreBrandSummary } from "@/lib/store-brand"
 import {
   Sidebar,
   SidebarContent,
@@ -69,10 +70,11 @@ const NAV = [
 ]
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
+  storeBrand: StoreBrandSummary
   user?: { name?: string | null; email?: string | null; picture?: string | null }
 }
 
-export function AppSidebar({ user: sessionUser, ...props }: AppSidebarProps) {
+export function AppSidebar({ storeBrand, user: sessionUser, ...props }: AppSidebarProps) {
   const pathname = usePathname()
   const user = sessionUser
     ? {
@@ -80,7 +82,7 @@ export function AppSidebar({ user: sessionUser, ...props }: AppSidebarProps) {
         email: sessionUser.email ?? "",
         avatar: sessionUser.picture ?? "",
       }
-    : { name: "Admin", email: "admin@KumpraFacil.com", avatar: "" }
+    : { name: "Admin", email: "", avatar: "" }
 
   function isActive(url: string, exact: boolean) {
     if (exact) return pathname === url
@@ -92,12 +94,14 @@ export function AppSidebar({ user: sessionUser, ...props }: AppSidebarProps) {
       {/* Logo */}
       <SidebarHeader className="border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-2.5 px-2 py-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary">
-            <Zap className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <StoreBrandLogo brand={storeBrand} size="sm" />
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-semibold text-sidebar-foreground leading-none tracking-tight">KumpraFacil</p>
-            <p className="truncate text-[10px] text-sidebar-foreground/55 mt-0.5 font-medium tracking-wide uppercase">Admin</p>
+            <p className="truncate text-sm font-semibold text-sidebar-foreground leading-none tracking-tight">
+              {storeBrand.siteName}
+            </p>
+            <p className="truncate text-[10px] text-sidebar-foreground/55 mt-0.5 font-medium tracking-wide uppercase">
+              Admin
+            </p>
           </div>
         </Link>
       </SidebarHeader>

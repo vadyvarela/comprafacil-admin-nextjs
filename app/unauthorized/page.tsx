@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
+import type { Metadata } from "next";
+import { adminTitle } from "@/lib/store-brand";
+import { getStoreBrand } from "@/lib/services/get-store-brand";
 
-export const metadata = {
-  title: "Acesso negado - KumpraFacil Admin",
-  description: "Não tem permissão para aceder ao backoffice.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getStoreBrand();
+  return {
+    title: `Acesso negado · ${adminTitle(brand.siteName)}`,
+    description: "Não tem permissão para aceder ao backoffice.",
+  };
+}
 
 export default function UnauthorizedPage() {
   return (

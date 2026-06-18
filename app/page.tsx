@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
 import { getValidSession } from "@/lib/auth0";
 import { hasAdminRole } from "@/lib/auth/config";
-import { Zap } from "lucide-react";
+import { StoreBrandLogo } from "@/components/store-brand-mark";
+import { adminTitle } from "@/lib/store-brand";
+import { getStoreBrand } from "@/lib/services/get-store-brand";
 
 export default async function HomePage({
   searchParams,
@@ -11,16 +13,15 @@ export default async function HomePage({
   const session = await getValidSession();
   const params = await searchParams;
   const authError = params.auth_error;
+  const storeBrand = await getStoreBrand();
 
   if (!session?.user) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
         <main className="flex w-full max-w-md flex-col items-center gap-6 rounded-lg border border-border/80 bg-card p-8 shadow-none mx-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Zap className="h-6 w-6 text-white" />
-          </div>
+          <StoreBrandLogo brand={storeBrand} size="md" />
           <div className="text-center space-y-1">
-            <h1 className="text-xl font-bold text-foreground">KumpraFacil Admin</h1>
+            <h1 className="text-xl font-bold text-foreground">{adminTitle(storeBrand.siteName)}</h1>
             <p className="text-sm text-muted-foreground">
               Acesso reservado a utilizadores autorizados
             </p>
