@@ -124,7 +124,7 @@ const newsletterBlockSchema = z.object({
   enabled: z.boolean().default(true),
   props: z
     .object({
-      variant: newsletterVariantSchema.default("banner"),
+      variant: newsletterVariantSchema.optional(),
       title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax).optional(),
       subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
     })

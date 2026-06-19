@@ -144,6 +144,7 @@ export const DEFAULT_HOME_LAYOUT: HomeLayoutDocument = {
       type: "newsletter",
       enabled: true,
       props: {
+        variant: "banner",
         title: "Ofertas exclusivas no teu email",
         subtitle: "Sê o primeiro a saber das melhores promoções",
       },
