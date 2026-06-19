@@ -5,6 +5,7 @@ const STORE_SETTINGS_FIELDS = `
   siteName
   siteDescription
   logoUrl
+  footerLogoUrl
   faviconUrl
   ogImageUrl
   supportEmail

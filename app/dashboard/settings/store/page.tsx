@@ -38,6 +38,7 @@ type StoreDraft = {
   siteName: string
   siteDescription: string
   logoUrl: string
+  footerLogoUrl: string
   faviconUrl: string
   ogImageUrl: string
   supportEmail: string
@@ -76,6 +77,7 @@ function rowToDraft(row: StoreSettingsGql): StoreDraft {
     siteName: row.siteName ?? "",
     siteDescription: row.siteDescription?.trim() ?? "",
     logoUrl: row.logoUrl?.trim() ?? "",
+    footerLogoUrl: row.footerLogoUrl?.trim() ?? "",
     faviconUrl: row.faviconUrl?.trim() ?? "",
     ogImageUrl: row.ogImageUrl?.trim() ?? "",
     supportEmail: row.supportEmail?.trim() ?? "",
@@ -129,6 +131,7 @@ export default function StoreSettingsPage() {
           siteName: name,
           siteDescription: values.siteDescription.trim() || null,
           logoUrl: values.logoUrl.trim() || null,
+          footerLogoUrl: values.footerLogoUrl.trim() || null,
           faviconUrl: values.faviconUrl.trim() || null,
           ogImageUrl: values.ogImageUrl.trim() || null,
           supportEmail: values.supportEmail.trim() || null,
@@ -210,11 +213,18 @@ export default function StoreSettingsPage() {
                   />
                 </div>
                 <StoreImageField
-                  id="logo"
-                  label="Logotipo"
-                  hint="Header e páginas da loja. Recomendado fundo transparente."
+                  id="logo-header"
+                  label="Logotipo (header)"
+                  hint="Barra superior da loja. Recomendado fundo transparente."
                   value={values.logoUrl}
                   onChange={(logoUrl) => patch({ logoUrl })}
+                />
+                <StoreImageField
+                  id="logo-footer"
+                  label="Logotipo (footer)"
+                  hint="Rodapé da loja. Pode ser diferente do header (ex.: versão escura)."
+                  value={values.footerLogoUrl}
+                  onChange={(footerLogoUrl) => patch({ footerLogoUrl })}
                 />
               </CardContent>
             </Card>

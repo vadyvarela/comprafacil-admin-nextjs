@@ -5,6 +5,7 @@ const STORE_SETTINGS_FIELDS = `
   siteName
   siteDescription
   logoUrl
+  footerLogoUrl
   faviconUrl
   ogImageUrl
   supportEmail
@@ -39,6 +40,7 @@ export const UPDATE_STORE_SETTINGS = gql`
     $siteName: String!
     $siteDescription: String
     $logoUrl: String
+    $footerLogoUrl: String
     $faviconUrl: String
     $ogImageUrl: String
     $supportEmail: String
@@ -56,6 +58,7 @@ export const UPDATE_STORE_SETTINGS = gql`
       siteName: $siteName
       siteDescription: $siteDescription
       logoUrl: $logoUrl
+      footerLogoUrl: $footerLogoUrl
       faviconUrl: $faviconUrl
       ogImageUrl: $ogImageUrl
       supportEmail: $supportEmail

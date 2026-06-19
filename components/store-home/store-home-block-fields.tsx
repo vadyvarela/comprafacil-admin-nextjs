@@ -813,6 +813,27 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
       return (
         <div className="grid gap-2">
           <div className="space-y-1">
+            <Label className="text-[10px]">Variante</Label>
+            <Select
+              value={block.props.variant ?? "banner"}
+              onValueChange={(v) =>
+                onChange({
+                  ...block,
+                  props: { ...block.props, variant: v as "banner" | "strip" | "card" },
+                })
+              }
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="banner">Banner (destaque escuro)</SelectItem>
+                <SelectItem value="strip">Faixa compacta</SelectItem>
+                <SelectItem value="card">Cartão centrado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
             <Label className="text-[10px]">Título (opcional)</Label>
             <Input
               className="h-8 text-xs"

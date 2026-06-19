@@ -5,6 +5,7 @@ export interface StoreSettingsGql {
   siteName: string
   siteDescription?: string | null
   logoUrl?: string | null
+  footerLogoUrl?: string | null
   faviconUrl?: string | null
   ogImageUrl?: string | null
   supportEmail?: string | null

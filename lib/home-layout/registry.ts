@@ -82,8 +82,8 @@ export const HOME_BLOCK_REGISTRY: Record<HomeBlockType, HomeBlockRegistryEntry> 
   },
   newsletter: {
     label: "CTA newsletter",
-    description: "Faixa com formulário de email na home.",
-    hint: "Textos opcionais aqui; o formulário é o mesmo da loja.",
+    description: "Formulário de email na home.",
+    hint: "Escolhe a variante (banner, faixa ou cartão) e textos opcionais.",
   },
   recentlyViewed: {
     label: "Vistos recentemente",

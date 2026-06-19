@@ -125,7 +125,7 @@ export function createEmptyBlock(type: HomeBlockType): HomeBlock {
         props: { maxSections: 3 },
       }
     case "newsletter":
-      return { id, type: "newsletter", enabled: true, props: {} }
+      return { id, type: "newsletter", enabled: true, props: { variant: "banner" } }
     case "recentlyViewed":
       return { id, type: "recentlyViewed", enabled: true, props: { limit: 8 } }
   }

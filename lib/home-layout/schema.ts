@@ -116,12 +116,15 @@ const multiCategoryRailsBlockSchema = z.object({
     ),
 })
 
+const newsletterVariantSchema = z.enum(["banner", "strip", "card"])
+
 const newsletterBlockSchema = z.object({
   id: z.string().uuid(),
   type: z.literal("newsletter"),
   enabled: z.boolean().default(true),
   props: z
     .object({
+      variant: newsletterVariantSchema.default("banner"),
       title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax).optional(),
       subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
     })
