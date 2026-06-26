@@ -28,16 +28,16 @@ export function receiptPdfHref(origin: string | null | undefined, receiptId: str
   return `${origin.replace(/\/$/, "")}/api/receipt/pdf/${receiptId}`
 }
 
-/** Garante extensão .pdf em URLs Cloudinary raw sem extensão. */
+/** Remove .pdf suffix from Cloudinary raw URLs (invalid path → 404). */
 export function ensurePdfExtension(url: string | null | undefined): string | null {
   if (!url?.trim()) return null
   const trimmed = url.trim()
   if (!trimmed.includes("res.cloudinary.com") || !trimmed.includes("/raw/upload/")) {
     return trimmed
   }
-  const lower = trimmed.toLowerCase()
-  if (lower.includes(".pdf")) return trimmed
   const query = trimmed.indexOf("?")
-  if (query > 0) return `${trimmed.slice(0, query)}.pdf${trimmed.slice(query)}`
-  return `${trimmed}.pdf`
+  const path = query > 0 ? trimmed.slice(0, query) : trimmed
+  const suffix = query > 0 ? trimmed.slice(query) : ""
+  if (!path.toLowerCase().endsWith(".pdf")) return trimmed
+  return `${path.slice(0, -4)}${suffix}`
 }
