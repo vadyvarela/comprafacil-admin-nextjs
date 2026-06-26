@@ -31,8 +31,13 @@ export function receiptPdfHref(origin: string | null | undefined, receiptId: str
 /** Garante extensão .pdf em URLs Cloudinary raw sem extensão. */
 export function ensurePdfExtension(url: string | null | undefined): string | null {
   if (!url?.trim()) return null
-  if (url.includes("res.cloudinary.com") && url.includes("/raw/upload/") && !url.endsWith(".pdf")) {
-    return url + ".pdf"
+  const trimmed = url.trim()
+  if (!trimmed.includes("res.cloudinary.com") || !trimmed.includes("/raw/upload/")) {
+    return trimmed
   }
-  return url
+  const lower = trimmed.toLowerCase()
+  if (lower.includes(".pdf")) return trimmed
+  const query = trimmed.indexOf("?")
+  if (query > 0) return `${trimmed.slice(0, query)}.pdf${trimmed.slice(query)}`
+  return `${trimmed}.pdf`
 }

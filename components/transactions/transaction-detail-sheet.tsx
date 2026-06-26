@@ -2,8 +2,8 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
-import { formatCurrency } from "@/lib/utils/currency"
-import { invoicePdfHref, receiptPdfHref } from "@/lib/gateway-origin"
+import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency"
+import { invoicePdfHref, receiptPdfHref, ensurePdfExtension } from "@/lib/gateway-origin"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
@@ -76,11 +76,11 @@ export function TransactionDetailSheet({ tx, open, onOpenChange, gatewayOrigin =
 
   const invoicePdfLink =
     tx.invoice &&
-    ((tx.invoice.url?.trim() ? tx.invoice.url : null) ||
+    (ensurePdfExtension(tx.invoice.url?.trim() ? tx.invoice.url : null) ||
       invoicePdfHref(gatewayOrigin, tx.invoice.id ?? null))
   const receiptPdfLink =
     tx.receipt &&
-    ((tx.receipt.url?.trim() ? tx.receipt.url : null) ||
+    (ensurePdfExtension(tx.receipt.url?.trim() ? tx.receipt.url : null) ||
       receiptPdfHref(gatewayOrigin, tx.receipt.id ?? null))
 
   return (
@@ -113,7 +113,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange, gatewayOrigin =
           <div className="rounded-none border-b border-border">
             <SectionTitle icon={CreditCard} title="Pagamento" />
             <div className="px-4 py-1">
-              <Row label="Valor" value={<span className="font-bold tabular-nums">{formatCurrency(tx.amount, tx.currency)}</span>} />
+              <Row label="Valor" value={<span className="font-bold tabular-nums">{formatCurrency(minorToMajorCurrencyAmount(tx.amount), tx.currency)}</span>} />
               <Row label="Moeda" value={tx.currency} />
               <Row
                 label="Estado"
@@ -172,7 +172,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange, gatewayOrigin =
                   <Row label="Parcelas máx." value={tx.checkoutSession.maximumNumberOfInstallments} />
                 )}
                 {tx.checkoutSession.amountDiscount != null && tx.checkoutSession.amountDiscount > 0 && (
-                  <Row label="Desconto" value={formatCurrency(tx.checkoutSession.amountDiscount, tx.currency)} />
+                  <Row label="Desconto" value={formatCurrency(minorToMajorCurrencyAmount(tx.checkoutSession.amountDiscount), tx.currency)} />
                 )}
               </div>
               {/* Produtos */}
@@ -203,7 +203,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange, gatewayOrigin =
                       <div key={i} className="flex justify-between text-xs">
                         <span className="text-muted-foreground">Parcela {i + 1}</span>
                         <span className="font-medium tabular-nums">
-                          {formatCurrency(plan.amount, tx.currency)} — {formatDate(plan.dueDate)}
+                          {formatCurrency(minorToMajorCurrencyAmount(plan.amount), tx.currency)} — {formatDate(plan.dueDate)}
                         </span>
                       </div>
                     ))}
@@ -219,8 +219,8 @@ export function TransactionDetailSheet({ tx, open, onOpenChange, gatewayOrigin =
               <SectionTitle icon={FileText} title="Fatura" />
               <div className="px-4 py-1">
                 {tx.invoice.number && <Row label="Número" value={<span className="font-mono text-[11px]">{tx.invoice.number}</span>} />}
-                <Row label="Total fatura" value={<span className="font-bold tabular-nums">{formatCurrency(tx.invoice.amountTotal, tx.invoice.currency)}</span>} />
-                <Row label="Total pago" value={<span className="tabular-nums text-emerald-600 font-semibold">{formatCurrency(tx.invoice.amountPaid, tx.invoice.currency)}</span>} />
+                <Row label="Total fatura" value={<span className="font-bold tabular-nums">{formatCurrency(minorToMajorCurrencyAmount(tx.invoice.amountTotal), tx.invoice.currency)}</span>} />
+                <Row label="Total pago" value={<span className="tabular-nums text-emerald-600 font-semibold">{formatCurrency(minorToMajorCurrencyAmount(tx.invoice.amountPaid), tx.invoice.currency)}</span>} />
                 {tx.invoice.dueDate && <Row label="Data de vencimento" value={formatDate(tx.invoice.dueDate)} />}
                 {invoicePdfLink && (
                   <div className="py-2">

@@ -11,6 +11,7 @@ const STORE_SETTINGS_FIELDS = `
   supportEmail
   supportPhonePrimary
   supportPhoneSecondary
+  nif
   address
   facebookUrl
   instagramUrl

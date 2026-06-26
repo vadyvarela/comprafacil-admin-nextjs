@@ -46,6 +46,7 @@ export const UPDATE_STORE_SETTINGS = gql`
     $supportEmail: String
     $supportPhonePrimary: String
     $supportPhoneSecondary: String
+    $nif: String
     $address: String
     $facebookUrl: String
     $instagramUrl: String
@@ -64,6 +65,7 @@ export const UPDATE_STORE_SETTINGS = gql`
       supportEmail: $supportEmail
       supportPhonePrimary: $supportPhonePrimary
       supportPhoneSecondary: $supportPhoneSecondary
+      nif: $nif
       address: $address
       facebookUrl: $facebookUrl
       instagramUrl: $instagramUrl

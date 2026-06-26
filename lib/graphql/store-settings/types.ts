@@ -11,6 +11,7 @@ export interface StoreSettingsGql {
   supportEmail?: string | null
   supportPhonePrimary?: string | null
   supportPhoneSecondary?: string | null
+  nif?: string | null
   address?: string | null
   facebookUrl?: string | null
   instagramUrl?: string | null

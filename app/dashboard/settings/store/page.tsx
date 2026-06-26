@@ -44,6 +44,7 @@ type StoreDraft = {
   supportEmail: string
   supportPhonePrimary: string
   supportPhoneSecondary: string
+  nif: string
   address: string
   facebookUrl: string
   instagramUrl: string
@@ -83,6 +84,7 @@ function rowToDraft(row: StoreSettingsGql): StoreDraft {
     supportEmail: row.supportEmail?.trim() ?? "",
     supportPhonePrimary: row.supportPhonePrimary?.trim() ?? "",
     supportPhoneSecondary: row.supportPhoneSecondary?.trim() ?? "",
+    nif: row.nif?.trim() ?? "",
     address: row.address?.trim() ?? "",
     facebookUrl: row.facebookUrl?.trim() ?? "",
     instagramUrl: row.instagramUrl?.trim() ?? "",
@@ -137,6 +139,7 @@ export default function StoreSettingsPage() {
           supportEmail: values.supportEmail.trim() || null,
           supportPhonePrimary: values.supportPhonePrimary.trim() || null,
           supportPhoneSecondary: values.supportPhoneSecondary.trim() || null,
+          nif: values.nif.trim() || null,
           address: values.address.trim() || null,
           facebookUrl: values.facebookUrl.trim() || null,
           instagramUrl: values.instagramUrl.trim() || null,
@@ -263,6 +266,18 @@ export default function StoreSettingsPage() {
                       placeholder="+(238) 956 56 97"
                     />
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="nif">NIF</Label>
+                  <Input
+                    id="nif"
+                    value={values.nif}
+                    onChange={(e) => patch({ nif: e.target.value })}
+                    placeholder="876567890"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    Aparece na fatura e no recibo.
+                  </p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="address">Morada</Label>
