@@ -64,7 +64,7 @@ const SETTINGS_SECTIONS = [
     icon: Bell,
     color: "text-rose-800",
     bg: "bg-rose-50 border border-border/60",
-    href: null,
+    href: "/dashboard/settings/notifications",
   },
   {
     title: "E-mails",

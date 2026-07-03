@@ -19,7 +19,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import {
   Select,
@@ -28,13 +27,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { Loader2, Package, FileText, Layers, Tag } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
+import { cn } from "@/lib/utils"
 
 interface CreateProductModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+}
+
+function FormSection({
+  icon: Icon,
+  title,
+  iconTone,
+  children,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  title: string
+  iconTone: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="rounded-lg border border-border/80 bg-card overflow-hidden">
+      <div className="flex items-center gap-2 px-3.5 py-2 border-b border-border/80 bg-muted/25">
+        <div
+          className={cn(
+            "flex h-6 w-6 items-center justify-center rounded-md border border-border/60 shrink-0",
+            iconTone
+          )}
+        >
+          <Icon className="h-3 w-3" />
+        </div>
+        <span className="text-xs font-medium text-foreground">{title}</span>
+      </div>
+      <div className="p-3.5 space-y-3">{children}</div>
+    </div>
+  )
+}
+
+function Field({
+  label,
+  htmlFor,
+  required,
+  children,
+  hint,
+}: {
+  label: string
+  htmlFor?: string
+  required?: boolean
+  children: React.ReactNode
+  hint?: string
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={htmlFor} className="text-xs font-medium">
+        {label}
+        {required ? <span className="text-destructive ml-0.5">*</span> : null}
+      </Label>
+      {children}
+      {hint ? <p className="text-[11px] text-muted-foreground">{hint}</p> : null}
+    </div>
+  )
 }
 
 export function CreateProductModal({
@@ -42,7 +96,6 @@ export function CreateProductModal({
   onOpenChange,
 }: CreateProductModalProps) {
   const router = useRouter()
-  const [showAdvanced, setShowAdvanced] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
@@ -54,14 +107,6 @@ export function CreateProductModal({
     price: "",
     quantity: "",
     createDefaultVariant: true, // Por padrão, criar variante padrão
-    // Metadata expandido
-    model: "",
-    weight: "",
-    dimensions: "",
-    color: "",
-    material: "",
-    warranty: "",
-    notes: "",
     semFaceId: false,
     batteryHealthPercent: "",
   })
@@ -111,7 +156,6 @@ export function CreateProductModal({
   useEffect(() => {
     if (!open) {
       resetForm()
-      setShowAdvanced(false)
     }
   }, [open])
 
@@ -127,13 +171,6 @@ export function CreateProductModal({
       price: "",
       quantity: "",
       createDefaultVariant: true,
-      model: "",
-      weight: "",
-      dimensions: "",
-      color: "",
-      material: "",
-      warranty: "",
-      notes: "",
       semFaceId: false,
       batteryHealthPercent: "",
     })
@@ -146,17 +183,8 @@ export function CreateProductModal({
       return
     }
 
-    // Construir metadata com todos os campos preenchidos
     const metadata: Record<string, unknown> = {}
-    
     if (formData.sku?.trim()) metadata.sku = formData.sku.trim()
-    if (formData.model?.trim()) metadata.model = formData.model.trim()
-    if (formData.weight?.trim()) metadata.weight = formData.weight.trim()
-    if (formData.dimensions?.trim()) metadata.dimensions = formData.dimensions.trim()
-    if (formData.color?.trim()) metadata.color = formData.color.trim()
-    if (formData.material?.trim()) metadata.material = formData.material.trim()
-    if (formData.warranty?.trim()) metadata.warranty = formData.warranty.trim()
-    if (formData.notes?.trim()) metadata.notes = formData.notes.trim()
 
     if (showIphoneSeminovoFields) {
       if (formData.semFaceId) metadata.semFaceId = true
@@ -251,198 +279,185 @@ export function CreateProductModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-6">
-          <DialogTitle className="text-2xl font-semibold">Novo produto</DialogTitle>
-          <DialogDescription className="text-base mt-2">
-            Preencha as informações básicas do produto. Campos adicionais podem ser
-            salvos em metadata.
+      <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border/80">
+          <DialogTitle className="text-lg font-semibold tracking-tight">Novo produto</DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground mt-1">
+            Informações essenciais para publicar o produto na loja.
           </DialogDescription>
         </DialogHeader>
 
         {error && (
-          <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm border border-destructive/20">
+          <div className="mx-5 mt-4 bg-destructive/10 text-destructive px-3 py-2.5 rounded-md text-xs border border-destructive/20">
             <p className="font-medium">Erro ao criar produto</p>
-            <p className="mt-1 text-xs">{error.message}</p>
+            <p className="mt-0.5 opacity-90">{error.message}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Informações Básicas */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">
-                Título <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                required
-                placeholder="Ex: iPhone 15 Pro Max"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="summary">Descrição Completa</Label>
-              <RichTextEditor
-                value={formData.summary}
-                onChange={(value) =>
-                  setFormData({ ...formData, summary: value })
-                }
-                placeholder="Digite a descrição completa do produto com formatação..."
-                disabled={isLoading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Use a barra de ferramentas para formatar o texto
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="px-5 py-4 space-y-3.5">
+            <FormSection icon={Package} title="Produto" iconTone="bg-primary/10 text-primary">
+              <Field label="Título" htmlFor="title" required>
                 <Input
-                  id="sku"
-                  value={formData.sku}
-                  onChange={(e) =>
-                    setFormData({ ...formData, sku: e.target.value })
-                  }
-                  placeholder="Código SKU"
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
+                  placeholder="Ex: iPhone 15 Pro Max 256GB"
+                  disabled={isLoading}
+                  className="h-9"
+                />
+              </Field>
+            </FormSection>
+
+            <FormSection icon={FileText} title="Descrição" iconTone="bg-sky-50 text-sky-800">
+              <Field
+                label="Descrição completa"
+                hint="Use a barra de ferramentas para formatar o texto."
+              >
+                <RichTextEditor
+                  value={formData.summary}
+                  onChange={(value) => setFormData({ ...formData, summary: value })}
+                  placeholder="Características, conteúdo da caixa, condição…"
                   disabled={isLoading}
                 />
-              </div>
+              </Field>
+            </FormSection>
 
-              <div className="space-y-2">
-                <Label htmlFor="categoryId">Categoria</Label>
-                <Select
-                  value={formData.categoryId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, categoryId: value })
-                  }
-                  disabled={isLoading}
-                >
-                  <SelectTrigger id="categoryId">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem categoria</SelectItem>
-                    {categories.map((category: { id: string; name: string }) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="brandId">Marca</Label>
-                <Select
-                  value={formData.brandId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, brandId: value })
-                  }
-                  disabled={isLoading}
-                >
-                  <SelectTrigger id="brandId">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem marca</SelectItem>
-                    {brands.map((brand: { id: string; name: string }) => (
-                      <SelectItem key={brand.id} value={brand.id}>
-                        {brand.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="discount">Desconto (%)</Label>
-                <Input
-                  id="discount"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.discount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, discount: e.target.value })
-                  }
-                  placeholder="Ex: 10"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="condition">Estado</Label>
-                <Select
-                  value={formData.condition}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, condition: value })
-                  }
-                  disabled={isLoading}
-                >
-                  <SelectTrigger id="condition">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="novo">Novo</SelectItem>
-                    <SelectItem value="seminovo">Seminovo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {showIphoneSeminovoFields && (
-              <div className="rounded-md border border-border/80 bg-muted/20 p-3 space-y-3">
-                <p className="text-xs font-medium text-foreground">iPhone seminovo (informativo)</p>
-                <p className="text-[11px] text-muted-foreground">
-                  Aparece na ficha da loja só nesta combinação. Opcional.
-                </p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="create-semFaceId"
-                    checked={formData.semFaceId}
-                    onChange={(e) =>
-                      setFormData({ ...formData, semFaceId: e.target.checked })
-                    }
-                    className="h-4 w-4 rounded border-input accent-primary"
+            <FormSection icon={Layers} title="Classificação" iconTone="bg-violet-50 text-violet-800">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field label="Categoria" htmlFor="categoryId">
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
                     disabled={isLoading}
-                  />
-                  <Label htmlFor="create-semFaceId" className="text-sm font-normal cursor-pointer">
-                    Sem Face ID
-                  </Label>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="create-batteryHealthPercent">Saúde da bateria (%)</Label>
+                  >
+                    <SelectTrigger id="categoryId" className="h-9 w-full">
+                      <SelectValue placeholder="Selecione…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem categoria</SelectItem>
+                      {categories.map((category: { id: string; name: string }) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field label="Marca" htmlFor="brandId">
+                  <Select
+                    value={formData.brandId}
+                    onValueChange={(value) => setFormData({ ...formData, brandId: value })}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger id="brandId" className="h-9 w-full">
+                      <SelectValue placeholder="Selecione…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem marca</SelectItem>
+                      {brands.map((brand: { id: string; name: string }) => (
+                        <SelectItem key={brand.id} value={brand.id}>
+                          {brand.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field label="Estado" htmlFor="condition">
+                  <Select
+                    value={formData.condition}
+                    onValueChange={(value) => setFormData({ ...formData, condition: value })}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger id="condition" className="h-9 w-full">
+                      <SelectValue placeholder="Selecione…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="novo">Novo</SelectItem>
+                      <SelectItem value="seminovo">Seminovo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="SKU" htmlFor="sku">
                   <Input
-                    id="create-batteryHealthPercent"
-                    type="number"
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={formData.batteryHealthPercent}
-                    onChange={(e) =>
-                      setFormData({ ...formData, batteryHealthPercent: e.target.value })
-                    }
-                    placeholder="Ex: 87"
+                    id="sku"
+                    value={formData.sku}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    placeholder="Ex: IPH-15PM-256"
                     disabled={isLoading}
-                    className="max-w-[120px]"
+                    className="h-9"
                   />
-                </div>
-              </div>
-            )}
+                </Field>
 
-            {/* Seção de Variante Padrão */}
-            <div className="border-t pt-4 space-y-4">
-              <div className="flex items-center gap-2">
+                <Field label="Desconto (%)" htmlFor="discount">
+                  <Input
+                    id="discount"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.discount}
+                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                    placeholder="0"
+                    disabled={isLoading}
+                    className="h-9"
+                  />
+                </Field>
+              </div>
+
+              {showIphoneSeminovoFields && (
+                <div className="rounded-md border border-border/70 bg-muted/20 p-3 space-y-2.5">
+                  <div>
+                    <p className="text-xs font-medium text-foreground">iPhone seminovo</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Campos informativos na ficha da loja. Opcional.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:items-end">
+                    <div className="flex items-center gap-2 min-h-9">
+                      <input
+                        type="checkbox"
+                        id="create-semFaceId"
+                        checked={formData.semFaceId}
+                        onChange={(e) => setFormData({ ...formData, semFaceId: e.target.checked })}
+                        className="h-4 w-4 rounded border-input accent-primary"
+                        disabled={isLoading}
+                      />
+                      <Label htmlFor="create-semFaceId" className="text-xs font-normal cursor-pointer">
+                        Sem Face ID
+                      </Label>
+                    </div>
+                    <Field label="Saúde da bateria (%)" htmlFor="create-batteryHealthPercent">
+                      <Input
+                        id="create-batteryHealthPercent"
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={formData.batteryHealthPercent}
+                        onChange={(e) =>
+                          setFormData({ ...formData, batteryHealthPercent: e.target.value })
+                        }
+                        placeholder="Ex: 87"
+                        disabled={isLoading}
+                        className="h-9"
+                      />
+                    </Field>
+                  </div>
+                </div>
+              )}
+            </FormSection>
+
+            <FormSection icon={Tag} title="Preço e stock" iconTone="bg-emerald-50 text-emerald-800">
+              <label
+                htmlFor="createDefaultVariant"
+                className="flex items-start gap-2.5 rounded-md border border-border/70 bg-muted/15 px-3 py-2.5 cursor-pointer hover:bg-muted/25 transition-colors"
+              >
                 <input
                   type="checkbox"
                   id="createDefaultVariant"
@@ -450,196 +465,80 @@ export function CreateProductModal({
                   onChange={(e) =>
                     setFormData({ ...formData, createDefaultVariant: e.target.checked })
                   }
-                  className="h-4 w-4"
+                  className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
                   disabled={isLoading}
                 />
-                <Label htmlFor="createDefaultVariant" className="text-sm font-medium cursor-pointer">
-                  Criar variante padrão com preço
-                </Label>
-              </div>
+                <span className="space-y-0.5">
+                  <span className="block text-xs font-medium text-foreground">
+                    Criar variante padrão com preço
+                  </span>
+                  <span className="block text-[11px] text-muted-foreground leading-snug">
+                    Define preço e quantidade inicial numa única variante.
+                  </span>
+                </span>
+              </label>
 
-              {formData.createDefaultVariant && (
-                <div className="grid grid-cols-2 gap-4 pl-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="price">
-                      Preço (CVE) <span className="text-destructive">*</span>
-                    </Label>
+              {formData.createDefaultVariant ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Preço (CVE)" htmlFor="price" required>
                     <Input
                       id="price"
                       type="number"
                       min="0"
                       step="0.01"
                       value={formData.price}
-                      onChange={(e) =>
-                        setFormData({ ...formData, price: e.target.value })
-                      }
-                      placeholder="Ex: 1000.00"
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      placeholder="1000.00"
                       required={formData.createDefaultVariant}
                       disabled={isLoading}
+                      className="h-9"
                     />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="quantity">Quantidade em Estoque</Label>
+                  </Field>
+                  <Field label="Quantidade em stock" htmlFor="quantity">
                     <Input
                       id="quantity"
                       type="number"
                       min="0"
                       value={formData.quantity}
-                      onChange={(e) =>
-                        setFormData({ ...formData, quantity: e.target.value })
-                      }
-                      placeholder="Ex: 10"
+                      onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                      placeholder="10"
                       disabled={isLoading}
+                      className="h-9"
                     />
-                  </div>
+                  </Field>
                 </div>
-              )}
-
-              {!formData.createDefaultVariant && (
-                <p className="text-xs text-gray-500 pl-6">
-                  O produto será criado sem variantes. Você pode adicionar variantes depois na página de detalhes do produto.
+              ) : (
+                <p className="text-[11px] text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2 leading-relaxed">
+                  O produto será criado sem variantes. Pode adicioná-las depois na página de detalhes.
                 </p>
               )}
-            </div>
+            </FormSection>
           </div>
 
-          {/* Informações Adicionais (Metadata) */}
-          <div className="space-y-3">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full justify-between"
-            >
-              <span className="text-sm font-medium">Informações Adicionais</span>
-              {showAdvanced ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </Button>
-
-            {showAdvanced && (
-              <div className="space-y-4 pt-2 border-t">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="model">Modelo</Label>
-                    <Input
-                      id="model"
-                      value={formData.model}
-                      onChange={(e) =>
-                        setFormData({ ...formData, model: e.target.value })
-                      }
-                      placeholder="Ex: A2847"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="weight">Peso</Label>
-                    <Input
-                      id="weight"
-                      value={formData.weight}
-                      onChange={(e) =>
-                        setFormData({ ...formData, weight: e.target.value })
-                      }
-                      placeholder="Ex: 221g"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dimensions">Dimensões</Label>
-                    <Input
-                      id="dimensions"
-                      value={formData.dimensions}
-                      onChange={(e) =>
-                        setFormData({ ...formData, dimensions: e.target.value })
-                      }
-                      placeholder="Ex: 159.9 x 76.7 x 8.25 mm"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="color">Cor</Label>
-                    <Input
-                      id="color"
-                      value={formData.color}
-                      onChange={(e) =>
-                        setFormData({ ...formData, color: e.target.value })
-                      }
-                      placeholder="Ex: Natural Titanium"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="material">Material</Label>
-                    <Input
-                      id="material"
-                      value={formData.material}
-                      onChange={(e) =>
-                        setFormData({ ...formData, material: e.target.value })
-                      }
-                      placeholder="Ex: Titanium"
-                      disabled={isLoading}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="warranty">Garantia</Label>
-                  <Input
-                    id="warranty"
-                    value={formData.warranty}
-                    onChange={(e) =>
-                      setFormData({ ...formData, warranty: e.target.value })
-                    }
-                    placeholder="Ex: 1 ano"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Observações</Label>
-                  <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) =>
-                      setFormData({ ...formData, notes: e.target.value })
-                    }
-                    placeholder="Notas adicionais sobre o produto..."
-                    disabled={isLoading}
-                    className="min-h-20 resize-none"
-                  />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 px-5 py-3.5 border-t border-border/80 bg-muted/15 sm:justify-end">
             <Button
               type="button"
               variant="outline"
+              size="sm"
+              className="h-8"
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading || !formData.title.trim()}>
+            <Button
+              type="submit"
+              size="sm"
+              className="h-8 min-w-[108px]"
+              disabled={isLoading || !formData.title.trim()}
+            >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Criando...
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  A criar…
                 </>
               ) : (
-                "Criar Produto"
+                "Criar produto"
               )}
             </Button>
           </DialogFooter>
