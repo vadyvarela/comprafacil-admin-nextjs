@@ -18,7 +18,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Select,
   SelectContent,
@@ -26,11 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { Loader2, Package, FileText, Layers, Puzzle } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { RichTextEditor } from "../ui/rich-text-editor"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
+import { Field, FormSection } from "@/components/products/product-form-layout"
 
 interface EditProductModalProps {
   product: Product | null
@@ -38,12 +38,14 @@ interface EditProductModalProps {
   onOpenChange: (open: boolean) => void
 }
 
+type CategoryOption = { id: string; name: string; slug: string }
+type BrandOption = { id: string; name: string; slug: string }
+
 export function EditProductModal({
   product,
   open,
   onOpenChange,
 }: EditProductModalProps) {
-  const [showAdvanced, setShowAdvanced] = useState(false)
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
@@ -52,13 +54,6 @@ export function EditProductModal({
     sku: "",
     categoryId: "",
     brandId: "",
-    model: "",
-    weight: "",
-    dimensions: "",
-    color: "",
-    material: "",
-    warranty: "",
-    notes: "",
     semFaceId: false,
     batteryHealthPercent: "",
     addOnProductIds: [] as string[],
@@ -71,9 +66,6 @@ export function EditProductModal({
   const { data: brandsData } = useQuery(GET_BRAND_LIST, {
     skip: !open,
   })
-
-  type CategoryOption = { id: string; name: string; slug: string }
-  type BrandOption = { id: string; name: string; slug: string }
 
   const categories: CategoryOption[] = useMemo(
     () => (categoriesData as { categoryList?: CategoryOption[] } | undefined)?.categoryList ?? [],
@@ -101,7 +93,7 @@ export function EditProductModal({
       try {
         metadata = product.metadata ? JSON.parse(product.metadata) : null
       } catch {
-        // Ignore parse errors
+        /* ignore */
       }
 
       // eslint-disable-next-line react-hooks/set-state-in-effect -- preencher formulário ao abrir o modal
@@ -113,13 +105,6 @@ export function EditProductModal({
         sku: typeof metadata?.sku === "string" ? metadata.sku : "",
         categoryId: product.category?.id || "none",
         brandId: product.brand?.id || "none",
-        model: typeof metadata?.model === "string" ? metadata.model : "",
-        weight: typeof metadata?.weight === "string" ? metadata.weight : "",
-        dimensions: typeof metadata?.dimensions === "string" ? metadata.dimensions : "",
-        color: typeof metadata?.color === "string" ? metadata.color : "",
-        material: typeof metadata?.material === "string" ? metadata.material : "",
-        warranty: typeof metadata?.warranty === "string" ? metadata.warranty : "",
-        notes: typeof metadata?.notes === "string" ? metadata.notes : "",
         semFaceId: metadata?.semFaceId === true,
         batteryHealthPercent:
           metadata?.batteryHealthPercent !== undefined && metadata?.batteryHealthPercent !== null
@@ -129,13 +114,6 @@ export function EditProductModal({
           ? metadata.addOnProductIds.filter((id): id is string => typeof id === "string" && id !== product.id)
           : [],
       })
-      
-      setShowAdvanced(
-        !!metadata &&
-          (Object.keys(metadata).length > 0 ||
-            metadata?.semFaceId === true ||
-            (metadata?.batteryHealthPercent !== undefined && metadata?.batteryHealthPercent !== null && metadata?.batteryHealthPercent !== ""))
-      )
     }
   }, [product, open])
 
@@ -165,19 +143,9 @@ export function EditProductModal({
       /* manter base vazio */
     }
 
-    const setOrDel = (key: string, val: string | undefined) => {
-      const t = val?.trim()
-      if (t) base[key] = t
-      else delete base[key]
-    }
-    setOrDel("sku", formData.sku)
-    setOrDel("model", formData.model)
-    setOrDel("weight", formData.weight)
-    setOrDel("dimensions", formData.dimensions)
-    setOrDel("color", formData.color)
-    setOrDel("material", formData.material)
-    setOrDel("warranty", formData.warranty)
-    setOrDel("notes", formData.notes)
+    const sku = formData.sku?.trim()
+    if (sku) base.sku = sku
+    else delete base.sku
 
     const addOnProductIds = formData.addOnProductIds.filter((id) => id !== product.id)
     if (addOnProductIds.length > 0) base.addOnProductIds = addOnProductIds
@@ -197,12 +165,8 @@ export function EditProductModal({
     const metadataJson = Object.keys(base).length > 0 ? JSON.stringify(base) : null
 
     try {
-      // Sempre usar GraphQL para atualizar o produto (sem imagem)
-      // Remover __typename do type se existir (adicionado pelo Apollo Client)
-      const productType = product.type 
-        ? { code: product.type.code } 
-        : { code: "TICKET" }
-      
+      const productType = product.type ? { code: product.type.code } : { code: "TICKET" }
+
       await updateProduct({
         variables: {
           id: product.id,
@@ -218,8 +182,6 @@ export function EditProductModal({
           },
         },
       })
-
-      showToast.success("Produto atualizado", "As alterações foram salvas com sucesso")
     } catch (err: unknown) {
       console.error("Error updating product:", err)
       showToast.error(
@@ -231,299 +193,162 @@ export function EditProductModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-6">
-          <DialogTitle className="text-2xl font-semibold">Editar produto</DialogTitle>
-          <DialogDescription className="text-base mt-2">
-            Atualize as informações do produto. Campos adicionais são salvos em
-            metadata.
+      <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto p-0 gap-0">
+        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border/80">
+          <DialogTitle className="text-lg font-semibold tracking-tight">Editar produto</DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground mt-1">
+            Atualize as informações visíveis na loja.
           </DialogDescription>
         </DialogHeader>
 
         {error && (
-          <div className="bg-destructive/10 text-destructive px-4 py-3 rounded-md text-sm border border-destructive/20">
+          <div className="mx-5 mt-4 bg-destructive/10 text-destructive px-3 py-2.5 rounded-md text-xs border border-destructive/20">
             <p className="font-medium">Erro ao atualizar produto</p>
-            <p className="mt-1 text-xs">{error.message}</p>
+            <p className="mt-0.5 opacity-90">{error.message}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Informações Básicas */}
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">
-                Título <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                required
-                placeholder="Nome do produto"
-                disabled={loading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="summary">Descrição Completa</Label>
-              <RichTextEditor
-                value={formData.summary}
-                onChange={(value) =>
-                  setFormData({ ...formData, summary: value })
-                }
-                placeholder="Digite a descrição completa do produto com formatação..."
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Use a barra de ferramentas para formatar o texto
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU</Label>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <div className="px-5 py-4 space-y-3.5">
+            <FormSection icon={Package} title="Produto" iconTone="bg-primary/10 text-primary">
+              <Field label="Título" htmlFor="edit-title" required>
                 <Input
-                  id="sku"
-                  value={formData.sku}
-                  onChange={(e) =>
-                    setFormData({ ...formData, sku: e.target.value })
-                  }
-                  placeholder="Código SKU"
+                  id="edit-title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  required
+                  placeholder="Ex: iPhone 15 Pro Max 256GB"
+                  disabled={loading}
+                  className="h-9"
+                />
+              </Field>
+            </FormSection>
+
+            <FormSection icon={FileText} title="Descrição" iconTone="bg-sky-50 text-sky-800">
+              <Field
+                label="Descrição completa"
+                hint="Use a barra de ferramentas para formatar o texto."
+              >
+                <RichTextEditor
+                  value={formData.summary}
+                  onChange={(value) => setFormData({ ...formData, summary: value })}
+                  placeholder="Características, conteúdo da caixa, condição…"
                   disabled={loading}
                 />
+              </Field>
+            </FormSection>
+
+            <FormSection icon={Layers} title="Classificação" iconTone="bg-violet-50 text-violet-800">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field label="Categoria" htmlFor="edit-categoryId">
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
+                    disabled={loading}
+                  >
+                    <SelectTrigger id="edit-categoryId" className="h-9 w-full">
+                      <SelectValue placeholder="Selecione…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem categoria</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field label="Marca" htmlFor="edit-brandId">
+                  <Select
+                    value={formData.brandId}
+                    onValueChange={(value) => setFormData({ ...formData, brandId: value })}
+                    disabled={loading}
+                  >
+                    <SelectTrigger id="edit-brandId" className="h-9 w-full">
+                      <SelectValue placeholder="Selecione…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sem marca</SelectItem>
+                      {brands.map((brand) => (
+                        <SelectItem key={brand.id} value={brand.id}>
+                          {brand.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+
+                <Field label="Estado" htmlFor="edit-condition">
+                  <Select
+                    value={formData.condition}
+                    onValueChange={(value) => setFormData({ ...formData, condition: value })}
+                    disabled={loading}
+                  >
+                    <SelectTrigger id="edit-condition" className="h-9 w-full">
+                      <SelectValue placeholder="Selecione…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="novo">Novo</SelectItem>
+                      <SelectItem value="seminovo">Seminovo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="discount">Desconto (%)</Label>
-                <Input
-                  id="discount"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={formData.discount}
-                  onChange={(e) =>
-                    setFormData({ ...formData, discount: e.target.value })
-                  }
-                  placeholder="Ex: 10"
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="categoryId">Categoria</Label>
-                <Select
-                  value={formData.categoryId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, categoryId: value })
-                  }
-                  disabled={loading}
-                >
-                  <SelectTrigger id="categoryId">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem categoria</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="brandId">Marca</Label>
-                <Select
-                  value={formData.brandId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, brandId: value })
-                  }
-                  disabled={loading}
-                >
-                  <SelectTrigger id="brandId">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Sem marca</SelectItem>
-                    {brands.map((brand) => (
-                      <SelectItem key={brand.id} value={brand.id}>
-                        {brand.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Selecione a marca para atualizar ou manter a atual.
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="condition">Estado</Label>
-                <Select
-                  value={formData.condition}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, condition: value })
-                  }
-                  disabled={loading}
-                >
-                  <SelectTrigger id="condition">
-                    <SelectValue placeholder="Selecione..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="novo">Novo</SelectItem>
-                    <SelectItem value="seminovo">Seminovo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-
-          {/* Informações Adicionais (Metadata) */}
-          <div className="space-y-3">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full justify-between"
-            >
-              <span className="text-sm font-medium">Informações Adicionais</span>
-              {showAdvanced ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </Button>
-
-            {showAdvanced && (
-              <div className="space-y-4 pt-2 border-t">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="model">Modelo</Label>
-                    <Input
-                      id="model"
-                      value={formData.model}
-                      onChange={(e) =>
-                        setFormData({ ...formData, model: e.target.value })
-                      }
-                      placeholder="Ex: A2847"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="weight">Peso</Label>
-                    <Input
-                      id="weight"
-                      value={formData.weight}
-                      onChange={(e) =>
-                        setFormData({ ...formData, weight: e.target.value })
-                      }
-                      placeholder="Ex: 221g"
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dimensions">Dimensões</Label>
-                    <Input
-                      id="dimensions"
-                      value={formData.dimensions}
-                      onChange={(e) =>
-                        setFormData({ ...formData, dimensions: e.target.value })
-                      }
-                      placeholder="Ex: 159.9 x 76.7 x 8.25 mm"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="color">Cor</Label>
-                    <Input
-                      id="color"
-                      value={formData.color}
-                      onChange={(e) =>
-                        setFormData({ ...formData, color: e.target.value })
-                      }
-                      placeholder="Ex: Natural Titanium"
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="material">Material</Label>
-                    <Input
-                      id="material"
-                      value={formData.material}
-                      onChange={(e) =>
-                        setFormData({ ...formData, material: e.target.value })
-                      }
-                      placeholder="Ex: Titanium"
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="warranty">Garantia</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="SKU" htmlFor="edit-sku">
                   <Input
-                    id="warranty"
-                    value={formData.warranty}
-                    onChange={(e) =>
-                      setFormData({ ...formData, warranty: e.target.value })
-                    }
-                    placeholder="Ex: 1 ano"
+                    id="edit-sku"
+                    value={formData.sku}
+                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    placeholder="Ex: IPH-15PM-256"
                     disabled={loading}
+                    className="h-9"
                   />
-                </div>
+                </Field>
 
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Observações</Label>
-                  <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) =>
-                      setFormData({ ...formData, notes: e.target.value })
-                    }
-                    placeholder="Notas adicionais sobre o produto..."
+                <Field label="Desconto (%)" htmlFor="edit-discount">
+                  <Input
+                    id="edit-discount"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.discount}
+                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                    placeholder="0"
                     disabled={loading}
-                    className="min-h-[80px] resize-none"
+                    className="h-9"
                   />
-                </div>
+                </Field>
+              </div>
 
-                {showIphoneSeminovoFields && (
-                  <div className="rounded-md border border-border/80 bg-muted/20 p-3 space-y-3">
-                    <p className="text-xs font-medium text-foreground">iPhone seminovo (informativo)</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      Visível na loja só em iPhone em estado seminovo. Não afeta preço nem stock.
+              {showIphoneSeminovoFields && (
+                <div className="rounded-md border border-border/70 bg-muted/20 p-3 space-y-2.5">
+                  <div>
+                    <p className="text-xs font-medium text-foreground">iPhone seminovo</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Campos informativos na ficha da loja. Opcional.
                     </p>
-                    <div className="flex items-center gap-2">
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:items-end">
+                    <div className="flex items-center gap-2 min-h-9">
                       <input
                         type="checkbox"
-                        id="semFaceId"
+                        id="edit-semFaceId"
                         checked={formData.semFaceId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, semFaceId: e.target.checked })
-                        }
+                        onChange={(e) => setFormData({ ...formData, semFaceId: e.target.checked })}
                         disabled={loading}
                         className="h-4 w-4 rounded border-input accent-primary"
                       />
-                      <Label htmlFor="semFaceId" className="text-sm font-normal cursor-pointer">
+                      <Label htmlFor="edit-semFaceId" className="text-xs font-normal cursor-pointer">
                         Sem Face ID
                       </Label>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="batteryHealthPercent">Saúde da bateria (%)</Label>
+                    <Field label="Saúde da bateria (%)" htmlFor="edit-batteryHealthPercent">
                       <Input
-                        id="batteryHealthPercent"
+                        id="edit-batteryHealthPercent"
                         type="number"
                         min={0}
                         max={100}
@@ -534,53 +359,54 @@ export function EditProductModal({
                         }
                         placeholder="Ex: 87"
                         disabled={loading}
-                        className="max-w-[120px]"
+                        className="h-9"
                       />
-                    </div>
+                    </Field>
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </FormSection>
+
+            <FormSection icon={Puzzle} title="Produtos complementares" iconTone="bg-amber-50 text-amber-900">
+              <Field
+                label="Acessórios opcionais"
+                hint="Aparecem na página do produto como compra adicional. Máximo 4."
+              >
+                <CuratedProductPicker
+                  value={formData.addOnProductIds}
+                  max={4}
+                  orderLabel="Ordem dos acessórios"
+                  description="Pesquisa e clica nas linhas para incluir ou remover."
+                  onChange={(ids) =>
+                    setFormData({
+                      ...formData,
+                      addOnProductIds: ids.filter((id) => id !== product?.id),
+                    })
+                  }
+                />
+              </Field>
+            </FormSection>
           </div>
 
-          <div className="space-y-3 rounded-md border border-border/80 bg-muted/15 p-3">
-            <div>
-              <Label className="text-sm font-medium">Produtos complementares</Label>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Escolhe acessórios para aparecerem na página do produto como compra opcional.
-              </p>
-            </div>
-            <CuratedProductPicker
-              value={formData.addOnProductIds}
-              max={4}
-              orderLabel="Ordem dos acessórios"
-              description="Pesquisa e clica nas linhas para incluir ou remover acessórios opcionais."
-              onChange={(ids) =>
-                setFormData({
-                  ...formData,
-                  addOnProductIds: ids.filter((id) => id !== product?.id),
-                })
-              }
-            />
-          </div>
-
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-2 px-5 py-3.5 border-t border-border/80 bg-muted/15 sm:justify-end">
             <Button
               type="button"
               variant="outline"
+              size="sm"
+              className="h-8"
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" size="sm" className="h-8 min-w-[108px]" disabled={loading}>
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Salvando...
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  A guardar…
                 </>
               ) : (
-                "Salvar Alterações"
+                "Guardar"
               )}
             </Button>
           </DialogFooter>
