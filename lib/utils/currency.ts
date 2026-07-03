@@ -1,6 +1,7 @@
-function normalizeCurrencyCode(currency: string | null | undefined): string {
+export function normalizeCurrencyCode(currency: string | null | undefined): string {
   const code = String(currency || "CVE").trim().toUpperCase()
-  if (code === "ECV") return "CVE"
+  if (code === "ECV" || code === "132" || code === "123") return "CVE"
+  if (/^\d{1,4}$/.test(code)) return "CVE"
   return /^[A-Z]{3}$/.test(code) ? code : "CVE"
 }
 

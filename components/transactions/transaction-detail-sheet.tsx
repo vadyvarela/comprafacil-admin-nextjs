@@ -2,7 +2,7 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
-import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency"
+import { formatCurrency, minorToMajorCurrencyAmount, normalizeCurrencyCode } from "@/lib/utils/currency"
 import { invoicePdfHref, receiptPdfHref, ensurePdfExtension } from "@/lib/gateway-origin"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
@@ -114,7 +114,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange, gatewayOrigin =
             <SectionTitle icon={CreditCard} title="Pagamento" />
             <div className="px-4 py-1">
               <Row label="Valor" value={<span className="font-bold tabular-nums">{formatCurrency(minorToMajorCurrencyAmount(tx.amount), tx.currency)}</span>} />
-              <Row label="Moeda" value={tx.currency} />
+              <Row label="Moeda" value={normalizeCurrencyCode(tx.currency)} />
               <Row
                 label="Estado"
                 value={
