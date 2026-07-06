@@ -31,6 +31,10 @@ import { Loader2, Package, FileText, Layers, Tag } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { Field, FormSection } from "@/components/products/product-form-layout"
+import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
+import { isSmartphoneCategory } from "@/lib/product-specs/is-smartphone-category"
+import { specificationsToMetadataField } from "@/lib/product-specs/map-mobileapi-to-specifications"
+import type { ProductSpecifications } from "@/lib/product-specs/types"
 
 interface CreateProductModalProps {
   open: boolean
@@ -55,6 +59,7 @@ export function CreateProductModal({
     createDefaultVariant: true, // Por padrão, criar variante padrão
     semFaceId: false,
     batteryHealthPercent: "",
+    specifications: {} as ProductSpecifications,
   })
 
   const { data: categoriesData, loading: categoriesLoading } = useQuery<{
@@ -119,8 +124,18 @@ export function CreateProductModal({
       createDefaultVariant: true,
       semFaceId: false,
       batteryHealthPercent: "",
+      specifications: {},
     })
   }
+
+  const showSpecsLookup = useMemo(() => {
+    const cat = categories.find((c) => c.id === formData.categoryId)
+    return isSmartphoneCategory(cat)
+  }, [categories, formData.categoryId])
+
+  const selectedBrandName = useMemo(() => {
+    return brands.find((b) => b.id === formData.brandId)?.name
+  }, [brands, formData.brandId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -137,6 +152,11 @@ export function CreateProductModal({
       const pct = normalizeBatteryHealthPercent(formData.batteryHealthPercent)
       if (pct !== null) metadata.batteryHealthPercent = pct
     }
+
+    const specsField = showSpecsLookup
+      ? specificationsToMetadataField(formData.specifications)
+      : undefined
+    if (specsField) metadata.specifications = specsField
 
     const categoryId =
       formData.categoryId && formData.categoryId !== "none"
@@ -398,6 +418,15 @@ export function CreateProductModal({
                 </div>
               )}
             </FormSection>
+
+            <ProductSpecsSection
+              value={formData.specifications}
+              onChange={(specifications) => setFormData({ ...formData, specifications })}
+              titleQuery={formData.title}
+              brandName={selectedBrandName}
+              visible={showSpecsLookup}
+              disabled={isLoading}
+            />
 
             <FormSection icon={Tag} title="Preço e stock" iconTone="bg-emerald-50 text-emerald-800">
               <label

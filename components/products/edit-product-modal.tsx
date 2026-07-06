@@ -31,6 +31,13 @@ import { RichTextEditor } from "../ui/rich-text-editor"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
 import { Field, FormSection } from "@/components/products/product-form-layout"
+import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
+import { isSmartphoneCategory } from "@/lib/product-specs/is-smartphone-category"
+import {
+  parseSpecificationsFromMetadata,
+  specificationsToMetadataField,
+} from "@/lib/product-specs/map-mobileapi-to-specifications"
+import type { ProductSpecifications } from "@/lib/product-specs/types"
 
 interface EditProductModalProps {
   product: Product | null
@@ -57,6 +64,7 @@ export function EditProductModal({
     semFaceId: false,
     batteryHealthPercent: "",
     addOnProductIds: [] as string[],
+    specifications: {} as ProductSpecifications,
   })
 
   const { data: categoriesData } = useQuery(GET_CATEGORY_LIST, {
@@ -113,6 +121,7 @@ export function EditProductModal({
         addOnProductIds: Array.isArray(metadata?.addOnProductIds)
           ? metadata.addOnProductIds.filter((id): id is string => typeof id === "string" && id !== product.id)
           : [],
+        specifications: parseSpecificationsFromMetadata(product.metadata),
       })
     }
   }, [product, open])
@@ -130,6 +139,15 @@ export function EditProductModal({
       })
     )
   }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categories, brands])
+
+  const showSpecsLookup = useMemo(() => {
+    const cat = categories.find((c) => c.id === formData.categoryId)
+    return isSmartphoneCategory(cat)
+  }, [categories, formData.categoryId])
+
+  const selectedBrandName = useMemo(() => {
+    return brands.find((b) => b.id === formData.brandId)?.name
+  }, [brands, formData.brandId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -160,6 +178,14 @@ export function EditProductModal({
     } else {
       delete base.semFaceId
       delete base.batteryHealthPercent
+    }
+
+    if (showSpecsLookup) {
+      const specsField = specificationsToMetadataField(formData.specifications)
+      if (specsField) base.specifications = specsField
+      else delete base.specifications
+    } else {
+      delete base.specifications
     }
 
     const metadataJson = Object.keys(base).length > 0 ? JSON.stringify(base) : null
@@ -366,6 +392,15 @@ export function EditProductModal({
                 </div>
               )}
             </FormSection>
+
+            <ProductSpecsSection
+              value={formData.specifications}
+              onChange={(specifications) => setFormData({ ...formData, specifications })}
+              titleQuery={formData.title}
+              brandName={selectedBrandName}
+              visible={showSpecsLookup}
+              disabled={loading}
+            />
 
             <FormSection icon={Puzzle} title="Produtos complementares" iconTone="bg-amber-50 text-amber-900">
               <Field
