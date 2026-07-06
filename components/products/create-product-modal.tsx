@@ -32,7 +32,6 @@ import { showToast } from "@/lib/utils/toast"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { Field, FormSection } from "@/components/products/product-form-layout"
 import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
-import { isSmartphoneCategory } from "@/lib/product-specs/is-smartphone-category"
 import { specificationsToMetadataField } from "@/lib/product-specs/map-mobileapi-to-specifications"
 import type { ProductSpecifications } from "@/lib/product-specs/types"
 
@@ -128,11 +127,6 @@ export function CreateProductModal({
     })
   }
 
-  const showSpecsLookup = useMemo(() => {
-    const cat = categories.find((c) => c.id === formData.categoryId)
-    return isSmartphoneCategory(cat)
-  }, [categories, formData.categoryId])
-
   const selectedBrandName = useMemo(() => {
     return brands.find((b) => b.id === formData.brandId)?.name
   }, [brands, formData.brandId])
@@ -153,9 +147,7 @@ export function CreateProductModal({
       if (pct !== null) metadata.batteryHealthPercent = pct
     }
 
-    const specsField = showSpecsLookup
-      ? specificationsToMetadataField(formData.specifications)
-      : undefined
+    const specsField = specificationsToMetadataField(formData.specifications)
     if (specsField) metadata.specifications = specsField
 
     const categoryId =
@@ -424,7 +416,6 @@ export function CreateProductModal({
               onChange={(specifications) => setFormData({ ...formData, specifications })}
               titleQuery={formData.title}
               brandName={selectedBrandName}
-              visible={showSpecsLookup}
               disabled={isLoading}
             />
 

@@ -14,6 +14,8 @@ import { mapMobileApiToSpecifications } from "./map-mobileapi-to-specifications"
 
 const BASE_URL = "https://api.mobileapi.dev"
 const TIMEOUT_MS = 15_000
+const MAX_RETRIES = 3
+const RETRY_BASE_MS = 1_200
 
 export class MobileApiError extends Error {
   constructor(
@@ -33,9 +35,16 @@ function getApiKey(): string {
   return key
 }
 
-async function mobileApiFetch<T>(path: string): Promise<T> {
-  const key = getApiKey()
-  const url = `${BASE_URL}${path}${path.includes("?") ? "&" : "?"}key=${encodeURIComponent(key)}`
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function isRetryableStatus(status: number): boolean {
+  return status === 429 || status === 502 || status === 503 || status === 504
+}
+
+async function mobileApiFetchOnce<T>(path: string, key: string): Promise<T> {
+  const url = `${BASE_URL}${path}`
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
@@ -53,9 +62,6 @@ async function mobileApiFetch<T>(path: string): Promise<T> {
     if (res.status === 401) {
       throw new MobileApiError("API key inválida. Verifique MOBILEAPI_KEY.", 401)
     }
-    if (res.status === 429) {
-      throw new MobileApiError("Limite de pedidos atingido. Tente novamente mais tarde.", 429)
-    }
     if (res.status === 204) {
       throw new MobileApiError("Dispositivo não encontrado.", 404)
     }
@@ -69,6 +75,12 @@ async function mobileApiFetch<T>(path: string): Promise<T> {
       }
       if (res.status === 400 && /credit/i.test(detail)) {
         throw new MobileApiError("Limite mensal de créditos atingido.", 429)
+      }
+      if (res.status === 429) {
+        throw new MobileApiError(
+          "Muitos pedidos em pouco tempo. A aguardar e repetir…",
+          429
+        )
       }
       throw new MobileApiError(detail || "Erro ao consultar MobileAPI.", res.status)
     }
@@ -86,6 +98,31 @@ async function mobileApiFetch<T>(path: string): Promise<T> {
   } finally {
     clearTimeout(timer)
   }
+}
+
+async function mobileApiFetch<T>(path: string): Promise<T> {
+  const key = getApiKey()
+  let lastError: MobileApiError | null = null
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      return await mobileApiFetchOnce<T>(path, key)
+    } catch (err) {
+      if (!(err instanceof MobileApiError)) throw err
+      lastError = err
+      const canRetry = isRetryableStatus(err.status) && attempt < MAX_RETRIES - 1
+      if (!canRetry) throw err
+      await sleep(RETRY_BASE_MS * (attempt + 1))
+    }
+  }
+
+  throw (
+    lastError ??
+    new MobileApiError(
+      "Serviço temporariamente ocupado. Espere alguns segundos e tente de novo.",
+      429
+    )
+  )
 }
 
 function brandName(device: MobileApiDeviceDetail): string {

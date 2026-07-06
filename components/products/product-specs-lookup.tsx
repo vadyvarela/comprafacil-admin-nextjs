@@ -57,7 +57,6 @@ type ProductSpecsSectionProps = {
   onChange: (specs: ProductSpecifications) => void
   titleQuery?: string
   brandName?: string
-  visible?: boolean
   disabled?: boolean
 }
 
@@ -66,7 +65,6 @@ export function ProductSpecsSection({
   onChange,
   titleQuery = "",
   brandName,
-  visible = true,
   disabled = false,
 }: ProductSpecsSectionProps) {
   const [rows, setRows] = useState<SpecRow[]>(() => specsToRows(value))
@@ -103,7 +101,7 @@ export function ProductSpecsSection({
 
   const runSearch = async () => {
     const q = searchQuery.trim()
-    if (!q) return
+    if (!q || searching) return
     setSearching(true)
     setSearchError(null)
     setPreviewSpecs(null)
@@ -124,6 +122,7 @@ export function ProductSpecsSection({
   }
 
   const loadDetail = async (deviceId: number, deviceName: string) => {
+    if (loadingDetail) return
     setLoadingDetail(true)
     setSearchError(null)
     try {
@@ -172,8 +171,6 @@ export function ProductSpecsSection({
     () => (previewSpecs ? specsToRows(previewSpecs) : []),
     [previewSpecs]
   )
-
-  if (!visible) return null
 
   return (
     <>

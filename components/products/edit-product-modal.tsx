@@ -32,7 +32,6 @@ import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/uti
 import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
 import { Field, FormSection } from "@/components/products/product-form-layout"
 import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
-import { isSmartphoneCategory } from "@/lib/product-specs/is-smartphone-category"
 import {
   parseSpecificationsFromMetadata,
   specificationsToMetadataField,
@@ -140,11 +139,6 @@ export function EditProductModal({
     )
   }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categories, brands])
 
-  const showSpecsLookup = useMemo(() => {
-    const cat = categories.find((c) => c.id === formData.categoryId)
-    return isSmartphoneCategory(cat)
-  }, [categories, formData.categoryId])
-
   const selectedBrandName = useMemo(() => {
     return brands.find((b) => b.id === formData.brandId)?.name
   }, [brands, formData.brandId])
@@ -180,13 +174,9 @@ export function EditProductModal({
       delete base.batteryHealthPercent
     }
 
-    if (showSpecsLookup) {
-      const specsField = specificationsToMetadataField(formData.specifications)
-      if (specsField) base.specifications = specsField
-      else delete base.specifications
-    } else {
-      delete base.specifications
-    }
+    const specsField = specificationsToMetadataField(formData.specifications)
+    if (specsField) base.specifications = specsField
+    else delete base.specifications
 
     const metadataJson = Object.keys(base).length > 0 ? JSON.stringify(base) : null
 
@@ -398,7 +388,6 @@ export function EditProductModal({
               onChange={(specifications) => setFormData({ ...formData, specifications })}
               titleQuery={formData.title}
               brandName={selectedBrandName}
-              visible={showSpecsLookup}
               disabled={loading}
             />
 
