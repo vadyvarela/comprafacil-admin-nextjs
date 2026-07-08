@@ -8,6 +8,7 @@ import type {
   OrderSummary,
 } from "@/lib/graphql/orders/types"
 import { minorToMajorCurrencyAmount } from "@/lib/utils/currency"
+import { computeCheckoutPricing } from "@/lib/utils/checkout-total"
 import type { OrdersTab } from "@/lib/orders/types"
 import { toGraphQLDateTimeBoundary } from "@/lib/utils/graphql-datetime"
 
@@ -148,10 +149,14 @@ export function enrichOrderWithDetails(
       fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
     }
   }
-  const totalMinor = details.lines.reduce(
-    (sum, line) => sum + (line.quantity ?? 0) * (Number(line.unitAmount) ?? 0),
-    0
-  )
+  const pricing = computeCheckoutPricing({
+    lines: details.lines.map((line) => ({
+      unitAmount: Number(line.unitAmount) ?? 0,
+      quantity: line.quantity ?? 0,
+    })),
+    amountDiscount: details.amountDiscount,
+    amountShipping: details.amountShipping,
+  })
   const names = details.lines
     .map((l) =>
       l.productVariant?.product?.title ?? l.productVariant?.title ?? l.description ?? null
@@ -175,7 +180,7 @@ export function enrichOrderWithDetails(
     null
   return {
     ...order,
-    totalAmount: minorToMajorCurrencyAmount(totalMinor),
+    totalAmount: minorToMajorCurrencyAmount(pricing.totalMinor),
     currency: details.currency ?? order.currency,
     productSummary: productSummary ?? null,
     primaryProductImageUrl,

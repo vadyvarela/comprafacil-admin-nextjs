@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency"
+import { computeCheckoutPricing } from "@/lib/utils/checkout-total"
 import type {
   CheckoutSessionDetailsResponse,
   OrderItemResponse,
@@ -145,16 +146,19 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
     order.customer?.phone?.trim() || customerDetails?.phone?.trim() || null
   const deliveryPhone =
     displayShipping?.addr.phone?.trim() || accountPhone || null
-  const totalLinesMinor =
-    order.lines?.reduce(
-      (sum: number, line: OrderItemResponse) => sum + line.quantity * line.unitAmount,
-      0
-    ) ?? 0
-  const discountMinor = order.amountDiscount ?? 0
-  const totalMinor = Math.max(0, totalLinesMinor - discountMinor)
-  const totalLines = minorToMajorCurrencyAmount(totalLinesMinor)
-  const discount = minorToMajorCurrencyAmount(discountMinor)
-  const total = minorToMajorCurrencyAmount(totalMinor)
+  const pricing = computeCheckoutPricing({
+    lines:
+      order.lines?.map((line) => ({
+        unitAmount: line.unitAmount,
+        quantity: line.quantity,
+      })) ?? [],
+    amountDiscount: order.amountDiscount,
+    amountShipping: order.amountShipping,
+  })
+  const totalLines = minorToMajorCurrencyAmount(pricing.subtotalMinor)
+  const discount = minorToMajorCurrencyAmount(pricing.discountMinor)
+  const shipping = minorToMajorCurrencyAmount(pricing.shippingMinor)
+  const total = minorToMajorCurrencyAmount(pricing.totalMinor)
   const currency = order.currency ?? "CVE"
 
   return (
@@ -456,6 +460,12 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
                     <div className="flex justify-between text-sm">
                       <span className="text-emerald-700">Desconto</span>
                       <span className="tabular-nums font-medium text-emerald-700">−{formatCurrency(discount, currency)}</span>
+                    </div>
+                  )}
+                  {shipping > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Envio</span>
+                      <span className="tabular-nums font-medium">{formatCurrency(shipping, currency)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-base font-bold pt-3 border-t border-border">
