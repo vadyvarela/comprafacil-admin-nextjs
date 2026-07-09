@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { isAllowedInternalHref } from "./internal-href"
+import { isAllowedInternalHref, isInternalPathHref } from "./internal-href"
 import { migrateHomeLayoutDocumentRaw } from "./migrate-raw-layout"
 
 /** Regra Fase 0 — manter alinhado com techarena/lib/home-layout/schema.ts */
@@ -26,6 +26,12 @@ const internalHrefSchema = z
   .string()
   .min(1)
   .refine(isAllowedInternalHref, "seeAllHref deve ser um path interno permitido")
+
+const looseInternalHrefSchema = z
+  .string()
+  .min(1)
+  .max(2048)
+  .refine(isInternalPathHref, "Destino deve ser um path interno (ex.: /produtos)")
 
 const railLimitSchema = z
   .number()
@@ -284,13 +290,15 @@ const mediaUrlSchema = z
 const shoeStoreHeroSlideSchema = z
   .object({
     id: z.string().min(1).max(40),
-    tag: z.string().min(1).max(40),
-    headline: z.string().min(1).max(80),
-    ctaLabel: z.string().min(1).max(40),
-    ctaHref: internalHrefSchema,
+    tag: z.string().max(40).optional(),
+    headline: z.string().max(80).optional(),
+    ctaLabel: z.string().max(40).optional(),
+    ctaHref: looseInternalHrefSchema.optional(),
     imageUrl: mediaUrlSchema,
     imageAlt: z.string().min(1).max(120),
     imagePosition: z.string().max(48).optional(),
+    /** Gradiente escuro sobre a imagem. Omitido = activo (slides antigos). */
+    showOverlay: z.boolean().optional(),
   })
   .strict()
 

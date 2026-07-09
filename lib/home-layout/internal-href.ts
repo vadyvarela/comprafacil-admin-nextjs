@@ -33,3 +33,12 @@ export function isAllowedInternalHref(href: string): boolean {
   const first = segments[0]
   return first != null && ALLOWED_FIRST_SEGMENTS.has(first)
 }
+
+/** Qualquer path interno (/foo, /foo/bar?x=1) — sem protocolo nem //. */
+export function isInternalPathHref(href: string): boolean {
+  if (typeof href !== "string" || href.length < 2) return false
+  if (href.includes("://")) return false
+  if (!href.startsWith("/")) return false
+  if (href.startsWith("//")) return false
+  return true
+}

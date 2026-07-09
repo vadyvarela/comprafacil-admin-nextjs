@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { INTERNAL_PATH_PRESETS, isAllowedInternalHref } from "@/lib/home-layout/internal-href"
+import { INTERNAL_PATH_PRESETS, isAllowedInternalHref, isInternalPathHref } from "@/lib/home-layout/internal-href"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import {
@@ -22,6 +22,8 @@ export interface InternalPathFieldProps {
   onChange: (next: string | undefined) => void
   /** Se true, permite limpar o path (ex.: seeAllHref opcional). */
   allowEmpty?: boolean
+  /** Se true, aceita qualquer path interno (/foo) em vez da allowlist. */
+  allowAnyPath?: boolean
   placeholder?: string
   className?: string
 }
@@ -31,11 +33,14 @@ export function InternalPathField({
   value,
   onChange,
   allowEmpty = false,
+  allowAnyPath = false,
   placeholder,
   className,
 }: InternalPathFieldProps) {
   const presetHrefSet = useMemo(() => new Set(INTERNAL_PATH_PRESETS.map((p) => p.href)), [])
   const trimmed = value?.trim() ?? ""
+
+  const isValidHref = (href: string) => (allowAnyPath ? isInternalPathHref(href) : isAllowedInternalHref(href))
 
   const selectValue = useMemo(() => {
     if (!trimmed) return allowEmpty ? NONE : CUSTOM
@@ -82,7 +87,7 @@ export function InternalPathField({
       <Input
         className={cn(
           "h-8 text-xs font-mono",
-          trimmed && !isAllowedInternalHref(trimmed) ? "border-destructive/60 focus-visible:ring-destructive/30" : ""
+          trimmed && !isValidHref(trimmed) ? "border-destructive/60 focus-visible:ring-destructive/30" : ""
         )}
         placeholder={placeholder ?? "/produtos ou /categoria/slug"}
         value={trimmed}
@@ -91,10 +96,11 @@ export function InternalPathField({
           onChange(v ? v : allowEmpty ? undefined : "")
         }}
       />
-      {trimmed && !isAllowedInternalHref(trimmed) ? (
+      {trimmed && !isValidHref(trimmed) ? (
         <p className="text-[10px] text-destructive leading-snug">
-          Path não permitido: o primeiro segmento tem de ser um dos permitidos (produtos, categoria, ofertas,
-          busca, perfil, auth, …).
+          {allowAnyPath
+            ? "Path inválido: tem de começar por / (sem http:// nem //)."
+            : "Path não permitido: o primeiro segmento tem de ser um dos permitidos (produtos, categoria, ofertas, busca, perfil, auth, …)."}
         </p>
       ) : null}
     </div>

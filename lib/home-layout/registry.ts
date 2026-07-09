@@ -34,8 +34,8 @@ export const HOME_BLOCK_REGISTRY: Record<HomeBlockType, HomeBlockRegistryEntry> 
   },
   shoeStoreHero: {
     label: "Hero calçado (full-bleed)",
-    description: "Slider lifestyle com fotos grandes, tag, headline e botão «Comprar».",
-    hint: "Ideal para moda / calçado. Cada slide: imagem (URL ou /path), textos curtos e link interno.",
+    description: "Slider lifestyle full-bleed — só imagem ou com tag, headline e CTA.",
+    hint: "Ideal para moda / calçado. Cada slide: imagem obrigatória; textos e overlay são opcionais.",
     verticals: ["fashion", "general"],
   },
   shoeStoreExplore: {

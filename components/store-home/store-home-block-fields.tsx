@@ -273,14 +273,11 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
       const patchSlides = (next: typeof slides) => onChange({ ...block, props: { ...block.props, slides: next } })
       const defaultSlide = (): ShoeStoreHeroSlide => ({
         id: `slide-${slides.length + 1}`,
-        tag: "Nova categoria",
-        headline: "Headline.",
-        ctaLabel: "Comprar",
-        ctaHref: "/produtos",
         imageUrl:
           "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=2000&q=85",
         imageAlt: "Imagem lifestyle",
         imagePosition: "center",
+        showOverlay: false,
       })
       return (
         <div className="grid gap-3">
@@ -305,7 +302,7 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
             />
           </div>
           <p className="text-[10px] text-muted-foreground leading-snug">
-            Entre 1 e 6 slides full-bleed. Imagem: URL https ou path <span className="font-mono">/</span>.
+            Entre 1 e 6 slides full-bleed. Imagem obrigatória; tag, headline, botão e overlay são opcionais.
           </p>
           <div className="flex flex-col gap-3">
             {slides.map((slide, idx) => (
@@ -327,44 +324,57 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px]">Tag</Label>
+                  <Label className="text-[10px]">Tag (opcional)</Label>
                   <Input
                     className="h-8 text-xs"
-                    value={slide.tag}
+                    value={slide.tag ?? ""}
                     onChange={(e) =>
-                      patchSlides(slides.map((s, i) => (i === idx ? { ...s, tag: e.target.value } : s)))
+                      patchSlides(
+                        slides.map((s, i) =>
+                          i === idx ? { ...s, tag: e.target.value.trim() || undefined } : s
+                        )
+                      )
                     }
                   />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
-                  <Label className="text-[10px]">Headline</Label>
+                  <Label className="text-[10px]">Headline (opcional)</Label>
                   <Input
                     className="h-8 text-xs"
-                    value={slide.headline}
+                    value={slide.headline ?? ""}
                     onChange={(e) =>
-                      patchSlides(slides.map((s, i) => (i === idx ? { ...s, headline: e.target.value } : s)))
+                      patchSlides(
+                        slides.map((s, i) =>
+                          i === idx ? { ...s, headline: e.target.value.trim() || undefined } : s
+                        )
+                      )
                     }
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px]">Texto do botão</Label>
+                  <Label className="text-[10px]">Texto do botão (opcional)</Label>
                   <Input
                     className="h-8 text-xs"
-                    value={slide.ctaLabel}
+                    value={slide.ctaLabel ?? ""}
                     onChange={(e) =>
-                      patchSlides(slides.map((s, i) => (i === idx ? { ...s, ctaLabel: e.target.value } : s)))
+                      patchSlides(
+                        slides.map((s, i) =>
+                          i === idx ? { ...s, ctaLabel: e.target.value.trim() || undefined } : s
+                        )
+                      )
                     }
                   />
                 </div>
                 <InternalPathField
-                  label="Destino (path interno)"
+                  label="Destino (path interno, opcional)"
                   value={slide.ctaHref}
-                  allowEmpty={false}
+                  allowEmpty
+                  allowAnyPath
                   placeholder="/produtos"
                   onChange={(ctaHref) =>
                     patchSlides(
                       slides.map((s, i) =>
-                        i === idx ? { ...s, ctaHref: ctaHref?.trim() ? ctaHref : "/produtos" } : s
+                        i === idx ? { ...s, ctaHref: ctaHref?.trim() || undefined } : s
                       )
                     )
                   }
@@ -403,6 +413,24 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                       )
                     }
                   />
+                </div>
+                <div className="flex items-center gap-2 sm:col-span-2">
+                  <input
+                    id={`slide-${idx}-overlay`}
+                    type="checkbox"
+                    checked={slide.showOverlay !== false}
+                    onChange={(e) =>
+                      patchSlides(
+                        slides.map((s, i) =>
+                          i === idx ? { ...s, showOverlay: e.target.checked } : s
+                        )
+                      )
+                    }
+                    className="h-4 w-4 rounded border-border accent-primary"
+                  />
+                  <Label htmlFor={`slide-${idx}-overlay`} className="text-[10px] text-muted-foreground">
+                    Overlay escuro sobre a imagem
+                  </Label>
                 </div>
                 <div className="flex justify-end sm:col-span-2">
                   <Button
