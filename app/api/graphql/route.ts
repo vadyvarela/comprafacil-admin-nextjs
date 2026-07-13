@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireStoreSession } from "@/lib/auth/requireRole"
+import { hasMinimumRole } from "@/lib/auth/roles"
 import { rateLimit } from "@/lib/security/rate-limit"
 import { getErrorMessage } from "@/lib/utils/errors"
 
@@ -11,15 +12,26 @@ type GraphQLProxyResponse = {
   errors?: GraphQLErrorPayload[]
 }
 
-/** Limite por IP só depois de sessão admin: import JSON gera 1+N mutações por produto; 30/min rebentava o fluxo. */
+type GraphQLBody = {
+  query?: string
+  operationName?: string
+  variables?: unknown
+}
+
+/** Limite por IP só depois de sessão: import JSON gera 1+N mutações por produto; 30/min rebentava o fluxo. */
 const ADMIN_GRAPHQL_BURST: { maxRequests: number; windowMs: number } = {
   maxRequests: 800,
   windowMs: 60_000,
 }
 
+function isGraphQLMutation(query: string | undefined): boolean {
+  if (!query) return false
+  return /^\s*mutation\b/i.test(query)
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await requireAdminSession()
+    const { session, error } = await requireStoreSession()
     if (error) return error
 
     const rateLimited = rateLimit(
@@ -28,7 +40,15 @@ export async function POST(request: NextRequest) {
     )
     if (rateLimited) return rateLimited
 
-    const body = await request.json()
+    const body = (await request.json()) as GraphQLBody
+
+    // Viewers só podem fazer queries; mutações exigem pelo menos operator
+    if (isGraphQLMutation(body.query) && !hasMinimumRole(session.user, "operator")) {
+      return NextResponse.json(
+        { error: "Insufficient permissions for mutations" },
+        { status: 403 }
+      )
+    }
 
     const gtwUrl = process.env.GTW_URL
     const gtwToken = process.env.GTW_TOKEN
@@ -48,27 +68,24 @@ export async function POST(request: NextRequest) {
         Authorization: `Bearer ${cmsAccessToken}`,
       },
       body: JSON.stringify(body),
-      // Adicionar timeout e retry para problemas de rede/conexão
-      signal: AbortSignal.timeout(30000), // 30 segundos timeout
+      signal: AbortSignal.timeout(30000),
     })
 
-    const data = await response.json() as GraphQLProxyResponse
+    const data = (await response.json()) as GraphQLProxyResponse
 
-    // Log errors for debugging
     if (data.errors) {
       console.error("GraphQL errors:", JSON.stringify(data.errors, null, 2))
-      
-      // Se for erro de JDBC Connection, tentar novamente uma vez
-      const hasJdbcError = data.errors.some((err) =>
-        err.message?.includes("JDBC Connection") || 
-        err.message?.includes("Unable to commit")
+
+      const hasJdbcError = data.errors.some(
+        (err) =>
+          err.message?.includes("JDBC Connection") ||
+          err.message?.includes("Unable to commit")
       )
-      
+
       if (hasJdbcError) {
         console.log("JDBC Connection error detected, retrying once...")
-        // Aguardar um pouco antes de tentar novamente
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
         try {
           const retryResponse = await fetch(`${gtwUrl}/${gtwToken}`, {
             method: "POST",
@@ -79,13 +96,13 @@ export async function POST(request: NextRequest) {
             body: JSON.stringify(body),
             signal: AbortSignal.timeout(30000),
           })
-          
-          const retryData = await retryResponse.json() as GraphQLProxyResponse
-          
-          // Se ainda tiver erro, retornar o erro original
-          if (retryData.errors && retryData.errors.some((err) =>
-            err.message?.includes("JDBC Connection")
-          )) {
+
+          const retryData = (await retryResponse.json()) as GraphQLProxyResponse
+
+          if (
+            retryData.errors &&
+            retryData.errors.some((err) => err.message?.includes("JDBC Connection"))
+          ) {
             console.error("Retry also failed with JDBC error")
           } else {
             console.log("Retry succeeded")
@@ -98,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(data, {
-      status: data.errors ? 200 : response.status, // GraphQL returns 200 even with errors
+      status: data.errors ? 200 : response.status,
     })
   } catch (error: unknown) {
     console.error("GraphQL API error:", getErrorMessage(error))
@@ -108,4 +125,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

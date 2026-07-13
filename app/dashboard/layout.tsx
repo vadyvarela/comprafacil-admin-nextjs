@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getValidSession } from "@/lib/auth0";
 import { getPrimaryRole, getStoreRolesFromUser, hasStoreAccess } from "@/lib/auth/config";
 import { AppSidebar } from "@/components/app-sidebar";
-import { RouteAccessGuard } from "@/components/auth/route-access-guard";
 import { getStoreBrand } from "@/lib/services/get-store-brand";
 import {
   SidebarInset,
@@ -30,7 +29,6 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <RouteAccessGuard primaryRole={primaryRole} roles={roles} />
       <AppSidebar
         storeBrand={storeBrand}
         primaryRole={primaryRole}

@@ -1,15 +1,10 @@
-import { redirect } from "next/navigation"
-import { getValidSession } from "@/lib/auth0"
-import { isOwner } from "@/lib/auth/config"
+import { requireOwnerPageAccess } from "@/lib/auth/requirePageAccess"
 
 export default async function TeamSettingsLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const session = await getValidSession()
-  if (!session?.user || !isOwner(session.user)) {
-    redirect("/unauthorized")
-  }
+  await requireOwnerPageAccess()
   return children
 }

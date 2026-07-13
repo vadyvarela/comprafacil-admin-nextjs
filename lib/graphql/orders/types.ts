@@ -22,7 +22,6 @@ export interface CheckoutSessionResponse {
   currency?: string
   submitType?: string
   amountDiscount?: number
-  amountShipping?: number
   paymentProviderType?: string
   status?: DomainModel
   url?: string

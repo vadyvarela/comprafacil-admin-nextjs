@@ -9,7 +9,6 @@ export const CHECKOUT_SESSION_SEARCH = gql`
         currency
         submitType
         amountDiscount
-        amountShipping
         paymentProviderType
         status {
           code
