@@ -1,6 +1,7 @@
 import {
   isStoreRole,
   isPrivilegedRole,
+  PRIVILEGED_ROLES,
   ROLE_RANK,
   STORE_ROLES,
   type StoreRole,
@@ -34,9 +35,12 @@ export type TeamMember = {
 };
 
 const STORE_ROLE_SET = new Set<string>(STORE_ROLES);
+const MEMBERS_CACHE_TTL_MS = 30_000;
+const MAX_RETRIES = 4;
 
 let cachedToken: { token: string; expiresAt: number } | null = null;
 let cachedRoleIds: Map<string, string> | null = null;
+let cachedMembers: { members: TeamMember[]; expiresAt: number } | null = null;
 
 function getM2MConfig() {
   const domain = process.env.AUTH0_M2M_DOMAIN ?? process.env.AUTH0_DOMAIN;
@@ -50,6 +54,14 @@ function getM2MConfig() {
   }
 
   return { domain, clientId, clientSecret };
+}
+
+function invalidateMembersCache() {
+  cachedMembers = null;
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function getManagementToken(): Promise<string> {
@@ -85,9 +97,28 @@ async function getManagementToken(): Promise<string> {
   return data.access_token;
 }
 
+function parseErrorMessage(text: string): string {
+  try {
+    const parsed = JSON.parse(text) as { message?: string };
+    if (parsed.message) return parsed.message;
+  } catch {
+    // keep raw text
+  }
+  return text.slice(0, 300);
+}
+
+function isRateLimitError(status: number, message: string): boolean {
+  return (
+    status === 429 ||
+    /global limit has been reached/i.test(message) ||
+    /too many requests/i.test(message)
+  );
+}
+
 async function managementFetch<T>(
   path: string,
-  init?: RequestInit
+  init?: RequestInit,
+  attempt = 0
 ): Promise<T> {
   const { domain } = getM2MConfig();
   const token = await getManagementToken();
@@ -104,13 +135,26 @@ async function managementFetch<T>(
 
   if (!res.ok) {
     const text = await res.text();
-    let message = text.slice(0, 300);
-    try {
-      const parsed = JSON.parse(text) as { message?: string };
-      if (parsed.message) message = parsed.message;
-    } catch {
-      // keep raw text
+    const message = parseErrorMessage(text);
+
+    if (isRateLimitError(res.status, message) && attempt < MAX_RETRIES) {
+      const resetHeader = res.headers.get("x-ratelimit-reset");
+      const retryAfter = res.headers.get("retry-after");
+      let waitMs = 1000 * Math.pow(2, attempt);
+
+      if (retryAfter) {
+        waitMs = Math.max(waitMs, Number(retryAfter) * 1000);
+      } else if (resetHeader) {
+        const resetAt = Number(resetHeader) * 1000;
+        if (!Number.isNaN(resetAt)) {
+          waitMs = Math.max(waitMs, resetAt - Date.now());
+        }
+      }
+
+      await sleep(Math.min(waitMs, 8000));
+      return managementFetch<T>(path, init, attempt + 1);
     }
+
     throw new Error(message);
   }
 
@@ -135,8 +179,7 @@ async function getRoleIdMap(): Promise<Map<string, string>> {
 }
 
 function pickStoreRole(roleNames: string[]): StoreRole | null {
-  const normalized = roleNames
-    .filter((r): r is StoreRole => isStoreRole(r));
+  const normalized = roleNames.filter((r): r is StoreRole => isStoreRole(r));
 
   if (normalized.length === 0) return null;
 
@@ -170,21 +213,55 @@ async function getUserRoles(userId: string): Promise<string[]> {
   return roles.map((r) => r.name);
 }
 
-export async function listTeamMembers(): Promise<TeamMember[]> {
-  const users = await managementFetch<Auth0User[]>(
-    '/users?per_page=100&fields=user_id,email,name,picture,email_verified,last_login,created_at&include_fields=true'
+async function listUsersForRole(roleId: string): Promise<Auth0User[]> {
+  return managementFetch<Auth0User[]>(
+    `/roles/${encodeURIComponent(roleId)}/users?per_page=100`
   );
+}
 
-  const members: TeamMember[] = [];
-
-  for (const user of users) {
-    const roleNames = await getUserRoles(user.user_id);
-    const storeRoles = roleNames.filter((r) => STORE_ROLE_SET.has(r));
-    if (storeRoles.length === 0) continue;
-    members.push(toTeamMember(user, storeRoles));
+/**
+ * Lista membros via GET /roles/{id}/users (1 request por role de loja),
+ * em vez de 1 request por utilizador — evita rate limit no plano free.
+ */
+export async function listTeamMembers(): Promise<TeamMember[]> {
+  const now = Date.now();
+  if (cachedMembers && cachedMembers.expiresAt > now) {
+    return cachedMembers.members;
   }
 
-  return members.sort((a, b) => a.email.localeCompare(b.email));
+  const roleIds = await getRoleIdMap();
+  const byUserId = new Map<string, { user: Auth0User; roles: StoreRole[] }>();
+
+  // Sequencial: plano free Auth0 ≈ 2 req/s
+  for (const roleName of STORE_ROLES) {
+    const roleId = roleIds.get(roleName);
+    if (!roleId) continue;
+
+    const users = await listUsersForRole(roleId);
+    for (const user of users) {
+      const existing = byUserId.get(user.user_id);
+      if (existing) {
+        if (!existing.roles.includes(roleName)) {
+          existing.roles.push(roleName);
+        }
+      } else {
+        byUserId.set(user.user_id, { user, roles: [roleName] });
+      }
+    }
+
+    await sleep(550);
+  }
+
+  const members = [...byUserId.values()]
+    .map(({ user, roles }) => toTeamMember(user, roles))
+    .sort((a, b) => a.email.localeCompare(b.email));
+
+  cachedMembers = {
+    members,
+    expiresAt: now + MEMBERS_CACHE_TTL_MS,
+  };
+
+  return members;
 }
 
 export async function inviteTeamMember(
@@ -253,6 +330,7 @@ export async function inviteTeamMember(
     }),
   });
 
+  invalidateMembersCache();
   const roleNames = await getUserRoles(user.user_id);
   return toTeamMember(user, roleNames);
 }
@@ -272,11 +350,10 @@ export async function updateMemberRole(
   }
 
   const currentRoles = await getUserRoles(userId);
-  const idsToRemove = (
-    currentRoles
-      .filter((r) => STORE_ROLE_SET.has(r))
-      .map((r) => roleIds.get(r) ?? null)
-  ).filter((id): id is string => id !== null);
+  const idsToRemove = currentRoles
+    .filter((r) => STORE_ROLE_SET.has(r))
+    .map((r) => roleIds.get(r) ?? null)
+    .filter((id): id is string => id !== null);
 
   if (idsToRemove.length > 0) {
     await managementFetch(`/users/${encodeURIComponent(userId)}/roles`, {
@@ -293,19 +370,19 @@ export async function updateMemberRole(
   const user = await managementFetch<Auth0User>(
     `/users/${encodeURIComponent(userId)}?fields=user_id,email,name,picture,email_verified,last_login,created_at`
   );
-  const roleNames = await getUserRoles(userId);
-  return toTeamMember(user, roleNames);
+
+  invalidateMembersCache();
+  return toTeamMember(user, [role]);
 }
 
 export async function removeTeamMember(userId: string): Promise<void> {
   const roleIds = await getRoleIdMap();
   const currentRoles = await getUserRoles(userId);
 
-  const idsToRemove = (
-    currentRoles
-      .filter((r) => STORE_ROLE_SET.has(r))
-      .map((r) => roleIds.get(r) ?? null)
-  ).filter((id): id is string => id !== null);
+  const idsToRemove = currentRoles
+    .filter((r) => STORE_ROLE_SET.has(r))
+    .map((r) => roleIds.get(r) ?? null)
+    .filter((id): id is string => id !== null);
 
   if (idsToRemove.length > 0) {
     await managementFetch(`/users/${encodeURIComponent(userId)}/roles`, {
@@ -313,13 +390,28 @@ export async function removeTeamMember(userId: string): Promise<void> {
       body: JSON.stringify({ roles: idsToRemove }),
     });
   }
+
+  invalidateMembersCache();
 }
 
 export async function countOwners(excludeUserId?: string): Promise<number> {
-  const members = await listTeamMembers();
-  return members.filter(
-    (m) => m.role !== null && isPrivilegedRole(m.role) && m.id !== excludeUserId
-  ).length;
+  const roleIds = await getRoleIdMap();
+  const seen = new Set<string>();
+
+  for (const roleName of PRIVILEGED_ROLES) {
+    const roleId = roleIds.get(roleName);
+    if (!roleId) continue;
+
+    const users = await listUsersForRole(roleId);
+    for (const user of users) {
+      if (user.user_id !== excludeUserId) {
+        seen.add(user.user_id);
+      }
+    }
+    await sleep(550);
+  }
+
+  return seen.size;
 }
 
 function generateTempPassword(): string {

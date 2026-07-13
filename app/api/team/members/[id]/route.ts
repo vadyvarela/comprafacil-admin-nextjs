@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import { requireOwnerSession } from "@/lib/auth/requireRole"
 import { isPrivilegedRole, isStoreRole } from "@/lib/auth/roles"
 import {
-  countOwners,
   listTeamMembers,
   removeTeamMember,
   updateMemberRole,
@@ -10,6 +9,12 @@ import {
 import { getErrorMessage } from "@/lib/utils/errors"
 
 type RouteContext = { params: Promise<{ id: string }> }
+
+function countPrivileged(members: Awaited<ReturnType<typeof listTeamMembers>>, excludeUserId?: string) {
+  return members.filter(
+    (m) => m.role && isPrivilegedRole(m.role) && m.id !== excludeUserId
+  ).length
+}
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
@@ -25,8 +30,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     if (session.user.sub === id && !isPrivilegedRole(role)) {
-      const privileged = await countOwners(id)
-      if (privileged === 0) {
+      const members = await listTeamMembers()
+      if (countPrivileged(members, id) === 0) {
         return NextResponse.json(
           { error: "Não é possível alterar a sua função — é o único administrador" },
           { status: 400 }
@@ -48,22 +53,18 @@ export async function DELETE(_request: Request, context: RouteContext) {
     if (error) return error
 
     const { id } = await context.params
-
-    if (session.user.sub === id) {
-      const privileged = await countOwners(id)
-      if (privileged === 0) {
-        return NextResponse.json(
-          { error: "Não é possível remover-se — é o único administrador" },
-          { status: 400 }
-        )
-      }
-    }
-
-    const privilegedBefore = await countOwners()
     const members = await listTeamMembers()
     const target = members.find((m) => m.id === id)
+    const privilegedCount = countPrivileged(members)
 
-    if (target?.role && isPrivilegedRole(target.role) && privilegedBefore <= 1) {
+    if (session.user.sub === id && countPrivileged(members, id) === 0) {
+      return NextResponse.json(
+        { error: "Não é possível remover-se — é o único administrador" },
+        { status: 400 }
+      )
+    }
+
+    if (target?.role && isPrivilegedRole(target.role) && privilegedCount <= 1) {
       return NextResponse.json(
         { error: "Não é possível remover o último administrador" },
         { status: 400 }
