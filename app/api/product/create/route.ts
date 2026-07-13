@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await requireAdminSession()
+    const { error } = await requireModuleWriteSession("products")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL

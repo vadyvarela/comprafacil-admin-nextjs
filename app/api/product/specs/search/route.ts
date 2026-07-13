@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 import { MobileApiError, searchMobileDevices } from "@/lib/product-specs/mobileapi-client"
 
 export async function GET(request: NextRequest) {
-  const { error } = await requireAdminSession()
+  const { error } = await requireModuleWriteSession("products")
   if (error) return error
 
   const q = request.nextUrl.searchParams.get("q")?.trim() || ""

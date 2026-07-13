@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireOwnerSession } from "@/lib/auth/requireRole"
 import { rateLimit } from "@/lib/security/rate-limit"
 import { getErrorMessage } from "@/lib/utils/errors"
 
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null, STRICT_LIMIT)
     if (rateLimited) return rateLimited
 
-    const { error } = await requireAdminSession()
+    const { error } = await requireOwnerSession()
     if (error) return error
 
     const body = await request.json().catch(() => ({}))

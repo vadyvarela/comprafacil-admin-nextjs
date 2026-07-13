@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 
 function extractApiError(data: Record<string, unknown>): string {
   const d = data?.data as Record<string, unknown> | undefined
@@ -12,7 +12,7 @@ function extractApiError(data: Record<string, unknown>): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await requireAdminSession()
+    const { error } = await requireModuleWriteSession("media")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL

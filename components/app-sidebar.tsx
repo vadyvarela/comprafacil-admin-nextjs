@@ -21,6 +21,8 @@ import {
 import { NavUser } from "@/components/nav-user"
 import { StoreBrandLogo } from "@/components/store-brand-mark"
 import type { StoreBrandSummary } from "@/lib/store-brand"
+import { canAccessNavItem, type StoreRole } from "@/lib/auth/roles"
+import { ROLE_CLAIM } from "@/lib/auth/config"
 import {
   Sidebar,
   SidebarContent,
@@ -71,11 +73,20 @@ const NAV = [
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   storeBrand: StoreBrandSummary
+  primaryRole: StoreRole | null
+  roles: StoreRole[]
   user?: { name?: string | null; email?: string | null; picture?: string | null }
 }
 
-export function AppSidebar({ storeBrand, user: sessionUser, ...props }: AppSidebarProps) {
+export function AppSidebar({
+  storeBrand,
+  primaryRole,
+  roles,
+  user: sessionUser,
+  ...props
+}: AppSidebarProps) {
   const pathname = usePathname()
+  const userLike = { sub: null, [ROLE_CLAIM]: roles }
   const user = sessionUser
     ? {
         name: sessionUser.name ?? "Utilizador",
@@ -89,9 +100,10 @@ export function AppSidebar({ storeBrand, user: sessionUser, ...props }: AppSideb
     return pathname?.startsWith(url)
   }
 
+  const showSettings = canAccessNavItem(userLike, "/dashboard/settings")
+
   return (
     <Sidebar collapsible="icon" {...props}>
-      {/* Logo */}
       <SidebarHeader className="border-b border-sidebar-border">
         <Link href="/dashboard" className="flex items-center gap-2.5 px-2 py-3">
           <StoreBrandLogo brand={storeBrand} size="sm" />
@@ -106,59 +118,66 @@ export function AppSidebar({ storeBrand, user: sessionUser, ...props }: AppSideb
         </Link>
       </SidebarHeader>
 
-      {/* Nav */}
       <SidebarContent className="py-2">
-        {NAV.map((group, gi) => (
-          <SidebarGroup key={gi} className={gi > 0 ? "mt-0.5" : ""}>
-            {group.section && (
-              <SidebarGroupLabel className="px-3 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45 mb-0.5">
-                {group.section}
-              </SidebarGroupLabel>
-            )}
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const active = isActive(item.url, item.exact)
-                  return (
-                    <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip={item.title}
-                        isActive={active}
-                        className="h-9"
-                      >
-                        <Link href={item.url}>
-                          <item.icon className="h-4 w-4 shrink-0" />
-                          <span className="font-medium">{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+        {NAV.map((group, gi) => {
+          const visibleItems = group.items.filter((item) =>
+            canAccessNavItem(userLike, item.url)
+          )
+          if (visibleItems.length === 0) return null
+
+          return (
+            <SidebarGroup key={gi} className={gi > 0 ? "mt-0.5" : ""}>
+              {group.section && (
+                <SidebarGroupLabel className="px-3 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45 mb-0.5">
+                  {group.section}
+                </SidebarGroupLabel>
+              )}
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {visibleItems.map((item) => {
+                    const active = isActive(item.url, item.exact)
+                    return (
+                      <SidebarMenuItem key={item.url}>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip={item.title}
+                          isActive={active}
+                          className="h-9"
+                        >
+                          <Link href={item.url}>
+                            <item.icon className="h-4 w-4 shrink-0" />
+                            <span className="font-medium">{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )
+        })}
       </SidebarContent>
 
-      {/* Settings + User */}
       <SidebarFooter className="border-t border-sidebar-border pb-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              tooltip="Definições"
-              isActive={pathname?.startsWith("/dashboard/settings")}
-              className="h-9"
-            >
-              <Link href="/dashboard/settings">
-                <Settings className="h-4 w-4 shrink-0" />
-                <span className="font-medium">Definições</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <NavUser user={user} />
+        {showSettings && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                asChild
+                tooltip="Definições"
+                isActive={pathname?.startsWith("/dashboard/settings")}
+                className="h-9"
+              >
+                <Link href="/dashboard/settings">
+                  <Settings className="h-4 w-4 shrink-0" />
+                  <span className="font-medium">Definições</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
+        <NavUser user={user} role={primaryRole} />
       </SidebarFooter>
 
       <SidebarRail />

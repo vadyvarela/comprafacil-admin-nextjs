@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { getValidSession } from "@/lib/auth0"
-import { hasAdminRole } from "@/lib/auth/config"
+import { hasStoreAccess } from "@/lib/auth/config"
 
 export type AdminSession = NonNullable<Awaited<ReturnType<typeof getValidSession>>>
 
@@ -20,7 +20,7 @@ export async function requireAdminSession(): Promise<
     }
   }
 
-  if (!hasAdminRole(session.user)) {
+  if (!hasStoreAccess(session.user)) {
     return {
       session: null,
       error: NextResponse.json(
@@ -44,7 +44,7 @@ export async function requireAdminSessionOrThrow(): Promise<AdminSession> {
     throw new Error("Authentication required")
   }
 
-  if (!hasAdminRole(session.user)) {
+  if (!hasStoreAccess(session.user)) {
     throw new Error("Insufficient permissions")
   }
 

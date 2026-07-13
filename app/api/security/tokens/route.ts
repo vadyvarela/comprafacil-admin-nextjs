@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireOwnerSession } from "@/lib/auth/requireRole"
 import { getErrorMessage } from "@/lib/utils/errors"
 
 function gtwHeaders() {
@@ -11,7 +11,7 @@ function gtwHeaders() {
 
 export async function GET() {
   try {
-    const { error } = await requireAdminSession()
+    const { error } = await requireOwnerSession()
     if (error) return error
 
     const url = `${process.env.GTW_URL}/api/security/tokens`

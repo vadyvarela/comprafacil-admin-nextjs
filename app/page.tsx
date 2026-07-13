@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getValidSession } from "@/lib/auth0";
-import { hasAdminRole } from "@/lib/auth/config";
+import { hasStoreAccess } from "@/lib/auth/config";
 import { StoreBrandLogo } from "@/components/store-brand-mark";
 import { adminTitle } from "@/lib/store-brand";
 import { getStoreBrand } from "@/lib/services/get-store-brand";
@@ -42,7 +42,7 @@ export default async function HomePage({
     );
   }
 
-  if (!hasAdminRole(session.user)) {
+  if (!hasStoreAccess(session.user)) {
     redirect("/unauthorized");
   }
 

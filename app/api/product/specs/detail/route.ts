@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 import {
   getMobileDeviceSpecifications,
   MobileApiError,
 } from "@/lib/product-specs/mobileapi-client"
 
 export async function GET(request: NextRequest) {
-  const { error } = await requireAdminSession()
+  const { error } = await requireModuleWriteSession("products")
   if (error) return error
 
   const idRaw = request.nextUrl.searchParams.get("id")?.trim()

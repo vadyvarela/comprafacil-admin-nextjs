@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 
 function requireGtw() {
   const gtwUrl = process.env.GTW_URL
@@ -12,7 +12,7 @@ function requireGtw() {
 
 export async function GET() {
   try {
-    const { error } = await requireAdminSession()
+    const { error } = await requireModuleWriteSession("media")
     if (error) return error
 
     const cfg = requireGtw()

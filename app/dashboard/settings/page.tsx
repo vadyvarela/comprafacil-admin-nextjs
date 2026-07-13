@@ -3,6 +3,8 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { PageHeader } from "@/components/admin/page-header"
 import { getStoreBrand } from "@/lib/services/get-store-brand"
+import { getValidSession } from "@/lib/auth0"
+import { isOwner } from "@/lib/auth/config"
 import {
   Store,
   Globe,
@@ -15,6 +17,7 @@ import {
   ChevronRight,
   Construction,
   LayoutGrid,
+  Users,
 } from "lucide-react"
 
 const SETTINGS_SECTIONS = [
@@ -83,12 +86,22 @@ const SETTINGS_SECTIONS = [
     href: null,
   },
   {
+    title: "Equipa",
+    description: "Convidar membros e gerir funções de acesso",
+    icon: Users,
+    color: "text-teal-800",
+    bg: "bg-teal-50 border border-border/60",
+    href: "/dashboard/settings/team",
+    ownerOnly: true,
+  },
+  {
     title: "Segurança",
     description: "Tokens de API e autenticação",
     icon: Shield,
     color: "text-primary",
     bg: "bg-primary/10 border border-primary/20",
     href: "/dashboard/settings/security",
+    ownerOnly: true,
   },
   {
     title: "Page Builder",
@@ -102,6 +115,9 @@ const SETTINGS_SECTIONS = [
 
 export default async function SettingsPage() {
   const storeBrand = await getStoreBrand()
+  const session = await getValidSession()
+  const owner = isOwner(session?.user)
+  const sections = SETTINGS_SECTIONS.filter((s) => !s.ownerOnly || owner)
 
   return (
     <>
@@ -121,7 +137,7 @@ export default async function SettingsPage() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-enter">
-          {SETTINGS_SECTIONS.map((section) =>
+          {sections.map((section) =>
             section.href ? (
               <Link
                 key={section.title}

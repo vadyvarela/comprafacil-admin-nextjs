@@ -2,6 +2,8 @@
 
 import { ChevronsUpDown, LogOut, User } from "lucide-react"
 
+import type { StoreRole } from "@/lib/auth/roles"
+import { ROLE_LABELS } from "@/lib/auth/roles"
 import {
   Avatar,
   AvatarFallback,
@@ -33,12 +35,14 @@ function getInitials(name: string) {
 
 export function NavUser({
   user,
+  role,
 }: {
   user: {
     name: string
     email: string
     avatar: string
   }
+  role?: StoreRole | null
 }) {
   const { isMobile } = useSidebar()
 
@@ -81,6 +85,11 @@ export function NavUser({
                 <div className="grid flex-1 min-w-0">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs text-muted-foreground">{user.email}</span>
+                  {role && (
+                    <span className="truncate text-[10px] text-muted-foreground/80 mt-0.5">
+                      {ROLE_LABELS[role]}
+                    </span>
+                  )}
                 </div>
               </div>
             </DropdownMenuLabel>

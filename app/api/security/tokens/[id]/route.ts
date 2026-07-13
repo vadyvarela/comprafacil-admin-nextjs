@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireAdminSession } from "@/lib/auth/requireAdmin"
+import { requireOwnerSession } from "@/lib/auth/requireRole"
 import { getErrorMessage } from "@/lib/utils/errors"
 
 const ALLOWED_TOKEN_ACTIONS = ["activate", "deactivate"] as const
@@ -16,7 +16,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await requireAdminSession()
+    const { error } = await requireOwnerSession()
     if (error) return error
 
     const { id } = await params
@@ -38,7 +38,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await requireAdminSession()
+    const { error } = await requireOwnerSession()
     if (error) return error
 
     const { id } = await params
