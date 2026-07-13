@@ -84,9 +84,11 @@ AUTH0_DB_CONNECTION=Username-Password-Authentication
 1. Owner acede a **Definições → Equipa** e convida por email com uma função
 2. O backoffice cria o utilizador no Auth0 (ou reutiliza existente)
 3. Atribui a role escolhida
-4. Envia email via `POST /api/v2/tickets/password-change` para definir password
-5. No primeiro login, a Post-Login Action injeta as roles no ID token
-6. O backoffice valida acesso com `hasStoreAccess()` e regras por módulo
+4. Cria um ticket de password (`/api/v2/tickets/password-change`) e devolve o link na UI
+5. Envia o email Auth0 via `/dbconnections/change_password` (template "Change Password")
+6. No primeiro login, a Post-Login Action injeta as roles no ID token
+
+Se o email não chegar: copia o link mostrado no diálogo após o convite. Confirma também em Auth0 **Branding → Email Provider** que o envio de emails está ativo.
 
 ---
 

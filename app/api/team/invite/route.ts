@@ -25,8 +25,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Role inválida" }, { status: 400 })
     }
 
-    const member = await inviteTeamMember(email, role)
-    return NextResponse.json(member, { status: 201 })
+    const result = await inviteTeamMember(email, role)
+    return NextResponse.json(result, { status: 201 })
   } catch (err: unknown) {
     console.error("[team/invite] POST error:", err)
     return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 })

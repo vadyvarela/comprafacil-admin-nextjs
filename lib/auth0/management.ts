@@ -34,6 +34,12 @@ export type TeamMember = {
   createdAt: string | null;
 };
 
+export type InviteResult = {
+  member: TeamMember;
+  inviteUrl: string;
+  emailSent: boolean;
+};
+
 const STORE_ROLE_SET = new Set<string>(STORE_ROLES);
 const MEMBERS_CACHE_TTL_MS = 30_000;
 const MAX_RETRIES = 4;
@@ -264,17 +270,74 @@ export async function listTeamMembers(): Promise<TeamMember[]> {
   return members;
 }
 
+/**
+ * Auth0 Management tickets/password-change só devolve o URL —
+ * não envia email. O Authentication API change_password envia o email.
+ */
+async function sendPasswordResetEmail(email: string): Promise<boolean> {
+  const { domain } = getM2MConfig();
+  const clientId = process.env.AUTH0_CLIENT_ID;
+  const connection =
+    process.env.AUTH0_DB_CONNECTION ?? "Username-Password-Authentication";
+
+  if (!clientId) {
+    console.warn("[team/invite] AUTH0_CLIENT_ID em falta — email de convite não enviado");
+    return false;
+  }
+
+  const res = await fetch(`https://${domain}/dbconnections/change_password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      client_id: clientId,
+      email,
+      connection,
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("[team/invite] Falha ao enviar email Auth0:", text.slice(0, 300));
+    return false;
+  }
+
+  return true;
+}
+
+async function createPasswordChangeTicket(
+  userId: string
+): Promise<string> {
+  const appBaseUrl = process.env.APP_BASE_URL ?? "http://localhost:3000";
+
+  const ticket = await managementFetch<{ ticket: string }>("/tickets/password-change", {
+    method: "POST",
+    body: JSON.stringify({
+      user_id: userId,
+      result_url: `${appBaseUrl}/dashboard`,
+      mark_email_as_verified: true,
+      includeEmailInRedirect: false,
+      ttl_sec: 60 * 60 * 24 * 7,
+    }),
+  });
+
+  if (!ticket?.ticket) {
+    throw new Error("Auth0 não devolveu link de convite");
+  }
+
+  return ticket.ticket;
+}
+
 export async function inviteTeamMember(
   email: string,
   role: StoreRole
-): Promise<TeamMember> {
+): Promise<InviteResult> {
   if (!isStoreRole(role)) {
     throw new Error("Role inválida");
   }
 
   const connection =
     process.env.AUTH0_DB_CONNECTION ?? "Username-Password-Authentication";
-  const appBaseUrl = process.env.APP_BASE_URL ?? "http://localhost:3000";
 
   const existing = await managementFetch<Auth0User[]>(
     `/users-by-email?email=${encodeURIComponent(email)}`
@@ -320,19 +383,17 @@ export async function inviteTeamMember(
     body: JSON.stringify({ roles: [roleId] }),
   });
 
-  await managementFetch("/tickets/password-change", {
-    method: "POST",
-    body: JSON.stringify({
-      user_id: user.user_id,
-      result_url: `${appBaseUrl}/dashboard`,
-      mark_email_as_verified: true,
-      includeEmailInRedirect: false,
-    }),
-  });
+  const inviteUrl = await createPasswordChangeTicket(user.user_id);
+  const emailSent = await sendPasswordResetEmail(email);
 
   invalidateMembersCache();
   const roleNames = await getUserRoles(user.user_id);
-  return toTeamMember(user, roleNames);
+
+  return {
+    member: toTeamMember(user, roleNames),
+    inviteUrl,
+    emailSent,
+  };
 }
 
 export async function updateMemberRole(
