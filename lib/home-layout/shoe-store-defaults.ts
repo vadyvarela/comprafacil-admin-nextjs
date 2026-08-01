@@ -39,25 +39,28 @@ export const DEFAULT_SHOE_STORE_HERO_SLIDES = [
 export const DEFAULT_SHOE_STORE_EXPLORE_TILES = [
   {
     id: "running",
-    label: "Running",
+    label: "Corrida",
+    description: "Ténis, roupa e acessórios para a tua performance.",
     href: "/produtos",
     span: "hero" as const,
     imageUrl:
       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80",
-    imageAlt: "Running",
+    imageAlt: "Corrida",
   },
   {
     id: "training",
-    label: "Training",
+    label: "Treino",
+    description: "Equipamento para elevar os teus treinos.",
     href: "/produtos",
     span: "half" as const,
     imageUrl:
       "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=900&q=80",
-    imageAlt: "Training",
+    imageAlt: "Treino",
   },
   {
     id: "street",
     label: "Street",
+    description: "Estilo urbano que combina contigo.",
     href: "/produtos",
     span: "half" as const,
     imageUrl:
@@ -67,6 +70,7 @@ export const DEFAULT_SHOE_STORE_EXPLORE_TILES = [
   {
     id: "novidades",
     label: "Novidades",
+    description: "Descobre os lançamentos mais recentes.",
     href: "/ofertas",
     span: "wide" as const,
     imageUrl:
@@ -84,7 +88,7 @@ export function defaultShoeStoreHeroProps() {
 
 export function defaultShoeStoreExploreProps() {
   return {
-    title: "Explora",
+    title: "Explora os nossos produtos",
     seeAllLabel: "Ver tudo",
     seeAllHref: "/produtos",
     tiles: DEFAULT_SHOE_STORE_EXPLORE_TILES.map((t) => ({ ...t })),

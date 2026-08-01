@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireModuleReadSession, requireModuleWriteSession } from "@/lib/auth/requireRole"
+import { validateImageBlob } from "@/lib/security/upload-validation"
 
 function requireGtw() {
   const gtwUrl = process.env.GTW_URL
@@ -55,6 +56,10 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") ?? formData.get("image")
     if (!file || !(file instanceof Blob)) {
       return NextResponse.json({ error: "Nenhum ficheiro fornecido" }, { status: 400 })
+    }
+    const validationError = await validateImageBlob(file, "file")
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 })
     }
     outbound.append("file", file)
     const group = formData.get("group")

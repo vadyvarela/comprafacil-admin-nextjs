@@ -423,7 +423,7 @@ export default function MediaLibraryPage() {
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+            accept="image/jpeg,image/png,image/webp,image/gif"
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0]
@@ -554,7 +554,7 @@ export default function MediaLibraryPage() {
             <span className="inline-flex items-center gap-1.5 text-foreground/80">
               <Link2 className="h-3.5 w-3.5 shrink-0 opacity-70" />
               Arraste imagens para aqui ou use <strong className="font-medium">Enviar</strong>. Produtos, banners e
-              variantes aparecem automaticamente. JPEG, PNG, WebP, GIF, SVG · máx. 10 MB
+              variantes aparecem automaticamente. JPEG, PNG, WebP, GIF · máx. 10 MB
             </span>
           </div>
 

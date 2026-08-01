@@ -34,6 +34,23 @@ export function migrateHomeLayoutDocumentRaw(data: unknown): unknown {
         return { ...b, props: { items: [p.left, p.right] } }
       }
       return block
+    }).map((block) => {
+      if (block == null || typeof block !== "object") return block
+      const b = block as { type?: string; props?: Record<string, unknown> }
+      if (b.type !== "shoeStoreExplore" || b.props == null || typeof b.props !== "object") return block
+      const p = b.props as { tiles?: unknown[] }
+      if (!Array.isArray(p.tiles)) return block
+      return {
+        ...b,
+        props: {
+          ...p,
+          tiles: p.tiles.map((tile) => {
+            if (tile == null || typeof tile !== "object") return tile
+            const t = tile as Record<string, unknown>
+            return typeof t.description === "string" ? t : { ...t, description: "" }
+          }),
+        },
+      }
     }),
   }
 }

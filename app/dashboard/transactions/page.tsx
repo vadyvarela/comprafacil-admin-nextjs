@@ -6,6 +6,8 @@ import { TransactionListToolbar } from "@/components/transactions/transaction-li
 import { TransactionPagination } from "@/components/transactions/transaction-pagination"
 import { TransactionDetail } from "@/components/transactions/transaction-detail"
 import { gatewayOriginFromEnv } from "@/lib/gateway-origin"
+import { getValidSession } from "@/lib/auth0"
+import { hasMinimumRole } from "@/lib/auth/roles"
 import { CreditCard } from "lucide-react"
 
 export const dynamic = "force-dynamic"
@@ -25,6 +27,8 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const dateTo = params.to?.trim() || null
   const detailId = params.id?.trim() || null
   const gatewayOrigin = gatewayOriginFromEnv()
+  const session = await getValidSession()
+  const canDeleteTransactions = hasMinimumRole(session?.user, "admin")
 
   const result = await getTransactions({
     page: { page, size: PAGE_SIZE, sortBy: "createdAt", sortDirection: "DESC" },
@@ -55,7 +59,12 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           ]}
         />
         {tx ? (
-          <TransactionDetail tx={tx} backHref="/dashboard/transactions" gatewayOrigin={gatewayOrigin} />
+          <TransactionDetail
+            tx={tx}
+            backHref="/dashboard/transactions"
+            gatewayOrigin={gatewayOrigin}
+            canDelete={canDeleteTransactions}
+          />
         ) : (
           <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
             <div className="text-center space-y-3 max-w-md">
@@ -111,7 +120,11 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                 </div>
               ) : (
                 <>
-                  <TransactionList transactions={transactions} gatewayOrigin={gatewayOrigin} />
+                  <TransactionList
+                    transactions={transactions}
+                    gatewayOrigin={gatewayOrigin}
+                    canDelete={canDeleteTransactions}
+                  />
                   <Suspense fallback={null}>
                     <TransactionPagination
                       currentPage={page}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireModuleWriteSession } from "@/lib/auth/requireRole"
+import { validateImageBlob } from "@/lib/security/upload-validation"
 
 function extractApiError(data: Record<string, unknown>): string {
   const d = data?.data as Record<string, unknown> | undefined
@@ -35,21 +36,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"]
-    const MAX_SIZE = 10 * 1024 * 1024 // 10 MB
-
-    if (!ALLOWED_TYPES.includes(imageFile.type)) {
-      return NextResponse.json(
-        { error: `Tipo de ficheiro não permitido: ${imageFile.type}. Use JPEG, PNG, WebP, GIF ou SVG.` },
-        { status: 400 }
-      )
-    }
-
-    if (imageFile.size > MAX_SIZE) {
-      return NextResponse.json(
-        { error: "Ficheiro demasiado grande. Tamanho máximo: 10 MB." },
-        { status: 400 }
-      )
+    const validationError = await validateImageBlob(imageFile, "image")
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 })
     }
 
     const uploadFormData = new FormData()

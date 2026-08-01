@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState } from "react"
 import { useQuery } from "@apollo/client/react"
 import { GET_CATEGORIES } from "@/lib/graphql/categories/queries"

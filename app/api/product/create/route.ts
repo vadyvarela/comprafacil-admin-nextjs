@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireModuleWriteSession } from "@/lib/auth/requireRole"
+import { validateImageFormData } from "@/lib/security/upload-validation"
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,6 +19,10 @@ export async function POST(request: NextRequest) {
 
     // Obter FormData da requisição
     const formData = await request.formData()
+    const validationError = await validateImageFormData(formData)
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 })
+    }
 
     // Fazer proxy para o backend Java
     const response = await fetch(`${gtwUrl}/api/product/create`, {
@@ -26,6 +31,7 @@ export async function POST(request: NextRequest) {
         Authorization: `Bearer ${cmsAccessToken}`,
       },
       body: formData,
+      signal: AbortSignal.timeout(120000),
     })
 
     let data

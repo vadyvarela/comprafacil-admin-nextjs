@@ -103,7 +103,6 @@ export function EditProductModal({
         /* ignore */
       }
 
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- preencher formulário ao abrir o modal
       setFormData({
         title: product.title || "",
         summary: product.summary || "",

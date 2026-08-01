@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useMutation } from "@apollo/client/react"
 import { CREATE_BANNER } from "@/lib/graphql/banners/mutations"
 import { GET_BANNERS } from "@/lib/graphql/banners/queries"
@@ -60,6 +60,22 @@ export function CreateBannerModal({
     endDate: undefined as Date | undefined,
   })
 
+  const resetForm = useCallback(() => {
+    setFormData({
+      title: "",
+      subtitle: "",
+      description: "",
+      image: "",
+      link: "",
+      buttonText: "",
+      position: "hero",
+      orderIndex: 0,
+      status: "ACTIVE",
+      startDate: undefined,
+      endDate: undefined,
+    })
+  }, [])
+
   const [createBanner, { loading, error }] = useMutation<{
     createBanner: { title: string }
   }>(CREATE_BANNER, {
@@ -77,23 +93,7 @@ export function CreateBannerModal({
       setSelectedImage(null)
       setImagePreview(null)
     }
-  }, [open])
-
-  const resetForm = () => {
-    setFormData({
-      title: "",
-      subtitle: "",
-      description: "",
-      image: "",
-      link: "",
-      buttonText: "",
-      position: "hero",
-      orderIndex: 0,
-      status: "ACTIVE",
-      startDate: undefined,
-      endDate: undefined,
-    })
-  }
+  }, [open, resetForm])
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -265,7 +265,7 @@ export function CreateBannerModal({
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   onChange={handleImageSelect}
                   className="hidden"
                   id="image"

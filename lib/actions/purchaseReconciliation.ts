@@ -32,8 +32,9 @@ export async function purchaseReconciliation(
   }
 
   const base = process.env.GTW_URL
-  if (!base) {
-    return { ok: false, message: "GTW_URL não configurado." }
+  const token = process.env.CMS_ACCESS_TOKEN
+  if (!base || !token) {
+    return { ok: false, message: "Gateway não configurado." }
   }
 
   const url = `${base.replace(/\/$/, "")}/api/payment/purchaseReconciliation`
@@ -41,7 +42,10 @@ export async function purchaseReconciliation(
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({
         referenceId: payload.referenceId,
         status: payload.status,
@@ -50,6 +54,7 @@ export async function purchaseReconciliation(
         card: payload.card ?? "",
       }),
       cache: "no-store",
+      signal: AbortSignal.timeout(15000),
     })
 
     if (!res.ok) {

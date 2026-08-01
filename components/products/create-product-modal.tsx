@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { useRouter } from "next/navigation"
 import { CREATE_PRODUCT } from "@/lib/graphql/products/mutations"
@@ -73,43 +73,10 @@ export function CreateProductModal({
     skip: !open,
   })
 
-  const categories = categoriesData?.categoryList || []
-  const brands = brandsData?.brandList || []
+  const categories = useMemo(() => categoriesData?.categoryList ?? [], [categoriesData])
+  const brands = useMemo(() => brandsData?.brandList ?? [], [brandsData])
 
-  const showIphoneSeminovoFields = useMemo(() => {
-    const catList =
-      (categoriesData as { categoryList?: { id: string; name: string; slug: string }[] } | undefined)
-        ?.categoryList ?? []
-    const brandList =
-      (brandsData as { brandList?: { id: string; name: string; slug: string }[] } | undefined)?.brandList ?? []
-    const cat = catList.find((c) => c.id === formData.categoryId)
-    const br = brandList.find((b) => b.id === formData.brandId)
-    return (
-      formData.condition === "seminovo" &&
-      looksLikeIphoneProduct({
-        title: formData.title,
-        categoryName: cat?.name,
-        categorySlug: cat?.slug,
-        brandName: br?.name,
-      })
-    )
-  }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categoriesData, brandsData])
-
-  const [createProduct, { loading, error }] = useMutation<{
-    createProduct: { id: string }
-  }>(CREATE_PRODUCT, {
-    refetchQueries: [{ query: GET_PRODUCTS }],
-  })
-
-  const [createVariant] = useMutation(CREATE_PRODUCT_VARIANT)
-
-  useEffect(() => {
-    if (!open) {
-      resetForm()
-    }
-  }, [open])
-
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setFormData({
       title: "",
       summary: "",
@@ -125,7 +92,35 @@ export function CreateProductModal({
       batteryHealthPercent: "",
       specifications: {},
     })
-  }
+  }, [])
+
+  const showIphoneSeminovoFields = useMemo(() => {
+    const cat = categories.find((c) => c.id === formData.categoryId)
+    const br = brands.find((b) => b.id === formData.brandId)
+    return (
+      formData.condition === "seminovo" &&
+      looksLikeIphoneProduct({
+        title: formData.title,
+        categoryName: cat?.name,
+        categorySlug: cat?.slug,
+        brandName: br?.name,
+      })
+    )
+  }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categories, brands])
+
+  const [createProduct, { loading, error }] = useMutation<{
+    createProduct: { id: string }
+  }>(CREATE_PRODUCT, {
+    refetchQueries: [{ query: GET_PRODUCTS }],
+  })
+
+  const [createVariant] = useMutation(CREATE_PRODUCT_VARIANT)
+
+  useEffect(() => {
+    if (!open) {
+      resetForm()
+    }
+  }, [open, resetForm])
 
   const selectedBrandName = useMemo(() => {
     return brands.find((b) => b.id === formData.brandId)?.name

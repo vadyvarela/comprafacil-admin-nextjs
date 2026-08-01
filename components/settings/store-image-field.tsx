@@ -98,7 +98,7 @@ export function StoreImageField({
             ref={inputRef}
             id={id}
             type="file"
-            accept="image/*"
+            accept="image/jpeg,image/png,image/webp,image/gif"
             className="sr-only"
             onChange={(e) => {
               const f = e.target.files?.[0]

@@ -9,10 +9,12 @@ import { cn } from "@/lib/utils"
 import { CreditCard, User, Calendar } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { TransactionDeleteButton } from "@/components/transactions/transaction-delete-button"
 
 type TransactionListProps = {
   transactions: PaymentIntent[]
   gatewayOrigin?: string | null
+  canDelete?: boolean
 }
 
 function formatDate(iso: string | null | undefined): string {
@@ -79,7 +81,7 @@ function StatusBadge({ tx }: { tx: PaymentIntent }) {
   )
 }
 
-export function TransactionList({ transactions }: TransactionListProps) {
+export function TransactionList({ transactions, canDelete = false }: TransactionListProps) {
   const router = useRouter()
 
   function openDetail(tx: PaymentIntent) {
@@ -158,6 +160,11 @@ export function TransactionList({ transactions }: TransactionListProps) {
                     {col.header}
                   </TableHead>
                 ))}
+                {canDelete && (
+                  <TableHead className="w-[52px]">
+                    <span className="sr-only">Ações</span>
+                  </TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -172,6 +179,15 @@ export function TransactionList({ transactions }: TransactionListProps) {
                       {col.render(tx)}
                     </TableCell>
                   ))}
+                  {canDelete && (
+                    <TableCell className="w-[52px] pr-3 text-right">
+                      <TransactionDeleteButton
+                        transactionId={tx.id}
+                        transactionLabel={`#${shortId(tx.id)}`}
+                        className="text-destructive hover:text-destructive"
+                      />
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -196,6 +212,13 @@ export function TransactionList({ transactions }: TransactionListProps) {
                       #{shortId(tx.id)}
                     </span>
                     <StatusBadge tx={tx} />
+                    {canDelete && (
+                      <TransactionDeleteButton
+                        transactionId={tx.id}
+                        transactionLabel={`#${shortId(tx.id)}`}
+                        className="ml-auto -mr-1 text-destructive hover:text-destructive"
+                      />
+                    )}
                   </div>
                   <p className="text-sm font-bold tabular-nums text-foreground mb-1">
                     {formatCurrency(tx.amount / 100, tx.currency)}

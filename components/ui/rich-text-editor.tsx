@@ -11,6 +11,66 @@ interface RichTextEditorProps {
   disabled?: boolean
 }
 
+const ALLOWED_RICH_TEXT_TAGS = new Set([
+  "b",
+  "br",
+  "div",
+  "em",
+  "h2",
+  "h3",
+  "i",
+  "li",
+  "ol",
+  "p",
+  "strong",
+  "u",
+  "ul",
+])
+
+function sanitizeRichTextHtml(html: string): string {
+  if (!html || typeof document === "undefined") return html || ""
+
+  const template = document.createElement("template")
+  template.innerHTML = html
+
+  function sanitizeNode(node: Node): Node | null {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return document.createTextNode(node.textContent ?? "")
+    }
+
+    if (node.nodeType !== Node.ELEMENT_NODE) {
+      return null
+    }
+
+    const element = node as HTMLElement
+    const tagName = element.tagName.toLowerCase()
+
+    if (!ALLOWED_RICH_TEXT_TAGS.has(tagName)) {
+      const fragment = document.createDocumentFragment()
+      element.childNodes.forEach((child) => {
+        const sanitizedChild = sanitizeNode(child)
+        if (sanitizedChild) fragment.appendChild(sanitizedChild)
+      })
+      return fragment
+    }
+
+    const clean = document.createElement(tagName)
+    element.childNodes.forEach((child) => {
+      const sanitizedChild = sanitizeNode(child)
+      if (sanitizedChild) clean.appendChild(sanitizedChild)
+    })
+    return clean
+  }
+
+  const wrapper = document.createElement("div")
+  template.content.childNodes.forEach((child) => {
+    const sanitizedChild = sanitizeNode(child)
+    if (sanitizedChild) wrapper.appendChild(sanitizedChild)
+  })
+
+  return wrapper.innerHTML
+}
+
 export function RichTextEditor({
   value,
   onChange,
@@ -24,15 +84,19 @@ export function RichTextEditor({
   useEffect(() => {
     if (editorRef.current) {
       const currentHtml = editorRef.current.innerHTML
-      if (currentHtml !== value) {
-        editorRef.current.innerHTML = value || ""
+      const sanitizedValue = sanitizeRichTextHtml(value)
+      if (currentHtml !== sanitizedValue) {
+        editorRef.current.innerHTML = sanitizedValue
       }
     }
   }, [value])
 
   const handleInput = () => {
     if (editorRef.current) {
-      const html = editorRef.current.innerHTML
+      const html = sanitizeRichTextHtml(editorRef.current.innerHTML)
+      if (editorRef.current.innerHTML !== html) {
+        editorRef.current.innerHTML = html
+      }
       onChange(html)
     }
   }

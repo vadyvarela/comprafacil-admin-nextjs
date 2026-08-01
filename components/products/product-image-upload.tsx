@@ -194,7 +194,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         onChange={handleImageSelect}
         disabled={uploading}
         className="hidden"

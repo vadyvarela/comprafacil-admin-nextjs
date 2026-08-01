@@ -3,11 +3,26 @@ import { requireOwnerSession } from "@/lib/auth/requireRole"
 import { getErrorMessage } from "@/lib/utils/errors"
 
 const ALLOWED_TOKEN_ACTIONS = ["activate", "deactivate"] as const
+type TokenAction = (typeof ALLOWED_TOKEN_ACTIONS)[number]
 
-function gtwHeaders() {
+function isAllowedTokenAction(action: unknown): action is TokenAction {
+  return (
+    typeof action === "string" &&
+    (ALLOWED_TOKEN_ACTIONS as readonly string[]).includes(action)
+  )
+}
+
+function getGatewayConfig() {
+  const gtwUrl = process.env.GTW_URL
+  const token = process.env.CMS_ACCESS_TOKEN
+  if (!gtwUrl || !token) return null
+
   return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.CMS_ACCESS_TOKEN}`,
+    baseUrl: `${gtwUrl}/api/security/tokens`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   }
 }
 
@@ -20,9 +35,15 @@ export async function DELETE(
     if (error) return error
 
     const { id } = await params
-    const res = await fetch(`${process.env.GTW_URL}/api/security/tokens/${id}`, {
+    const cfg = getGatewayConfig()
+    if (!cfg) {
+      return NextResponse.json({ error: "Gateway configuration missing" }, { status: 500 })
+    }
+
+    const encodedId = encodeURIComponent(id)
+    const res = await fetch(`${cfg.baseUrl}/${encodedId}`, {
       method: "DELETE",
-      headers: gtwHeaders(),
+      headers: cfg.headers,
       signal: AbortSignal.timeout(15000),
     })
     if (res.status === 204) return new NextResponse(null, { status: 204 })
@@ -42,15 +63,21 @@ export async function PUT(
     if (error) return error
 
     const { id } = await params
-    const { action } = await request.json()
+    const { action } = (await request.json().catch(() => ({}))) as { action?: string }
 
-    if (!ALLOWED_TOKEN_ACTIONS.includes(action)) {
+    if (!isAllowedTokenAction(action)) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
 
-    const res = await fetch(`${process.env.GTW_URL}/api/security/tokens/${id}/${action}`, {
+    const cfg = getGatewayConfig()
+    if (!cfg) {
+      return NextResponse.json({ error: "Gateway configuration missing" }, { status: 500 })
+    }
+
+    const encodedId = encodeURIComponent(id)
+    const res = await fetch(`${cfg.baseUrl}/${encodedId}/${action}`, {
       method: "PUT",
-      headers: gtwHeaders(),
+      headers: cfg.headers,
       signal: AbortSignal.timeout(15000),
     })
     const data = await res.json()

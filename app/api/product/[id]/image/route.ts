@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireModuleWriteSession } from "@/lib/auth/requireRole"
+import { validateImageFormData } from "@/lib/security/upload-validation"
 import {
   metadataWithGallery,
   parseProductGalleryUrls,
@@ -97,6 +98,10 @@ export async function PUT(
 
     // Obter FormData da requisição
     const formData = await request.formData()
+    const validationError = await validateImageFormData(formData)
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 })
+    }
 
     // Criar objeto product com os dados atuais (preservando tudo exceto a imagem que será atualizada)
     // Se não conseguir buscar os dados via GraphQL, usar valores mínimos
@@ -118,6 +123,7 @@ export async function PUT(
         Authorization: `Bearer ${cmsAccessToken}`,
       },
       body: formData,
+      signal: AbortSignal.timeout(120000),
     })
 
     let data: ProductImageUpdateResponse
@@ -132,10 +138,7 @@ export async function PUT(
 
     if (!response.ok) {
       return NextResponse.json(
-        { 
-          error: data.error || data.message || "Failed to update product image",
-          details: data
-        },
+        { error: data.error || data.message || "Failed to update product image" },
         { status: response.status }
       )
     }

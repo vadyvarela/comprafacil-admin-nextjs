@@ -172,3 +172,14 @@ export const PAYMENTS_SEARCH = gql`
     }
   }
 `
+
+export const CHECK_TRANSACTION_STATUS = gql`
+  query CheckTransactionStatus($merchantRef: String!) {
+    checkTransactionStatus(merchantRef: $merchantRef) {
+      searchResult
+      searchResultMsg
+      transactionSuccess
+      message
+    }
+  }
+`

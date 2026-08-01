@@ -5,10 +5,17 @@ import { getErrorMessage } from "@/lib/utils/errors"
 
 const STRICT_LIMIT = { maxRequests: 5, windowMs: 60_000 }
 
-function gtwHeaders() {
+function getGatewayConfig() {
+  const gtwUrl = process.env.GTW_URL
+  const token = process.env.CMS_ACCESS_TOKEN
+  if (!gtwUrl || !token) return null
+
   return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.CMS_ACCESS_TOKEN}`,
+    url: `${gtwUrl}/api/security/tokens/generate`,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
   }
 }
 
@@ -21,11 +28,14 @@ export async function POST(request: NextRequest) {
     if (error) return error
 
     const body = await request.json().catch(() => ({}))
-    const url = `${process.env.GTW_URL}/api/security/tokens/generate`
+    const cfg = getGatewayConfig()
+    if (!cfg) {
+      return NextResponse.json({ error: "Gateway configuration missing" }, { status: 500 })
+    }
 
-    const res = await fetch(url, {
+    const res = await fetch(cfg.url, {
       method: "POST",
-      headers: gtwHeaders(),
+      headers: cfg.headers,
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(15000),
     })
@@ -36,7 +46,7 @@ export async function POST(request: NextRequest) {
     try {
       data = JSON.parse(text)
     } catch {
-      return NextResponse.json({ error: `Backend retornou status ${res.status}: ${text.slice(0, 200)}` }, { status: 500 })
+      return NextResponse.json({ error: "Invalid gateway response" }, { status: 502 })
     }
 
     return NextResponse.json(data, { status: res.status })

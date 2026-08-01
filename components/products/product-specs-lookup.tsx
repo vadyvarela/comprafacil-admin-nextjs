@@ -68,11 +68,10 @@ export function ProductSpecsSection({
   disabled = false,
 }: ProductSpecsSectionProps) {
   const [rows, setRows] = useState<SpecRow[]>(() => specsToRows(value))
-  const valueKey = JSON.stringify(value)
 
   useEffect(() => {
     setRows(specsToRows(value))
-  }, [valueKey])
+  }, [value])
   const [lookupOpen, setLookupOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState(titleQuery)
   const [searching, setSearching] = useState(false)

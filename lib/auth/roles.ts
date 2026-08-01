@@ -153,17 +153,17 @@ export function hasRole(
 
 export function canReadModule(
   user: SessionUser | null | undefined,
-  module: AccessModule
+  accessModule: AccessModule
 ): boolean {
-  const rule = MODULE_ACCESS[module];
+  const rule = MODULE_ACCESS[accessModule];
   return hasMinimumRole(user, rule.read);
 }
 
 export function canWriteModule(
   user: SessionUser | null | undefined,
-  module: AccessModule
+  accessModule: AccessModule
 ): boolean {
-  const rule = MODULE_ACCESS[module];
+  const rule = MODULE_ACCESS[accessModule];
   return hasMinimumRole(user, rule.write);
 }
 
@@ -177,17 +177,17 @@ export function canAccessPath(
   pathname: string,
   mode: "read" | "write" = "read"
 ): boolean {
-  const module = getModuleForPath(pathname);
-  return mode === "write" ? canWriteModule(user, module) : canReadModule(user, module);
+  const accessModule = getModuleForPath(pathname);
+  return mode === "write" ? canWriteModule(user, accessModule) : canReadModule(user, accessModule);
 }
 
 export function canAccessNavItem(
   user: SessionUser | null | undefined,
   url: string
 ): boolean {
-  const module = NAV_MODULE_MAP[url];
-  if (!module) return true;
-  return canReadModule(user, module);
+  const accessModule = NAV_MODULE_MAP[url];
+  if (!accessModule) return true;
+  return canReadModule(user, accessModule);
 }
 
 export function isWritePath(pathname: string): boolean {

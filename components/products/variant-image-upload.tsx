@@ -138,7 +138,7 @@ export function VariantImageUpload({ value, onChange, disabled }: VariantImageUp
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         onChange={handleImageSelect}
         disabled={uploading || disabled}
         className="hidden"

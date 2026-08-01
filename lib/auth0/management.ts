@@ -1,6 +1,5 @@
 import {
   isStoreRole,
-  isPrivilegedRole,
   PRIVILEGED_ROLES,
   ROLE_RANK,
   STORE_ROLES,

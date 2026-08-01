@@ -145,3 +145,14 @@ export interface PaymentsPage {
 export interface PaymentIntentResponse {
   paymentIntent: PaymentIntent | null
 }
+
+export interface SispTransactionStatusResponse {
+  searchResult: boolean
+  searchResultMsg: string
+  transactionSuccess: boolean
+  message: string
+}
+
+export interface CheckTransactionStatusResponse {
+  checkTransactionStatus: SispTransactionStatusResponse | null
+}

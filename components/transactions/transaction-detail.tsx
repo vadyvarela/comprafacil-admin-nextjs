@@ -25,12 +25,15 @@ import { ptBR } from "date-fns/locale"
 import { formatCurrency } from "@/lib/utils/currency"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
 import { invoicePdfHref, receiptPdfHref, ensurePdfExtension } from "@/lib/gateway-origin"
+import { TransactionDeleteButton } from "@/components/transactions/transaction-delete-button"
+import { TransactionSispStatus } from "@/components/transactions/transaction-sisp-status"
 
 type TransactionDetailProps = {
   tx: PaymentIntent
   backHref?: string
   /** Origem do gateway (ex.: https://api.example.com) para link PDF quando `url` vem vazio */
   gatewayOrigin?: string | null
+  canDelete?: boolean
 }
 
 function formatDate(iso: string | null | undefined): string {
@@ -229,6 +232,7 @@ export function TransactionDetail({
   tx,
   backHref = "/dashboard/transactions",
   gatewayOrigin = null,
+  canDelete = false,
 }: TransactionDetailProps) {
   const invoicePdfLink =
     ensurePdfExtension(tx.invoice?.url?.trim() ? tx.invoice.url : null) ||
@@ -290,12 +294,25 @@ export function TransactionDetail({
                   </div>
                 </div>
               </div>
-              <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
-                <Link href={backHref}>
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  Voltar
-                </Link>
-              </Button>
+              <div className="flex items-center gap-2">
+                {canDelete && (
+                  <TransactionDeleteButton
+                    transactionId={tx.id}
+                    transactionLabel={`#${tx.id.slice(0, 8)}...`}
+                    redirectHref={backHref}
+                    showLabel
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs text-destructive hover:text-destructive"
+                  />
+                )}
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
+                  <Link href={backHref}>
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    Voltar
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -408,6 +425,9 @@ export function TransactionDetail({
                     />
                   )}
                 </div>
+                {tx.merchantReference && (
+                  <TransactionSispStatus merchantReference={tx.merchantReference} />
+                )}
               </SectionCard>
 
               {/* Cliente */}

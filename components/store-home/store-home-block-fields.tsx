@@ -466,6 +466,7 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
       const defaultTile = (): ShoeStoreExploreTile => ({
         id: `tile-${tiles.length + 1}`,
         label: "Nova categoria",
+        description: "",
         href: "/produtos",
         span: "half",
         imageUrl:
@@ -525,6 +526,19 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                     value={tile.label}
                     onChange={(e) =>
                       patchTiles(tiles.map((t, i) => (i === idx ? { ...t, label: e.target.value } : t)))
+                    }
+                  />
+                </div>
+                <div className="space-y-1 sm:col-span-2">
+                  <Label className="text-[10px]">Descrição</Label>
+                  <Input
+                    className="h-8 text-xs"
+                    value={tile.description ?? ""}
+                    placeholder="Texto curto sob o título do tile"
+                    onChange={(e) =>
+                      patchTiles(
+                        tiles.map((t, i) => (i === idx ? { ...t, description: e.target.value } : t)),
+                      )
                     }
                   />
                 </div>

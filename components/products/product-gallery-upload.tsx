@@ -334,7 +334,7 @@ export function ProductGalleryUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         multiple
         className="hidden"
         disabled={busy}

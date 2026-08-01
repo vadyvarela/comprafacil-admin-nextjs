@@ -320,6 +320,7 @@ const shoeStoreExploreTileSchema = z
   .object({
     id: z.string().min(1).max(40),
     label: z.string().min(1).max(60),
+    description: z.string().max(160).default(""),
     href: internalHrefSchema,
     span: z.enum(["hero", "half", "wide"]),
     imageUrl: mediaUrlSchema,
