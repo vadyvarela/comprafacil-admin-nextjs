@@ -24,15 +24,13 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatCurrency } from "@/lib/utils/currency"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
-import { invoicePdfHref, receiptPdfHref, ensurePdfExtension } from "@/lib/gateway-origin"
+import { invoicePdfHref, receiptPdfHref, toProxiedDocumentUrl } from "@/lib/gateway-origin"
 import { TransactionDeleteButton } from "@/components/transactions/transaction-delete-button"
 import { TransactionSispStatus } from "@/components/transactions/transaction-sisp-status"
 
 type TransactionDetailProps = {
   tx: PaymentIntent
   backHref?: string
-  /** Origem do gateway (ex.: https://api.example.com) para link PDF quando `url` vem vazio */
-  gatewayOrigin?: string | null
   canDelete?: boolean
 }
 
@@ -231,15 +229,14 @@ function ReceiptStatusBadge({ status }: { status: string }) {
 export function TransactionDetail({
   tx,
   backHref = "/dashboard/transactions",
-  gatewayOrigin = null,
   canDelete = false,
 }: TransactionDetailProps) {
   const invoicePdfLink =
-    ensurePdfExtension(tx.invoice?.url?.trim() ? tx.invoice.url : null) ||
-    invoicePdfHref(gatewayOrigin, tx.invoice?.id ?? null)
+    toProxiedDocumentUrl(tx.invoice?.url) ||
+    invoicePdfHref(null, tx.invoice?.id ?? null)
   const receiptPdfLink =
-    ensurePdfExtension(tx.receipt?.url?.trim() ? tx.receipt.url : null) ||
-    receiptPdfHref(gatewayOrigin, tx.receipt?.id ?? null)
+    toProxiedDocumentUrl(tx.receipt?.url) ||
+    receiptPdfHref(null, tx.receipt?.id ?? null)
   const discount = tx.checkoutSession?.amountDiscount ?? 0
   const hasInstallments =
     tx.checkoutSession?.installmentPlans &&

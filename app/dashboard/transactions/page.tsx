@@ -5,7 +5,6 @@ import { TransactionList } from "@/components/transactions/transaction-list"
 import { TransactionListToolbar } from "@/components/transactions/transaction-list-toolbar"
 import { TransactionPagination } from "@/components/transactions/transaction-pagination"
 import { TransactionDetail } from "@/components/transactions/transaction-detail"
-import { gatewayOriginFromEnv } from "@/lib/gateway-origin"
 import { getValidSession } from "@/lib/auth0"
 import { hasMinimumRole } from "@/lib/auth/roles"
 import { CreditCard } from "lucide-react"
@@ -26,7 +25,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const dateFrom = params.from?.trim() || null
   const dateTo = params.to?.trim() || null
   const detailId = params.id?.trim() || null
-  const gatewayOrigin = gatewayOriginFromEnv()
   const session = await getValidSession()
   const canDeleteTransactions = hasMinimumRole(session?.user, "admin")
 
@@ -62,7 +60,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           <TransactionDetail
             tx={tx}
             backHref="/dashboard/transactions"
-            gatewayOrigin={gatewayOrigin}
             canDelete={canDeleteTransactions}
           />
         ) : (
@@ -122,7 +119,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                 <>
                   <TransactionList
                     transactions={transactions}
-                    gatewayOrigin={gatewayOrigin}
                     canDelete={canDeleteTransactions}
                   />
                   <Suspense fallback={null}>

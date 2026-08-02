@@ -13,7 +13,6 @@ import { TransactionDeleteButton } from "@/components/transactions/transaction-d
 
 type TransactionListProps = {
   transactions: PaymentIntent[]
-  gatewayOrigin?: string | null
   canDelete?: boolean
 }
 

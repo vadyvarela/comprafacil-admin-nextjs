@@ -3,7 +3,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
 import { formatCurrency, minorToMajorCurrencyAmount, normalizeCurrencyCode } from "@/lib/utils/currency"
-import { invoicePdfHref, receiptPdfHref, ensurePdfExtension } from "@/lib/gateway-origin"
+import { invoicePdfHref, receiptPdfHref, toProxiedDocumentUrl } from "@/lib/gateway-origin"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import {
@@ -22,7 +22,6 @@ type Props = {
   tx: PaymentIntent | null
   open: boolean
   onOpenChange: (open: boolean) => void
-  gatewayOrigin?: string | null
 }
 
 function formatDate(iso: string | null | undefined): string {
@@ -71,17 +70,15 @@ function tryParseJson(raw: string | null | undefined | Record<string, unknown>):
   }
 }
 
-export function TransactionDetailSheet({ tx, open, onOpenChange, gatewayOrigin = null }: Props) {
+export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
   if (!tx) return null
 
   const invoicePdfLink =
     tx.invoice &&
-    (ensurePdfExtension(tx.invoice.url?.trim() ? tx.invoice.url : null) ||
-      invoicePdfHref(gatewayOrigin, tx.invoice.id ?? null))
+    (toProxiedDocumentUrl(tx.invoice.url) || invoicePdfHref(null, tx.invoice.id ?? null))
   const receiptPdfLink =
     tx.receipt &&
-    (ensurePdfExtension(tx.receipt.url?.trim() ? tx.receipt.url : null) ||
-      receiptPdfHref(gatewayOrigin, tx.receipt.id ?? null))
+    (toProxiedDocumentUrl(tx.receipt.url) || receiptPdfHref(null, tx.receipt.id ?? null))
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

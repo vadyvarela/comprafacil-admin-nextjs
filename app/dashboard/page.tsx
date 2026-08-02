@@ -17,7 +17,7 @@ import { getOrdersPageWithDetails } from "@/lib/actions/orders"
 import { getCustomers } from "@/lib/actions/customers"
 import { getDashboardStats } from "@/lib/actions/stats"
 import { getFulfillmentStatusLabel, getFulfillmentStatusVariant } from "@/lib/orders/status"
-import { formatCurrency } from "@/lib/utils/currency"
+import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { OrderSummary } from "@/lib/graphql/orders/types"
@@ -30,10 +30,12 @@ async function getDashboardData() {
     getOrdersPageWithDetails({ page: 0 }),
   ])
 
-  const totalRevenue = statsRes.ok ? (statsRes.data.salesSummary?.totalRevenue ?? 0) : 0
-  const totalOrders = statsRes.ok
-    ? statsRes.data.paymentStatusSummary.reduce((sum, s) => sum + (s.quantity ?? 0), 0)
+  // API returns amounts in minor units (cents); convert before display — same as analytics.
+  const totalRevenue = statsRes.ok
+    ? minorToMajorCurrencyAmount(statsRes.data.salesSummary?.totalRevenue ?? 0)
     : 0
+  // totalProductSold is the paid-order count for the filtered period (salesSummary).
+  const totalOrders = statsRes.ok ? (statsRes.data.salesSummary?.totalProductSold ?? 0) : 0
   const totalCustomers = customersRes.ok ? customersRes.data.totalElements ?? 0 : 0
   const avgTicket = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
   const recentOrders = recentOrdersRes.ok ? recentOrdersRes.data.data.slice(0, 6) : []
