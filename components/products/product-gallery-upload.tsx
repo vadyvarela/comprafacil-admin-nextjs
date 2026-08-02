@@ -19,11 +19,14 @@ import {
   parseHoverImageUrl,
   parseProductGalleryUrls,
 } from "@/lib/products/product-gallery-metadata"
+import { mediaGroupFromBrandSlug } from "@/lib/media/brand-group"
 
 interface ProductGalleryUploadProps {
   productId: string
   primaryImage?: string | null
   metadata?: string | null
+  /** Slug da marca do produto — pasta na biblioteca. Sem marca → `sem-marca`. */
+  brandSlug?: string | null
   onSaved?: () => void
 }
 
@@ -34,6 +37,7 @@ export function ProductGalleryUpload({
   productId,
   primaryImage,
   metadata,
+  brandSlug,
   onSaved,
 }: ProductGalleryUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -88,7 +92,7 @@ export function ProductGalleryUpload({
     const formData = new FormData()
     formData.append("image", file)
     formData.append("source", "PRODUCT")
-    formData.append("group", "produtos")
+    formData.append("group", mediaGroupFromBrandSlug(brandSlug))
 
     const res = await fetch("/api/upload/image", {
       method: "POST",

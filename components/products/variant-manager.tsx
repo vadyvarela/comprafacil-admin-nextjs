@@ -707,6 +707,7 @@ export function VariantManager({
                                       void handleVariantImageChange(index, imageUrl)
                                     }
                                     disabled={savingVariants}
+                                    brandSlug={product?.brand?.slug}
                                   />
                                 </td>
                                 <td className="p-3">

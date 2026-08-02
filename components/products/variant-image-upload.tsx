@@ -7,11 +7,14 @@ import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/utils/toast"
 import { getErrorMessage } from "@/lib/utils/errors"
+import { mediaGroupFromBrandSlug } from "@/lib/media/brand-group"
 
 interface VariantImageUploadProps {
   value: string
   onChange: (imageUrl: string) => void
   disabled?: boolean
+  /** Slug da marca do produto pai — pasta na biblioteca. */
+  brandSlug?: string | null
 }
 
 type ImageUploadResponse = {
@@ -20,7 +23,12 @@ type ImageUploadResponse = {
   error?: string
 }
 
-export function VariantImageUpload({ value, onChange, disabled }: VariantImageUploadProps) {
+export function VariantImageUpload({
+  value,
+  onChange,
+  disabled,
+  brandSlug,
+}: VariantImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(value || null)
@@ -52,7 +60,7 @@ export function VariantImageUpload({ value, onChange, disabled }: VariantImageUp
       const formData = new FormData()
       formData.append("image", file)
       formData.append("source", "VARIANT")
-      formData.append("group", "variantes")
+      formData.append("group", mediaGroupFromBrandSlug(brandSlug))
 
       // Fazer upload via API
       const response = await fetch("/api/upload/image", {

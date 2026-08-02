@@ -15,6 +15,7 @@ type ProductSnapshot = {
   type?: { code?: string } | null
   metadata?: string | null
   category?: { id?: string | null } | null
+  brand?: { id?: string | null; slug?: string | null } | null
 }
 
 type ProductDetailsGraphQLResponse = {
@@ -71,6 +72,10 @@ export async function PUT(
               category {
                 id
               }
+              brand {
+                id
+                slug
+              }
             }
           }
         `,
@@ -111,6 +116,7 @@ export async function PUT(
       type: currentProduct?.type || { code: "TICKET" },
       metadata: currentProduct?.metadata || null,
       categoryId: currentProduct?.category?.id || null,
+      brandId: currentProduct?.brand?.id || null,
       discount: currentProduct?.discount || null,
     })
 

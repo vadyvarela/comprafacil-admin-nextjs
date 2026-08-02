@@ -285,6 +285,7 @@ export default function ProductDetailPage() {
                     productId={productId}
                     primaryImage={product.image}
                     metadata={product.metadata}
+                    brandSlug={product.brand?.slug}
                     onSaved={() => void refetch()}
                   />
                 </div>

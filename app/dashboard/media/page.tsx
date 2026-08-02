@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useQuery } from "@apollo/client/react"
 import {
   Copy,
   Images,
@@ -45,10 +46,16 @@ import {
 } from "@/components/ui/table"
 import { showToast } from "@/lib/utils/toast"
 import { cn } from "@/lib/utils"
+import { GET_BRAND_LIST } from "@/lib/graphql/brands/queries"
+import {
+  MEDIA_GROUP_NO_BRAND,
+  mediaGroupLabel,
+} from "@/lib/media/brand-group"
 
 const GROUP_FILTER_NONE = "__none__"
 const PAGE_SIZE = 200
 const VIEW_MODE_KEY = "media-library-view"
+const UPLOAD_CUSTOM = "__custom__"
 
 type ViewMode = "grid" | "list"
 
@@ -149,7 +156,8 @@ export default function MediaLibraryPage() {
   const [page, setPage] = useState(0)
   const [viewMode, setViewMode] = useState<ViewMode>("grid")
   const [groupFilter, setGroupFilter] = useState("")
-  const [uploadGroup, setUploadGroup] = useState("")
+  const [uploadGroup, setUploadGroup] = useState(MEDIA_GROUP_NO_BRAND)
+  const [uploadCustomGroup, setUploadCustomGroup] = useState("")
   const [groupOptions, setGroupOptions] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -161,6 +169,40 @@ export default function MediaLibraryPage() {
   const [deleting, setDeleting] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  const { data: brandsData } = useQuery<{
+    brandList: { id: string; name: string; slug: string }[]
+  }>(GET_BRAND_LIST)
+
+  const brands = useMemo(() => brandsData?.brandList ?? [], [brandsData])
+  const brandNameBySlug = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const b of brands) {
+      if (b.slug) map.set(b.slug.toLowerCase(), b.name)
+    }
+    return map
+  }, [brands])
+
+  const filterGroupOptions = useMemo(() => {
+    const set = new Set<string>(groupOptions)
+    set.add(MEDIA_GROUP_NO_BRAND)
+    for (const b of brands) {
+      if (b.slug) set.add(b.slug.toLowerCase())
+    }
+    return Array.from(set).sort((a, b) =>
+      mediaGroupLabel(a, brandNameBySlug).localeCompare(
+        mediaGroupLabel(b, brandNameBySlug),
+        "pt"
+      )
+    )
+  }, [groupOptions, brands, brandNameBySlug])
+
+  const resolvedUploadGroup = useMemo(() => {
+    if (uploadGroup === UPLOAD_CUSTOM) {
+      return uploadCustomGroup.trim()
+    }
+    return uploadGroup.trim()
+  }, [uploadGroup, uploadCustomGroup])
+
   useEffect(() => {
     setViewMode(readViewMode())
   }, [])
@@ -169,6 +211,11 @@ export default function MediaLibraryPage() {
     setViewMode(mode)
     window.localStorage.setItem(VIEW_MODE_KEY, mode)
   }
+
+  const labelFor = useCallback(
+    (slug: string) => mediaGroupLabel(slug, brandNameBySlug),
+    [brandNameBySlug]
+  )
 
   const fetchGroups = useCallback(async () => {
     try {
@@ -280,7 +327,7 @@ export default function MediaLibraryPage() {
     try {
       const fd = new FormData()
       fd.append("file", file)
-      if (uploadGroup.trim()) fd.append("group", uploadGroup.trim())
+      if (resolvedUploadGroup) fd.append("group", resolvedUploadGroup)
       fd.append("source", "LIBRARY")
       const res = await fetch("/api/media", { method: "POST", body: fd })
       const body = (await res.json()) as Record<string, unknown>
@@ -365,7 +412,8 @@ export default function MediaLibraryPage() {
   const deleteCount = deleteTargets.length
 
   const renderRowMeta = (row: MediaRow) => {
-    const metaBits = [row.groupSlug, row.source].filter(
+    const groupLabel = row.groupSlug ? labelFor(row.groupSlug) : null
+    const metaBits = [groupLabel, row.source].filter(
       (x): x is string => typeof x === "string" && x.length > 0
     )
     return metaBits.length > 0 ? metaBits.join(" · ") : null
@@ -448,7 +496,7 @@ export default function MediaLibraryPage() {
           <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
             <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
               <div className="space-y-1 min-w-[140px]">
-                <p className="text-[10px] text-muted-foreground">Grupo</p>
+                <p className="text-[10px] text-muted-foreground">Pasta / marca</p>
                 <Select
                   value={groupFilter || "all"}
                   onValueChange={(v) => setGroupFilter(v === "all" ? "" : v)}
@@ -458,27 +506,47 @@ export default function MediaLibraryPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all" className="text-xs">
-                      Todos
+                      Todas
                     </SelectItem>
                     <SelectItem value={GROUP_FILTER_NONE} className="text-xs">
-                      Sem grupo
+                      Sem pasta
                     </SelectItem>
-                    {groupOptions.map((g) => (
+                    {filterGroupOptions.map((g) => (
                       <SelectItem key={g} value={g} className="text-xs">
-                        {g}
+                        {labelFor(g)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1 flex-1 min-w-[160px] max-w-xs">
-                <p className="text-[10px] text-muted-foreground">Pasta ao enviar (opcional)</p>
-                <Input
-                  value={uploadGroup}
-                  onChange={(e) => setUploadGroup(e.target.value)}
-                  placeholder="ex. campanhas-verao"
-                  className="h-8 text-xs"
-                />
+              <div className="space-y-1 min-w-[160px] max-w-xs">
+                <p className="text-[10px] text-muted-foreground">Pasta ao enviar</p>
+                <Select value={uploadGroup} onValueChange={setUploadGroup}>
+                  <SelectTrigger size="sm" className="h-8 w-[200px] max-w-full text-xs">
+                    <SelectValue placeholder="Escolher pasta" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={MEDIA_GROUP_NO_BRAND} className="text-xs">
+                      Sem marca
+                    </SelectItem>
+                    {brands.map((b) => (
+                      <SelectItem key={b.id} value={b.slug.toLowerCase()} className="text-xs">
+                        {b.name}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value={UPLOAD_CUSTOM} className="text-xs">
+                      Outra pasta…
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                {uploadGroup === UPLOAD_CUSTOM && (
+                  <Input
+                    value={uploadCustomGroup}
+                    onChange={(e) => setUploadCustomGroup(e.target.value)}
+                    placeholder="ex. campanhas-verao"
+                    className="h-8 text-xs mt-1.5"
+                  />
+                )}
               </div>
             </div>
 
