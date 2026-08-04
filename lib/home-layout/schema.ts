@@ -224,7 +224,7 @@ const promoDuoBlockSchema = z.object({
     .strict(),
 })
 
-const splitDealLimitSchema = z.number().int().min(4).max(8)
+const splitDealLimitSchema = z.number().int().min(4).max(10)
 
 const splitDealRailPropsSchema = z
   .object({
@@ -238,7 +238,7 @@ const splitDealRailPropsSchema = z
     variant: z.enum(["newest", "featured", "bestsellers", "on_sale", "curated"]),
     limit: splitDealLimitSchema,
     seeAllHref: internalHrefSchema.optional(),
-    productIds: z.array(z.string().uuid()).max(8).optional(),
+    productIds: z.array(z.string().uuid()).max(10).optional(),
   })
   .strict()
   .superRefine((p, ctx) => {

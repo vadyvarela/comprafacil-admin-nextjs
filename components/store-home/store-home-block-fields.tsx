@@ -1268,22 +1268,22 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">N.º produtos (4–8)</Label>
+            <Label className="text-[10px]">N.º produtos (4–10)</Label>
             <Input
               type="number"
               min={4}
-              max={8}
+              max={10}
               className="h-8 text-xs"
               value={block.props.limit}
               onChange={(e) =>
                 onChange({
                   ...block,
-                  props: { ...block.props, limit: Math.min(8, Math.max(4, Number(e.target.value) || 4)) },
+                  props: { ...block.props, limit: Math.min(10, Math.max(4, Number(e.target.value) || 4)) },
                 })
               }
             />
             <p className="text-[10px] text-muted-foreground tabular-nums">
-              {block.props.limit} produtos (permitido 4–8)
+              {block.props.limit} produtos (permitido 4–10)
             </p>
           </div>
           <p className="text-[10px] text-muted-foreground leading-snug sm:col-span-2">
@@ -1292,11 +1292,11 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
           {block.props.variant === "curated" ? (
             <>
               <p className="text-[10px] text-muted-foreground tabular-nums sm:col-span-2">
-                Seleccionados: {(block.props.productIds ?? []).length} / 8
+                Seleccionados: {(block.props.productIds ?? []).length} / 10
               </p>
               <CuratedProductPicker
                 value={block.props.productIds ?? []}
-                max={8}
+                max={10}
                 onChange={(productIds) => onChange({ ...block, props: { ...block.props, productIds } })}
               />
             </>

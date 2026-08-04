@@ -1,0 +1,241 @@
+{
+  "meta": {
+    "version": 1,
+    "productCount": 19,
+    "note": "Capas para Samsung Galaxy A-series e iPhone. Preço único 500 CVE. categorySlug/brandSlug têm de existir na loja antes do import (acessorios, samsung, apple).",
+    "schema": {
+      "product": "title, summary?, condition, categorySlug, brandSlug, sku?, variants[]",
+      "variant": "title, price (CVE), quantity, sku?"
+    }
+  },
+  "products": [
+    {
+      "title": "Capa Samsung Galaxy A05",
+      "summary": "Capa de proteção para Samsung Galaxy A05.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "CAPA-SAM-A05",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-SAM-A05" }
+      ]
+    },
+    {
+      "title": "Capa Samsung Galaxy A06",
+      "summary": "Capa de proteção para Samsung Galaxy A06.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "CAPA-SAM-A06",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-SAM-A06" }
+      ]
+    },
+    {
+      "title": "Capa Samsung Galaxy A07",
+      "summary": "Capa de proteção para Samsung Galaxy A07.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "CAPA-SAM-A07",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-SAM-A07" }
+      ]
+    },
+    {
+      "title": "Capa Samsung Galaxy A16",
+      "summary": "Capa de proteção para Samsung Galaxy A16.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "CAPA-SAM-A16",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-SAM-A16" }
+      ]
+    },
+    {
+      "title": "Capa Samsung Galaxy A17",
+      "summary": "Capa de proteção para Samsung Galaxy A17.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "CAPA-SAM-A17",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-SAM-A17" }
+      ]
+    },
+    {
+      "title": "Capa Samsung Galaxy A56",
+      "summary": "Capa de proteção para Samsung Galaxy A56.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "CAPA-SAM-A56",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-SAM-A56" }
+      ]
+    },
+    {
+      "title": "Capa Samsung Galaxy A57",
+      "summary": "Capa de proteção para Samsung Galaxy A57.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "CAPA-SAM-A57",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-SAM-A57" }
+      ]
+    },
+    {
+      "title": "Capa iPhone XR / 11",
+      "summary": "Capa de proteção compatível com iPhone XR e iPhone 11.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-XR11",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-XR11" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 12 / 12 Pro",
+      "summary": "Capa de proteção compatível com iPhone 12 e iPhone 12 Pro.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-12-12PRO",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-12-12PRO" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 11 Pro",
+      "summary": "Capa de proteção para iPhone 11 Pro.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-11PRO",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-11PRO" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 11 Pro Max",
+      "summary": "Capa de proteção para iPhone 11 Pro Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-11PROMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-11PROMAX" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 12 Pro Max",
+      "summary": "Capa de proteção para iPhone 12 Pro Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-12PROMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-12PROMAX" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 13 Pro",
+      "summary": "Capa de proteção para iPhone 13 Pro.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-13PRO",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-13PRO" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 13 Pro Max",
+      "summary": "Capa de proteção para iPhone 13 Pro Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-13PROMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-13PROMAX" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 14 Pro",
+      "summary": "Capa de proteção para iPhone 14 Pro.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-14PRO",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-14PRO" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 14 Pro Max",
+      "summary": "Capa de proteção para iPhone 14 Pro Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-14PROMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-14PROMAX" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 15 Pro Max",
+      "summary": "Capa de proteção para iPhone 15 Pro Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-15PROMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-15PROMAX" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 16 Pro Max",
+      "summary": "Capa de proteção para iPhone 16 Pro Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-16PROMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-16PROMAX" }
+      ]
+    },
+    {
+      "title": "Capa iPhone 17 Pro Max",
+      "summary": "Capa de proteção para iPhone 17 Pro Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "CAPA-IP-17PROMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Capa", "price": 500, "quantity": 100, "sku": "CAPA-IP-17PROMAX" }
+      ]
+    }
+  ]
+}
