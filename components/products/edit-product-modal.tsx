@@ -37,6 +37,10 @@ import {
   specificationsToMetadataField,
 } from "@/lib/product-specs/map-mobileapi-to-specifications"
 import type { ProductSpecifications } from "@/lib/product-specs/types"
+import {
+  formatCategoryLabel,
+  sortCategoriesForSelect,
+} from "@/lib/categories/format-category-label"
 
 interface EditProductModalProps {
   product: Product | null
@@ -44,7 +48,12 @@ interface EditProductModalProps {
   onOpenChange: (open: boolean) => void
 }
 
-type CategoryOption = { id: string; name: string; slug: string }
+type CategoryOption = {
+  id: string
+  name: string
+  slug: string
+  parentCategory?: { id: string; name: string } | null
+}
 type BrandOption = { id: string; name: string; slug: string }
 
 export function EditProductModal({
@@ -75,7 +84,11 @@ export function EditProductModal({
   })
 
   const categories: CategoryOption[] = useMemo(
-    () => (categoriesData as { categoryList?: CategoryOption[] } | undefined)?.categoryList ?? [],
+    () =>
+      sortCategoriesForSelect(
+        (categoriesData as { categoryList?: CategoryOption[] } | undefined)
+          ?.categoryList ?? [],
+      ),
     [categoriesData]
   )
   const brands: BrandOption[] = useMemo(
@@ -268,7 +281,7 @@ export function EditProductModal({
                       <SelectItem value="none">Sem categoria</SelectItem>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                          {formatCategoryLabel(category)}
                         </SelectItem>
                       ))}
                     </SelectContent>

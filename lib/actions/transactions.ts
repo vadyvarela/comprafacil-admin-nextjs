@@ -15,7 +15,7 @@ export interface GetTransactionsParams {
 
 const DEFAULT_PAGE: PaymentPageRequest = {
   page: 0,
-  size: 20,
+  size: 100,
   sortBy: "createdAt",
   sortDirection: "DESC",
 }
@@ -48,7 +48,7 @@ export async function getTransactions(
   const result = await runGraphQL<PaymentsSearchResponse>(PAYMENTS_SEARCH, {
     page: {
       page: page.page ?? 0,
-      size: page.size ?? 20,
+      size: page.size ?? 100,
       sortBy: page.sortBy ?? "createdAt",
       sortDirection: page.sortDirection ?? "DESC",
     },
@@ -76,7 +76,7 @@ export async function getTransactions(
       data: {
         data: [],
         pageNumber: page.page ?? 0,
-        pageSize: page.size ?? 20,
+        pageSize: page.size ?? 100,
         totalElements: 0,
         totalPages: 0,
       },

@@ -15,7 +15,7 @@ import { toGraphQLDateTimeBoundary } from "@/lib/utils/graphql-datetime"
 /** Status da checkout session no gateway: COMPLETED = pagamento com sucesso. */
 const STATUS_SUCCESS = "COMPLETED"
 
-export const ORDER_PAGE_SIZE = 20
+export const ORDER_PAGE_SIZE = 100
 
 export type { OrdersTab } from "@/lib/orders/types"
 

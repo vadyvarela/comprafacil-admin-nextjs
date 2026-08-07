@@ -10,7 +10,7 @@ import type {
   CustomerPageResponse,
 } from "@/lib/graphql/customers/types"
 
-export const CUSTOMER_PAGE_SIZE = 20
+export const CUSTOMER_PAGE_SIZE = 100
 
 export interface GetCustomersParams {
   search?: string | null

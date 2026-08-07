@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { getRootCategoriesForParentSelect } from "@/lib/categories/format-category-label"
 
 interface CreateCategoryModalProps {
   open: boolean
@@ -55,7 +56,7 @@ function emptyCategoryForm(): CategoryFormData {
     orderIndex: 0,
     showOnHome: true,
     homeOrder: "",
-    parentCategoryId: "",
+    parentCategoryId: "none",
     status: "ACTIVE",
   }
 }
@@ -71,7 +72,7 @@ function categoryToForm(category: Category | null | undefined): CategoryFormData
     orderIndex: category.orderIndex || 0,
     showOnHome: category.showOnHome !== false,
     homeOrder: category.homeOrder ?? "",
-    parentCategoryId: category.parentCategory?.id || "",
+    parentCategoryId: category.parentCategory?.id || "none",
     status: category.status?.code || "ACTIVE",
   }
 }
@@ -161,7 +162,10 @@ export function CreateCategoryModal({
         formData.homeOrder === "" || formData.homeOrder === undefined
           ? null
           : Number(formData.homeOrder),
-      parentCategoryId: formData.parentCategoryId || null,
+      parentCategoryId:
+        !formData.parentCategoryId || formData.parentCategoryId === "none"
+          ? null
+          : formData.parentCategoryId,
       status: {
         code: formData.status,
       },
@@ -183,10 +187,11 @@ export function CreateCategoryModal({
     }
   }
 
-  // Filtrar categorias para não permitir selecionar a própria categoria como pai
-  const availableParentCategories = isEditMode && category
-    ? categories.filter((cat: Category) => cat.id !== category.id)
-    : categories
+  // Só raízes como pai (1 nível); exclui a própria categoria em edição
+  const availableParentCategories = getRootCategoriesForParentSelect(
+    categories,
+    isEditMode && category ? category.id : undefined,
+  )
 
   return (
     <Dialog
@@ -281,7 +286,7 @@ export function CreateCategoryModal({
             <div className="space-y-2">
               <Label htmlFor="parentCategoryId">Categoria Pai</Label>
               <Select
-                value={formData.parentCategoryId}
+                value={formData.parentCategoryId || "none"}
                 onValueChange={(value) =>
                   setFormData({ ...formData, parentCategoryId: value })
                 }
@@ -290,6 +295,7 @@ export function CreateCategoryModal({
                   <SelectValue placeholder="Nenhuma (categoria principal)" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Nenhuma (categoria principal)</SelectItem>
                   {availableParentCategories.map((cat: Category) => (
                     <SelectItem key={cat.id} value={cat.id}>
                       {cat.name}

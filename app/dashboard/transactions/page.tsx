@@ -11,7 +11,7 @@ import { CreditCard } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 100
 
 type PageProps = {
   searchParams: Promise<{ page?: string; q?: string; status?: string; from?: string; to?: string; id?: string }>

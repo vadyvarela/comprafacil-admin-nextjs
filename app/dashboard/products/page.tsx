@@ -52,12 +52,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  formatCategoryLabel,
+  sortCategoriesForSelect,
+} from "@/lib/categories/format-category-label"
 import { showToast } from "@/lib/utils/toast"
 import { getErrorMessage } from "@/lib/utils/errors"
 
 const FILTER_ALL = "all"
 const FILTER_NONE = "__none__"
-const PAGE_SIZE = 20
+const PAGE_SIZE = 100
 
 type ProductMetadata = {
   sku?: string
@@ -110,7 +114,11 @@ export default function ProductsPage() {
   )
 
   const { data: categoriesListData } = useQuery<{
-    categoryList: { id: string; name: string }[]
+    categoryList: {
+      id: string
+      name: string
+      parentCategory?: { id: string; name: string } | null
+    }[]
   }>(GET_CATEGORY_LIST)
 
   const { data: brandsListData } = useQuery<{
@@ -177,8 +185,8 @@ export default function ProductsPage() {
     filterBrandId !== FILTER_ALL ||
     filterCategoryId !== FILTER_ALL
 
-  const categoryFilterOptions = [...(categoriesListData?.categoryList ?? [])].sort((a, b) =>
-    a.name.localeCompare(b.name, "pt")
+  const categoryFilterOptions = sortCategoriesForSelect(
+    categoriesListData?.categoryList ?? [],
   )
   const brandFilterOptions = [...(brandsListData?.brandList ?? [])].sort((a, b) =>
     a.name.localeCompare(b.name, "pt")
@@ -224,7 +232,7 @@ export default function ProductsPage() {
                 </SelectItem>
                 {categoryFilterOptions.map((c) => (
                   <SelectItem key={c.id} value={c.id} className="text-xs">
-                    {c.name}
+                    {formatCategoryLabel(c)}
                   </SelectItem>
                 ))}
               </SelectContent>

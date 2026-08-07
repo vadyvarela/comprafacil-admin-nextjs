@@ -34,6 +34,10 @@ import { Field, FormSection } from "@/components/products/product-form-layout"
 import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
 import { specificationsToMetadataField } from "@/lib/product-specs/map-mobileapi-to-specifications"
 import type { ProductSpecifications } from "@/lib/product-specs/types"
+import {
+  formatCategoryLabel,
+  sortCategoriesForSelect,
+} from "@/lib/categories/format-category-label"
 
 interface CreateProductModalProps {
   open: boolean
@@ -62,7 +66,12 @@ export function CreateProductModal({
   })
 
   const { data: categoriesData, loading: categoriesLoading } = useQuery<{
-    categoryList: { id: string; name: string; slug: string }[]
+    categoryList: {
+      id: string
+      name: string
+      slug: string
+      parentCategory?: { id: string; name: string } | null
+    }[]
   }>(GET_CATEGORY_LIST, {
     skip: !open,
   })
@@ -73,7 +82,10 @@ export function CreateProductModal({
     skip: !open,
   })
 
-  const categories = useMemo(() => categoriesData?.categoryList ?? [], [categoriesData])
+  const categories = useMemo(
+    () => sortCategoriesForSelect(categoriesData?.categoryList ?? []),
+    [categoriesData],
+  )
   const brands = useMemo(() => brandsData?.brandList ?? [], [brandsData])
 
   const resetForm = useCallback(() => {
@@ -290,9 +302,9 @@ export function CreateProductModal({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Sem categoria</SelectItem>
-                      {categories.map((category: { id: string; name: string }) => (
+                      {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id}>
-                          {category.name}
+                          {formatCategoryLabel(category)}
                         </SelectItem>
                       ))}
                     </SelectContent>
