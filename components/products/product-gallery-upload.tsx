@@ -5,6 +5,7 @@ import Image from "next/image"
 import {
   ChevronLeft,
   ChevronRight,
+  FolderOpen,
   GripVertical,
   ImageIcon,
   Loader2,
@@ -14,6 +15,7 @@ import {
   Upload,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { MediaPickerDialog } from "@/components/media/media-picker-dialog"
 import { showToast } from "@/lib/utils/toast"
 import {
   parseHoverImageUrl,
@@ -45,6 +47,7 @@ export function ProductGalleryUpload({
   const [hoverImageUrl, setHoverImageUrl] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   useEffect(() => {
     setImages(parseProductGalleryUrls(primaryImage, metadata))
@@ -215,7 +218,35 @@ export function ProductGalleryUpload({
     }
   }
 
+  const addFromLibrary = async (urls: string[]) => {
+    if (!urls.length) return
+    const added = [...images]
+    for (const url of urls) {
+      if (added.length >= MAX_IMAGES) break
+      if (!added.includes(url)) added.push(url)
+    }
+    if (added.length === images.length) {
+      showToast.error("Nada a adicionar", "As imagens já estão na galeria")
+      return
+    }
+    setImages(added)
+    try {
+      await persistGallery(added)
+      showToast.success(
+        "Galeria atualizada",
+        `${added.length - images.length} imagem(ns) da biblioteca`,
+      )
+    } catch (e: unknown) {
+      setImages(images)
+      showToast.error(
+        "Erro",
+        e instanceof Error ? e.message : "Erro ao adicionar da biblioteca",
+      )
+    }
+  }
+
   const busy = uploading || saving
+  const canAdd = images.length < MAX_IMAGES
 
   return (
     <div className="p-4 space-y-3">
@@ -323,14 +354,13 @@ export function ProductGalleryUpload({
           ))}
         </div>
       ) : (
-        <div
-          onClick={() => !busy && fileInputRef.current?.click()}
-          className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-input rounded-md cursor-pointer hover:bg-accent/50 transition-colors"
-        >
-          <Upload className="h-5 w-5 text-muted-foreground mb-1.5" />
-          <p className="text-xs text-muted-foreground">Adicionar imagens à galeria</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
-            PNG, JPG, WEBP — até {MAX_IMAGES} imagens
+        <div className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-input rounded-md px-3">
+          <ImageIcon className="h-5 w-5 text-muted-foreground mb-1.5" />
+          <p className="text-xs text-muted-foreground text-center">
+            Adicionar imagens à galeria
+          </p>
+          <p className="text-[10px] text-muted-foreground mt-0.5 text-center">
+            Upload do PC ou escolher da biblioteca
           </p>
         </div>
       )}
@@ -345,28 +375,53 @@ export function ProductGalleryUpload({
         onChange={(e) => void handleFiles(e.target.files)}
       />
 
-      {images.length > 0 && images.length < MAX_IMAGES && (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full h-8 text-xs"
-          disabled={busy}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          {uploading ? (
-            <>
-              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-              A enviar…
-            </>
-          ) : (
-            <>
-              <Upload className="mr-1.5 h-3.5 w-3.5" />
-              Adicionar imagens
-            </>
-          )}
-        </Button>
+      {canAdd && (
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            disabled={busy}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {uploading ? (
+              <>
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                A enviar…
+              </>
+            ) : (
+              <>
+                <Upload className="mr-1.5 h-3.5 w-3.5" />
+                Do PC
+              </>
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs"
+            disabled={busy}
+            onClick={() => setPickerOpen(true)}
+          >
+            <FolderOpen className="mr-1.5 h-3.5 w-3.5" />
+            Biblioteca
+          </Button>
+        </div>
       )}
+
+      <MediaPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        multiple
+        maxSelectable={MAX_IMAGES}
+        brandSlug={brandSlug}
+        excludeUrls={images}
+        onSelect={(urls) => void addFromLibrary(urls)}
+        title="Escolher imagens da biblioteca"
+        description="Selecciona uma ou mais imagens já existentes para a galeria do produto."
+      />
 
       <p className="text-[10px] text-muted-foreground leading-snug">
         A primeira imagem é a capa na loja. Marca outra imagem como &quot;Hover&quot; para trocar no card

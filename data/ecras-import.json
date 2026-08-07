@@ -1,0 +1,649 @@
+{
+  "meta": {
+    "version": 1,
+    "productCount": 55,
+    "note": "Ecrãs para Samsung Galaxy A-series e iPhone. Preços em CVE. categorySlug/brandSlug têm de existir na loja antes do import (acessorios, samsung, apple).",
+    "schema": {
+      "product": "title, summary?, condition, categorySlug, brandSlug, sku?, variants[]",
+      "variant": "title, price (CVE), quantity, sku?"
+    }
+  },
+  "products": [
+    {
+      "title": "Ecrã Samsung Galaxy A01",
+      "summary": "Ecrã de substituição para Samsung Galaxy A01.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A01",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A01" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A02",
+      "summary": "Ecrã de substituição para Samsung Galaxy A02.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A02",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A02" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A02s",
+      "summary": "Ecrã de substituição para Samsung Galaxy A02s.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A02S",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A02S" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A03",
+      "summary": "Ecrã de substituição para Samsung Galaxy A03.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A03",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A03" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A03 Core",
+      "summary": "Ecrã de substituição para Samsung Galaxy A03 Core.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A03CORE",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A03CORE" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A03s",
+      "summary": "Ecrã de substituição para Samsung Galaxy A03s.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A03S",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A03S" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A04",
+      "summary": "Ecrã de substituição para Samsung Galaxy A04.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A04",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A04" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A04e",
+      "summary": "Ecrã de substituição para Samsung Galaxy A04e.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A04E",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A04E" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A04s",
+      "summary": "Ecrã de substituição para Samsung Galaxy A04s.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A04S",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A04S" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A05",
+      "summary": "Ecrã de substituição para Samsung Galaxy A05.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A05",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A05" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A05s",
+      "summary": "Ecrã de substituição para Samsung Galaxy A05s.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A05S",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A05S" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A06",
+      "summary": "Ecrã de substituição para Samsung Galaxy A06.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A06",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A06" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A10",
+      "summary": "Ecrã de substituição para Samsung Galaxy A10.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A10",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A10" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A10e",
+      "summary": "Ecrã de substituição para Samsung Galaxy A10e.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A10E",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A10E" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A10s",
+      "summary": "Ecrã de substituição para Samsung Galaxy A10s.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A10S",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A10S" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A11",
+      "summary": "Ecrã de substituição para Samsung Galaxy A11.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A11",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A11" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A12",
+      "summary": "Ecrã de substituição para Samsung Galaxy A12.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A12",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A12" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A12 Nacho",
+      "summary": "Ecrã de substituição para Samsung Galaxy A12 Nacho.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A12NACHO",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A12NACHO" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A13 (4G)",
+      "summary": "Ecrã de substituição para Samsung Galaxy A13 (4G).",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A13-4G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A13-4G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A13 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A13 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A13-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A13-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A14 (4G)",
+      "summary": "Ecrã de substituição para Samsung Galaxy A14 (4G).",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A14-4G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A14-4G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A14 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A14 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A14-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A14-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A15 (4G)",
+      "summary": "Ecrã de substituição para Samsung Galaxy A15 (4G).",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A15-4G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A15-4G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A15 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A15 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A15-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A15-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A16 (4G)",
+      "summary": "Ecrã de substituição para Samsung Galaxy A16 (4G).",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A16-4G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A16-4G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A16 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A16 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A16-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A16-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A17 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A17 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A17-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A17-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A20",
+      "summary": "Ecrã de substituição para Samsung Galaxy A20.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A20",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 3500, "quantity": 50, "sku": "ECRA-SAM-A20" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A20e",
+      "summary": "Ecrã de substituição para Samsung Galaxy A20e.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A20E",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 3500, "quantity": 50, "sku": "ECRA-SAM-A20E" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A20s",
+      "summary": "Ecrã de substituição para Samsung Galaxy A20s.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A20S",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 3500, "quantity": 50, "sku": "ECRA-SAM-A20S" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A21",
+      "summary": "Ecrã de substituição para Samsung Galaxy A21.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A21",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 3500, "quantity": 50, "sku": "ECRA-SAM-A21" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A21s",
+      "summary": "Ecrã de substituição para Samsung Galaxy A21s.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A21S",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 3500, "quantity": 50, "sku": "ECRA-SAM-A21S" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A22 (4G)",
+      "summary": "Ecrã de substituição para Samsung Galaxy A22 (4G).",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A22-4G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A22-4G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A22 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A22 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A22-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A22-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A23 (4G)",
+      "summary": "Ecrã de substituição para Samsung Galaxy A23 (4G).",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A23-4G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A23-4G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A23 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A23 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A23-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-SAM-A23-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A24",
+      "summary": "Ecrã de substituição para Samsung Galaxy A24.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A24",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 3500, "quantity": 50, "sku": "ECRA-SAM-A24" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A25 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A25 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A25-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 3500, "quantity": 50, "sku": "ECRA-SAM-A25-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã Samsung Galaxy A26 5G",
+      "summary": "Ecrã de substituição para Samsung Galaxy A26 5G.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "samsung",
+      "sku": "ECRA-SAM-A26-5G",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 3500, "quantity": 50, "sku": "ECRA-SAM-A26-5G" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 6",
+      "summary": "Ecrã de substituição para iPhone 6.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-6",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-6" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 6 Plus",
+      "summary": "Ecrã de substituição para iPhone 6 Plus.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-6PLUS",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-6PLUS" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 6S",
+      "summary": "Ecrã de substituição para iPhone 6S.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-6S",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-6S" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 6S Plus",
+      "summary": "Ecrã de substituição para iPhone 6S Plus.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-6SPLUS",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-6SPLUS" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 7",
+      "summary": "Ecrã de substituição para iPhone 7.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-7",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-7" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 7 Plus",
+      "summary": "Ecrã de substituição para iPhone 7 Plus.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-7PLUS",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-7PLUS" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 8",
+      "summary": "Ecrã de substituição para iPhone 8.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-8",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-8" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 8 Plus",
+      "summary": "Ecrã de substituição para iPhone 8 Plus.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-8PLUS",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-8PLUS" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone X",
+      "summary": "Ecrã de substituição para iPhone X.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-X",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-IP-X" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone XS",
+      "summary": "Ecrã de substituição para iPhone XS.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-XS",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 2500, "quantity": 50, "sku": "ECRA-IP-XS" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone XS Max",
+      "summary": "Ecrã de substituição para iPhone XS Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-XSMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 4000, "quantity": 50, "sku": "ECRA-IP-XSMAX" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 11 Pro",
+      "summary": "Ecrã de substituição para iPhone 11 Pro.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-11PRO",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-11PRO" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 11 Pro Max",
+      "summary": "Ecrã de substituição para iPhone 11 Pro Max.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-11PROMAX",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 5000, "quantity": 50, "sku": "ECRA-IP-11PROMAX" }
+      ]
+    },
+    {
+      "title": "Ecrã iPhone 12 mini",
+      "summary": "Ecrã de substituição para iPhone 12 mini.",
+      "condition": "novo",
+      "categorySlug": "acessorios",
+      "brandSlug": "apple",
+      "sku": "ECRA-IP-12MINI",
+      "variantOptionTitle": "Tipo",
+      "variants": [
+        { "title": "Ecrã", "price": 6000, "quantity": 50, "sku": "ECRA-IP-12MINI" }
+      ]
+    }
+  ]
+}
