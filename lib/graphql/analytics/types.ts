@@ -37,6 +37,8 @@ export interface PaymentSummaryItem {
   merchantReference: string | null
   paymentDate: string | null
   currency: string | null
+  /** Valor cobrado (produtos − desconto + entrega), em unidades menores. */
+  totalAmount?: number | null
   customer: {
     id: string | null
     name: string | null

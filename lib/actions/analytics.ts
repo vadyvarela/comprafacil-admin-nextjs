@@ -288,6 +288,9 @@ async function buildChartData(
 }
 
 function paymentTotalAmount(payment: PaymentSummaryItem): number {
+  if (payment.totalAmount != null && Number.isFinite(Number(payment.totalAmount))) {
+    return toMajorRevenue(payment.totalAmount)
+  }
   const fromItems = (payment.items ?? []).reduce(
     (sum, item) => sum + toMajorRevenue(item.itemTotal),
     0

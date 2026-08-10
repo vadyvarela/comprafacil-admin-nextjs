@@ -85,6 +85,7 @@ export const ANALYTICS_SUCCESSFUL_PAYMENTS = gql`
         merchantReference
         paymentDate
         currency
+        totalAmount
         customer {
           id
           name
