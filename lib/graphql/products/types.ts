@@ -11,6 +11,8 @@ export interface ProductFilterInput {
   featured?: boolean | null
   /** Filtra por estes IDs; ordem da resposta segue a lista no gateway. */
   ids?: string[] | null
+  /** ACTIVE | INACTIVE (rascunho / oculto na loja). */
+  status?: string | null
 }
 
 export interface Product {
@@ -24,6 +26,10 @@ export interface Product {
   /** Incluído em queries de detalhe; omitido na listagem. */
   type?: {
     code: string
+  } | null
+  status?: {
+    code: string
+    description?: string | null
   } | null
   metadata?: string | null
   brand?: {
@@ -70,6 +76,9 @@ export interface ProductInput {
   type: {
     code: string
   }
+  status?: {
+    code: string
+  } | null
   metadata?: string | null
 }
 

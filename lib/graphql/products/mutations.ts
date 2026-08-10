@@ -12,6 +12,10 @@ export const CREATE_PRODUCT = gql`
       type {
         code
       }
+      status {
+        code
+        description
+      }
       metadata
       stock {
         id
@@ -33,6 +37,10 @@ export const UPDATE_PRODUCT = gql`
       condition
       type {
         code
+      }
+      status {
+        code
+        description
       }
       metadata
       category {

@@ -27,6 +27,7 @@ export default function NewProductPage() {
     summary: "",
     discount: "",
     condition: "novo",
+    status: "ACTIVE",
     sku: "",
     price: "",
     quantity: "",
@@ -65,6 +66,7 @@ export default function NewProductPage() {
             discount: formData.discount ? parseInt(formData.discount) : null,
             condition: formData.condition,
             type: { code: "TICKET" },
+            status: { code: formData.status },
             metadata: Object.keys(meta).length > 0 ? JSON.stringify(meta) : null,
           },
         },
@@ -284,7 +286,7 @@ export default function NewProductPage() {
                 </div>
                 <div>
                   <label htmlFor="condition" className="block text-xs font-medium text-foreground mb-1.5">
-                    Estado
+                    Condição
                   </label>
                   <Select
                     value={formData.condition}
@@ -298,6 +300,24 @@ export default function NewProductPage() {
                       <SelectItem value="seminovo">Seminovo</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <label htmlFor="status" className="block text-xs font-medium text-foreground mb-1.5">
+                    Visibilidade
+                  </label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
+                  >
+                    <SelectTrigger id="status" className="h-9">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">Ativo</SelectItem>
+                      <SelectItem value="INACTIVE">Rascunho</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[11px] text-muted-foreground mt-1">Rascunho fica oculto na loja.</p>
                 </div>
               </div>
 

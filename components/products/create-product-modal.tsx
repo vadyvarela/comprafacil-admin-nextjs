@@ -56,6 +56,7 @@ export function CreateProductModal({
     categoryId: "none",
     brandId: "none",
     condition: "novo",
+    status: "ACTIVE",
     discount: "",
     price: "",
     quantity: "",
@@ -96,6 +97,7 @@ export function CreateProductModal({
       categoryId: "none",
       brandId: "none",
       condition: "novo",
+      status: "ACTIVE",
       discount: "",
       price: "",
       quantity: "",
@@ -178,6 +180,9 @@ export function CreateProductModal({
             discount,
             type: {
               code: "TICKET",
+            },
+            status: {
+              code: formData.status,
             },
             metadata: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
             condition: formData.condition,
@@ -331,7 +336,7 @@ export function CreateProductModal({
                   </Select>
                 </Field>
 
-                <Field label="Estado" htmlFor="condition">
+                <Field label="Condição" htmlFor="condition">
                   <Select
                     value={formData.condition}
                     onValueChange={(value) => setFormData({ ...formData, condition: value })}
@@ -348,7 +353,27 @@ export function CreateProductModal({
                 </Field>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field
+                  label="Visibilidade"
+                  htmlFor="status"
+                  hint="Rascunho fica oculto na loja."
+                >
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                    disabled={isLoading}
+                  >
+                    <SelectTrigger id="status" className="h-9 w-full">
+                      <SelectValue placeholder="Selecione…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">Ativo</SelectItem>
+                      <SelectItem value="INACTIVE">Rascunho</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+
                 <Field label="SKU" htmlFor="sku">
                   <Input
                     id="sku"

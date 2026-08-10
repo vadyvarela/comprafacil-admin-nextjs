@@ -11,6 +11,10 @@ export const GET_PRODUCTS = gql`
         discount
         condition
         metadata
+        status {
+          code
+          description
+        }
         brand {
           id
           name
@@ -45,6 +49,10 @@ export const GET_PRODUCT = gql`
       condition
       type {
         code
+      }
+      status {
+        code
+        description
       }
       metadata
       stock {

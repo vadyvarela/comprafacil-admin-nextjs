@@ -66,6 +66,7 @@ export function EditProductModal({
     summary: "",
     discount: "",
     condition: "novo",
+    status: "ACTIVE",
     sku: "",
     categoryId: "",
     brandId: "",
@@ -121,6 +122,7 @@ export function EditProductModal({
         summary: product.summary || "",
         discount: product.discount?.toString() || "",
         condition: product.condition || "novo",
+        status: product.status?.code || "ACTIVE",
         sku: typeof metadata?.sku === "string" ? metadata.sku : "",
         categoryId: product.category?.id || "none",
         brandId: product.brand?.id || "none",
@@ -204,6 +206,9 @@ export function EditProductModal({
             discount: formData.discount ? parseInt(formData.discount) : null,
             condition: formData.condition,
             type: productType,
+            status: {
+              code: formData.status,
+            },
             metadata: metadataJson,
             categoryId: formData.categoryId && formData.categoryId !== "none" ? formData.categoryId : null,
             brandId: formData.brandId && formData.brandId !== "none" ? formData.brandId : null,
@@ -308,7 +313,7 @@ export function EditProductModal({
                   </Select>
                 </Field>
 
-                <Field label="Estado" htmlFor="edit-condition">
+                <Field label="Condição" htmlFor="edit-condition">
                   <Select
                     value={formData.condition}
                     onValueChange={(value) => setFormData({ ...formData, condition: value })}
@@ -325,7 +330,27 @@ export function EditProductModal({
                 </Field>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field
+                  label="Visibilidade"
+                  htmlFor="edit-status"
+                  hint="Rascunho fica oculto na loja."
+                >
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => setFormData({ ...formData, status: value })}
+                    disabled={loading}
+                  >
+                    <SelectTrigger id="edit-status" className="h-9 w-full">
+                      <SelectValue placeholder="Selecione…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">Ativo</SelectItem>
+                      <SelectItem value="INACTIVE">Rascunho</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </Field>
+
                 <Field label="SKU" htmlFor="edit-sku">
                   <Input
                     id="edit-sku"

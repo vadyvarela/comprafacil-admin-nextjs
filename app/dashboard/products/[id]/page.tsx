@@ -198,6 +198,15 @@ export default function ProductDetailPage() {
                     <h1 className="truncate text-xl font-semibold md:text-2xl">
                       {product.title}
                     </h1>
+                    {product.status?.code === "INACTIVE" ? (
+                      <Badge variant="outline" className="text-xs text-amber-700 border-amber-500/40 bg-amber-50">
+                        Rascunho
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="text-xs">
+                        Ativo
+                      </Badge>
+                    )}
                     {product.category && (
                       <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
                         {product.category.name}

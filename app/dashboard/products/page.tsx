@@ -70,7 +70,8 @@ type ProductMetadata = {
 function buildProductListFilter(
   debouncedSearch: string,
   filterCategoryId: string,
-  filterBrandId: string
+  filterBrandId: string,
+  filterStatus: string
 ): ProductFilterInput | null {
   const f: ProductFilterInput = {}
   if (debouncedSearch) f.search = debouncedSearch
@@ -78,12 +79,14 @@ function buildProductListFilter(
   else if (filterCategoryId !== FILTER_ALL) f.categoryId = filterCategoryId
   if (filterBrandId === FILTER_NONE) f.withoutBrand = true
   else if (filterBrandId !== FILTER_ALL) f.brandId = filterBrandId
+  if (filterStatus !== FILTER_ALL) f.status = filterStatus
   if (
     !f.search &&
     f.categoryId == null &&
     f.brandId == null &&
     !f.withoutCategory &&
-    !f.withoutBrand
+    !f.withoutBrand &&
+    !f.status
   ) {
     return null
   }
@@ -96,6 +99,7 @@ export default function ProductsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("")
   const [filterBrandId, setFilterBrandId] = useState(FILTER_ALL)
   const [filterCategoryId, setFilterCategoryId] = useState(FILTER_ALL)
+  const [filterStatus, setFilterStatus] = useState(FILTER_ALL)
   const [pageIndex, setPageIndex] = useState(0)
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null)
 
@@ -106,11 +110,11 @@ export default function ProductsPage() {
 
   useEffect(() => {
     setPageIndex(0)
-  }, [debouncedSearch, filterCategoryId, filterBrandId])
+  }, [debouncedSearch, filterCategoryId, filterBrandId, filterStatus])
 
   const filter = useMemo(
-    () => buildProductListFilter(debouncedSearch, filterCategoryId, filterBrandId),
-    [debouncedSearch, filterCategoryId, filterBrandId]
+    () => buildProductListFilter(debouncedSearch, filterCategoryId, filterBrandId, filterStatus),
+    [debouncedSearch, filterCategoryId, filterBrandId, filterStatus]
   )
 
   const { data: categoriesListData } = useQuery<{
@@ -183,7 +187,8 @@ export default function ProductsPage() {
   const hasActiveFilters =
     debouncedSearch.length > 0 ||
     filterBrandId !== FILTER_ALL ||
-    filterCategoryId !== FILTER_ALL
+    filterCategoryId !== FILTER_ALL ||
+    filterStatus !== FILTER_ALL
 
   const categoryFilterOptions = sortCategoriesForSelect(
     categoriesListData?.categoryList ?? [],
@@ -255,6 +260,22 @@ export default function ProductsPage() {
                 ))}
               </SelectContent>
             </Select>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="h-8 w-[120px] text-xs" aria-label="Filtrar por visibilidade">
+                <SelectValue placeholder="Visibilidade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={FILTER_ALL} className="text-xs">
+                  Todos
+                </SelectItem>
+                <SelectItem value="ACTIVE" className="text-xs">
+                  Ativos
+                </SelectItem>
+                <SelectItem value="INACTIVE" className="text-xs">
+                  Rascunhos
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
             <Link href="/dashboard/products/importar">
@@ -318,6 +339,7 @@ export default function ProductsPage() {
                       <TableRow className="border-b border-border/60 bg-background hover:bg-background">
                         <TableHead className="w-14 text-xs">Img</TableHead>
                         <TableHead className="text-xs">Produto</TableHead>
+                        <TableHead className="text-xs hidden sm:table-cell">Visibilidade</TableHead>
                         <TableHead className="text-xs hidden md:table-cell">Categoria</TableHead>
                         <TableHead className="text-xs hidden md:table-cell">Marca</TableHead>
                         <TableHead className="text-xs hidden lg:table-cell">SKU</TableHead>
@@ -368,6 +390,18 @@ export default function ProductsPage() {
                                   </span>
                                 )}
                               </Link>
+                            </TableCell>
+
+                            <TableCell className="py-2 hidden sm:table-cell">
+                              {product.status?.code === "INACTIVE" ? (
+                                <Badge variant="outline" className="text-[11px] h-5 px-1.5 text-amber-700 border-amber-500/40 bg-amber-50">
+                                  Rascunho
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
+                                  Ativo
+                                </Badge>
+                              )}
                             </TableCell>
 
                             <TableCell className="py-2 hidden md:table-cell">
