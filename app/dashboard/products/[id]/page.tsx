@@ -9,6 +9,7 @@ import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { EditProductModal } from "@/components/products/edit-product-modal"
 import { VariantManager } from "@/components/products/variant-manager"
+import { ProductOptionCatalogPanel } from "@/components/products/product-option-catalog-panel"
 import { ProductGalleryUpload } from "@/components/products/product-gallery-upload"
 import { StockModal } from "@/components/products/stock-modal"
 import { Button } from "@/components/ui/button"
@@ -411,7 +412,13 @@ export default function ProductDetailPage() {
               </div>
 
               {/* Variants */}
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 space-y-5">
+                <ProductOptionCatalogPanel
+                  product={product}
+                  variants={product.variants ?? []}
+                  onSynced={() => void refetch()}
+                />
+
                 <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 bg-muted/25">
                     <div className="flex items-center gap-2.5">

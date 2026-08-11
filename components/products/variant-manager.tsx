@@ -7,6 +7,7 @@ import {
   UPDATE_PRODUCT_VARIANT,
   DELETE_PRODUCT_VARIANT,
 } from "@/lib/graphql/variants/mutations"
+import { UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { UPDATE_PRICE } from "@/lib/graphql/prices/mutations"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
 import type { Product } from "@/lib/graphql/products/types"
@@ -26,6 +27,11 @@ import { getErrorMessage } from "@/lib/utils/errors"
 import { Plus, Trash2, X as XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { VariantImageUpload } from "./variant-image-upload"
+import {
+  deriveOptionCatalogFromVariants,
+  mergeProductMetadataAttributes,
+} from "@/lib/products/option-catalog"
+import type { ProductVariant } from "@/lib/graphql/products/types"
 
 interface VariantManagerProps {
   productId: string
@@ -167,6 +173,10 @@ export function VariantManager({
   })
 
   const [updatePrice] = useMutation(UPDATE_PRICE, {
+    refetchQueries: [{ query: GET_PRODUCT, variables: { id: productId } }],
+  })
+
+  const [updateProduct] = useMutation(UPDATE_PRODUCT, {
     refetchQueries: [{ query: GET_PRODUCT, variables: { id: productId } }],
   })
 
@@ -396,6 +406,41 @@ export function VariantManager({
     }
   }
 
+  const syncProductOptionCatalog = async (combinations: ProductVariantCombination[]) => {
+    if (!product || combinations.length === 0) return
+
+    const variantRows: ProductVariant[] = combinations.map((combo, index) => ({
+      id: combo.id ?? `temp-${index}`,
+      title: Object.values(combo.optionValues).join(" / "),
+      quantity: combo.stock || 0,
+      image: resolveVariantImage(combo) ?? null,
+      metadata: buildVariantMetadata(combo, resolveVariantImage(combo)),
+    }))
+
+    const catalog = deriveOptionCatalogFromVariants(variantRows)
+    if (catalog.length === 0) return
+
+    const metadata = mergeProductMetadataAttributes(product.metadata, catalog)
+    const productType = product.type ? { code: product.type.code } : { code: "TICKET" }
+
+    await updateProduct({
+      variables: {
+        id: productId,
+        input: {
+          title: product.title,
+          summary: product.summary ?? null,
+          discount: product.discount ?? null,
+          condition: product.condition ?? "novo",
+          type: productType,
+          status: product.status?.code ? { code: product.status.code } : { code: "ACTIVE" },
+          metadata,
+          categoryId: product.category?.id ?? null,
+          brandId: product.brand?.id ?? null,
+        },
+      },
+    })
+  }
+
   const saveAllVariants = async () => {
     if (savingVariants) return
 
@@ -466,6 +511,14 @@ export function VariantManager({
       const parts: string[] = []
       if (createdCount > 0) parts.push(`${createdCount} criada${createdCount > 1 ? "s" : ""}`)
       if (updatedCount > 0) parts.push(`${updatedCount} atualizada${updatedCount > 1 ? "s" : ""}`)
+
+      try {
+        await syncProductOptionCatalog(variantCombinations)
+        parts.push("catálogo da loja atualizado")
+      } catch {
+        parts.push("catálogo da loja não sincronizado")
+      }
+
       const description = parts.length > 0 ? parts.join(" • ") : "Nenhuma alteração detectada"
       showToast.success("Variantes salvas", description)
     } catch (error: unknown) {

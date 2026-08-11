@@ -11,7 +11,6 @@ import {
   ANALYTICS_PRODUCT_SALES_REPORT,
   ANALYTICS_CUSTOMER_PURCHASES,
   ANALYTICS_COUNTRY_PURCHASES,
-  ANALYTICS_SUCCESSFUL_PAYMENTS,
 } from "@/lib/graphql/analytics/queries"
 import type {
   AnalyticsReportData,
@@ -31,6 +30,7 @@ import {
   type AnalyticsPeriod,
 } from "@/lib/analytics/period"
 import { minorToMajorCurrencyAmount } from "@/lib/utils/currency"
+import { fetchPaidRevenueSummary } from "@/lib/analytics/paid-revenue"
 
 const SUCCESS_STATUS = "PS"
 const MAX_PAYMENT_PAGES = 10
@@ -155,26 +155,36 @@ async function fetchCountryPurchases(period: AnalyticsPeriod): Promise<CountryPu
 }
 
 async function fetchRecentPayments(period: AnalyticsPeriod): Promise<PaymentSummaryItem[]> {
-  const result = await runGraphQL<{
-    successfulPaymentSummary: { data: PaymentSummaryItem[] }
-  }>(ANALYTICS_SUCCESSFUL_PAYMENTS, {
-    filter: {
-      startDate: period.startDate,
-      endDate: period.endDate,
-      days: null,
-      productId: null,
-      productVariantId: null,
-      customerId: null,
-    },
+  const res = await getTransactions({
     page: {
       page: 0,
       size: 8,
-      sortBy: "paymentDate",
+      sortBy: "createdAt",
       sortDirection: "DESC",
     },
+    filter: {
+      dateFrom: period.startDate,
+      dateTo: period.endDate,
+      status: SUCCESS_STATUS,
+    },
   })
-  if (result.errors?.length) return []
-  return result.data?.successfulPaymentSummary?.data ?? []
+  if (!res.ok) return []
+
+  return res.data.data.map((tx) => ({
+    paymentId: tx.id,
+    merchantReference: tx.merchantReference ?? null,
+    paymentDate: tx.capturedAt ?? tx.createdAt ?? null,
+    currency: tx.currency ?? null,
+    totalAmount: tx.amount,
+    customer: tx.customer
+      ? {
+          id: tx.customer.id ?? null,
+          name: tx.customer.name ?? null,
+          email: tx.customer.email ?? null,
+        }
+      : null,
+    items: null,
+  }))
 }
 
 async function fetchPaymentsForChart(period: AnalyticsPeriod) {
@@ -309,6 +319,8 @@ export async function getAnalyticsReport(params: {
     const [
       currentSales,
       previousSales,
+      currentPaidRevenue,
+      previousPaidRevenue,
       currentCustomers,
       previousCustomers,
       paymentStatus,
@@ -319,6 +331,14 @@ export async function getAnalyticsReport(params: {
     ] = await Promise.all([
       fetchSalesSummary(period),
       fetchSalesSummary(prev),
+      fetchPaidRevenueSummary({
+        startDate: period.startDate,
+        endDate: period.endDate,
+      }),
+      fetchPaidRevenueSummary({
+        startDate: prev.startDate,
+        endDate: prev.endDate,
+      }),
       fetchCustomerPurchases(period),
       fetchCustomerPurchases(prev),
       fetchPaymentStatus(),
@@ -328,10 +348,16 @@ export async function getAnalyticsReport(params: {
       buildChartData(period),
     ])
 
-    const revenueCurrent = toMajorRevenue(currentSales?.totalRevenue)
-    const revenuePrevious = toMajorRevenue(previousSales?.totalRevenue)
-    const ordersCurrent = currentSales?.totalProductSold ?? 0
-    const ordersPrevious = previousSales?.totalProductSold ?? 0
+    const revenueCurrent = toMajorRevenue(
+      currentPaidRevenue?.totalRevenueMinor ?? currentSales?.totalRevenue
+    )
+    const revenuePrevious = toMajorRevenue(
+      previousPaidRevenue?.totalRevenueMinor ?? previousSales?.totalRevenue
+    )
+    const ordersCurrent =
+      currentPaidRevenue?.orderCount ?? currentSales?.totalProductSold ?? 0
+    const ordersPrevious =
+      previousPaidRevenue?.orderCount ?? previousSales?.totalProductSold ?? 0
     const customersCurrent = currentCustomers.totalElements
     const customersPrevious = previousCustomers.totalElements
     const aovCurrent = ordersCurrent > 0 ? Math.round(revenueCurrent / ordersCurrent) : 0
