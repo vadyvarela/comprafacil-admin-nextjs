@@ -37,6 +37,7 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { showToast } from "@/lib/utils/toast"
 import { looksLikeIphoneProduct } from "@/lib/utils/iphone-seminovo-metadata"
+import { parseProductOffer } from "@/lib/products/product-offer"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -97,6 +98,7 @@ export default function ProductDetailPage() {
         }
       })()
     : null
+  const productOffer = parseProductOffer(metadata?.productOffer)
   const variantCount = product?.variants?.length ?? 0
   const totalVariantStock =
     product?.variants?.reduce((total, variant) => total + (variant.quantity || 0), 0) ?? 0
@@ -407,6 +409,19 @@ export default function ProductDetailPage() {
                           <span className="font-medium">{String(metadata.batteryHealthPercent)}%</span>
                         </div>
                       )}
+                    {productOffer?.enabled ? (
+                      <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/50">
+                        <span className="text-muted-foreground shrink-0">Oferta</span>
+                        <div className="text-right space-y-1">
+                          <span className="block font-medium text-orange-800">
+                            {productOffer.title}
+                          </span>
+                          <span className="block text-[11px] text-muted-foreground">
+                            {productOffer.items.join(" · ")}
+                          </span>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>

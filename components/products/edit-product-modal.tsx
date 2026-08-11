@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, Package, FileText, Layers, Puzzle } from "lucide-react"
+import { Loader2, Package, FileText, Layers, Puzzle, Tag, X as XIcon } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { RichTextEditor } from "../ui/rich-text-editor"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
@@ -41,6 +41,11 @@ import {
   formatCategoryLabel,
   sortCategoriesForSelect,
 } from "@/lib/categories/format-category-label"
+import {
+  parseProductOffer,
+  productOfferToMetadata,
+} from "@/lib/products/product-offer"
+import { Badge } from "@/components/ui/badge"
 
 interface EditProductModalProps {
   product: Product | null
@@ -74,7 +79,11 @@ export function EditProductModal({
     batteryHealthPercent: "",
     addOnProductIds: [] as string[],
     specifications: {} as ProductSpecifications,
+    offerEnabled: false,
+    offerTitle: "Pack de proteção",
+    offerItems: [] as string[],
   })
+  const [offerItemDraft, setOfferItemDraft] = useState("")
 
   const { data: categoriesData } = useQuery(GET_CATEGORY_LIST, {
     skip: !open,
@@ -117,6 +126,8 @@ export function EditProductModal({
         /* ignore */
       }
 
+      const offer = parseProductOffer(metadata?.productOffer)
+
       setFormData({
         title: product.title || "",
         summary: product.summary || "",
@@ -135,7 +146,11 @@ export function EditProductModal({
           ? metadata.addOnProductIds.filter((id): id is string => typeof id === "string" && id !== product.id)
           : [],
         specifications: parseSpecificationsFromMetadata(product.metadata),
+        offerEnabled: offer?.enabled === true,
+        offerTitle: offer?.title || "Pack de proteção",
+        offerItems: offer?.items ?? [],
       })
+      setOfferItemDraft("")
     }
   }, [product, open])
 
@@ -157,10 +172,37 @@ export function EditProductModal({
     return brands.find((b) => b.id === formData.brandId)?.name
   }, [brands, formData.brandId])
 
+  const addOfferItem = (raw: string) => {
+    const value = raw.trim()
+    if (!value) return
+    setFormData((prev) => {
+      if (prev.offerItems.some((item) => item.toLowerCase() === value.toLowerCase())) {
+        return prev
+      }
+      return { ...prev, offerItems: [...prev.offerItems, value] }
+    })
+    setOfferItemDraft("")
+  }
+
+  const removeOfferItem = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      offerItems: prev.offerItems.filter((item) => item !== value),
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!product) return
+
+    if (formData.offerEnabled && formData.offerItems.length === 0) {
+      showToast.error(
+        "Oferta incompleta",
+        "Adiciona pelo menos um item (ex.: Capa, Película) ou desativa a oferta.",
+      )
+      return
+    }
 
     const base: Record<string, unknown> = {}
     try {
@@ -191,6 +233,14 @@ export function EditProductModal({
     const specsField = specificationsToMetadataField(formData.specifications)
     if (specsField) base.specifications = specsField
     else delete base.specifications
+
+    const offerMeta = productOfferToMetadata({
+      enabled: formData.offerEnabled,
+      title: formData.offerTitle,
+      items: formData.offerItems,
+    })
+    if (offerMeta) base.productOffer = offerMeta
+    else delete base.productOffer
 
     const metadataJson = Object.keys(base).length > 0 ? JSON.stringify(base) : null
 
@@ -427,6 +477,105 @@ export function EditProductModal({
               brandName={selectedBrandName}
               disabled={loading}
             />
+
+            <FormSection icon={Tag} title="Oferta na loja" iconTone="bg-orange-50 text-orange-800">
+              <div className="flex items-start justify-between gap-3 rounded-md border border-border/70 bg-muted/15 px-3 py-2.5">
+                <div className="min-w-0">
+                  <Label htmlFor="edit-offer-enabled" className="text-xs font-medium cursor-pointer">
+                    Mostrar faixa de oferta
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                    Aparece no detalhe do produto (faixa laranja). Ex.: capa + película.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  id="edit-offer-enabled"
+                  role="switch"
+                  aria-checked={formData.offerEnabled}
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, offerEnabled: !prev.offerEnabled }))
+                  }
+                  disabled={loading}
+                  className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+                    formData.offerEnabled ? "bg-orange-500" : "bg-muted-foreground/30"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                      formData.offerEnabled ? "translate-x-[18px]" : "translate-x-0.5"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {formData.offerEnabled ? (
+                <div className="space-y-3">
+                  <Field
+                    label="Título da oferta"
+                    htmlFor="edit-offer-title"
+                    hint="Texto ao lado do rótulo «Oferta»."
+                  >
+                    <Input
+                      id="edit-offer-title"
+                      value={formData.offerTitle}
+                      onChange={(e) =>
+                        setFormData({ ...formData, offerTitle: e.target.value })
+                      }
+                      placeholder="Pack de proteção"
+                      disabled={loading}
+                      className="h-9"
+                    />
+                  </Field>
+
+                  <Field
+                    label="Itens incluídos"
+                    hint="Enter ou vírgula para adicionar. Ex.: Capa, Película."
+                  >
+                    <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-2 py-1.5 min-h-9">
+                      {formData.offerItems.map((item) => (
+                        <Badge
+                          key={item}
+                          variant="secondary"
+                          className="gap-1 px-2 py-0.5 text-[11px] font-medium"
+                        >
+                          {item}
+                          <button
+                            type="button"
+                            onClick={() => removeOfferItem(item)}
+                            disabled={loading}
+                            className="hover:text-destructive"
+                            aria-label={`Remover ${item}`}
+                          >
+                            <XIcon className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                      <Input
+                        value={offerItemDraft}
+                        onChange={(e) => setOfferItemDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === ",") {
+                            e.preventDefault()
+                            addOfferItem(offerItemDraft)
+                          }
+                        }}
+                        onBlur={() => {
+                          if (offerItemDraft.trim()) addOfferItem(offerItemDraft)
+                        }}
+                        placeholder={
+                          formData.offerItems.length === 0
+                            ? "Ex: Capa"
+                            : "Adicionar…"
+                        }
+                        disabled={loading}
+                        className="h-7 min-w-[120px] flex-1 border-0 bg-transparent px-1 shadow-none focus-visible:ring-0"
+                      />
+                    </div>
+                  </Field>
+                </div>
+              ) : null}
+            </FormSection>
 
             <FormSection icon={Puzzle} title="Produtos complementares" iconTone="bg-amber-50 text-amber-900">
               <Field
