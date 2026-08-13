@@ -77,6 +77,8 @@ export type MediaPickerDialogProps = {
   maxSelectable?: number
   /** Prefill group filter from product brand. */
   brandSlug?: string | null
+  /** Override initial folder (`__all__` = todas). */
+  initialGroup?: string
   /** URLs already in use — shown as selected / skipped where useful. */
   excludeUrls?: string[]
   onSelect: (urls: string[]) => void
@@ -90,12 +92,14 @@ export function MediaPickerDialog({
   multiple = true,
   maxSelectable = 12,
   brandSlug,
+  initialGroup,
   excludeUrls = [],
   onSelect,
   title = "Escolher da biblioteca",
   description = "Selecciona imagens já existentes na biblioteca de media.",
 }: MediaPickerDialogProps) {
-  const defaultGroup = mediaGroupFromBrandSlug(brandSlug)
+  const defaultGroup =
+    initialGroup || (brandSlug ? mediaGroupFromBrandSlug(brandSlug) : GROUP_ALL)
   const [page, setPage] = useState(0)
   const [groupFilter, setGroupFilter] = useState(defaultGroup || GROUP_ALL)
   const [groupOptions, setGroupOptions] = useState<string[]>([])
