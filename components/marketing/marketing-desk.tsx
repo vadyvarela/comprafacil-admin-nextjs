@@ -156,8 +156,18 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, format }),
       })
-      const data = (await res.json()) as { error?: string; url?: string; format?: string; prompt?: string }
-      if (!res.ok) throw new Error(data.error || "Falha a gerar")
+      const raw = await res.text()
+      let data: { error?: string; url?: string; format?: string; prompt?: string } = {}
+      try {
+        data = raw.trim() ? (JSON.parse(raw) as typeof data) : {}
+      } catch {
+        throw new Error(
+          raw.trim().startsWith("<!")
+            ? `A rota de imagens devolveu HTML (${res.status}). Confirma o deploy e MARKETING_AGENT_API_KEY.`
+            : `Resposta inválida ao gerar imagem (${res.status}).`,
+        )
+      }
+      if (!res.ok) throw new Error(data.error || `Falha a gerar (${res.status})`)
       if (data.url) {
         const next: MarketingImageRecord = {
           url: data.url,

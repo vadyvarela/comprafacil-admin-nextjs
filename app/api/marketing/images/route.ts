@@ -14,14 +14,44 @@ const FORMATS = {
 type FormatKey = keyof typeof FORMATS
 
 function llmConfig() {
-  const apiKey = process.env.MARKETING_AGENT_API_KEY
+  const apiKey = process.env.MARKETING_AGENT_API_KEY?.trim()
   if (!apiKey) {
     return { error: "Falta MARKETING_AGENT_API_KEY no servidor do backoffice." }
+  }
+  const baseUrl = (
+    process.env.MARKETING_AGENT_BASE_URL?.replace(/\/$/, "") || "https://api.openai.com/v1"
+  ).trim()
+  if (!baseUrl.includes("://")) {
+    return { error: "MARKETING_AGENT_BASE_URL inválida (ex. https://api.openai.com/v1)." }
   }
   return {
     apiKey,
     imageModel: process.env.MARKETING_IMAGE_MODEL?.trim() || "dall-e-3",
-    baseUrl: (process.env.MARKETING_AGENT_BASE_URL?.replace(/\/$/, "") || "https://api.openai.com/v1"),
+    baseUrl,
+  }
+}
+
+async function readJsonBody<T>(res: Response): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
+  const raw = await res.text()
+  const trimmed = raw.trim()
+  if (!trimmed) {
+    return { ok: false, error: `Resposta vazia (${res.status})` }
+  }
+  if (trimmed.startsWith("<!") || trimmed.startsWith("<html")) {
+    return {
+      ok: false,
+      error:
+        `A API de imagens devolveu HTML (${res.status}) em vez de JSON. ` +
+        `Confirma MARKETING_AGENT_API_KEY e MARKETING_AGENT_BASE_URL (deve ser https://api.openai.com/v1).`,
+    }
+  }
+  try {
+    return { ok: true, data: JSON.parse(trimmed) as T }
+  } catch {
+    return {
+      ok: false,
+      error: `Resposta inválida da API de imagens (${res.status}): ${trimmed.slice(0, 120)}`,
+    }
   }
 }
 
@@ -74,7 +104,18 @@ async function uploadToLibrary(file: Blob, filename: string) {
     body: outbound,
     signal: AbortSignal.timeout(120000),
   })
-  const data = (await response.json().catch(() => ({}))) as { url?: string; secureUrl?: string; error?: string }
+  const raw = await response.text()
+  if (!raw.trim() || raw.trim().startsWith("<!") || raw.trim().startsWith("<html")) {
+    throw new Error(
+      `Upload para a biblioteca falhou (${response.status}). Confirma GTW_URL e CMS_ACCESS_TOKEN.`,
+    )
+  }
+  let data: { url?: string; secureUrl?: string; error?: string } = {}
+  try {
+    data = JSON.parse(raw) as typeof data
+  } catch {
+    throw new Error(`Upload: resposta inválida do gateway (${response.status})`)
+  }
   if (!response.ok) {
     throw new Error(data.error || `Upload ${response.status}`)
   }
@@ -124,16 +165,21 @@ export async function POST(request: Request) {
         prompt: fullPrompt,
         size,
         n: 1,
+        response_format: "b64_json",
       }),
       signal: AbortSignal.timeout(80000),
     })
-    const json = (await gen.json()) as {
+    const parsed = await readJsonBody<{
       error?: { message?: string }
       data?: Array<{ url?: string; b64_json?: string }>
+    }>(gen)
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error }, { status: 502 })
     }
+    const json = parsed.data
     if (!gen.ok) {
       return NextResponse.json(
-        { error: json.error?.message || `Geração ${gen.status}` },
+        { error: json.error?.message || `Geração falhou (${gen.status})` },
         { status: 502 },
       )
     }
