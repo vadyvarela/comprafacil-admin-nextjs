@@ -1,0 +1,251 @@
+import { NextResponse } from "next/server"
+import { requireModuleWriteSession } from "@/lib/auth/requireRole"
+import {
+  appendMarketingMessage,
+  compactPulseText,
+  createMarketingProposal,
+  createMarketingThread,
+  getMarketingPulse,
+  listMarketingCampaigns,
+  searchMarketingProducts,
+} from "@/lib/actions/marketing"
+import { marketingSystemPrompt } from "@/lib/marketing/system-prompt"
+import { MARKETING_AGENT_TOOLS } from "@/lib/marketing/tools"
+import { runGraphQL } from "@/lib/actions/graphql"
+import { MARKETING_THREAD } from "@/lib/graphql/marketing/queries"
+import { GET_BANNERS } from "@/lib/graphql/banners/queries"
+
+export const maxDuration = 60
+
+type ChatBody = {
+  message?: string
+  threadId?: string | null
+}
+
+type OaiMessage = {
+  role: string
+  content?: string | null
+  tool_calls?: Array<{
+    id: string
+    type: string
+    function: { name: string; arguments: string }
+  }>
+}
+
+function llmConfig() {
+  const apiKey = process.env.MARKETING_AGENT_API_KEY
+  if (!apiKey) {
+    return { error: "Falta MARKETING_AGENT_API_KEY no servidor do backoffice." }
+  }
+  return {
+    apiKey,
+    model: process.env.MARKETING_AGENT_MODEL?.trim() || "gpt-4o-mini",
+    baseUrl: (process.env.MARKETING_AGENT_BASE_URL?.replace(/\/$/, "") || "https://api.openai.com/v1"),
+  }
+}
+
+async function chatCompletions(
+  cfg: { apiKey: string; model: string; baseUrl: string },
+  messages: OaiMessage[],
+) {
+  const response = await fetch(`${cfg.baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${cfg.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: cfg.model,
+      messages,
+      tools: MARKETING_AGENT_TOOLS,
+      tool_choice: "auto",
+      temperature: 0.4,
+    }),
+    signal: AbortSignal.timeout(45000),
+  })
+  const json = (await response.json()) as {
+    error?: { message?: string }
+    choices?: Array<{ message: OaiMessage; finish_reason?: string }>
+  }
+  if (!response.ok) {
+    throw new Error(json.error?.message || `LLM ${response.status}`)
+  }
+  const message = json.choices?.[0]?.message
+  if (!message) throw new Error("Resposta vazia do modelo")
+  return message
+}
+
+async function loadHistory(threadId: string): Promise<OaiMessage[]> {
+  const result = await runGraphQL<{
+    marketingThread: {
+      messages: Array<{ role: string; content: string }>
+    } | null
+  }>(MARKETING_THREAD, { id: threadId })
+  const messages = result.data?.marketingThread?.messages ?? []
+  return messages
+    .filter((m) => m.role === "user" || m.role === "assistant")
+    .slice(-16)
+    .map((m) => ({ role: m.role, content: m.content }))
+}
+
+async function executeTool(
+  name: string,
+  args: Record<string, unknown>,
+  threadId: string,
+): Promise<string> {
+  if (name === "search_products") {
+    const query = String(args.query ?? "")
+    const products = await searchMarketingProducts(query, 8)
+    return JSON.stringify(
+      products.map((p) => ({
+        id: p.id,
+        title: p.title,
+        discount: p.discount ?? 0,
+      })),
+    )
+  }
+
+  if (name === "list_banners") {
+    const banners = await runGraphQL<{
+      banners: Array<{ id: string; title: string; position?: string | null; status?: { code?: string } }>
+    }>(GET_BANNERS)
+    return JSON.stringify(
+      (banners.data?.banners ?? []).slice(0, 12).map((b) => ({
+        id: b.id,
+        title: b.title,
+        position: b.position,
+        status: b.status?.code,
+      })),
+    )
+  }
+
+  if (name === "list_campaigns") {
+    const campaigns = await listMarketingCampaigns()
+    const status = typeof args.status === "string" ? args.status.trim() : ""
+    const rows = status ? campaigns.filter((c) => c.status === status) : campaigns
+    return JSON.stringify(
+      rows.slice(0, 20).map((c) => ({
+        id: c.id,
+        name: c.name,
+        status: c.status,
+        objective: c.objective,
+        startDate: c.startDate,
+        endDate: c.endDate,
+        channels: c.channels,
+        destinationType: c.destinationType,
+        destinationHref: c.destinationHref,
+        slug: c.slug,
+        pageTheme: c.pageTheme,
+        siteTopEnabled: c.siteTopEnabled,
+        headline: c.headline,
+      })),
+    )
+  }
+
+  const typeMap: Record<string, string> = {
+    propose_campaign: "campaign",
+    attach_to_campaign: "campaign_attach",
+    propose_weekly_offer: "weekly_offer",
+    propose_social_pack: "social_pack",
+    propose_banner: "banner",
+    propose_coupon: "coupon",
+    propose_product_merch: "product_merch",
+    propose_image_prompt: "image_prompt",
+  }
+  const type = typeMap[name]
+  if (!type) return JSON.stringify({ error: `ferramenta desconhecida: ${name}` })
+
+  const title =
+    String(args.headline ?? args.name ?? args.title ?? args.prompt ?? "Proposta").slice(0, 240)
+  const campaignId = typeof args.campaignId === "string" ? args.campaignId : null
+
+  const proposal = await createMarketingProposal({
+    type,
+    title,
+    payload: args,
+    threadId,
+    campaignId,
+  })
+  return JSON.stringify({ ok: true, proposalId: proposal.id, type, title, campaignId: proposal.campaignId })
+}
+
+export async function POST(request: Request) {
+  try {
+    const { error } = await requireModuleWriteSession("marketing")
+    if (error) return error
+
+    const cfg = llmConfig()
+    if ("error" in cfg) {
+      return NextResponse.json({ error: cfg.error }, { status: 503 })
+    }
+
+    const body = (await request.json().catch(() => null)) as ChatBody | null
+    const message = body?.message?.trim()
+    if (!message) {
+      return NextResponse.json({ error: "Escreve uma instrução." }, { status: 400 })
+    }
+
+    const pulse = await getMarketingPulse()
+    let threadId = body?.threadId?.trim() || ""
+    if (!threadId) {
+      const thread = await createMarketingThread(message.slice(0, 80))
+      threadId = thread.id
+    }
+
+    await appendMarketingMessage({ threadId, role: "user", content: message })
+
+    const history = await loadHistory(threadId)
+    const messages: OaiMessage[] = [
+      {
+        role: "system",
+        content: marketingSystemPrompt({
+          siteName: pulse.siteName,
+          compactContext: compactPulseText(pulse),
+        }),
+      },
+      ...history,
+    ]
+
+    let assistantText = ""
+    for (let step = 0; step < 6; step += 1) {
+      const reply = await chatCompletions(cfg, messages)
+      if (reply.tool_calls?.length) {
+        messages.push(reply)
+        for (const call of reply.tool_calls) {
+          let args: Record<string, unknown> = {}
+          try {
+            args = JSON.parse(call.function.arguments || "{}") as Record<string, unknown>
+          } catch {
+            args = {}
+          }
+          const toolResult = await executeTool(call.function.name, args, threadId)
+          messages.push({
+            role: "tool",
+            content: toolResult,
+            tool_call_id: call.id,
+          } as OaiMessage & { tool_call_id: string })
+        }
+        continue
+      }
+      assistantText = (reply.content || "").trim()
+      break
+    }
+
+    if (!assistantText) {
+      assistantText = "Propostas criadas. Revisa a caixa Aplicar à direita."
+    }
+
+    await appendMarketingMessage({ threadId, role: "assistant", content: assistantText })
+
+    const refreshed = await getMarketingPulse()
+    return NextResponse.json({
+      threadId,
+      reply: assistantText,
+      proposals: refreshed.proposals,
+      desk: refreshed.desk,
+    })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Falha no agente"
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}

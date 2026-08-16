@@ -15,6 +15,7 @@ const STORE_SETTINGS_FIELDS = `
   facebookUrl
   instagramUrl
   whatsappNumber
+  metaPixelId
   colorBackground
   colorSurface
   colorPaper
@@ -51,6 +52,7 @@ export const UPDATE_STORE_SETTINGS = gql`
     $facebookUrl: String
     $instagramUrl: String
     $whatsappNumber: String
+    $metaPixelId: String
     $popularSearchQueries: [String!]
     $productPageTrustBadges: String
     $productPageLayout: String
@@ -70,6 +72,7 @@ export const UPDATE_STORE_SETTINGS = gql`
       facebookUrl: $facebookUrl
       instagramUrl: $instagramUrl
       whatsappNumber: $whatsappNumber
+      metaPixelId: $metaPixelId
       popularSearchQueries: $popularSearchQueries
       productPageTrustBadges: $productPageTrustBadges
       productPageLayout: $productPageLayout

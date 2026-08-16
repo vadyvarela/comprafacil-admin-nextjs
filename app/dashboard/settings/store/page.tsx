@@ -49,6 +49,7 @@ type StoreDraft = {
   facebookUrl: string
   instagramUrl: string
   whatsappNumber: string
+  metaPixelId: string
   popularSearchQueriesText: string
   productPageTrustBadges: ProductPageTrustBadges
   productPageLayout: ProductPageLayout
@@ -89,6 +90,7 @@ function rowToDraft(row: StoreSettingsGql): StoreDraft {
     facebookUrl: row.facebookUrl?.trim() ?? "",
     instagramUrl: row.instagramUrl?.trim() ?? "",
     whatsappNumber: row.whatsappNumber?.trim() ?? "",
+    metaPixelId: row.metaPixelId?.trim() ?? "",
     popularSearchQueriesText: queriesToText(row.popularSearchQueries),
     productPageTrustBadges: parseProductPageTrustBadges(row.productPageTrustBadges),
     productPageLayout: parseProductPageLayout(row.productPageLayout),
@@ -144,6 +146,7 @@ export default function StoreSettingsPage() {
           facebookUrl: values.facebookUrl.trim() || null,
           instagramUrl: values.instagramUrl.trim() || null,
           whatsappNumber: values.whatsappNumber.trim() || null,
+          metaPixelId: values.metaPixelId.trim() || null,
           popularSearchQueries: textToQueries(values.popularSearchQueriesText),
           productPageTrustBadges: serializeProductPageTrustBadges(values.productPageTrustBadges),
           productPageLayout: serializeProductPageLayout(values.productPageLayout),
@@ -350,6 +353,19 @@ export default function StoreSettingsPage() {
                   />
                   <p className="text-[11px] text-muted-foreground">
                     Número com indicativo (só dígitos e +). A loja gera o link wa.me.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="meta-pixel">Meta Pixel ID</Label>
+                  <Input
+                    id="meta-pixel"
+                    value={values.metaPixelId}
+                    onChange={(e) => patch({ metaPixelId: e.target.value })}
+                    placeholder="123456789012345"
+                    inputMode="numeric"
+                  />
+                  <p className="text-[11px] text-muted-foreground">
+                    ID numérico do pixel (Events Manager → Pixel). Usado nos anúncios Facebook/Instagram.
                   </p>
                 </div>
               </CardContent>

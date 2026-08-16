@@ -16,6 +16,7 @@ export interface StoreSettingsGql {
   facebookUrl?: string | null
   instagramUrl?: string | null
   whatsappNumber?: string | null
+  metaPixelId?: string | null
   colorBackground?: string | null
   colorSurface?: string | null
   colorPaper?: string | null

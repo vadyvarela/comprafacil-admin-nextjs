@@ -16,6 +16,7 @@ const STORE_SETTINGS_FIELDS = `
   facebookUrl
   instagramUrl
   whatsappNumber
+  metaPixelId
   colorBackground
   colorSurface
   colorPaper
