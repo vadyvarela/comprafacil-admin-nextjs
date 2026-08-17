@@ -20,6 +20,7 @@ export const maxDuration = 60
 type ChatBody = {
   message?: string
   threadId?: string | null
+  intent?: "desk" | "campaign"
 }
 
 type OaiMessage = {
@@ -100,6 +101,7 @@ async function executeTool(
       products.map((p) => ({
         id: p.id,
         title: p.title,
+        image: p.image ?? null,
         discount: p.discount ?? 0,
       })),
     )
@@ -201,6 +203,7 @@ export async function POST(request: Request) {
         content: marketingSystemPrompt({
           siteName: pulse.siteName,
           compactContext: compactPulseText(pulse),
+          intent: body?.intent === "campaign" ? "campaign" : "desk",
         }),
       },
       ...history,

@@ -25,4 +25,25 @@ export const MARKETING_PLAYBOOKS = [
   },
 ] as const
 
+export const MARKETING_CAMPAIGN_PLAYBOOKS = [
+  {
+    id: "salary-week",
+    label: "Semana de salário",
+    prompt:
+      "Cria a campanha da semana de salário em Cabo Verde (fim do mês). search_products no catálogo, escolhe 1–3 que vendam agora. propose_campaign completo: nome, datas desta semana, headline, hook, facebookPost que venda (preço CVE se souberes, CTA, 3–5 hashtags), instagramCaption (8–12 hashtags), whatsappText sem hashtags, productIds reais, destinationType campaign. propose_image_prompt Feed. Não apliques.",
+  },
+  {
+    id: "slow-stock",
+    label: "Esgotar stock",
+    prompt:
+      "Campanha desta semana para esgotar stock parado. search_products, escolhe 1–3. propose_campaign completo com copy que venda e hashtags + productIds. propose_image_prompt Feed. Não apliques.",
+  },
+  {
+    id: "launch",
+    label: "Lançar produto",
+    prompt:
+      "Campanha de lançamento. search_products (mais recente ou featured), 1 produto. propose_campaign desta semana com pack de publicação que venda + productIds. propose_image_prompt Feed. Não apliques.",
+  },
+] as const
+
 export type MarketingPlaybookId = (typeof MARKETING_PLAYBOOKS)[number]["id"]

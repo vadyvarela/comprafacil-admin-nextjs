@@ -72,7 +72,12 @@ export async function POST(
 
     const result = await applyMarketingProposal(proposal)
     await markProposalApplied(id, result.note, result.campaignId)
-    return NextResponse.json({ ok: true, status: "applied", note: result.note })
+    return NextResponse.json({
+      ok: true,
+      status: "applied",
+      note: result.note,
+      campaignId: result.campaignId ?? null,
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Falha ao aplicar"
     return NextResponse.json({ error: message }, { status: 500 })
