@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 const TABS = [
   { href: "/dashboard/marketing", label: "Hoje", exact: true },
   { href: "/dashboard/marketing/campaigns", label: "Campanhas", exact: false },
-  { href: "/dashboard/marketing/content", label: "Posts", exact: false },
 ]
 
 export function MarketingSubnav() {

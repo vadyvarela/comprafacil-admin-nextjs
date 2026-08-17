@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState, useTransition, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Check, Copy, ExternalLink, ImageIcon, Loader2, PanelRight, Send, X } from "lucide-react"
+import { Check, ExternalLink, ImageIcon, Loader2, PanelRight, Send, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,7 +18,7 @@ import type { MarketingDesk, MarketingImageRecord, MarketingProposal, MarketingP
 import { cn } from "@/lib/utils"
 
 type FormatKey = "feed" | "stories" | "banner"
-type RailTab = "aprovar" | "copiar" | "imagem"
+type RailTab = "publicar" | "aprovar"
 
 const FORMATS: { id: FormatKey; label: string }[] = [
   { id: "feed", label: "Feed" },
@@ -40,7 +40,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
   const [busyAgent, setBusyAgent] = useState(false)
   const [busyImage, setBusyImage] = useState(false)
   const [applyingId, setApplyingId] = useState<string | null>(null)
-  const [railTab, setRailTab] = useState<RailTab>("aprovar")
+  const [railTab, setRailTab] = useState<RailTab>("publicar")
   const [railOpen, setRailOpen] = useState(false)
   const [pending, startTransition] = useTransition()
   const endRef = useRef<HTMLDivElement>(null)
@@ -53,9 +53,30 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
 
   const offer = desk.weeklyOffer
   const headline = live?.headline || live?.name || offer?.headline
-  const facebookPost = live?.facebookPost || offer?.facebookPost || ""
-  const instagramCaption = live?.instagramCaption || offer?.instagramCaption || ""
-  const whatsappText = live?.whatsappText || offer?.whatsappText || ""
+  const pendingProposals = useMemo(
+    () => proposals.filter((p) => p.status === "pending"),
+    [proposals],
+  )
+  const pendingCopy = pendingProposals.find(
+    (p) =>
+      typeof p.payload.facebookPost === "string" || typeof p.payload.instagramCaption === "string",
+  )
+  const facebookPost =
+    (typeof pendingCopy?.payload.facebookPost === "string" && pendingCopy.payload.facebookPost) ||
+    live?.facebookPost ||
+    offer?.facebookPost ||
+    ""
+  const instagramCaption =
+    (typeof pendingCopy?.payload.instagramCaption === "string" &&
+      pendingCopy.payload.instagramCaption) ||
+    live?.instagramCaption ||
+    offer?.instagramCaption ||
+    ""
+  const whatsappText =
+    (typeof pendingCopy?.payload.whatsappText === "string" && pendingCopy.payload.whatsappText) ||
+    live?.whatsappText ||
+    offer?.whatsappText ||
+    ""
   const waOfferHref = whatsappHref(
     pulse.whatsappNumber,
     whatsappText || `Olá, vi a oferta: ${headline ?? pulse.siteName}`,
@@ -63,11 +84,6 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
   const latestImage =
     desk.latestImages[0] ||
     (live?.imageUrls?.[0] ? { url: live.imageUrls[0], format: "feed", prompt: "" } : null)
-
-  const pendingProposals = useMemo(
-    () => proposals.filter((p) => p.status === "pending"),
-    [proposals],
-  )
 
   async function copyText(label: string, text: string) {
     if (!text.trim()) {
@@ -103,12 +119,22 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
       if (data.proposals) setProposals(data.proposals)
       if (data.desk) setDesk(data.desk)
       const lastPrompt = data.proposals?.find((p) => p.type === "image_prompt" && p.status === "pending")
+      const lastPack = data.proposals?.find(
+        (p) =>
+          p.status === "pending" &&
+          (p.type === "social_pack" ||
+            (typeof p.payload.facebookPost === "string" && p.payload.facebookPost.trim())),
+      )
       if (lastPrompt && typeof lastPrompt.payload.prompt === "string") {
         setPrompt(lastPrompt.payload.prompt)
         if (lastPrompt.payload.format === "stories" || lastPrompt.payload.format === "banner") {
           setFormat(lastPrompt.payload.format)
+        } else {
+          setFormat("feed")
         }
-        setRailTab("imagem")
+      }
+      if (lastPack || lastPrompt) {
+        setRailTab("publicar")
       } else if (data.proposals?.some((p) => p.status === "pending")) {
         setRailTab("aprovar")
       }
@@ -190,6 +216,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
       campaignUrl={pulse.campaignUrl}
       waOfferHref={waOfferHref}
       onCopy={copyText}
+      hasDraftCopy={Boolean(pendingCopy)}
       latestImage={latestImage}
       format={format}
       onFormat={setFormat}
@@ -238,7 +265,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
               onClick={() => setRailOpen(true)}
             >
               <PanelRight className="h-3.5 w-3.5" />
-              {pendingProposals.length > 0 ? pendingProposals.length : "Painel"}
+              {pendingProposals.length > 0 ? pendingProposals.length : "Publicar"}
             </button>
           </div>
         </header>
@@ -246,11 +273,19 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
         <div className="min-h-0 flex-1 overflow-y-auto">
           {chat.length === 0 && !busyAgent ? (
             <div className="mx-auto flex max-w-lg flex-col gap-1 px-4 py-6">
-              <p className="text-[13px] font-medium">O que queres vender?</p>
-              <p className="mb-2 text-[12px] text-muted-foreground">
-                O agente sugere. Tu aprovas no painel e copias para o Facebook.
+              <p className="text-[13px] font-medium">Publicação pronta a vender</p>
+              <p className="mb-2 text-[12px] leading-relaxed text-muted-foreground">
+                O agente escreve o post, as hashtags e o prompt da imagem. Tu copias e colas no Facebook ou Instagram.
               </p>
-              {MARKETING_PLAYBOOKS.slice(0, 4).map((book) => (
+              <button
+                type="button"
+                disabled={busyAgent}
+                onClick={() => void sendAgent(MARKETING_PLAYBOOKS[0].prompt)}
+                className="rounded-md bg-foreground px-3 py-2 text-left text-[13px] font-medium text-background hover:opacity-90 disabled:opacity-50"
+              >
+                Gerar publicação
+              </button>
+              {MARKETING_PLAYBOOKS.slice(1).map((book) => (
                 <button
                   key={book.id}
                   type="button"
@@ -293,23 +328,35 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
         </div>
 
         <form
-          className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-3 py-2"
+          className="flex shrink-0 flex-col gap-1.5 border-t border-border bg-background px-3 py-2"
           onSubmit={(e) => {
             e.preventDefault()
             void sendAgent(draft)
           }}
         >
-          <Input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="Ex.: esgota os Samsung esta semana"
-            className="h-9 text-[13px]"
-            disabled={busyAgent}
-            autoComplete="off"
-          />
-          <Button type="submit" size="sm" className="h-9 px-3" disabled={busyAgent || !draft.trim()}>
-            <Send className="h-3.5 w-3.5" />
-          </Button>
+          {chat.length > 0 ? (
+            <button
+              type="button"
+              disabled={busyAgent}
+              onClick={() => void sendAgent(MARKETING_PLAYBOOKS[0].prompt)}
+              className="self-start rounded border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-50"
+            >
+              {MARKETING_PLAYBOOKS[0].label}
+            </button>
+          ) : null}
+          <div className="flex items-center gap-2">
+            <Input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Ex.: publicação que venda o Samsung A16"
+              className="h-9 text-[13px]"
+              disabled={busyAgent}
+              autoComplete="off"
+            />
+            <Button type="submit" size="sm" className="h-9 px-3" disabled={busyAgent || !draft.trim()}>
+              <Send className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </form>
       </section>
 
@@ -342,6 +389,7 @@ function DeskRail({
   campaignUrl,
   waOfferHref,
   onCopy,
+  hasDraftCopy,
   latestImage,
   format,
   onFormat,
@@ -362,6 +410,7 @@ function DeskRail({
   campaignUrl: string
   waOfferHref: string | null
   onCopy: (label: string, text: string) => void
+  hasDraftCopy: boolean
   latestImage: { url: string; format: string; prompt: string } | null
   format: FormatKey
   onFormat: (format: FormatKey) => void
@@ -371,9 +420,8 @@ function DeskRail({
   onGenerate: () => void
 }) {
   const tabs: { id: RailTab; label: string; count?: number }[] = [
+    { id: "publicar", label: "Publicar" },
     { id: "aprovar", label: "Aprovar", count: pendingProposals.length },
-    { id: "copiar", label: "Copiar" },
-    { id: "imagem", label: "Imagem" },
   ]
 
   return (
@@ -400,10 +448,92 @@ function DeskRail({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
+        {tab === "publicar" ? (
+          <div className="space-y-3">
+            <p className="text-[12px] leading-relaxed text-muted-foreground">
+              {hasDraftCopy
+                ? "Pack novo. Copia o texto, gera a imagem se faltar, cola no Facebook ou Instagram."
+                : "Copia o texto e a imagem. A loja não publica sozinha."}
+            </p>
+            {latestImage ? (
+              <a
+                href={latestImage.url}
+                target="_blank"
+                rel="noreferrer"
+                className="block overflow-hidden rounded-md border border-border"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={latestImage.url} alt="" className="aspect-square w-full object-cover" />
+              </a>
+            ) : (
+              <div className="rounded-md border border-dashed border-border px-3 py-4">
+                <p className="text-[12px] text-muted-foreground">Sem imagem ainda.</p>
+                <div className="mt-2 flex gap-1">
+                  {FORMATS.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => onFormat(item.id)}
+                      className={cn(
+                        "h-6 rounded border px-2 text-[11px]",
+                        format === item.id
+                          ? "border-foreground bg-foreground text-background"
+                          : "border-border text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+                <Textarea
+                  value={prompt}
+                  onChange={(e) => onPrompt(e.target.value)}
+                  placeholder="O agente preenche o prompt da imagem"
+                  className="mt-2 min-h-16 field-sizing-fixed text-[12px]"
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  className="mt-2 h-8 w-full"
+                  disabled={busyImage || !prompt.trim()}
+                  onClick={onGenerate}
+                >
+                  {busyImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
+                  {busyImage ? "A gerar…" : "Gerar imagem"}
+                </Button>
+              </div>
+            )}
+            <ul className="divide-y divide-border rounded-md border border-border">
+              <CopyRow label="Facebook" text={facebookPost} onCopy={() => onCopy("Facebook", facebookPost)} />
+              <CopyRow label="Instagram" text={instagramCaption} onCopy={() => onCopy("Instagram", instagramCaption)} />
+              <CopyRow
+                label="WhatsApp"
+                text={whatsappText}
+                onCopy={() => onCopy("WhatsApp", whatsappText)}
+                href={waOfferHref}
+              />
+              <CopyRow label="Link da loja" text={campaignUrl} onCopy={() => onCopy("Link", campaignUrl)} mono />
+            </ul>
+            {latestImage ? (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 w-full text-[12px]"
+                disabled={busyImage || !prompt.trim()}
+                onClick={onGenerate}
+              >
+                {busyImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
+                Nova imagem
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+
         {tab === "aprovar" ? (
           pendingProposals.length === 0 ? (
             <p className="text-[12px] leading-relaxed text-muted-foreground">
-              Nada à espera. Escreve no chat o que queres vender.
+              Nada à espera. Gera uma publicação no chat.
             </p>
           ) : (
             <ul className="space-y-2">
@@ -420,7 +550,7 @@ function DeskRail({
                       onClick={() => onProposal(p.id, "apply")}
                     >
                       {applyingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                      Meter na loja
+                      Guardar
                     </Button>
                     <Button
                       type="button"
@@ -439,71 +569,6 @@ function DeskRail({
             </ul>
           )
         ) : null}
-
-        {tab === "copiar" ? (
-          <ul className="divide-y divide-border rounded-md border border-border">
-            <CopyRow label="Facebook" text={facebookPost} onCopy={() => onCopy("Facebook", facebookPost)} />
-            <CopyRow label="Instagram" text={instagramCaption} onCopy={() => onCopy("Instagram", instagramCaption)} />
-            <CopyRow
-              label="WhatsApp"
-              text={whatsappText}
-              onCopy={() => onCopy("WhatsApp", whatsappText)}
-              href={waOfferHref}
-            />
-            <CopyRow label="Link" text={campaignUrl} onCopy={() => onCopy("Link", campaignUrl)} mono />
-          </ul>
-        ) : null}
-
-        {tab === "imagem" ? (
-          <div>
-            {latestImage ? (
-              <a
-                href={latestImage.url}
-                target="_blank"
-                rel="noreferrer"
-                className="block overflow-hidden rounded-md border border-border"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={latestImage.url} alt="" className="aspect-square w-full object-cover" />
-              </a>
-            ) : (
-              <p className="text-[12px] text-muted-foreground">Ainda sem imagem. O agente pode sugerir o prompt.</p>
-            )}
-            <div className="mt-2 flex gap-1">
-              {FORMATS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => onFormat(item.id)}
-                  className={cn(
-                    "h-6 rounded border px-2 text-[11px]",
-                    format === item.id
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-            <Textarea
-              value={prompt}
-              onChange={(e) => onPrompt(e.target.value)}
-              placeholder="Prompt — o agente preenche"
-              className="mt-2 min-h-20 field-sizing-fixed text-[12px]"
-            />
-            <Button
-              type="button"
-              size="sm"
-              className="mt-2 h-8 w-full"
-              disabled={busyImage || !prompt.trim()}
-              onClick={onGenerate}
-            >
-              {busyImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
-              {busyImage ? "A gerar…" : "Gerar"}
-            </Button>
-          </div>
-        ) : null}
       </div>
     </div>
   )
@@ -514,7 +579,7 @@ function labelForType(type: string) {
     campaign: "Campanha",
     campaign_attach: "Ligar à campanha",
     weekly_offer: "Oferta",
-    social_pack: "Textos redes",
+    social_pack: "Publicação FB/IG",
     banner: "Banner",
     coupon: "Cupão",
     product_merch: "Produto",
@@ -540,7 +605,7 @@ function CopyRow({
     <li className="flex items-start gap-2 px-2.5 py-2">
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
-        <p className={cn("mt-0.5 line-clamp-2 text-[12px] leading-snug", mono && "font-mono")}>
+        <p className={cn("mt-0.5 whitespace-pre-wrap text-[12px] leading-snug", mono && "font-mono")}>
           {text.trim() || "—"}
         </p>
         {href ? (
@@ -549,8 +614,12 @@ function CopyRow({
           </a>
         ) : null}
       </div>
-      <button type="button" onClick={onCopy} className="mt-0.5 text-muted-foreground hover:text-foreground" aria-label={`Copiar ${label}`}>
-        <Copy className="h-3.5 w-3.5" />
+      <button
+        type="button"
+        onClick={onCopy}
+        className="mt-0.5 shrink-0 rounded border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground"
+      >
+        Copiar
       </button>
     </li>
   )

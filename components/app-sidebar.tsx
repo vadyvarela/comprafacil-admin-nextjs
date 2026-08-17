@@ -17,7 +17,6 @@ import {
   BarChart3,
   Settings,
   Megaphone,
-  FileText,
   CalendarRange,
 } from "lucide-react"
 
@@ -69,7 +68,6 @@ const NAV = [
     items: [
       { title: "Secretária", url: "/dashboard/marketing", icon: Megaphone, exact: true },
       { title: "Campanhas", url: "/dashboard/marketing/campaigns", icon: CalendarRange, exact: false },
-      { title: "Conteúdo", url: "/dashboard/marketing/content", icon: FileText, exact: false },
       { title: "Cupons", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
       { title: "Banners", url: "/dashboard/banners", icon: ImageIcon, exact: false },
       { title: "Biblioteca", url: "/dashboard/media", icon: Images, exact: false },

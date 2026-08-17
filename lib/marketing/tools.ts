@@ -46,8 +46,16 @@ export const MARKETING_AGENT_TOOLS = [
           brief: { type: "string" },
           headline: { type: "string" },
           hook: { type: "string" },
-          facebookPost: { type: "string" },
-          instagramCaption: { type: "string" },
+          facebookPost: {
+            type: "string",
+            description:
+              "Post Facebook pronto a colar: 3–6 frases + CTA + 3 a 5 hashtags no fim (produto, CV, oferta).",
+          },
+          instagramCaption: {
+            type: "string",
+            description:
+              "Caption Instagram pronta a colar: gancho, corpo, CTA, linha em branco, 8 a 12 hashtags.",
+          },
           whatsappText: { type: "string" },
           productIds: { type: "array", items: { type: "string" } },
           imageUrls: { type: "array", items: { type: "string" } },
@@ -113,9 +121,17 @@ export const MARKETING_AGENT_TOOLS = [
           hook: { type: "string" },
           productIds: { type: "array", items: { type: "string" } },
           productLabel: { type: "string" },
-          facebookPost: { type: "string" },
-          instagramCaption: { type: "string" },
-          whatsappText: { type: "string" },
+          facebookPost: {
+            type: "string",
+            description:
+              "Post Facebook pronto a colar: 3–6 frases + CTA + 3 a 5 hashtags no fim.",
+          },
+          instagramCaption: {
+            type: "string",
+            description:
+              "Caption Instagram: gancho, corpo, CTA, linha em branco, 8 a 12 hashtags.",
+          },
+          whatsappText: { type: "string", description: "Mensagem WhatsApp. Sem hashtags." },
           endsAt: { type: "string", description: "Data ISO opcional" },
           campaignId: { type: "string" },
         },
@@ -127,13 +143,22 @@ export const MARKETING_AGENT_TOOLS = [
     type: "function" as const,
     function: {
       name: "propose_social_pack",
-      description: "Propor textos para Facebook e Instagram (e WhatsApp de fecho).",
+      description:
+        "Propor um pack de publicação que vende: post Facebook, caption Instagram e WhatsApp, prontos a colar. Sempre com preço CVE se existir no contexto, CTA e hashtags.",
       parameters: {
         type: "object",
         properties: {
-          facebookPost: { type: "string" },
-          instagramCaption: { type: "string" },
-          whatsappText: { type: "string" },
+          facebookPost: {
+            type: "string",
+            description:
+              "Post Facebook pronto a colar: 3–6 frases + CTA + 3 a 5 hashtags no fim.",
+          },
+          instagramCaption: {
+            type: "string",
+            description:
+              "Caption Instagram: gancho, corpo, CTA, linha em branco, 8 a 12 hashtags.",
+          },
+          whatsappText: { type: "string", description: "Mensagem WhatsApp. Sem hashtags." },
           campaignId: { type: "string" },
         },
         required: ["facebookPost", "instagramCaption"],
