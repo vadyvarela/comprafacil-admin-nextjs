@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 import { recordMarketingImage } from "@/lib/actions/marketing"
+import { getStorefrontOrigin } from "@/lib/marketing/storefront"
 import { validateImageBlob } from "@/lib/security/upload-validation"
 
 export const maxDuration = 90
@@ -128,6 +129,39 @@ function requireGtw() {
   return { gtwUrl, cmsAccessToken }
 }
 
+function storefrontDisplayUrl() {
+  const origin = getStorefrontOrigin()
+  if (!origin) return null
+  try {
+    return new URL(origin).host.replace(/^www\./, "")
+  } catch {
+    return origin.replace(/^https?:\/\//, "").replace(/\/$/, "")
+  }
+}
+
+function mediaUrlFromGateway(payload: unknown): string | null {
+  if (!payload || typeof payload !== "object") return null
+  const root = payload as Record<string, unknown>
+  const nested =
+    root.data && typeof root.data === "object" ? (root.data as Record<string, unknown>) : null
+  const candidates = [nested?.url, nested?.imageUrl, nested?.secureUrl, root.url, root.imageUrl, root.secureUrl]
+  for (const value of candidates) {
+    if (typeof value === "string" && /^https?:\/\//i.test(value.trim())) return value.trim()
+  }
+  return null
+}
+
+function gatewayErrorMessage(payload: unknown, status: number): string {
+  if (!payload || typeof payload !== "object") return `Upload ${status}`
+  const root = payload as Record<string, unknown>
+  const nested =
+    root.data && typeof root.data === "object" ? (root.data as Record<string, unknown>) : null
+  const msg = [nested?.uiMessage, nested?.technicalMessage, root.error, nested?.error].find(
+    (value) => typeof value === "string" && value.trim(),
+  )
+  return typeof msg === "string" ? msg : `Upload ${status}`
+}
+
 async function uploadToLibrary(file: Blob, filename: string) {
   const cfg = requireGtw()
   if ("error" in cfg) throw new Error(cfg.error)
@@ -147,16 +181,16 @@ async function uploadToLibrary(file: Blob, filename: string) {
       `Upload para a biblioteca falhou (${response.status}). Confirma GTW_URL e CMS_ACCESS_TOKEN.`,
     )
   }
-  let data: { url?: string; secureUrl?: string; error?: string } = {}
+  let data: unknown = {}
   try {
-    data = JSON.parse(raw) as typeof data
+    data = JSON.parse(raw) as unknown
   } catch {
     throw new Error(`Upload: resposta inválida do gateway (${response.status})`)
   }
   if (!response.ok) {
-    throw new Error(data.error || `Upload ${response.status}`)
+    throw new Error(gatewayErrorMessage(data, response.status))
   }
-  const url = data.url || data.secureUrl
+  const url = mediaUrlFromGateway(data)
   if (!url) throw new Error("A biblioteca não devolveu URL")
   return url
 }
@@ -248,10 +282,15 @@ export async function POST(request: Request) {
     }
 
     const size = FORMATS[format].size
+    const siteUrl = storefrontDisplayUrl()
     const fullPrompt = [
       prompt,
       "Professional retail campaign visual for a Cape Verde electronics store.",
-      "Clean composition, commercial photography style, no fake brand logos, no watermark.",
+      "Brand colors must dominate: primary blue #2563EB, dark blue #1D4ED8, light blue #3B82F6, on white or slate backgrounds. Use these blues on banners, lighting, buttons and highlights. No unrelated neon palettes.",
+      siteUrl
+        ? `Always include a clean bottom footer strip with the store URL written exactly as "${siteUrl}", sharp high-contrast sans-serif, correctly spelled, no extra characters.`
+        : "Always include a clean bottom footer strip with the store website URL, sharp and readable.",
+      "Clean commercial photography composition. No fake brand logos. No extra watermarks besides the store URL footer.",
     ].join(" ")
 
     const generated = await generateWithOpenAI(cfg, fullPrompt, size)
