@@ -30,7 +30,7 @@ export default async function MarketingCampaignsPage() {
       <PageToolbar
         icon={CalendarRange}
         title="Campanhas"
-        subtitle="O que está live esta semana — loja, Facebook e Instagram no mesmo sítio"
+        subtitle="O que está na loja esta semana"
       >
         <Button asChild size="sm" className="h-8 text-xs gap-1.5">
           <Link href="/dashboard/marketing/campaigns/new">

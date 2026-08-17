@@ -3,30 +3,18 @@
 import { useMemo, useRef, useState, useTransition, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import {
-  ArrowDownRight,
-  ArrowUpRight,
-  Check,
-  Copy,
-  ImageIcon,
-  Loader2,
-  Send,
-  X,
-} from "lucide-react"
+import { Check, Copy, ExternalLink, ImageIcon, Loader2, Send, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { showToast } from "@/lib/utils/toast"
-import { formatCurrency } from "@/lib/utils/currency"
 import { MARKETING_PLAYBOOKS } from "@/lib/marketing/playbooks"
-import { formatWhatsappDisplay, whatsappHref } from "@/lib/marketing/whatsapp"
+import { whatsappHref } from "@/lib/marketing/whatsapp"
 import {
   campaignStatusClass,
   campaignStatusLabel,
-  formatCampaignRange,
 } from "@/lib/marketing/campaigns"
-import { buildMarketingAdsBrief } from "@/lib/marketing/ads-brief"
-import { MarketingAdsBriefPanel } from "@/components/marketing/marketing-ads-brief"
+import { AgentMessage } from "@/components/marketing/agent-message"
 import type {
   MarketingDesk,
   MarketingImageRecord,
@@ -38,8 +26,8 @@ import { cn } from "@/lib/utils"
 type FormatKey = "feed" | "stories" | "banner"
 
 const FORMATS: { id: FormatKey; label: string }[] = [
-  { id: "feed", label: "Feed 1:1" },
-  { id: "stories", label: "Stories 9:16" },
+  { id: "feed", label: "Feed" },
+  { id: "stories", label: "Stories" },
   { id: "banner", label: "Banner" },
 ]
 
@@ -68,33 +56,22 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
 
   const offer = desk.weeklyOffer
   const headline = live?.headline || live?.name || offer?.headline
-  const hook = live?.hook || offer?.hook
   const facebookPost = live?.facebookPost || offer?.facebookPost || ""
   const instagramCaption = live?.instagramCaption || offer?.instagramCaption || ""
   const whatsappText = live?.whatsappText || offer?.whatsappText || ""
-  const revenueDelta = pulse.revenueThisWeek - pulse.revenueLastWeek
-  const revenueUp = revenueDelta >= 0
   const waOfferHref = whatsappHref(
     pulse.whatsappNumber,
     whatsappText || `Olá, vi a oferta: ${headline ?? pulse.siteName}`,
   )
+  const latestImage =
+    desk.latestImages[0] ||
+    (live?.imageUrls?.[0]
+      ? { url: live.imageUrls[0], format: "feed", prompt: "" }
+      : null)
 
   const pendingProposals = useMemo(
     () => proposals.filter((p) => p.status === "pending"),
     [proposals],
-  )
-
-  const adsBrief = useMemo(
-    () =>
-      buildMarketingAdsBrief({
-        campaign: live,
-        offerHeadline: headline,
-        facebookPost,
-        instagramCaption,
-        imageUrls: desk.latestImages.map((img) => img.url),
-        metaPixelId: pulse.metaPixelId,
-      }),
-    [live, headline, facebookPost, instagramCaption, desk.latestImages, pulse.metaPixelId],
   )
 
   async function copyText(label: string, text: string) {
@@ -130,13 +107,11 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
       setChat((prev) => [...prev, { role: "assistant", content: data.reply || "" }])
       if (data.proposals) setProposals(data.proposals)
       if (data.desk) setDesk(data.desk)
-      if (typeof data.reply === "string" && data.reply.toLowerCase().includes("prompt")) {
-        const lastPrompt = data.proposals?.find((p) => p.type === "image_prompt")
-        if (lastPrompt && typeof lastPrompt.payload.prompt === "string") {
-          setPrompt(lastPrompt.payload.prompt)
-          if (lastPrompt.payload.format === "stories" || lastPrompt.payload.format === "banner") {
-            setFormat(lastPrompt.payload.format)
-          }
+      const lastPrompt = data.proposals?.find((p) => p.type === "image_prompt" && p.status === "pending")
+      if (lastPrompt && typeof lastPrompt.payload.prompt === "string") {
+        setPrompt(lastPrompt.payload.prompt)
+        if (lastPrompt.payload.format === "stories" || lastPrompt.payload.format === "banner") {
+          setFormat(lastPrompt.payload.format)
         }
       }
     } catch (err) {
@@ -161,11 +136,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
       try {
         data = raw.trim() ? (JSON.parse(raw) as typeof data) : {}
       } catch {
-        throw new Error(
-          raw.trim().startsWith("<!")
-            ? `A rota de imagens devolveu HTML (${res.status}). Confirma o deploy e MARKETING_AGENT_API_KEY.`
-            : `Resposta inválida ao gerar imagem (${res.status}).`,
-        )
+        throw new Error(`Resposta inválida ao gerar imagem (${res.status}).`)
       }
       if (!res.ok) throw new Error(data.error || `Falha a gerar (${res.status})`)
       if (data.url) {
@@ -176,7 +147,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
           createdAt: new Date().toISOString(),
         }
         setDesk((prev) => ({ ...prev, latestImages: [next, ...prev.latestImages] }))
-        showToast.success("Imagem gerada e guardada na biblioteca")
+        showToast.success("Imagem pronta")
       }
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : "Falha a gerar imagem")
@@ -198,7 +169,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
       setProposals((prev) =>
         prev.map((p) => (p.id === id ? { ...p, status: action === "apply" ? "applied" : "rejected" } : p)),
       )
-      showToast.success(action === "apply" ? data.note || "Aplicado" : "Rejeitado")
+      showToast.success(action === "apply" ? data.note || "Na loja" : "Recusado")
       startTransition(() => router.refresh())
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : "Falha")
@@ -208,334 +179,228 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:p-5">
-      <div className="flex flex-wrap gap-1.5">
-        {MARKETING_PLAYBOOKS.map((book) => (
-          <Button
-            key={book.id}
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 text-[11px]"
-            disabled={busyAgent}
-            onClick={() => sendAgent(book.prompt)}
-          >
-            {book.label}
-          </Button>
-        ))}
-      </div>
-
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
-        <div className="flex min-h-0 flex-col gap-4">
-          <section className="rounded-lg border border-border/80 bg-card p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  {live ? "Campanha live" : "Oferta da semana"}
-                </p>
-                <h2 className="mt-1 text-sm font-semibold tracking-tight text-foreground">
-                  {headline || "Ainda não definida"}
-                </h2>
-                {hook ? (
-                  <p className="mt-1 text-[12px] text-muted-foreground">{hook}</p>
-                ) : (
-                  <p className="mt-1 text-[12px] text-muted-foreground">
-                    Pede ao agente uma campanha da semana — a mesma frase no site, Facebook e Instagram.
-                  </p>
-                )}
-                {live ? (
-                  <Link
-                    href={`/dashboard/marketing/campaigns/${live.id}`}
-                    className="mt-1.5 inline-block text-[11px] font-medium text-primary hover:underline"
-                  >
-                    {live.name} · {formatCampaignRange(live)}
-                  </Link>
-                ) : null}
-              </div>
-              {live ? (
-                <Badge variant="outline" className={cn("text-[10px]", campaignStatusClass(live.status))}>
-                  {campaignStatusLabel(live.status)}
-                </Badge>
-              ) : offer?.endsAt ? (
-                <Badge variant="secondary" className="text-[10px]">
-                  até {offer.endsAt}
-                </Badge>
-              ) : null}
-            </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              <CopyBlock
-                label="Facebook"
-                text={facebookPost}
-                onCopy={() => copyText("Facebook", facebookPost)}
-              />
-              <CopyBlock
-                label="Instagram"
-                text={instagramCaption}
-                onCopy={() => copyText("Instagram", instagramCaption)}
-              />
-              <CopyBlock
-                label="WhatsApp"
-                text={whatsappText}
-                onCopy={() => copyText("WhatsApp", whatsappText)}
-                href={waOfferHref}
-              />
-            </div>
-            <div className="mt-2 rounded-md border border-border/70 bg-muted/20 px-2.5 py-2">
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Destino do post / anúncio
-                </p>
-                <button
-                  type="button"
-                  onClick={() => void copyText("Link", pulse.campaignUrl)}
-                  className="text-muted-foreground hover:text-foreground"
-                  aria-label="Copiar link da campanha"
+    <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[minmax(0,1fr)_20.5rem]">
+      <section className="flex min-h-0 min-w-0 flex-col border-border lg:border-r">
+        <header className="flex h-11 shrink-0 items-center justify-between gap-3 border-b border-border px-4">
+          <div className="min-w-0">
+            <p className="truncate text-[13px] font-semibold tracking-tight">
+              {headline || "Nenhuma campanha na loja"}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {live ? (
+              <Badge variant="outline" className={cn("h-5 text-[10px]", campaignStatusClass(live.status))}>
+                {campaignStatusLabel(live.status)}
+              </Badge>
+            ) : null}
+            {live ? (
+              <>
+                <Link
+                  href={`/dashboard/marketing/campaigns/${live.id}`}
+                  className="text-[11px] font-medium text-muted-foreground hover:text-foreground"
                 >
-                  <Copy className="h-3 w-3" />
-                </button>
-              </div>
-              <p className="mt-1 truncate text-[11px] text-foreground">{pulse.campaignUrl}</p>
-            </div>
-          </section>
+                  Editar
+                </Link>
+                <a
+                  href={pulse.campaignUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
+                >
+                  Loja
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </>
+            ) : null}
+          </div>
+        </header>
 
-          <section className="flex min-h-[380px] flex-1 flex-col rounded-lg border border-border/80 bg-card">
-            <div className="border-b border-border px-4 py-2.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Agente
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+          {chat.length === 0 && !busyAgent ? (
+            <div className="mx-auto max-w-md pt-10 text-center">
+              <p className="text-[13px] font-medium text-foreground">Diz o que queres vender</p>
+              <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">
+                O agente sugere. Tu aprovas à direita e copias para o Facebook.
               </p>
-              <p className="text-[11px] text-muted-foreground">Sugere. Tu aprovas à direita.</p>
             </div>
-            <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3">
-              {chat.length === 0 ? (
-                <p className="text-[12px] leading-relaxed text-muted-foreground">
-                  Ex.: «esgota os Samsung esta semana» ou usa um atalho em cima. O agente não publica sozinho.
-                </p>
-              ) : (
-                chat.map((line, i) => (
-                  <div
-                    key={`${line.role}-${i}`}
-                    className={cn(
-                      "max-w-[92%] rounded-md px-3 py-2 text-[12px] leading-relaxed",
-                      line.role === "user"
-                        ? "ml-auto bg-primary text-primary-foreground"
-                        : "bg-muted/70 text-foreground",
-                    )}
-                  >
-                    {line.content}
-                  </div>
-                ))
-              )}
+          ) : (
+            <div className="mx-auto flex max-w-2xl flex-col gap-3">
+              {chat.map((line, i) => (
+                <div
+                  key={`${line.role}-${i}`}
+                  className={cn(
+                    "max-w-[90%] rounded-md px-3 py-2",
+                    line.role === "user"
+                      ? "ml-auto bg-primary text-primary-foreground"
+                      : "bg-muted/60 text-foreground",
+                  )}
+                >
+                  {line.role === "assistant" ? (
+                    <AgentMessage text={line.content} />
+                  ) : (
+                    <p className="whitespace-pre-wrap text-[12px] leading-relaxed">{line.content}</p>
+                  )}
+                </div>
+              ))}
               {busyAgent ? (
-                <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  A trabalhar no catálogo…
+                  A preparar…
                 </p>
               ) : null}
               <div ref={endRef} />
             </div>
-            <form
-              className="flex items-end gap-2 border-t border-border p-3"
-              onSubmit={(e) => {
-                e.preventDefault()
-                void sendAgent(draft)
-              }}
-            >
-              <Textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Instrução para o agente…"
-                className="min-h-[44px] max-h-28 resize-none text-xs"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault()
-                    void sendAgent(draft)
-                  }
-                }}
-              />
-              <Button type="submit" size="sm" className="h-9 px-3" disabled={busyAgent || !draft.trim()}>
-                <Send className="h-3.5 w-3.5" />
-              </Button>
-            </form>
-          </section>
+          )}
         </div>
 
-        <div className="flex flex-col gap-4">
-          <section className="rounded-lg border border-border/80 bg-card p-4">
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Vendas · 7 dias
-              </p>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-[10px]",
-                  pulse.metaPixelId
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                    : "border-amber-200 bg-amber-50 text-amber-900",
-                )}
+        <div className="shrink-0 border-t border-border bg-card p-3">
+          <div className="mb-2 flex flex-wrap gap-1">
+            {MARKETING_PLAYBOOKS.slice(0, 3).map((book) => (
+              <button
+                key={book.id}
+                type="button"
+                disabled={busyAgent}
+                onClick={() => sendAgent(book.prompt)}
+                className="h-6 rounded border border-border bg-background px-2 text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-50"
               >
-                {pulse.metaPixelId ? "Pixel OK" : "Sem pixel"}
-              </Badge>
-            </div>
-            <div className="mt-2 flex items-end justify-between gap-3">
-              <div>
-                <p className="text-lg font-semibold tabular-nums tracking-tight">
-                  {formatCurrency(pulse.revenueThisWeek)}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  {pulse.ordersThisWeek.toLocaleString("pt-PT")} un. · vs {formatCurrency(pulse.revenueLastWeek)}
-                </p>
-              </div>
-              <span
-                className={cn(
-                  "inline-flex items-center gap-0.5 text-[11px] font-medium",
-                  revenueUp ? "text-emerald-700" : "text-rose-700",
-                )}
-              >
-                {revenueUp ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
-                {formatCurrency(Math.abs(revenueDelta))}
-              </span>
-            </div>
-            <ul className="mt-3 space-y-1.5">
-              {pulse.topProducts.length === 0 ? (
-                <li className="text-[11px] text-muted-foreground">Sem vendas neste período.</li>
-              ) : (
-                pulse.topProducts.map((p) => (
-                  <li key={p.productId} className="flex justify-between gap-2 text-[11px]">
-                    <span className="truncate text-foreground">{p.productTitle}</span>
-                    <span className="shrink-0 tabular-nums text-muted-foreground">{p.totalSold} un.</span>
-                  </li>
-                ))
-              )}
-            </ul>
-          </section>
-
-          <MarketingAdsBriefPanel brief={adsBrief} />
-
-          <section className="rounded-lg border border-border/80 bg-card p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Live na loja
-            </p>
-            <ul className="mt-2 space-y-1.5">
-              {pulse.liveBanners.length === 0 ? (
-                <li className="text-[11px] text-muted-foreground">Nenhum banner activo.</li>
-              ) : (
-                pulse.liveBanners.map((b) => (
-                  <li key={b.id} className="flex items-center justify-between gap-2 text-[11px]">
-                    <span className="truncate">{b.title}</span>
-                    <span className="shrink-0 text-muted-foreground">{b.position ?? "hero"}</span>
-                  </li>
-                ))
-              )}
-            </ul>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              WhatsApp loja: {formatWhatsappDisplay(pulse.whatsappNumber)}
-            </p>
-          </section>
-
-          <section className="rounded-lg border border-border/80 bg-card p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                Aplicar
-              </p>
-              <span className="text-[10px] tabular-nums text-muted-foreground">
-                {pendingProposals.length} pendente{pendingProposals.length === 1 ? "" : "s"}
-              </span>
-            </div>
-            <ul className="mt-2 space-y-2">
-              {pendingProposals.length === 0 ? (
-                <li className="text-[11px] text-muted-foreground">Nada para aprovar.</li>
-              ) : (
-                pendingProposals.map((p) => (
-                  <li key={p.id} className="rounded-md border border-border/70 bg-muted/30 px-2.5 py-2">
-                    <p className="text-[11px] font-medium text-foreground">{p.title}</p>
-                    <p className="mt-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                      {labelForType(p.type)}
-                    </p>
-                    <div className="mt-2 flex gap-1.5">
-                      <Button
-                        type="button"
-                        size="sm"
-                        className="h-7 px-2 text-[11px]"
-                        disabled={applyingId === p.id || pending}
-                        onClick={() => void handleProposal(p.id, "apply")}
-                      >
-                        {applyingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                        Aplicar
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 px-2 text-[11px]"
-                        disabled={applyingId === p.id}
-                        onClick={() => void handleProposal(p.id, "reject")}
-                      >
-                        <X className="h-3 w-3" />
-                        Rejeitar
-                      </Button>
-                    </div>
-                  </li>
-                ))
-              )}
-            </ul>
-          </section>
-
-          <section className="rounded-lg border border-border/80 bg-card p-4">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Gerar imagem
-            </p>
-            <div className="mt-2 flex flex-wrap gap-1">
-              {FORMATS.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setFormat(item.id)}
-                  className={cn(
-                    "h-7 rounded-md border px-2 text-[11px]",
-                    format === item.id
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-border bg-background text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
+                {book.label}
+              </button>
+            ))}
+          </div>
+          <form
+            className="flex items-end gap-2"
+            onSubmit={(e) => {
+              e.preventDefault()
+              void sendAgent(draft)
+            }}
+          >
             <Textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Prompt da campanha…"
-              className="mt-2 min-h-[72px] text-xs"
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="Ex.: esgota os Samsung esta semana"
+              className="min-h-11 max-h-28 resize-none text-[13px]"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault()
+                  void sendAgent(draft)
+                }
+              }}
             />
-            <Button
-              type="button"
-              size="sm"
-              className="mt-2 h-8 w-full"
-              disabled={busyImage || !prompt.trim()}
-              onClick={() => void generateImage()}
-            >
-              {busyImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
-              {busyImage ? "A gerar…" : "Gerar e guardar"}
+            <Button type="submit" size="sm" className="h-9 px-3" disabled={busyAgent || !draft.trim()}>
+              <Send className="h-3.5 w-3.5" />
             </Button>
-            {desk.latestImages[0] ? (
-              <a
-                href={desk.latestImages[0].url}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-3 block overflow-hidden rounded-md border border-border"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={desk.latestImages[0].url}
-                  alt=""
-                  className="aspect-square max-h-48 w-full object-cover"
-                />
-              </a>
-            ) : null}
-          </section>
+          </form>
         </div>
-      </div>
+      </section>
+
+      <aside className="flex min-h-0 flex-col overflow-y-auto border-t border-border bg-card lg:border-t-0">
+        <div className="border-b border-border px-3 py-2.5">
+          <div className="flex items-center justify-between">
+            <p className="text-[12px] font-semibold">Aprovar</p>
+            <span className="text-[11px] tabular-nums text-muted-foreground">{pendingProposals.length}</span>
+          </div>
+          {pendingProposals.length === 0 ? (
+            <p className="mt-1.5 text-[11px] text-muted-foreground">Nada à espera. Fala com o agente.</p>
+          ) : (
+            <ul className="mt-2 space-y-2">
+              {pendingProposals.map((p) => (
+                <li key={p.id} className="rounded-md border border-border bg-background px-2.5 py-2">
+                  <p className="text-[12px] font-medium leading-snug">{p.title}</p>
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">{labelForType(p.type)}</p>
+                  <div className="mt-2 flex gap-1.5">
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="h-7 px-2 text-[11px]"
+                      disabled={applyingId === p.id || pending}
+                      onClick={() => void handleProposal(p.id, "apply")}
+                    >
+                      {applyingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                      Meter na loja
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 px-2 text-[11px]"
+                      disabled={applyingId === p.id}
+                      onClick={() => void handleProposal(p.id, "reject")}
+                    >
+                      <X className="h-3 w-3" />
+                      Não
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="border-b border-border px-3 py-2.5">
+          <p className="text-[12px] font-semibold">Copiar</p>
+          <ul className="mt-2 divide-y divide-border rounded-md border border-border">
+            <CopyRow label="Facebook" text={facebookPost} onCopy={() => copyText("Facebook", facebookPost)} />
+            <CopyRow label="Instagram" text={instagramCaption} onCopy={() => copyText("Instagram", instagramCaption)} />
+            <CopyRow
+              label="WhatsApp"
+              text={whatsappText}
+              onCopy={() => copyText("WhatsApp", whatsappText)}
+              href={waOfferHref}
+            />
+            <CopyRow label="Link" text={pulse.campaignUrl} onCopy={() => copyText("Link", pulse.campaignUrl)} mono />
+          </ul>
+        </div>
+
+        <div className="px-3 py-2.5">
+          <p className="text-[12px] font-semibold">Imagem</p>
+          {latestImage ? (
+            <a
+              href={latestImage.url}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 block overflow-hidden rounded-md border border-border"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={latestImage.url} alt="" className="aspect-square w-full object-cover" />
+            </a>
+          ) : (
+            <p className="mt-1.5 text-[11px] text-muted-foreground">Ainda sem imagem desta campanha.</p>
+          )}
+          <div className="mt-2 flex gap-1">
+            {FORMATS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setFormat(item.id)}
+                className={cn(
+                  "h-6 rounded border px-2 text-[11px]",
+                  format === item.id
+                    ? "border-foreground bg-foreground text-background"
+                    : "border-border text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <Textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="Prompt — o agente preenche"
+            className="mt-2 min-h-16 text-[12px]"
+          />
+          <Button
+            type="button"
+            size="sm"
+            className="mt-2 h-8 w-full"
+            disabled={busyImage || !prompt.trim()}
+            onClick={() => void generateImage()}
+          >
+            {busyImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
+            {busyImage ? "A gerar…" : "Gerar"}
+          </Button>
+        </div>
+      </aside>
     </div>
   )
 }
@@ -544,8 +409,8 @@ function labelForType(type: string) {
   const map: Record<string, string> = {
     campaign: "Campanha",
     campaign_attach: "Ligar à campanha",
-    weekly_offer: "Oferta da semana",
-    social_pack: "Pack redes",
+    weekly_offer: "Oferta",
+    social_pack: "Textos redes",
     banner: "Banner",
     coupon: "Cupão",
     product_merch: "Produto",
@@ -554,43 +419,40 @@ function labelForType(type: string) {
   return map[type] ?? type
 }
 
-function CopyBlock({
+function CopyRow({
   label,
   text,
   onCopy,
   href,
+  mono,
 }: {
   label: string
   text: string
   onCopy: () => void
   href?: string | null
+  mono?: boolean
 }) {
   return (
-    <div className="rounded-md border border-border/70 bg-muted/20 p-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-        <button
-          type="button"
-          onClick={onCopy}
-          className="text-muted-foreground hover:text-foreground"
-          aria-label={`Copiar ${label}`}
-        >
-          <Copy className="h-3 w-3" />
-        </button>
+    <li className="flex items-start gap-2 px-2.5 py-2">
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className={cn("mt-0.5 line-clamp-2 text-[11px] leading-snug text-foreground", mono && "font-mono")}>
+          {text.trim() || "—"}
+        </p>
+        {href ? (
+          <a href={href} target="_blank" rel="noreferrer" className="mt-1 inline-block text-[10px] text-primary hover:underline">
+            Abrir WhatsApp
+          </a>
+        ) : null}
       </div>
-      <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-foreground">
-        {text.trim() || "—"}
-      </p>
-      {href ? (
-        <a
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-1.5 inline-block text-[10px] font-medium text-primary hover:underline"
-        >
-          Abrir conversa
-        </a>
-      ) : null}
-    </div>
+      <button
+        type="button"
+        onClick={onCopy}
+        className="mt-0.5 text-muted-foreground hover:text-foreground"
+        aria-label={`Copiar ${label}`}
+      >
+        <Copy className="h-3.5 w-3.5" />
+      </button>
+    </li>
   )
 }

@@ -23,6 +23,7 @@ import {
 import { storefrontCampaignUrl } from "@/lib/marketing/storefront"
 import { buildMarketingAdsBrief } from "@/lib/marketing/ads-brief"
 import { MarketingAdsBriefPanel } from "@/components/marketing/marketing-ads-brief"
+import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
 
 type FormState = {
   name: string
@@ -47,6 +48,7 @@ type FormState = {
   siteTopCtaHref: string
   siteTopSecondaryCtaLabel: string
   siteTopSecondaryCtaHref: string
+  productIds: string[]
 }
 
 function fromCampaign(campaign?: MarketingCampaign | null): FormState {
@@ -79,6 +81,7 @@ function fromCampaign(campaign?: MarketingCampaign | null): FormState {
     siteTopCtaHref: campaign?.siteTopCtaHref ?? "",
     siteTopSecondaryCtaLabel: campaign?.siteTopSecondaryCtaLabel ?? "",
     siteTopSecondaryCtaHref: campaign?.siteTopSecondaryCtaHref ?? "",
+    productIds: campaign?.productIds ?? [],
   }
 }
 
@@ -122,7 +125,7 @@ export function MarketingCampaignForm({
     facebookPost: form.facebookPost || null,
     instagramCaption: form.instagramCaption || null,
     whatsappText: form.whatsappText || null,
-    productIds: campaign?.productIds ?? [],
+    productIds: form.productIds,
     bannerIds: campaign?.bannerIds ?? [],
     couponIds: campaign?.couponIds ?? [],
     imageUrls: campaign?.imageUrls ?? [],
@@ -221,6 +224,7 @@ export function MarketingCampaignForm({
         siteTopCtaHref: form.siteTopCtaHref.trim() || null,
         siteTopSecondaryCtaLabel: form.siteTopSecondaryCtaLabel.trim() || null,
         siteTopSecondaryCtaHref: form.siteTopSecondaryCtaHref.trim() || null,
+        productIds: form.productIds,
       }
       const url = campaign ? `/api/marketing/campaigns/${campaign.id}` : "/api/marketing/campaigns"
       const res = await fetch(url, {
@@ -514,6 +518,22 @@ export function MarketingCampaignForm({
           />
         </section>
       </div>
+
+      <section className="rounded-lg border border-border/80 bg-card p-4">
+        <p className="text-[12px] font-semibold text-foreground">Produtos na página da campanha</p>
+        <p className="mt-0.5 text-[12px] text-muted-foreground">
+          Estes é que aparecem em /campanha. Pesquisa e escolhe. Depois Guardar.
+        </p>
+        <div className="mt-3">
+          <CuratedProductPicker
+            value={form.productIds}
+            max={24}
+            onChange={(ids) => patch("productIds", ids)}
+            orderLabel="Ordem na página"
+            description="Pesquisa pelo nome. Clica para juntar ou tirar. Máximo 24."
+          />
+        </div>
+      </section>
 
       {campaign && (campaign.bannerIds.length || campaign.couponIds.length || campaign.imageUrls.length) ? (
         <section className="rounded-lg border border-border/80 bg-card p-4">

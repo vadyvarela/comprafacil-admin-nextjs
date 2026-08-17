@@ -16,13 +16,13 @@ export default async function MarketingContentPage() {
         items={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Marketing", href: "/dashboard/marketing" },
-          { label: "Conteúdo" },
+          { label: "Posts" },
         ]}
       />
       <PageToolbar
         icon={FileText}
-        title="Conteúdo"
-        subtitle="Posts e imagens — link destino /campanha para Facebook e Instagram"
+        title="Posts"
+        subtitle="Texto e imagens para colar no Facebook e no Instagram"
       />
       <MarketingSubnav />
       <MarketingContentBoard desk={desk} campaignUrl={campaignUrl} />

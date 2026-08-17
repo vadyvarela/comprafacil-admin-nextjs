@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server"
 import { requireModuleWriteSession } from "@/lib/auth/requireRole"
-import { recordMarketingImage } from "@/lib/actions/marketing"
+import {
+  attachMarketingCampaignAssets,
+  getLiveMarketingCampaign,
+  recordMarketingImage,
+} from "@/lib/actions/marketing"
 import { getStorefrontOrigin } from "@/lib/marketing/storefront"
 import { validateImageBlob } from "@/lib/security/upload-validation"
 
@@ -312,6 +316,12 @@ export async function POST(request: Request) {
 
     const url = await uploadToLibrary(built.blob, `marketing-${format}-${Date.now()}.${built.ext}`)
     await recordMarketingImage({ url, format, prompt })
+    try {
+      const live = await getLiveMarketingCampaign()
+      if (live?.id) await attachMarketingCampaignAssets(live.id, { imageUrls: [url] })
+    } catch {
+      // Imagem já está na biblioteca.
+    }
 
     return NextResponse.json({ url, format, prompt, model: cfg.imageModel })
   } catch (err) {

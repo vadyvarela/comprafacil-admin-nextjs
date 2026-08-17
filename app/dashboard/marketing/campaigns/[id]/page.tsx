@@ -30,7 +30,7 @@ export default async function MarketingCampaignDetailPage({
           { label: campaign.name },
         ]}
       />
-      <PageToolbar icon={CalendarRange} title={campaign.name} subtitle="Editar copy, datas e estado" />
+      <PageToolbar icon={CalendarRange} title={campaign.name} subtitle="Produtos, textos e datas" />
       <MarketingSubnav />
       <MarketingCampaignForm
         campaign={campaign}

@@ -27,9 +27,9 @@ export function MarketingContentBoard({
     <div className="flex flex-1 flex-col gap-4 p-4 md:p-5">
       <section className="rounded-lg border border-border/80 bg-card p-4">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Pack da oferta
+          Textos prontos
         </p>
-        <h2 className="mt-1 text-sm font-semibold">{offer?.headline || "Sem oferta definida"}</h2>
+        <h2 className="mt-1 text-sm font-semibold">{offer?.headline || "Ainda sem campanha"}</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-2">
           <PackCard
             channel="Facebook"
@@ -63,7 +63,7 @@ export function MarketingContentBoard({
         </p>
         {images.length === 0 ? (
           <p className="text-[12px] text-muted-foreground">
-            Ainda não há imagens. Gera na secretária a partir de um prompt.
+            Ainda não há imagens. Gera no separador Hoje.
           </p>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
