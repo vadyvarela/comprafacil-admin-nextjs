@@ -106,12 +106,20 @@ export function MarketingCampaignsBoard({
                   <li key={c.id}>
                     <Link
                       href={`/dashboard/marketing/campaigns/${c.id}`}
-                      className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/50"
+                      className="flex items-center gap-3 px-4 py-2 hover:bg-muted/50"
                     >
-                      <span
-                        className={cn("h-1.5 w-1.5 shrink-0 rounded-full", campaignDotClass(c.status))}
-                        aria-hidden
-                      />
+                      {c.imageUrls[0] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={c.imageUrls[0]}
+                          alt=""
+                          className="h-9 w-9 shrink-0 rounded object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-muted">
+                          <span className={cn("h-1.5 w-1.5 rounded-full", campaignDotClass(c.status))} />
+                        </span>
+                      )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[13px] font-medium">{c.name}</p>
                         <p className="truncate text-[12px] text-muted-foreground">

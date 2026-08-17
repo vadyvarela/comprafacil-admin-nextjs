@@ -14,6 +14,7 @@ import { MARKETING_PLAYBOOKS } from "@/lib/marketing/playbooks"
 import { whatsappHref } from "@/lib/marketing/whatsapp"
 import { campaignStatusClass, campaignStatusLabel } from "@/lib/marketing/campaigns"
 import { AgentMessage } from "@/components/marketing/agent-message"
+import { MarketingPostPreview } from "@/components/marketing/marketing-post-preview"
 import type { MarketingDesk, MarketingImageRecord, MarketingProposal, MarketingPulse } from "@/lib/graphql/marketing/types"
 import { cn } from "@/lib/utils"
 
@@ -206,6 +207,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
     <DeskRail
       tab={railTab}
       onTab={setRailTab}
+      siteName={pulse.siteName}
       pendingProposals={pendingProposals}
       applyingId={applyingId}
       pending={pending}
@@ -379,6 +381,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
 function DeskRail({
   tab,
   onTab,
+  siteName,
   pendingProposals,
   applyingId,
   pending,
@@ -400,6 +403,7 @@ function DeskRail({
 }: {
   tab: RailTab
   onTab: (tab: RailTab) => void
+  siteName: string
   pendingProposals: MarketingProposal[]
   applyingId: string | null
   pending: boolean
@@ -419,6 +423,7 @@ function DeskRail({
   busyImage: boolean
   onGenerate: () => void
 }) {
+  const [previewChannel, setPreviewChannel] = useState<"facebook" | "instagram">("facebook")
   const tabs: { id: RailTab; label: string; count?: number }[] = [
     { id: "publicar", label: "Publicar" },
     { id: "aprovar", label: "Aprovar", count: pendingProposals.length },
@@ -450,25 +455,32 @@ function DeskRail({
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {tab === "publicar" ? (
           <div className="space-y-3">
-            <p className="text-[12px] leading-relaxed text-muted-foreground">
-              {hasDraftCopy
-                ? "Pack novo. Copia o texto, gera a imagem se faltar, cola no Facebook ou Instagram."
-                : "Copia o texto e a imagem. A loja não publica sozinha."}
-            </p>
-            {latestImage ? (
-              <a
-                href={latestImage.url}
-                target="_blank"
-                rel="noreferrer"
-                className="block overflow-hidden rounded-md border border-border"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={latestImage.url} alt="" className="aspect-square w-full object-cover" />
-              </a>
-            ) : (
-              <div className="rounded-md border border-dashed border-border px-3 py-4">
-                <p className="text-[12px] text-muted-foreground">Sem imagem ainda.</p>
-                <div className="mt-2 flex gap-1">
+            <MarketingPostPreview
+              siteName={siteName}
+              imageUrl={latestImage?.url}
+              caption={previewChannel === "facebook" ? facebookPost : instagramCaption}
+              channel={previewChannel}
+              onChannel={setPreviewChannel}
+            />
+            <div className="flex flex-wrap gap-1">
+              <CopyChip label="Facebook" onClick={() => onCopy("Facebook", facebookPost)} />
+              <CopyChip label="Instagram" onClick={() => onCopy("Instagram", instagramCaption)} />
+              <CopyChip label="WhatsApp" onClick={() => onCopy("WhatsApp", whatsappText)} />
+              <CopyChip label="Link" onClick={() => onCopy("Link", campaignUrl)} />
+              {waOfferHref ? (
+                <a
+                  href={waOfferHref}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="h-6 rounded border border-border px-2 text-[11px] leading-6 text-muted-foreground hover:text-foreground"
+                >
+                  Abrir WA
+                </a>
+              ) : null}
+            </div>
+            {!latestImage ? (
+              <div className="rounded-md border border-dashed border-border px-3 py-3">
+                <div className="flex gap-1">
                   {FORMATS.map((item) => (
                     <button
                       key={item.id}
@@ -502,19 +514,7 @@ function DeskRail({
                   {busyImage ? "A gerar…" : "Gerar imagem"}
                 </Button>
               </div>
-            )}
-            <ul className="divide-y divide-border rounded-md border border-border">
-              <CopyRow label="Facebook" text={facebookPost} onCopy={() => onCopy("Facebook", facebookPost)} />
-              <CopyRow label="Instagram" text={instagramCaption} onCopy={() => onCopy("Instagram", instagramCaption)} />
-              <CopyRow
-                label="WhatsApp"
-                text={whatsappText}
-                onCopy={() => onCopy("WhatsApp", whatsappText)}
-                href={waOfferHref}
-              />
-              <CopyRow label="Link da loja" text={campaignUrl} onCopy={() => onCopy("Link", campaignUrl)} mono />
-            </ul>
-            {latestImage ? (
+            ) : (
               <Button
                 type="button"
                 size="sm"
@@ -526,6 +526,9 @@ function DeskRail({
                 {busyImage ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImageIcon className="h-3.5 w-3.5" />}
                 Nova imagem
               </Button>
+            )}
+            {hasDraftCopy ? (
+              <p className="text-[11px] text-muted-foreground">Pack novo. Copia e cola — a loja não publica sozinha.</p>
             ) : null}
           </div>
         ) : null}
@@ -588,39 +591,14 @@ function labelForType(type: string) {
   return map[type] ?? type
 }
 
-function CopyRow({
-  label,
-  text,
-  onCopy,
-  href,
-  mono,
-}: {
-  label: string
-  text: string
-  onCopy: () => void
-  href?: string | null
-  mono?: boolean
-}) {
+function CopyChip({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <li className="flex items-start gap-2 px-2.5 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-muted-foreground">{label}</p>
-        <p className={cn("mt-0.5 whitespace-pre-wrap text-[12px] leading-snug", mono && "font-mono")}>
-          {text.trim() || "—"}
-        </p>
-        {href ? (
-          <a href={href} target="_blank" rel="noreferrer" className="mt-1 inline-block text-[11px] text-primary hover:underline">
-            Abrir WhatsApp
-          </a>
-        ) : null}
-      </div>
-      <button
-        type="button"
-        onClick={onCopy}
-        className="mt-0.5 shrink-0 rounded border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground"
-      >
-        Copiar
-      </button>
-    </li>
+    <button
+      type="button"
+      onClick={onClick}
+      className="h-6 rounded border border-border px-2 text-[11px] text-muted-foreground hover:text-foreground"
+    >
+      Copiar {label}
+    </button>
   )
 }

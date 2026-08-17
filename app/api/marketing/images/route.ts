@@ -275,6 +275,7 @@ export async function POST(request: Request) {
     const body = (await request.json().catch(() => null)) as {
       prompt?: string
       format?: string
+      campaignId?: string
     } | null
     const prompt = body?.prompt?.trim()
     const format = (body?.format?.trim() || "feed") as FormatKey
@@ -317,8 +318,13 @@ export async function POST(request: Request) {
     const url = await uploadToLibrary(built.blob, `marketing-${format}-${Date.now()}.${built.ext}`)
     await recordMarketingImage({ url, format, prompt })
     try {
-      const live = await getLiveMarketingCampaign()
-      if (live?.id) await attachMarketingCampaignAssets(live.id, { imageUrls: [url] })
+      const campaignId = body?.campaignId?.trim()
+      if (campaignId) {
+        await attachMarketingCampaignAssets(campaignId, { imageUrls: [url] })
+      } else {
+        const live = await getLiveMarketingCampaign()
+        if (live?.id) await attachMarketingCampaignAssets(live.id, { imageUrls: [url] })
+      }
     } catch {
       // Imagem já está na biblioteca.
     }

@@ -13,15 +13,16 @@ export default async function MarketingCampaignDetailPage({
   const { id } = await params
   const [campaign, settings] = await Promise.all([
     getMarketingCampaign(id),
-    runGraphQL<{ storeSettings: { metaPixelId?: string | null } }>(GET_STORE_SETTINGS),
+    runGraphQL<{ storeSettings: { metaPixelId?: string | null; siteName?: string | null } }>(GET_STORE_SETTINGS),
   ])
   if (!campaign) notFound()
 
   return (
-    <MarketingPageFrame scroll>
+    <MarketingPageFrame>
       <MarketingCampaignForm
         campaign={campaign}
         metaPixelId={settings.data?.storeSettings?.metaPixelId ?? null}
+        siteName={settings.data?.storeSettings?.siteName?.trim() || "Loja"}
       />
     </MarketingPageFrame>
   )

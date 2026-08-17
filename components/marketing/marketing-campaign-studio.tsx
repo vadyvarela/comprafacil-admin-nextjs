@@ -11,6 +11,7 @@ import { MARKETING_CAMPAIGN_PLAYBOOKS } from "@/lib/marketing/playbooks"
 import { whatsappHref } from "@/lib/marketing/whatsapp"
 import { formatCampaignRange } from "@/lib/marketing/campaigns"
 import { AgentMessage } from "@/components/marketing/agent-message"
+import { MarketingPostPreview } from "@/components/marketing/marketing-post-preview"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
 import type { MarketingDesk, MarketingImageRecord, MarketingProposal, MarketingPulse } from "@/lib/graphql/marketing/types"
 import { cn } from "@/lib/utils"
@@ -39,6 +40,7 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
   const [applying, setApplying] = useState(false)
   const [productIds, setProductIds] = useState<string[]>([])
   const [products, setProducts] = useState<ProductThumb[]>([])
+  const [previewChannel, setPreviewChannel] = useState<"facebook" | "instagram">("facebook")
   const endRef = useRef<HTMLDivElement>(null)
 
   const campaignProposal = useMemo(
@@ -278,47 +280,39 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
             </p>
           ) : (
             <div className="space-y-3">
-              <div className="overflow-hidden rounded-md border border-border">
-                {latestImage ? (
-                  <a href={latestImage.url} target="_blank" rel="noreferrer">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={latestImage.url} alt="" className="aspect-square w-full object-cover" />
+              <MarketingPostPreview
+                siteName={pulse.siteName}
+                imageUrl={latestImage?.url}
+                caption={previewChannel === "facebook" ? facebookPost : instagramCaption}
+                channel={previewChannel}
+                onChannel={setPreviewChannel}
+              />
+              {!latestImage ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-7 w-full text-[11px]"
+                  disabled={busyImage || !imagePrompt.trim()}
+                  onClick={() => void generateImage()}
+                >
+                  {busyImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3" />}
+                  Gerar imagem
+                </Button>
+              ) : null}
+              <div className="flex flex-wrap gap-1">
+                <CopyBtn label="Facebook" onClick={() => void copyText("Facebook", facebookPost)} />
+                <CopyBtn label="Instagram" onClick={() => void copyText("Instagram", instagramCaption)} />
+                <CopyBtn label="WhatsApp" onClick={() => void copyText("WhatsApp", whatsappText)} />
+                {waHref ? (
+                  <a
+                    href={waHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="h-6 rounded border border-border px-2 text-[11px] leading-6 text-muted-foreground hover:text-foreground"
+                  >
+                    Abrir WA
                   </a>
-                ) : (
-                  <div className="flex aspect-square flex-col items-center justify-center gap-2 bg-muted/40 px-3 text-center">
-                    <p className="text-[12px] text-muted-foreground">Sem imagem ainda.</p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="h-7 text-[11px]"
-                      disabled={busyImage || !imagePrompt.trim()}
-                      onClick={() => void generateImage()}
-                    >
-                      {busyImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3" />}
-                      Gerar imagem
-                    </Button>
-                  </div>
-                )}
-                <div className="space-y-2 p-2.5">
-                  <p className="whitespace-pre-wrap text-[12px] leading-relaxed">
-                    {facebookPost.trim() || "—"}
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    <CopyBtn label="Facebook" onClick={() => void copyText("Facebook", facebookPost)} />
-                    <CopyBtn label="Instagram" onClick={() => void copyText("Instagram", instagramCaption)} />
-                    <CopyBtn label="WhatsApp" onClick={() => void copyText("WhatsApp", whatsappText)} />
-                    {waHref ? (
-                      <a
-                        href={waHref}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="h-6 rounded border border-border px-2 text-[11px] leading-6 text-muted-foreground hover:text-foreground"
-                      >
-                        Abrir WA
-                      </a>
-                    ) : null}
-                  </div>
-                </div>
+                ) : null}
               </div>
 
               <div className="rounded-md border border-border p-2.5">
