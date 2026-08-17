@@ -1,13 +1,14 @@
 import "server-only"
 import { subDays } from "date-fns"
 import { runGraphQL } from "@/lib/actions/graphql"
-import { MARKETING_DESK, MARKETING_PROPOSALS, MARKETING_CAMPAIGNS, MARKETING_CAMPAIGN, MARKETING_LIVE_CAMPAIGN } from "@/lib/graphql/marketing/queries"
+import { MARKETING_DESK, MARKETING_PROPOSALS, MARKETING_CAMPAIGNS, MARKETING_CAMPAIGN, MARKETING_LIVE_CAMPAIGN, MARKETING_THREAD } from "@/lib/graphql/marketing/queries"
 import {
   CREATE_MARKETING_PROPOSAL,
   CREATE_MARKETING_THREAD,
   APPEND_MARKETING_MESSAGE,
   SAVE_MARKETING_WEEKLY_OFFER,
   RECORD_MARKETING_IMAGE,
+  UPDATE_MARKETING_PROPOSAL,
   UPDATE_MARKETING_PROPOSAL_STATUS,
   CREATE_MARKETING_CAMPAIGN,
   UPDATE_MARKETING_CAMPAIGN,
@@ -90,6 +91,12 @@ function coerceJsonObject(raw: unknown): Record<string, unknown> {
   return {}
 }
 
+function asDateString(value: unknown): string | null {
+  if (typeof value === "string" && value.trim()) return value
+  if (value instanceof Date && !Number.isNaN(value.getTime())) return value.toISOString()
+  return null
+}
+
 function parseProposal(row: Record<string, unknown>): MarketingProposal {
   return {
     id: String(row.id),
@@ -99,10 +106,10 @@ function parseProposal(row: Record<string, unknown>): MarketingProposal {
     title: String(row.title ?? ""),
     payload: coerceJsonObject(row.payload),
     status: String(row.status ?? "pending"),
-    appliedAt: (row.appliedAt as string | null) ?? null,
+    appliedAt: asDateString(row.appliedAt),
     appliedNote: (row.appliedNote as string | null) ?? null,
-    createdAt: (row.createdAt as string | null) ?? null,
-    updatedAt: (row.updatedAt as string | null) ?? null,
+    createdAt: asDateString(row.createdAt),
+    updatedAt: asDateString(row.updatedAt),
   }
 }
 
@@ -261,6 +268,31 @@ export async function getMarketingPulse(): Promise<MarketingPulse> {
   }
 }
 
+export async function getMarketingThread(id: string): Promise<{
+  messages: MarketingMessage[]
+  proposals: MarketingProposal[]
+} | null> {
+  const result = await runGraphQL<{
+    marketingThread: {
+      messages: Array<Record<string, unknown>>
+      proposals: Array<Record<string, unknown>>
+    } | null
+  }>(MARKETING_THREAD, { id })
+  if (result.errors?.length || !result.data?.marketingThread) return null
+  const detail = result.data.marketingThread
+  return {
+    messages: (detail.messages ?? []).map((row) => ({
+      id: String(row.id ?? ""),
+      threadId: String(row.threadId ?? id),
+      role: String(row.role ?? "user"),
+      content: String(row.content ?? ""),
+      toolCalls: row.toolCalls,
+      createdAt: asDateString(row.createdAt),
+    })),
+    proposals: (detail.proposals ?? []).map(parseProposal),
+  }
+}
+
 export async function createMarketingThread(title?: string): Promise<MarketingThread> {
   const result = await runGraphQL<{ createMarketingThread: MarketingThread }>(
     CREATE_MARKETING_THREAD,
@@ -322,6 +354,20 @@ export async function recordMarketingImage(input: MarketingImageRecord) {
   if ("errors" in result && result.errors?.length) {
     throw new Error(result.errors[0]?.message ?? "Não foi possível gravar a imagem")
   }
+}
+
+export async function patchMarketingProposal(
+  id: string,
+  payload: Record<string, unknown>,
+): Promise<MarketingProposal> {
+  const result = await runGraphQL<{ updateMarketingProposal: Record<string, unknown> }>(
+    UPDATE_MARKETING_PROPOSAL,
+    { id, payload },
+  )
+  if (result.errors?.length || !result.data?.updateMarketingProposal) {
+    throw new Error(result.errors?.[0]?.message ?? "Não foi possível actualizar a proposta")
+  }
+  return parseProposal(result.data.updateMarketingProposal)
 }
 
 export async function setProposalStatus(id: string, status: string, appliedNote?: string, campaignId?: string) {

@@ -49,6 +49,22 @@ export const CREATE_MARKETING_PROPOSAL = gql`
   }
 `
 
+export const UPDATE_MARKETING_PROPOSAL = gql`
+  mutation UpdateMarketingProposal($id: UUID!, $payload: JSON, $title: String) {
+    updateMarketingProposal(id: $id, payload: $payload, title: $title) {
+      id
+      threadId
+      campaignId
+      type
+      title
+      payload
+      status
+      createdAt
+      updatedAt
+    }
+  }
+`
+
 export const UPDATE_MARKETING_PROPOSAL_STATUS = gql`
   mutation UpdateMarketingProposalStatus(
     $id: UUID!

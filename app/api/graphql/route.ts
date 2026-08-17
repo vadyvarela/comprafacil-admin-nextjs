@@ -119,6 +119,7 @@ const ROOT_FIELD_ACCESS: Record<string, OperationAccess> = {
   createMarketingThread: { module: "marketing", mode: "write" },
   appendMarketingMessage: { module: "marketing", mode: "write" },
   createMarketingProposal: { module: "marketing", mode: "write" },
+  updateMarketingProposal: { module: "marketing", mode: "write" },
   updateMarketingProposalStatus: { module: "marketing", mode: "write" },
   saveMarketingWeeklyOffer: { module: "marketing", mode: "write" },
   recordMarketingImage: { module: "marketing", mode: "write" },

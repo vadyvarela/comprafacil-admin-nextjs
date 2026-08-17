@@ -30,6 +30,7 @@ export function MarketingBannerPreview({
       {imageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
+          key={imageUrl}
           src={imageUrl}
           alt=""
           className="absolute right-0 top-0 h-full w-[58%] object-contain object-right p-3 drop-shadow-lg"

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useApolloClient } from "@apollo/client/react"
 import { ImageIcon, Loader2, Send, X } from "lucide-react"
@@ -13,10 +13,10 @@ import { formatCampaignRange } from "@/lib/marketing/campaigns"
 import { AgentMessage } from "@/components/marketing/agent-message"
 import { MarketingPostPreview } from "@/components/marketing/marketing-post-preview"
 import { GET_PRODUCT } from "@/lib/graphql/products/queries"
-import type { MarketingDesk, MarketingImageRecord, MarketingProposal, MarketingPulse } from "@/lib/graphql/marketing/types"
+import type { MarketingPulse } from "@/lib/graphql/marketing/types"
+import { useMarketingStudio } from "@/lib/marketing/use-marketing-studio"
 import { cn } from "@/lib/utils"
 
-type ChatLine = { role: "user" | "assistant"; content: string }
 type ProductThumb = { id: string; title: string; image?: string | null }
 
 function asString(value: unknown) {
@@ -30,28 +30,13 @@ function asStringList(value: unknown) {
 
 export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
   const router = useRouter()
-  const [threadId, setThreadId] = useState<string | null>(null)
-  const [chat, setChat] = useState<ChatLine[]>([])
-  const [draft, setDraft] = useState("")
-  const [proposals, setProposals] = useState(pulse.proposals)
-  const [desk, setDesk] = useState<MarketingDesk>(pulse.desk)
-  const [busyAgent, setBusyAgent] = useState(false)
-  const [busyImage, setBusyImage] = useState(false)
+  const studio = useMarketingStudio("campaign", pulse.desk)
   const [applying, setApplying] = useState(false)
   const [productIds, setProductIds] = useState<string[]>([])
   const [products, setProducts] = useState<ProductThumb[]>([])
   const [previewChannel, setPreviewChannel] = useState<"facebook" | "instagram">("facebook")
-  const endRef = useRef<HTMLDivElement>(null)
 
-  const campaignProposal = useMemo(
-    () => proposals.find((p) => p.status === "pending" && p.type === "campaign") ?? null,
-    [proposals],
-  )
-  const imageProposal = useMemo(
-    () => proposals.find((p) => p.status === "pending" && p.type === "image_prompt") ?? null,
-    [proposals],
-  )
-
+  const campaignProposal = studio.pack.proposal
   const payload = campaignProposal?.payload ?? {}
   const name = asString(payload.name) || campaignProposal?.title || ""
   const headline = asString(payload.headline) || name
@@ -59,8 +44,6 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
   const facebookPost = asString(payload.facebookPost)
   const instagramCaption = asString(payload.instagramCaption)
   const whatsappText = asString(payload.whatsappText)
-  const imagePrompt = asString(imageProposal?.payload.prompt)
-  const latestImage = desk.latestImages[0] ?? null
   const range = formatCampaignRange({
     startDate: asString(payload.startDate) || null,
     endDate: asString(payload.endDate) || null,
@@ -69,21 +52,13 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
     pulse.whatsappNumber,
     whatsappText || `Olá, vi a oferta: ${headline || pulse.siteName}`,
   )
-
-  useEffect(() => {
-    setDesk(pulse.desk)
-    setProposals(pulse.proposals)
-  }, [pulse])
+  const showPlaybooks = studio.chat.length === 0 && !studio.busyAgent && !studio.hydrating
 
   useEffect(() => {
     if (!campaignProposal) return
     const ids = asStringList(campaignProposal.payload.productIds).slice(0, 3)
     setProductIds(ids)
   }, [campaignProposal?.id])
-
-  useEffect(() => {
-    queueMicrotask(() => endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }))
-  }, [chat, busyAgent])
 
   async function copyText(label: string, text: string) {
     if (!text.trim()) {
@@ -94,65 +69,6 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
     showToast.success(`${label} copiado`)
   }
 
-  async function sendAgent(text: string) {
-    const message = text.trim()
-    if (!message || busyAgent) return
-    setDraft("")
-    setChat((prev) => [...prev, { role: "user", content: message }])
-    setBusyAgent(true)
-    try {
-      const res = await fetch("/api/marketing/agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, threadId, intent: "campaign" }),
-      })
-      const data = (await res.json()) as {
-        error?: string
-        reply?: string
-        threadId?: string
-        proposals?: MarketingProposal[]
-        desk?: MarketingDesk
-      }
-      if (!res.ok) throw new Error(data.error || "Falha no agente")
-      if (data.threadId) setThreadId(data.threadId)
-      setChat((prev) => [...prev, { role: "assistant", content: data.reply || "" }])
-      if (data.proposals) setProposals(data.proposals)
-      if (data.desk) setDesk(data.desk)
-    } catch (err) {
-      showToast.error(err instanceof Error ? err.message : "Falha no agente")
-    } finally {
-      setBusyAgent(false)
-    }
-  }
-
-  async function generateImage() {
-    if (!imagePrompt.trim() || busyImage) return
-    setBusyImage(true)
-    try {
-      const res = await fetch("/api/marketing/images", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: imagePrompt, format: "feed" }),
-      })
-      const data = (await res.json()) as { error?: string; url?: string; format?: string; prompt?: string }
-      if (!res.ok) throw new Error(data.error || "Falha a gerar")
-      if (data.url) {
-        const next: MarketingImageRecord = {
-          url: data.url,
-          format: data.format || "feed",
-          prompt: data.prompt || imagePrompt,
-          createdAt: new Date().toISOString(),
-        }
-        setDesk((prev) => ({ ...prev, latestImages: [next, ...prev.latestImages] }))
-        showToast.success("Imagem pronta")
-      }
-    } catch (err) {
-      showToast.error(err instanceof Error ? err.message : "Falha a gerar imagem")
-    } finally {
-      setBusyImage(false)
-    }
-  }
-
   async function putInStore() {
     if (!campaignProposal || applying) return
     setApplying(true)
@@ -160,7 +76,7 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
       const res = await fetch(`/api/marketing/proposals/${campaignProposal.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "apply" }),
+        body: JSON.stringify({ action: "apply", imageUrl: studio.pack.imageUrl }),
       })
       const data = (await res.json()) as { error?: string; note?: string; campaignId?: string | null }
       if (!res.ok) throw new Error(data.error || "Falha")
@@ -168,7 +84,7 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
       if (campaignId) {
         const patch: Record<string, unknown> = {}
         if (productIds.length) patch.productIds = productIds
-        if (latestImage?.url) patch.imageUrls = [latestImage.url]
+        if (studio.pack.imageUrl) patch.imageUrls = [studio.pack.imageUrl]
         if (Object.keys(patch).length) {
           await fetch(`/api/marketing/campaigns/${campaignId}`, {
             method: "PATCH",
@@ -177,10 +93,12 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
           })
         }
         showToast.success(data.note || "Na loja")
+        studio.markApplied()
         router.push(`/dashboard/marketing/campaigns/${campaignId}`)
         return
       }
       showToast.success(data.note || "Campanha criada")
+      studio.markApplied()
       router.push("/dashboard/marketing/campaigns")
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : "Falha")
@@ -192,11 +110,20 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
       <section className="flex min-h-0 min-w-0 flex-1 flex-col max-lg:max-h-[48%] lg:max-h-none">
-        <header className="flex h-10 shrink-0 items-center border-b border-border px-3">
+        <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-3">
           <p className="text-[13px] font-medium">O que queres vender?</p>
+          {studio.chat.length > 0 ? (
+            <button
+              type="button"
+              className="text-[11px] text-muted-foreground hover:text-foreground"
+              onClick={() => studio.resetConversation()}
+            >
+              Nova conversa
+            </button>
+          ) : null}
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {chat.length === 0 && !busyAgent ? (
+          {showPlaybooks ? (
             <div className="mx-auto flex max-w-lg flex-col gap-1 px-4 py-6">
               <p className="text-[13px] font-medium">Estúdio da campanha</p>
               <p className="mb-2 text-[12px] leading-relaxed text-muted-foreground">
@@ -206,8 +133,8 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
                 <button
                   key={book.id}
                   type="button"
-                  disabled={busyAgent}
-                  onClick={() => void sendAgent(book.prompt)}
+                  disabled={studio.busyAgent}
+                  onClick={() => void studio.sendAgent(book.prompt)}
                   className="rounded-md border border-border px-3 py-2 text-left text-[13px] hover:bg-muted/60 disabled:opacity-50"
                 >
                   {book.label}
@@ -216,7 +143,7 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
             </div>
           ) : (
             <div className="mx-auto flex max-w-2xl flex-col gap-2.5 px-4 py-4">
-              {chat.map((line, i) => (
+              {studio.chat.map((line, i) => (
                 <div
                   key={`${line.role}-${i}`}
                   className={cn(
@@ -233,13 +160,13 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
                   )}
                 </div>
               ))}
-              {busyAgent ? (
+              {studio.busyAgent ? (
                 <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   A montar a campanha…
                 </p>
               ) : null}
-              <div ref={endRef} />
+              <div ref={studio.endRef} />
             </div>
           )}
         </div>
@@ -247,18 +174,18 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
           className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-3 py-2"
           onSubmit={(e) => {
             e.preventDefault()
-            void sendAgent(draft)
+            void studio.sendAgent(studio.draft)
           }}
         >
           <Input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            value={studio.draft}
+            onChange={(e) => studio.setDraft(e.target.value)}
             placeholder="Ex.: Samsung A16 esta semana"
             className="h-9 text-[13px]"
-            disabled={busyAgent}
+            disabled={studio.busyAgent}
             autoComplete="off"
           />
-          <Button type="submit" size="sm" className="h-9 px-3" disabled={busyAgent || !draft.trim()}>
+          <Button type="submit" size="sm" className="h-9 px-3" disabled={studio.busyAgent || !studio.draft.trim()}>
             <Send className="h-3.5 w-3.5" />
           </Button>
         </form>
@@ -272,7 +199,7 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
           ) : null}
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          {busyAgent && !campaignProposal ? (
+          {studio.busyAgent && !campaignProposal ? (
             <p className="text-[12px] text-muted-foreground">A montar o post…</p>
           ) : !campaignProposal ? (
             <p className="text-[12px] leading-relaxed text-muted-foreground">
@@ -282,20 +209,20 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
             <div className="space-y-3">
               <MarketingPostPreview
                 siteName={pulse.siteName}
-                imageUrl={latestImage?.url}
+                imageUrl={studio.pack.imageUrl}
                 caption={previewChannel === "facebook" ? facebookPost : instagramCaption}
                 channel={previewChannel}
                 onChannel={setPreviewChannel}
               />
-              {!latestImage ? (
+              {!studio.pack.imageUrl ? (
                 <Button
                   type="button"
                   size="sm"
                   className="h-7 w-full text-[11px]"
-                  disabled={busyImage || !imagePrompt.trim()}
-                  onClick={() => void generateImage()}
+                  disabled={studio.busyImage || !studio.pack.imagePrompt.trim()}
+                  onClick={() => void studio.generateImage()}
                 >
-                  {busyImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3" />}
+                  {studio.busyImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3" />}
                   Gerar imagem
                 </Button>
               ) : null}
@@ -335,14 +262,14 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
               {applying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
               Meter na loja
             </Button>
-            {latestImage ? (
+            {studio.pack.imageUrl ? (
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 className="h-8"
-                disabled={busyImage || !imagePrompt.trim()}
-                onClick={() => void generateImage()}
+                disabled={studio.busyImage || !studio.pack.imagePrompt.trim()}
+                onClick={() => void studio.generateImage()}
               >
                 Nova imagem
               </Button>

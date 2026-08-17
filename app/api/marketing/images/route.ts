@@ -3,6 +3,7 @@ import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 import {
   attachMarketingCampaignAssets,
   getLiveMarketingCampaign,
+  patchMarketingProposal,
   recordMarketingImage,
 } from "@/lib/actions/marketing"
 import { getStorefrontOrigin } from "@/lib/marketing/storefront"
@@ -299,6 +300,7 @@ export async function POST(request: Request) {
       prompt?: string
       format?: string
       campaignId?: string
+      proposalId?: string
     } | null
     const prompt = body?.prompt?.trim()
     const format = (body?.format?.trim() || "feed") as FormatKey
@@ -327,11 +329,7 @@ export async function POST(request: Request) {
 
     let bytes = generated.bytes
     if (cutout) {
-      try {
-        bytes = new Uint8Array(await punchBannerCutout(bytes))
-      } catch {
-        // Recorte falhou — envia a imagem original.
-      }
+      bytes = new Uint8Array(await punchBannerCutout(bytes))
     }
 
     const built = blobFromBytes(bytes)
@@ -342,6 +340,17 @@ export async function POST(request: Request) {
 
     const url = await uploadToLibrary(built.blob, `marketing-${format}-${Date.now()}.${built.ext}`)
     await recordMarketingImage({ url, format, prompt })
+    const proposalId = body?.proposalId?.trim()
+    if (proposalId) {
+      try {
+        await patchMarketingProposal(
+          proposalId,
+          format === "banner" ? { imageUrl: url } : { imageUrl: url, imageUrls: [url] },
+        )
+      } catch {
+        // Imagem já está na biblioteca; o cliente aplica o URL na proposta.
+      }
+    }
     try {
       const campaignId = body?.campaignId?.trim()
       if (campaignId) {

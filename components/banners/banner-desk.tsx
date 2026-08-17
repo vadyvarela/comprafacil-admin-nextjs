@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { ImageIcon, Loader2, Plus, Send, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -16,140 +15,51 @@ import { EditBannerModal } from "@/components/banners/edit-banner-modal"
 import { GET_BANNERS } from "@/lib/graphql/banners/queries"
 import { DELETE_BANNER } from "@/lib/graphql/banners/mutations"
 import type { Banner } from "@/lib/graphql/banners/types"
-import type { MarketingDesk, MarketingImageRecord, MarketingProposal, MarketingPulse } from "@/lib/graphql/marketing/types"
+import type { MarketingPulse } from "@/lib/graphql/marketing/types"
+import { useMarketingStudio } from "@/lib/marketing/use-marketing-studio"
 import { cn } from "@/lib/utils"
-
-type ChatLine = { role: "user" | "assistant"; content: string }
+import { useState } from "react"
 
 function asString(value: unknown) {
   return typeof value === "string" ? value : ""
 }
 
 export function BannerDesk({ pulse }: { pulse: MarketingPulse }) {
-  const [threadId, setThreadId] = useState<string | null>(null)
-  const [chat, setChat] = useState<ChatLine[]>([])
-  const [draft, setDraft] = useState("")
-  const [proposals, setProposals] = useState(pulse.proposals)
-  const [desk, setDesk] = useState<MarketingDesk>(pulse.desk)
-  const [busyAgent, setBusyAgent] = useState(false)
-  const [busyImage, setBusyImage] = useState(false)
-  const [applying, setApplying] = useState(false)
+  const studio = useMarketingStudio("banner", pulse.desk)
   const [createOpen, setCreateOpen] = useState(false)
   const [editBanner, setEditBanner] = useState<Banner | null>(null)
+  const [applying, setApplying] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const endRef = useRef<HTMLDivElement>(null)
 
   const { data, refetch } = useQuery<{ banners: Banner[] }>(GET_BANNERS)
   const [deleteBanner] = useMutation(DELETE_BANNER, {
     refetchQueries: [{ query: GET_BANNERS }],
   })
 
-  const bannerProposal = useMemo(
-    () =>
-      proposals.find(
-        (p) => p.status === "pending" && (p.type === "banner" || p.type === "banner_update"),
-      ) ?? null,
-    [proposals],
-  )
-  const imageProposal = useMemo(
-    () => proposals.find((p) => p.status === "pending" && p.type === "image_prompt") ?? null,
-    [proposals],
-  )
-
-  const payload = bannerProposal?.payload ?? {}
+  const proposal = studio.pack.proposal
+  const payload = proposal?.payload ?? {}
   const title = asString(payload.title)
   const subtitle = asString(payload.subtitle)
   const buttonText = asString(payload.buttonText) || "Ver ofertas"
   const link = asString(payload.link) || "/campanha"
   const position = asString(payload.position) || "hero"
-  const imagePrompt =
-    asString(payload.imagePrompt) || asString(imageProposal?.payload.prompt)
-  const latestImage =
-    desk.latestImages.find((img) => img.format === "banner") ?? desk.latestImages[0] ?? null
-  const isUpdate = bannerProposal?.type === "banner_update"
+  const isUpdate = proposal?.type === "banner_update"
   const banners = data?.banners ?? []
-
-  useEffect(() => {
-    setDesk(pulse.desk)
-    setProposals(pulse.proposals)
-  }, [pulse])
-
-  useEffect(() => {
-    queueMicrotask(() => endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }))
-  }, [chat, busyAgent])
-
-  async function sendAgent(text: string) {
-    const message = text.trim()
-    if (!message || busyAgent) return
-    setDraft("")
-    setChat((prev) => [...prev, { role: "user", content: message }])
-    setBusyAgent(true)
-    try {
-      const res = await fetch("/api/marketing/agent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, threadId, intent: "banner" }),
-      })
-      const json = (await res.json()) as {
-        error?: string
-        reply?: string
-        threadId?: string
-        proposals?: MarketingProposal[]
-        desk?: MarketingDesk
-      }
-      if (!res.ok) throw new Error(json.error || "Falha no agente")
-      if (json.threadId) setThreadId(json.threadId)
-      setChat((prev) => [...prev, { role: "assistant", content: json.reply || "" }])
-      if (json.proposals) setProposals(json.proposals)
-      if (json.desk) setDesk(json.desk)
-    } catch (err) {
-      showToast.error(err instanceof Error ? err.message : "Falha no agente")
-    } finally {
-      setBusyAgent(false)
-    }
-  }
-
-  async function generateImage() {
-    if (!imagePrompt.trim() || busyImage) return
-    setBusyImage(true)
-    try {
-      const res = await fetch("/api/marketing/images", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: imagePrompt, format: "banner" }),
-      })
-      const json = (await res.json()) as { error?: string; url?: string; format?: string; prompt?: string }
-      if (!res.ok) throw new Error(json.error || "Falha a gerar")
-      if (json.url) {
-        const next: MarketingImageRecord = {
-          url: json.url,
-          format: json.format || "banner",
-          prompt: json.prompt || imagePrompt,
-          createdAt: new Date().toISOString(),
-        }
-        setDesk((prev) => ({ ...prev, latestImages: [next, ...prev.latestImages] }))
-        showToast.success("Imagem pronta")
-      }
-    } catch (err) {
-      showToast.error(err instanceof Error ? err.message : "Falha a gerar imagem")
-    } finally {
-      setBusyImage(false)
-    }
-  }
+  const showPlaybooks = studio.chat.length === 0 && !studio.busyAgent && !studio.hydrating
 
   async function putOnSite() {
-    if (!bannerProposal || applying) return
+    if (!proposal || applying) return
     setApplying(true)
     try {
-      const res = await fetch(`/api/marketing/proposals/${bannerProposal.id}`, {
+      const res = await fetch(`/api/marketing/proposals/${proposal.id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "apply", imageUrl: latestImage?.url }),
+        body: JSON.stringify({ action: "apply", imageUrl: studio.pack.imageUrl }),
       })
       const json = (await res.json()) as { error?: string; note?: string }
       if (!res.ok) throw new Error(json.error || "Falha")
       showToast.success(json.note || "No site")
-      setProposals((prev) => prev.filter((p) => p.id !== bannerProposal.id))
+      studio.markApplied()
       await refetch()
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : "Falha")
@@ -191,11 +101,20 @@ export function BannerDesk({ pulse }: { pulse: MarketingPulse }) {
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
         <section className="flex min-h-0 min-w-0 flex-1 flex-col max-lg:max-h-[48%] lg:max-h-none">
-          <header className="flex h-10 shrink-0 items-center border-b border-border px-3">
+          <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-3">
             <p className="text-[13px] font-medium">O que vai no hero?</p>
+            {studio.chat.length > 0 ? (
+              <button
+                type="button"
+                className="text-[11px] text-muted-foreground hover:text-foreground"
+                onClick={() => studio.resetConversation()}
+              >
+                Nova conversa
+              </button>
+            ) : null}
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto">
-            {chat.length === 0 && !busyAgent ? (
+            {showPlaybooks ? (
               <div className="mx-auto flex max-w-lg flex-col gap-1 px-4 py-6">
                 <p className="text-[13px] font-medium">Agente de banners</p>
                 <p className="mb-2 text-[12px] leading-relaxed text-muted-foreground">
@@ -205,8 +124,8 @@ export function BannerDesk({ pulse }: { pulse: MarketingPulse }) {
                   <button
                     key={book.id}
                     type="button"
-                    disabled={busyAgent}
-                    onClick={() => void sendAgent(book.prompt)}
+                    disabled={studio.busyAgent}
+                    onClick={() => void studio.sendAgent(book.prompt)}
                     className="rounded-md border border-border px-3 py-2 text-left text-[13px] hover:bg-muted/60 disabled:opacity-50"
                   >
                     {book.label}
@@ -215,7 +134,7 @@ export function BannerDesk({ pulse }: { pulse: MarketingPulse }) {
               </div>
             ) : (
               <div className="mx-auto flex max-w-2xl flex-col gap-2.5 px-4 py-4">
-                {chat.map((line, i) => (
+                {studio.chat.map((line, i) => (
                   <div
                     key={`${line.role}-${i}`}
                     className={cn(
@@ -232,13 +151,13 @@ export function BannerDesk({ pulse }: { pulse: MarketingPulse }) {
                     )}
                   </div>
                 ))}
-                {busyAgent ? (
+                {studio.busyAgent ? (
                   <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     A montar o banner…
                   </p>
                 ) : null}
-                <div ref={endRef} />
+                <div ref={studio.endRef} />
               </div>
             )}
           </div>
@@ -246,18 +165,18 @@ export function BannerDesk({ pulse }: { pulse: MarketingPulse }) {
             className="flex shrink-0 items-center gap-2 border-t border-border bg-background px-3 py-2"
             onSubmit={(e) => {
               e.preventDefault()
-              void sendAgent(draft)
+              void studio.sendAgent(studio.draft)
             }}
           >
             <Input
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              value={studio.draft}
+              onChange={(e) => studio.setDraft(e.target.value)}
               placeholder="Ex.: hero do Samsung A16 esta semana"
               className="h-9 text-[13px]"
-              disabled={busyAgent}
+              disabled={studio.busyAgent}
               autoComplete="off"
             />
-            <Button type="submit" size="sm" className="h-9 px-3" disabled={busyAgent || !draft.trim()}>
+            <Button type="submit" size="sm" className="h-9 px-3" disabled={studio.busyAgent || !studio.draft.trim()}>
               <Send className="h-3.5 w-3.5" />
             </Button>
           </form>
@@ -271,29 +190,29 @@ export function BannerDesk({ pulse }: { pulse: MarketingPulse }) {
             </span>
           </header>
           <div className="min-h-0 flex-1 overflow-y-auto p-3">
-            {busyAgent && !bannerProposal ? (
+            {studio.busyAgent && !proposal ? (
               <p className="text-[12px] text-muted-foreground">A montar o hero…</p>
-            ) : bannerProposal ? (
+            ) : proposal ? (
               <div className="space-y-3">
                 <MarketingBannerPreview
                   title={title}
                   subtitle={subtitle}
                   buttonText={buttonText}
-                  imageUrl={latestImage?.url || asString(payload.imageUrl) || null}
+                  imageUrl={studio.pack.imageUrl}
                   position={position}
                 />
                 <p className="text-[12px] text-muted-foreground">
                   Link: <span className="font-mono text-foreground">{link}</span>
                 </p>
-                {!latestImage && !asString(payload.imageUrl) ? (
+                {!studio.pack.imageUrl ? (
                   <Button
                     type="button"
                     size="sm"
                     className="h-7 w-full text-[11px]"
-                    disabled={busyImage || !imagePrompt.trim()}
-                    onClick={() => void generateImage()}
+                    disabled={studio.busyImage || !studio.pack.imagePrompt.trim()}
+                    onClick={() => void studio.generateImage()}
                   >
-                    {busyImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3" />}
+                    {studio.busyImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageIcon className="h-3 w-3" />}
                     Gerar imagem
                   </Button>
                 ) : null}
@@ -349,20 +268,20 @@ export function BannerDesk({ pulse }: { pulse: MarketingPulse }) {
               </ul>
             )}
           </div>
-          {bannerProposal ? (
+          {proposal ? (
             <div className="flex shrink-0 items-center gap-2 border-t border-border px-3 py-2">
               <Button type="button" size="sm" className="h-8 flex-1" disabled={applying} onClick={() => void putOnSite()}>
                 {applying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
                 {isUpdate ? "Actualizar no site" : "Meter no site"}
               </Button>
-              {latestImage || asString(payload.imageUrl) ? (
+              {studio.pack.imageUrl ? (
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
                   className="h-8"
-                  disabled={busyImage || !imagePrompt.trim()}
-                  onClick={() => void generateImage()}
+                  disabled={studio.busyImage || !studio.pack.imagePrompt.trim()}
+                  onClick={() => void studio.generateImage()}
                 >
                   Nova imagem
                 </Button>

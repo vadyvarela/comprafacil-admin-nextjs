@@ -73,7 +73,11 @@ export async function applyMarketingProposal(proposal: MarketingProposal): Promi
         instagramCaption: str(p.instagramCaption) || null,
         whatsappText: str(p.whatsappText) || null,
         productIds: strList(p.productIds),
-        imageUrls: strList(p.imageUrls),
+        imageUrls: strList(p.imageUrls).length
+          ? strList(p.imageUrls)
+          : str(p.imageUrl)
+            ? [str(p.imageUrl)]
+            : [],
         destinationType: str(p.destinationType) || "campaign",
         destinationHref: str(p.destinationHref) || null,
         slug: str(p.slug) || null,
@@ -142,8 +146,7 @@ export async function applyMarketingProposal(proposal: MarketingProposal): Promi
     }
     case "banner": {
       const title = str(p.title)
-      const desk = await getMarketingDesk()
-      const image = str(p.imageUrl) || desk.latestImages[0]?.url || ""
+      const image = str(p.imageUrl)
       if (!title) throw new Error("Banner sem título")
       if (!image) {
         throw new Error("Gera a imagem à direita e volta a meter o banner no site")
@@ -197,8 +200,7 @@ export async function applyMarketingProposal(proposal: MarketingProposal): Promi
         throw new Error(currentRes.errors[0]?.message ?? "Banner não encontrado")
       }
       if (!current) throw new Error("Banner não encontrado")
-      const desk = await getMarketingDesk()
-      const image = str(p.imageUrl) || current.image || desk.latestImages[0]?.url || ""
+      const image = str(p.imageUrl) || current.image
       if (!image) throw new Error("Este banner precisa de uma imagem")
       const statusCode = str(p.status).toUpperCase() || current.status?.code || "ACTIVE"
       const result = await runGraphQL<{ updateBanner: { id: string } }>(UPDATE_BANNER, {

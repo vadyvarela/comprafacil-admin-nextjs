@@ -105,31 +105,53 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
       const res = await fetch("/api/marketing/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, threadId }),
+        body: JSON.stringify({ message, threadId, intent: "desk" }),
       })
       const data = (await res.json()) as {
         error?: string
         reply?: string
         threadId?: string
+        messages?: Array<{ role: "user" | "assistant"; content: string }>
         proposals?: MarketingProposal[]
+        pack?: {
+          proposal: MarketingProposal | null
+          imagePrompt: string
+          imageUrl: string | null
+        }
         desk?: MarketingDesk
       }
       if (!res.ok) throw new Error(data.error || "Falha no agente")
       if (data.threadId) setThreadId(data.threadId)
-      setChat((prev) => [...prev, { role: "assistant", content: data.reply || "" }])
+      if (data.messages?.length) {
+        setChat(data.messages)
+      } else {
+        setChat((prev) => [...prev, { role: "assistant", content: data.reply || "" }])
+      }
       if (data.proposals) setProposals(data.proposals)
       if (data.desk) setDesk(data.desk)
-      const lastPrompt = data.proposals?.find((p) => p.type === "image_prompt" && p.status === "pending")
-      const lastPack = data.proposals?.find(
-        (p) =>
-          p.status === "pending" &&
-          (p.type === "social_pack" ||
-            (typeof p.payload.facebookPost === "string" && p.payload.facebookPost.trim())),
-      )
-      if (lastPrompt && typeof lastPrompt.payload.prompt === "string") {
-        setPrompt(lastPrompt.payload.prompt)
-        if (lastPrompt.payload.format === "stories" || lastPrompt.payload.format === "banner") {
-          setFormat(lastPrompt.payload.format)
+      const packProposal = data.pack?.proposal
+      const lastPrompt =
+        data.pack?.imagePrompt ||
+        (typeof data.proposals?.find((p) => p.type === "image_prompt" && p.status === "pending")?.payload.prompt ===
+        "string"
+          ? (data.proposals.find((p) => p.type === "image_prompt" && p.status === "pending")?.payload.prompt as string)
+          : "")
+      const lastPack =
+        packProposal &&
+        (packProposal.type === "social_pack" ||
+          (typeof packProposal.payload.facebookPost === "string" && packProposal.payload.facebookPost.trim()))
+          ? packProposal
+          : data.proposals?.find(
+              (p) =>
+                p.status === "pending" &&
+                (p.type === "social_pack" ||
+                  (typeof p.payload.facebookPost === "string" && p.payload.facebookPost.trim())),
+            )
+      if (lastPrompt) {
+        setPrompt(lastPrompt)
+        const format = packProposal?.payload.format
+        if (format === "stories" || format === "banner") {
+          setFormat(format)
         } else {
           setFormat("feed")
         }

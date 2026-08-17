@@ -6,21 +6,27 @@ import {
   createMarketingProposal,
   createMarketingThread,
   getMarketingPulse,
+  getMarketingThread,
   listMarketingCampaigns,
   searchMarketingProducts,
 } from "@/lib/actions/marketing"
 import { marketingSystemPrompt } from "@/lib/marketing/system-prompt"
 import { MARKETING_AGENT_TOOLS } from "@/lib/marketing/tools"
 import { runGraphQL } from "@/lib/actions/graphql"
-import { MARKETING_THREAD } from "@/lib/graphql/marketing/queries"
 import { GET_BANNERS } from "@/lib/graphql/banners/queries"
+import {
+  THREAD_TITLES,
+  buildStudioPack,
+  chatFromMessages,
+  type MarketingIntent,
+} from "@/lib/marketing/studio-pack"
 
 export const maxDuration = 60
 
 type ChatBody = {
   message?: string
   threadId?: string | null
-  intent?: "desk" | "campaign" | "banner"
+  intent?: MarketingIntent
 }
 
 type OaiMessage = {
@@ -31,6 +37,11 @@ type OaiMessage = {
     type: string
     function: { name: string; arguments: string }
   }>
+}
+
+function asIntent(value: unknown): MarketingIntent {
+  if (value === "campaign" || value === "banner") return value
+  return "desk"
 }
 
 function llmConfig() {
@@ -76,17 +87,15 @@ async function chatCompletions(
   return message
 }
 
-async function loadHistory(threadId: string): Promise<OaiMessage[]> {
-  const result = await runGraphQL<{
-    marketingThread: {
-      messages: Array<{ role: string; content: string }>
-    } | null
-  }>(MARKETING_THREAD, { id: threadId })
-  const messages = result.data?.marketingThread?.messages ?? []
-  return messages
-    .filter((m) => m.role === "user" || m.role === "assistant")
-    .slice(-16)
-    .map((m) => ({ role: m.role, content: m.content }))
+function historyForLlm(
+  stored: Array<{ role: string; content: string }>,
+  current: string,
+): OaiMessage[] {
+  const prior = chatFromMessages(stored)
+  const last = prior[prior.length - 1]
+  const trimmed =
+    last?.role === "user" && last.content.trim() === current.trim() ? prior.slice(0, -1) : prior
+  return [...trimmed.slice(-16), { role: "user", content: current }]
 }
 
 async function executeTool(
@@ -213,24 +222,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Escreve uma instrução." }, { status: 400 })
     }
 
+    const intent = asIntent(body?.intent)
     const pulse = await getMarketingPulse()
     let threadId = body?.threadId?.trim() || ""
     if (!threadId) {
-      const thread = await createMarketingThread(message.slice(0, 80))
+      const thread = await createMarketingThread(`${THREAD_TITLES[intent]} · ${message.slice(0, 60)}`)
       threadId = thread.id
     }
 
     await appendMarketingMessage({ threadId, role: "user", content: message })
+    const before = await getMarketingThread(threadId)
+    const history = historyForLlm(before?.messages ?? [], message)
 
-    const history = await loadHistory(threadId)
     const messages: OaiMessage[] = [
       {
         role: "system",
         content: marketingSystemPrompt({
           siteName: pulse.siteName,
           compactContext: compactPulseText(pulse),
-          intent:
-            body?.intent === "campaign" || body?.intent === "banner" ? body.intent : "desk",
+          intent,
         }),
       },
       ...history,
@@ -262,16 +272,19 @@ export async function POST(request: Request) {
     }
 
     if (!assistantText) {
-      assistantText = "Propostas criadas. Revisa a caixa Aplicar à direita."
+      assistantText = "Pack actualizado à direita."
     }
 
     await appendMarketingMessage({ threadId, role: "assistant", content: assistantText })
 
-    const refreshed = await getMarketingPulse()
+    const [refreshed, thread] = await Promise.all([getMarketingPulse(), getMarketingThread(threadId)])
+    const proposals = thread?.proposals ?? []
     return NextResponse.json({
       threadId,
       reply: assistantText,
-      proposals: refreshed.proposals,
+      messages: chatFromMessages(thread?.messages ?? []),
+      proposals,
+      pack: buildStudioPack(proposals, intent),
       desk: refreshed.desk,
     })
   } catch (err) {

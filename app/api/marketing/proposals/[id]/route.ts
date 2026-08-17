@@ -62,7 +62,13 @@ export async function POST(
     }
     const proposal = parseProposal(row)
     const overlayImage = typeof body.imageUrl === "string" ? body.imageUrl.trim() : ""
-    if (overlayImage) proposal.payload.imageUrl = overlayImage
+    if (overlayImage) {
+      proposal.payload.imageUrl = overlayImage
+      const urls = Array.isArray(proposal.payload.imageUrls)
+        ? proposal.payload.imageUrls.filter((item): item is string => typeof item === "string" && item.trim() !== overlayImage)
+        : []
+      proposal.payload.imageUrls = [overlayImage, ...urls]
+    }
     if (proposal.status !== "pending") {
       return NextResponse.json({ error: "Esta proposta já foi tratada" }, { status: 409 })
     }

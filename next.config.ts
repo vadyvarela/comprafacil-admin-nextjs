@@ -10,6 +10,7 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  serverExternalPackages: ["sharp"],
   turbopack: {
     root: process.cwd(),
   },

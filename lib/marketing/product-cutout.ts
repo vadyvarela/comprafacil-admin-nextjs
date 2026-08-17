@@ -1,31 +1,12 @@
 import sharp from "sharp"
 
-const BLOCK = 12
-const GREEN_MIN = 88
-const GREEN_EXCESS = 26
-
-function pixel(data: Buffer, width: number, x: number, y: number) {
+function at(data: Buffer, width: number, x: number, y: number) {
   const i = (y * width + x) * 4
-  return { r: data[i], g: data[i + 1], b: data[i + 2], a: data[i + 3], i }
+  return { r: data[i], g: data[i + 1], b: data[i + 2], i }
 }
 
-function avgBlock(data: Buffer, width: number, height: number, x0: number, y0: number) {
-  let r = 0
-  let g = 0
-  let b = 0
-  let n = 0
-  const x1 = Math.min(width, x0 + BLOCK)
-  const y1 = Math.min(height, y0 + BLOCK)
-  for (let y = Math.max(0, y0); y < y1; y += 1) {
-    for (let x = Math.max(0, x0); x < x1; x += 1) {
-      const p = pixel(data, width, x, y)
-      r += p.r
-      g += p.g
-      b += p.b
-      n += 1
-    }
-  }
-  return { r: r / n, g: g / n, b: b / n }
+function chroma(r: number, g: number, b: number) {
+  return Math.max(r, g, b) - Math.min(r, g, b)
 }
 
 function dist(a: { r: number; g: number; b: number }, r: number, g: number, b: number) {
@@ -33,14 +14,11 @@ function dist(a: { r: number; g: number; b: number }, r: number, g: number, b: n
 }
 
 function isChromaGreen(r: number, g: number, b: number) {
-  return g >= GREEN_MIN && g - r >= GREEN_EXCESS && g - b >= GREEN_EXCESS
+  return g >= 80 && g - r >= 22 && g - b >= 22
 }
 
-function isCheckerGray(r: number, g: number, b: number) {
-  const max = Math.max(r, g, b)
-  const min = Math.min(r, g, b)
-  if (max - min > 14) return false
-  return (max >= 118 && max <= 176) || (max >= 188 && max <= 236)
+function isLowChroma(r: number, g: number, b: number) {
+  return chroma(r, g, b) <= 16
 }
 
 function keyGreen(data: Buffer) {
@@ -50,14 +28,65 @@ function keyGreen(data: Buffer) {
     const b = data[i + 2]
     if (!isChromaGreen(r, g, b)) continue
     const excess = Math.min(g - r, g - b)
-    const t = Math.min(1, Math.max(0, (excess - 18) / 55))
+    const t = Math.min(1, Math.max(0, (excess - 16) / 50))
     data[i + 3] = Math.round(data[i + 3] * (1 - t))
     const spill = Math.max(0, g - Math.max(r, b))
     data[i + 1] = Math.max(Math.max(r, b), g - spill)
   }
 }
 
-function floodBackdrop(data: Buffer, width: number, height: number, seeds: Array<{ r: number; g: number; b: number }>) {
+function keyCheckerboard(data: Buffer, width: number, height: number) {
+  const periods = [8, 12, 16, 24, 32]
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const p = at(data, width, x, y)
+      if (!isLowChroma(p.r, p.g, p.b)) continue
+      const hit = periods.some((period) => {
+        const hx = x + period < width
+        const hy = y + period < height
+        const ox = x + (period >> 1) < width
+        const oy = y + (period >> 1) < height
+        if (!hx || !hy || !ox || !oy) return false
+        const sameX = at(data, width, x + period, y)
+        const sameY = at(data, width, x, y + period)
+        const opp = at(data, width, x + (period >> 1), y + (period >> 1))
+        return (
+          dist(p, sameX.r, sameX.g, sameX.b) < 26 &&
+          dist(p, sameY.r, sameY.g, sameY.b) < 26 &&
+          dist(p, opp.r, opp.g, opp.b) > 28 &&
+          isLowChroma(opp.r, opp.g, opp.b)
+        )
+      })
+      if (hit) data[p.i + 3] = 0
+    }
+  }
+}
+
+function floodFlatBackdrop(data: Buffer, width: number, height: number) {
+  const sample = (x0: number, y0: number) => {
+    let r = 0
+    let g = 0
+    let b = 0
+    let n = 0
+    for (let y = y0; y < y0 + 10 && y < height; y += 1) {
+      for (let x = x0; x < x0 + 10 && x < width; x += 1) {
+        const p = at(data, width, x, y)
+        r += p.r
+        g += p.g
+        b += p.b
+        n += 1
+      }
+    }
+    return { r: r / n, g: g / n, b: b / n }
+  }
+
+  const seeds = [
+    sample(0, 0),
+    sample(width - 10, 0),
+    sample(0, height - 10),
+    sample(width - 10, height - 10),
+  ]
+
   const visited = new Uint8Array(width * height)
   const stack: number[] = []
   const enqueue = (x: number, y: number) => {
@@ -77,26 +106,49 @@ function floodBackdrop(data: Buffer, width: number, height: number, seeds: Array
     enqueue(width - 1, y)
   }
 
-  const matches = (r: number, g: number, b: number) => {
-    if (isCheckerGray(r, g, b)) return true
-    return seeds.some((seed) => dist(seed, r, g, b) < 34)
+  const isBackdrop = (x: number, y: number, r: number, g: number, b: number) => {
+    if (isChromaGreen(r, g, b)) return true
+    if (!isLowChroma(r, g, b)) return false
+    if (!seeds.some((seed) => dist(seed, r, g, b) < 48)) return false
+    let minL = 255
+    let maxL = 0
+    for (let dy = -1; dy <= 1; dy += 1) {
+      for (let dx = -1; dx <= 1; dx += 1) {
+        const nx = x + dx
+        const ny = y + dy
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue
+        const n = at(data, width, nx, ny)
+        const l = (n.r + n.g + n.b) / 3
+        if (l < minL) minL = l
+        if (l > maxL) maxL = l
+      }
+    }
+    return maxL - minL < 22
   }
 
   while (stack.length) {
     const idx = stack.pop()!
+    const x = idx % width
+    const y = (idx / width) | 0
     const i = idx * 4
     const r = data[i]
     const g = data[i + 1]
     const b = data[i + 2]
-    if (!matches(r, g, b)) continue
+    if (!isBackdrop(x, y, r, g, b)) continue
     data[i + 3] = 0
-    const x = idx % width
-    const y = (idx / width) | 0
     enqueue(x + 1, y)
     enqueue(x - 1, y)
     enqueue(x, y + 1)
     enqueue(x, y - 1)
   }
+}
+
+function transparentRatio(data: Buffer) {
+  let clear = 0
+  for (let i = 3; i < data.length; i += 4) {
+    if (data[i] < 16) clear += 1
+  }
+  return clear / (data.length / 4)
 }
 
 export async function punchBannerCutout(bytes: Uint8Array): Promise<Uint8Array> {
@@ -108,20 +160,10 @@ export async function punchBannerCutout(bytes: Uint8Array): Promise<Uint8Array> 
   const height = info.height
   const pixels = Buffer.from(data)
 
-  const corners = [
-    avgBlock(pixels, width, height, 0, 0),
-    avgBlock(pixels, width, height, width - BLOCK, 0),
-    avgBlock(pixels, width, height, 0, height - BLOCK),
-    avgBlock(pixels, width, height, width - BLOCK, height - BLOCK),
-  ]
-  const chromaHits = corners.filter((c) => isChromaGreen(c.r, c.g, c.b)).length
-  const checkerHits = corners.filter((c) => isCheckerGray(c.r, c.g, c.b)).length
-
-  if (chromaHits >= 2) {
-    keyGreen(pixels)
-  } else {
-    floodBackdrop(pixels, width, height, corners)
-    if (checkerHits >= 2) keyGreen(pixels)
+  keyGreen(pixels)
+  keyCheckerboard(pixels, width, height)
+  if (transparentRatio(pixels) < 0.12) {
+    floodFlatBackdrop(pixels, width, height)
   }
 
   return sharp(pixels, { raw: { width, height, channels: 4 } }).png().toBuffer()
