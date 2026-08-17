@@ -5,13 +5,20 @@ import { validateImageBlob } from "@/lib/security/upload-validation"
 
 export const maxDuration = 90
 
+/**
+ * GPT Image (gpt-image-2 / gpt-image-1.*): tamanhos oficiais.
+ * Não usar 1024x1792 / 1792x1024 — esses são só DALL·E 3 (legado).
+ * @see https://developers.openai.com/api/docs/guides/image-generation
+ */
 const FORMATS = {
   feed: { size: "1024x1024", label: "Feed" },
-  stories: { size: "1024x1792", label: "Stories" },
-  banner: { size: "1792x1024", label: "Banner" },
+  stories: { size: "1024x1536", label: "Stories" },
+  banner: { size: "1536x1024", label: "Banner" },
 } as const
 
 type FormatKey = keyof typeof FORMATS
+
+const GPT_IMAGE_QUALITIES = new Set(["low", "medium", "high", "auto"])
 
 function llmConfig() {
   const apiKey = process.env.MARKETING_AGENT_API_KEY?.trim()
@@ -24,25 +31,34 @@ function llmConfig() {
   if (!baseUrl.includes("://")) {
     return { error: "MARKETING_AGENT_BASE_URL inválida (ex. https://api.openai.com/v1)." }
   }
-  return {
-    apiKey,
-    imageModel: process.env.MARKETING_IMAGE_MODEL?.trim() || "dall-e-3",
-    baseUrl,
-  }
+
+  // Default actual: gpt-image-2 (abril 2026). Evitar dall-e-3.
+  const imageModel = process.env.MARKETING_IMAGE_MODEL?.trim() || "gpt-image-2"
+  const qualityRaw = process.env.MARKETING_IMAGE_QUALITY?.trim().toLowerCase() || "medium"
+  const quality = GPT_IMAGE_QUALITIES.has(qualityRaw) ? qualityRaw : "medium"
+
+  return { apiKey, imageModel, baseUrl, quality }
 }
 
-async function readJsonBody<T>(res: Response): Promise<{ ok: true; data: T } | { ok: false; error: string }> {
+function isGptImageModel(model: string) {
+  return model.startsWith("gpt-image") || model.startsWith("chatgpt-image")
+}
+
+async function readJsonBody<T>(
+  res: Response,
+): Promise<{ ok: true; data: T } | { ok: false; error: string; status: number }> {
   const raw = await res.text()
   const trimmed = raw.trim()
   if (!trimmed) {
-    return { ok: false, error: `Resposta vazia (${res.status})` }
+    return { ok: false, status: res.status, error: `Resposta vazia da API de imagens (${res.status})` }
   }
   if (trimmed.startsWith("<!") || trimmed.startsWith("<html")) {
     return {
       ok: false,
+      status: res.status,
       error:
-        `A API de imagens devolveu HTML (${res.status}) em vez de JSON. ` +
-        `Confirma MARKETING_AGENT_API_KEY e MARKETING_AGENT_BASE_URL (deve ser https://api.openai.com/v1).`,
+        `A API de imagens devolveu HTML (${res.status}). ` +
+        `Confirma MARKETING_AGENT_BASE_URL=https://api.openai.com/v1 e MARKETING_IMAGE_MODEL=gpt-image-2.`,
     }
   }
   try {
@@ -50,9 +66,30 @@ async function readJsonBody<T>(res: Response): Promise<{ ok: true; data: T } | {
   } catch {
     return {
       ok: false,
-      error: `Resposta inválida da API de imagens (${res.status}): ${trimmed.slice(0, 120)}`,
+      status: res.status,
+      error: `Resposta inválida da API de imagens (${res.status}): ${trimmed.slice(0, 160)}`,
     }
   }
+}
+
+function openaiErrorMessage(data: unknown, status: number): string {
+  const obj = data as {
+    error?: { message?: string; code?: string; type?: string }
+    message?: string
+  } | null
+  const msg =
+    obj?.error?.message?.trim() ||
+    (typeof obj?.message === "string" ? obj.message.trim() : "") ||
+    ""
+  const code = obj?.error?.code?.trim()
+  if (msg && code) return `${msg} (${code})`
+  if (msg) return msg
+  if (status === 401) return "API key inválida para imagens."
+  if (status === 403) {
+    return "Sem permissão para GPT Image. Completa a Organization Verification na consola OpenAI."
+  }
+  if (status === 429) return "Limite da OpenAI atingido. Espera um minuto e tenta outra vez."
+  return `Geração de imagem falhou (${status}).`
 }
 
 function mimeFromBytes(bytes: Uint8Array): string {
@@ -86,7 +123,7 @@ function requireGtw() {
   const gtwUrl = process.env.GTW_URL
   const cmsAccessToken = process.env.CMS_ACCESS_TOKEN
   if (!gtwUrl || !cmsAccessToken) {
-    return { error: "Configuração do gateway em falta" }
+    return { error: "Falta GTW_URL ou CMS_ACCESS_TOKEN para guardar a imagem na biblioteca." }
   }
   return { gtwUrl, cmsAccessToken }
 }
@@ -124,6 +161,69 @@ async function uploadToLibrary(file: Blob, filename: string) {
   return url
 }
 
+async function generateWithOpenAI(
+  cfg: { apiKey: string; baseUrl: string; imageModel: string; quality: string },
+  prompt: string,
+  size: string,
+) {
+  const payload: Record<string, unknown> = {
+    model: cfg.imageModel,
+    prompt: prompt.slice(0, 3900),
+    size,
+    n: 1,
+  }
+
+  // GPT Image: quality low|medium|high|auto; sempre devolve b64_json (sem response_format).
+  // DALL·E 3 legado: quality hd|standard — só se alguém forçar MARKETING_IMAGE_MODEL=dall-e-3.
+  if (isGptImageModel(cfg.imageModel)) {
+    payload.quality = cfg.quality
+  } else if (cfg.imageModel.startsWith("dall-e-3")) {
+    payload.quality = "standard"
+  }
+
+  const gen = await fetch(`${cfg.baseUrl}/images/generations`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${cfg.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(80000),
+  })
+
+  const parsed = await readJsonBody<{
+    error?: { message?: string; code?: string; type?: string }
+    data?: Array<{ url?: string; b64_json?: string }>
+  }>(gen)
+
+  if (!parsed.ok) {
+    return { error: parsed.error, status: parsed.status }
+  }
+  if (!gen.ok) {
+    return { error: openaiErrorMessage(parsed.data, gen.status), status: gen.status }
+  }
+
+  const asset = parsed.data.data?.[0]
+  if (!asset) {
+    return { error: "O modelo não devolveu imagem.", status: 502 }
+  }
+
+  // GPT Image devolve sempre b64_json; DALL·E pode devolver url.
+  if (asset.b64_json) {
+    const bytes = Uint8Array.from(Buffer.from(asset.b64_json, "base64"))
+    return { bytes }
+  }
+  if (asset.url) {
+    const downloaded = await fetch(asset.url, { signal: AbortSignal.timeout(30000) })
+    if (!downloaded.ok) {
+      return { error: "Não foi possível descarregar a imagem gerada.", status: 502 }
+    }
+    const bytes = new Uint8Array(await downloaded.arrayBuffer())
+    return { bytes }
+  }
+  return { error: "O modelo não devolveu URL nem base64.", status: 502 }
+}
+
 export async function POST(request: Request) {
   try {
     const { error } = await requireModuleWriteSession("marketing")
@@ -151,69 +251,36 @@ export async function POST(request: Request) {
     const fullPrompt = [
       prompt,
       "Professional retail campaign visual for a Cape Verde electronics store.",
-      "Clean composition, high-end commercial photography/graphic, no fake brand logos, no watermark, no misspelled text if any text appears.",
+      "Clean composition, commercial photography style, no fake brand logos, no watermark.",
     ].join(" ")
 
-    const gen = await fetch(`${cfg.baseUrl}/images/generations`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${cfg.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: cfg.imageModel,
-        prompt: fullPrompt,
-        size,
-        n: 1,
-        response_format: "b64_json",
-      }),
-      signal: AbortSignal.timeout(80000),
-    })
-    const parsed = await readJsonBody<{
-      error?: { message?: string }
-      data?: Array<{ url?: string; b64_json?: string }>
-    }>(gen)
-    if (!parsed.ok) {
-      return NextResponse.json({ error: parsed.error }, { status: 502 })
-    }
-    const json = parsed.data
-    if (!gen.ok) {
+    const generated = await generateWithOpenAI(cfg, fullPrompt, size)
+    if ("error" in generated && generated.error) {
       return NextResponse.json(
-        { error: json.error?.message || `Geração falhou (${gen.status})` },
-        { status: 502 },
+        { error: generated.error },
+        { status: generated.status >= 400 && generated.status < 600 ? generated.status : 502 },
       )
     }
-
-    const asset = json.data?.[0]
-    let blob: Blob
-    let ext = "png"
-    if (asset?.b64_json) {
-      const bytes = Uint8Array.from(Buffer.from(asset.b64_json, "base64"))
-      const built = blobFromBytes(bytes)
-      blob = built.blob
-      ext = built.ext
-    } else if (asset?.url) {
-      const downloaded = await fetch(asset.url, { signal: AbortSignal.timeout(30000) })
-      if (!downloaded.ok) throw new Error("Não foi possível descarregar a imagem gerada")
-      const bytes = new Uint8Array(await downloaded.arrayBuffer())
-      const built = blobFromBytes(bytes)
-      blob = built.blob
-      ext = built.ext
-    } else {
-      throw new Error("O modelo não devolveu imagem")
+    if (!("bytes" in generated) || !generated.bytes) {
+      return NextResponse.json({ error: "Geração sem imagem." }, { status: 502 })
     }
 
-    const validationError = await validateImageBlob(blob, "file")
+    const built = blobFromBytes(generated.bytes)
+    const validationError = await validateImageBlob(built.blob, "file")
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 })
     }
 
-    const url = await uploadToLibrary(blob, `marketing-${format}-${Date.now()}.${ext}`)
+    const url = await uploadToLibrary(built.blob, `marketing-${format}-${Date.now()}.${built.ext}`)
     await recordMarketingImage({ url, format, prompt })
 
-    return NextResponse.json({ url, format, prompt })
+    return NextResponse.json({ url, format, prompt, model: cfg.imageModel })
   } catch (err) {
     const message = err instanceof Error ? err.message : "Falha a gerar imagem"
-    return NextResponse.json({ error: message }, { status: 500 })
+    const status =
+      message.includes("Timeout") || message.includes("timeout") || message.includes("aborted")
+        ? 504
+        : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }
