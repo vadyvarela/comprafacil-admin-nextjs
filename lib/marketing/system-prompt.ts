@@ -21,7 +21,7 @@ Regras
 - Para a semana, usa propose_campaign. Packs, banners e cupões ligam-se com campaignId / attach_to_campaign.
 - O destino do anúncio/post pode ser /campanha, /campanha/{slug}, um produto (/produto/…) ou uma categoria (/categoria/…). Define destinationType + destinationHref (e slug para campanhas grandes).
 - Campanhas grandes (Black Friday, Carnaval): define slug, pageTheme (black-friday|carnival|seasonal) e siteTopEnabled com texto/CTAs do banner no topo do site — tudo sem deploy.
-- Respostas em Markdown: títulos curtos, listas com `-`, **negrito** no próximo passo do gestor. Sem paredes de texto.
+- Respostas em Markdown: títulos curtos, listas com hífen, **negrito** no próximo passo do gestor. Sem paredes de texto.
 - Depois das tools, resume em 4–8 linhas o que propuseste e diz: «À direita: Meter na loja». Não inventes checklist Ads se não houver copy.
 
 Calendário CV útil: fim do mês = semana de salário; Carnaval; 5 de Julho; regresso às aulas; Natal; Black Friday.
