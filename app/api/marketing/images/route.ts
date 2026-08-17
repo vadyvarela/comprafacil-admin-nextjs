@@ -18,7 +18,7 @@ export const maxDuration = 90
 const FORMATS = {
   feed: { size: "1024x1024", label: "Feed" },
   stories: { size: "1024x1536", label: "Stories" },
-  banner: { size: "1536x1024", label: "Banner" },
+  banner: { size: "1024x1024", label: "Banner" },
 } as const
 
 type FormatKey = keyof typeof FORMATS
@@ -133,6 +133,29 @@ function requireGtw() {
   return { gtwUrl, cmsAccessToken }
 }
 
+function buildImagePrompt(userPrompt: string, format: FormatKey, siteUrl: string | null) {
+  if (format === "banner") {
+    return [
+      userPrompt,
+      "E-commerce homepage hero: isolated product cutout only.",
+      "Show the physical product, centered, 3/4 studio view, sharp commercial lighting.",
+      "Fully transparent background with alpha. No floor, table, backdrop, shadow plate or rectangular canvas.",
+      "NO text, NO typography, NO logos, NO watermarks, NO website URL, NO badges, NO infographic, NO poster, NO white card.",
+      "Product must not touch the edges. Leave padding around it.",
+    ].join(" ")
+  }
+
+  return [
+    userPrompt,
+    "Professional retail campaign visual for a Cape Verde electronics store.",
+    "Brand colors must dominate: primary blue #2563EB, dark blue #1D4ED8, light blue #3B82F6, on white or slate backgrounds. Use these blues on banners, lighting, buttons and highlights. No unrelated neon palettes.",
+    siteUrl
+      ? `Always include a clean bottom footer strip with the store URL written exactly as "${siteUrl}", sharp high-contrast sans-serif, correctly spelled, no extra characters.`
+      : "Always include a clean bottom footer strip with the store website URL, sharp and readable.",
+    "Clean commercial photography composition. No fake brand logos. No extra watermarks besides the store URL footer.",
+  ].join(" ")
+}
+
 function storefrontDisplayUrl() {
   const origin = getStorefrontOrigin()
   if (!origin) return null
@@ -203,6 +226,7 @@ async function generateWithOpenAI(
   cfg: { apiKey: string; baseUrl: string; imageModel: string; quality: string },
   prompt: string,
   size: string,
+  options?: { transparent?: boolean },
 ) {
   const payload: Record<string, unknown> = {
     model: cfg.imageModel,
@@ -215,6 +239,10 @@ async function generateWithOpenAI(
   // DALL·E 3 legado: quality hd|standard — só se alguém forçar MARKETING_IMAGE_MODEL=dall-e-3.
   if (isGptImageModel(cfg.imageModel)) {
     payload.quality = cfg.quality
+    if (options?.transparent) {
+      payload.background = "transparent"
+      payload.output_format = "png"
+    }
   } else if (cfg.imageModel.startsWith("dall-e-3")) {
     payload.quality = "standard"
   }
@@ -288,17 +316,18 @@ export async function POST(request: Request) {
 
     const size = FORMATS[format].size
     const siteUrl = storefrontDisplayUrl()
-    const fullPrompt = [
-      prompt,
-      "Professional retail campaign visual for a Cape Verde electronics store.",
-      "Brand colors must dominate: primary blue #2563EB, dark blue #1D4ED8, light blue #3B82F6, on white or slate backgrounds. Use these blues on banners, lighting, buttons and highlights. No unrelated neon palettes.",
-      siteUrl
-        ? `Always include a clean bottom footer strip with the store URL written exactly as "${siteUrl}", sharp high-contrast sans-serif, correctly spelled, no extra characters.`
-        : "Always include a clean bottom footer strip with the store website URL, sharp and readable.",
-      "Clean commercial photography composition. No fake brand logos. No extra watermarks besides the store URL footer.",
-    ].join(" ")
+    const fullPrompt = buildImagePrompt(prompt, format, siteUrl)
+    const cutout = format === "banner"
 
-    const generated = await generateWithOpenAI(cfg, fullPrompt, size)
+    let generated = await generateWithOpenAI(cfg, fullPrompt, size, { transparent: cutout })
+    if (
+      cutout &&
+      "error" in generated &&
+      generated.error &&
+      /background|output_format|transparent/i.test(generated.error)
+    ) {
+      generated = await generateWithOpenAI(cfg, fullPrompt, size)
+    }
     if ("error" in generated && generated.error) {
       return NextResponse.json(
         { error: generated.error },

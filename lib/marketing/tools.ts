@@ -170,7 +170,7 @@ export const MARKETING_AGENT_TOOLS = [
     function: {
       name: "propose_banner",
       description:
-        "Propor um banner novo da homepage (hero). Title curto, CTA e link. imagePrompt paisagem 16:9.",
+        "Propor um banner novo da homepage (hero). Title curto, CTA e link. imagePrompt = recorte do produto sem fundo.",
       parameters: {
         type: "object",
         properties: {
@@ -184,7 +184,7 @@ export const MARKETING_AGENT_TOOLS = [
           startDate: { type: "string", description: "ISO" },
           endDate: { type: "string", description: "ISO" },
           imageUrl: { type: "string", description: "Só se já existir na biblioteca" },
-          imagePrompt: { type: "string", description: "Prompt paisagem 16:9 do produto/oferta" },
+          imagePrompt: { type: "string", description: "Recorte do produto isolado, fundo transparente, sem texto" },
           campaignId: { type: "string" },
         },
         required: ["title"],
@@ -258,7 +258,7 @@ export const MARKETING_AGENT_TOOLS = [
     type: "function" as const,
     function: {
       name: "propose_image_prompt",
-      description: "Propor um prompt para gerar imagem de campanha (Feed, Stories ou banner).",
+      description: "Propor um prompt para gerar imagem. Feed/Stories = cartaz. Banner = recorte do produto sem fundo.",
       parameters: {
         type: "object",
         properties: {
