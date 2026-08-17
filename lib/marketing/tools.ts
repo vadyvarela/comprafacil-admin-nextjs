@@ -184,7 +184,7 @@ export const MARKETING_AGENT_TOOLS = [
           startDate: { type: "string", description: "ISO" },
           endDate: { type: "string", description: "ISO" },
           imageUrl: { type: "string", description: "Só se já existir na biblioteca" },
-          imagePrompt: { type: "string", description: "Recorte do produto isolado, fundo transparente, sem texto" },
+          imagePrompt: { type: "string", description: "Só o produto (cor, forma, ângulo). Sem texto e sem pedir transparência." },
           campaignId: { type: "string" },
         },
         required: ["title"],

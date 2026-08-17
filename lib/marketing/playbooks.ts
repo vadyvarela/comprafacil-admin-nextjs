@@ -51,19 +51,19 @@ export const MARKETING_BANNER_PLAYBOOKS = [
     id: "hero-week",
     label: "Hero da semana",
     prompt:
-      "Cria um banner hero para a homepage desta semana. list_banners para ver o que já está live. Se houver campanha live, alinha o texto e o link a /campanha. Senão, search_products e escolhe 1 produto a vender agora. propose_banner: title curto, subtitle, buttonText, link, position hero. propose_image_prompt formato banner: recorte do produto isolado, fundo transparente, sem texto nem URL. Não apliques.",
+      "Cria um banner hero para a homepage desta semana. list_banners para ver o que já está live. Se houver campanha live, alinha o texto e o link a /campanha. Senão, search_products e escolhe 1 produto a vender agora. propose_banner: title curto, subtitle, buttonText, link, position hero. propose_image_prompt formato banner descrevendo só o produto (sem texto, sem URL, sem pedir transparência). Não apliques.",
   },
   {
     id: "product-hero",
     label: "Promover produto",
     prompt:
-      "Quero um banner hero a promover 1 produto. search_products, escolhe o melhor a vender agora. propose_banner com title, subtitle, buttonText «Ver produto», link para o produto ou /campanha, position hero. propose_image_prompt formato banner: só o produto recortado, fundo transparente, sem cartaz. Não apliques.",
+      "Quero um banner hero a promover 1 produto. search_products, escolhe o melhor a vender agora. propose_banner com title, subtitle, buttonText «Ver produto», link para o produto ou /campanha, position hero. propose_image_prompt formato banner: descreve o produto, sem cartaz e sem pedir fundo transparente. Não apliques.",
   },
   {
     id: "align-campaign",
     label: "Alinhar à campanha",
     prompt:
-      "Alinha o hero à campanha live. list_banners. Se já existir um hero da mesma oferta, propose_banner_update. Senão propose_banner novo com o headline da campanha, link /campanha, position hero. propose_image_prompt formato banner: produto isolado sem fundo. Não apliques.",
+      "Alinha o hero à campanha live. list_banners. Se já existir um hero da mesma oferta, propose_banner_update. Senão propose_banner novo com o headline da campanha, link /campanha, position hero. propose_image_prompt formato banner descrevendo só o produto. Não apliques.",
   },
   {
     id: "retire-old",
