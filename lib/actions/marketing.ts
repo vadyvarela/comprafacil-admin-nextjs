@@ -452,7 +452,7 @@ export function compactPulseText(pulse: MarketingPulse): string {
   const products = pulse.topProducts
     .map((p) => `${p.productTitle} (${p.totalSold} un.)`)
     .join("; ") || "sem dados"
-  const banners = pulse.liveBanners.map((b) => `${b.title} [${b.position ?? "hero"}]`).join("; ") || "nenhum"
+  const banners = pulse.liveBanners.map((b) => `${b.title} [${b.position ?? "hero"}] ${b.id}`).join("; ") || "nenhum"
   const offer = pulse.desk.weeklyOffer
     ? `${pulse.desk.weeklyOffer.headline}${pulse.desk.weeklyOffer.hook ? ` — ${pulse.desk.weeklyOffer.hook}` : ""}`
     : "ainda não definida"

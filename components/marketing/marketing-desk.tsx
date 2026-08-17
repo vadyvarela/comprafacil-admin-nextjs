@@ -584,6 +584,7 @@ function labelForType(type: string) {
     weekly_offer: "Oferta",
     social_pack: "Publicação FB/IG",
     banner: "Banner",
+    banner_update: "Actualizar banner",
     coupon: "Cupão",
     product_merch: "Produto",
     image_prompt: "Prompt de imagem",

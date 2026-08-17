@@ -20,7 +20,7 @@ export const maxDuration = 60
 type ChatBody = {
   message?: string
   threadId?: string | null
-  intent?: "desk" | "campaign"
+  intent?: "desk" | "campaign" | "banner"
 }
 
 type OaiMessage = {
@@ -109,13 +109,32 @@ async function executeTool(
 
   if (name === "list_banners") {
     const banners = await runGraphQL<{
-      banners: Array<{ id: string; title: string; position?: string | null; status?: { code?: string } }>
+      banners: Array<{
+        id: string
+        title: string
+        subtitle?: string | null
+        buttonText?: string | null
+        link?: string | null
+        image?: string | null
+        position?: string | null
+        orderIndex?: number | null
+        startDate?: string | null
+        endDate?: string | null
+        status?: { code?: string }
+      }>
     }>(GET_BANNERS)
     return JSON.stringify(
-      (banners.data?.banners ?? []).slice(0, 12).map((b) => ({
+      (banners.data?.banners ?? []).slice(0, 20).map((b) => ({
         id: b.id,
         title: b.title,
+        subtitle: b.subtitle,
+        buttonText: b.buttonText,
+        link: b.link,
+        image: b.image,
         position: b.position,
+        orderIndex: b.orderIndex,
+        startDate: b.startDate,
+        endDate: b.endDate,
         status: b.status?.code,
       })),
     )
@@ -150,6 +169,7 @@ async function executeTool(
     propose_weekly_offer: "weekly_offer",
     propose_social_pack: "social_pack",
     propose_banner: "banner",
+    propose_banner_update: "banner_update",
     propose_coupon: "coupon",
     propose_product_merch: "product_merch",
     propose_image_prompt: "image_prompt",
@@ -158,7 +178,13 @@ async function executeTool(
   if (!type) return JSON.stringify({ error: `ferramenta desconhecida: ${name}` })
 
   const title =
-    String(args.headline ?? args.name ?? args.title ?? args.prompt ?? "Proposta").slice(0, 240)
+    String(
+      args.headline ??
+        args.name ??
+        args.title ??
+        args.prompt ??
+        (type === "banner_update" ? "Actualizar banner" : "Proposta"),
+    ).slice(0, 240)
   const campaignId = typeof args.campaignId === "string" ? args.campaignId : null
 
   const proposal = await createMarketingProposal({
@@ -203,7 +229,8 @@ export async function POST(request: Request) {
         content: marketingSystemPrompt({
           siteName: pulse.siteName,
           compactContext: compactPulseText(pulse),
-          intent: body?.intent === "campaign" ? "campaign" : "desk",
+          intent:
+            body?.intent === "campaign" || body?.intent === "banner" ? body.intent : "desk",
         }),
       },
       ...history,

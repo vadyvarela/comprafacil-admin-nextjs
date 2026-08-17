@@ -43,7 +43,7 @@ export async function POST(
     if (error) return error
 
     const { id } = await context.params
-    const body = (await request.json().catch(() => ({}))) as { action?: string }
+    const body = (await request.json().catch(() => ({}))) as { action?: string; imageUrl?: string }
     const action = body.action === "reject" ? "reject" : "apply"
 
     const listed = await runGraphQL<{ marketingProposals: Record<string, unknown>[] }>(
@@ -61,6 +61,8 @@ export async function POST(
       return NextResponse.json({ error: "Proposta não encontrada" }, { status: 404 })
     }
     const proposal = parseProposal(row)
+    const overlayImage = typeof body.imageUrl === "string" ? body.imageUrl.trim() : ""
+    if (overlayImage) proposal.payload.imageUrl = overlayImage
     if (proposal.status !== "pending") {
       return NextResponse.json({ error: "Esta proposta já foi tratada" }, { status: 409 })
     }

@@ -9,7 +9,8 @@ import {
   setProposalStatus,
   updateMarketingCampaign,
 } from "@/lib/actions/marketing"
-import { CREATE_BANNER } from "@/lib/graphql/banners/mutations"
+import { CREATE_BANNER, UPDATE_BANNER } from "@/lib/graphql/banners/mutations"
+import { GET_BANNER } from "@/lib/graphql/banners/queries"
 import { CREATE_COUPON, CREATE_PROMOTION_CODE } from "@/lib/graphql/coupons/mutations"
 import { UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { MarketingCampaignInput, MarketingProposal } from "@/lib/graphql/marketing/types"
@@ -145,7 +146,7 @@ export async function applyMarketingProposal(proposal: MarketingProposal): Promi
       const image = str(p.imageUrl) || desk.latestImages[0]?.url || ""
       if (!title) throw new Error("Banner sem título")
       if (!image) {
-        throw new Error("Gera uma imagem na secretária e volta a aplicar o banner")
+        throw new Error("Gera a imagem à direita e volta a meter o banner no site")
       }
       const result = await runGraphQL<{ createBanner: { id: string } }>(CREATE_BANNER, {
         input: {
@@ -156,7 +157,10 @@ export async function applyMarketingProposal(proposal: MarketingProposal): Promi
           link: str(p.link) || str(p.destinationHref) || "/campanha",
           buttonText: str(p.buttonText) || "Ver ofertas",
           position: str(p.position) || "hero",
-          status: { code: "ACTIVE" },
+          orderIndex: num(p.orderIndex) ?? 0,
+          startDate: str(p.startDate) || null,
+          endDate: str(p.endDate) || null,
+          status: { code: "ACTIVE", description: "Ativo" },
         },
       })
       if ("errors" in result && result.errors?.length) {
@@ -167,7 +171,66 @@ export async function applyMarketingProposal(proposal: MarketingProposal): Promi
         bannerIds: bannerId ? [bannerId] : [],
         imageUrls: image ? [image] : [],
       })
-      return { note: "Banner criado na loja", campaignId: campaignIdOf(proposal) || undefined }
+      return { note: "Banner no site", campaignId: campaignIdOf(proposal) || undefined }
+    }
+    case "banner_update": {
+      const bannerId = str(p.bannerId)
+      if (!bannerId) throw new Error("Indica o banner a alterar")
+      const currentRes = await runGraphQL<{
+        bannerDetails: {
+          id: string
+          title: string
+          subtitle?: string | null
+          description?: string | null
+          image: string
+          link?: string | null
+          buttonText?: string | null
+          position?: string | null
+          orderIndex?: number | null
+          startDate?: string | null
+          endDate?: string | null
+          status?: { code?: string | null } | null
+        } | null
+      }>(GET_BANNER, { id: bannerId })
+      const current = currentRes.data?.bannerDetails
+      if ("errors" in currentRes && currentRes.errors?.length) {
+        throw new Error(currentRes.errors[0]?.message ?? "Banner não encontrado")
+      }
+      if (!current) throw new Error("Banner não encontrado")
+      const desk = await getMarketingDesk()
+      const image = str(p.imageUrl) || current.image || desk.latestImages[0]?.url || ""
+      if (!image) throw new Error("Este banner precisa de uma imagem")
+      const statusCode = str(p.status).toUpperCase() || current.status?.code || "ACTIVE"
+      const result = await runGraphQL<{ updateBanner: { id: string } }>(UPDATE_BANNER, {
+        id: bannerId,
+        input: {
+          title: str(p.title) || current.title,
+          subtitle: str(p.subtitle) || current.subtitle || null,
+          description: str(p.description) || current.description || null,
+          image,
+          link: str(p.link) || current.link || null,
+          buttonText: str(p.buttonText) || current.buttonText || null,
+          position: str(p.position) || current.position || "hero",
+          orderIndex: num(p.orderIndex) ?? current.orderIndex ?? 0,
+          startDate: str(p.startDate) || current.startDate || null,
+          endDate: str(p.endDate) || current.endDate || null,
+          status: {
+            code: statusCode === "INACTIVE" ? "INACTIVE" : "ACTIVE",
+            description: statusCode === "INACTIVE" ? "Inativo" : "Ativo",
+          },
+        },
+      })
+      if ("errors" in result && result.errors?.length) {
+        throw new Error(result.errors[0]?.message ?? "Falha ao actualizar banner")
+      }
+      await attachIfLinked(proposal, {
+        bannerIds: [bannerId],
+        imageUrls: str(p.imageUrl) ? [image] : [],
+      })
+      return {
+        note: statusCode === "INACTIVE" ? "Banner desligado" : "Banner actualizado",
+        campaignId: campaignIdOf(proposal) || undefined,
+      }
     }
     case "coupon": {
       const name = str(p.name) || proposal.title
