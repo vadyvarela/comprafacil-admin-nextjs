@@ -39,7 +39,7 @@ export default async function DashboardLayout({
           picture: session.user.picture ?? undefined,
         }}
       />
-      <SidebarInset>{children}</SidebarInset>
+      <SidebarInset className="min-h-0 min-w-0">{children}</SidebarInset>
     </SidebarProvider>
   );
 }

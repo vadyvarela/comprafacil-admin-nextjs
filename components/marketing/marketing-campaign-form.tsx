@@ -270,8 +270,8 @@ export function MarketingCampaignForm({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <div>
+      <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border bg-background px-4 py-2">
         {campaign ? (
           <Badge variant="outline" className={cn("text-[10px]", campaignStatusClass(status))}>
             {campaignStatusLabel(status)}
@@ -279,70 +279,39 @@ export function MarketingCampaignForm({
         ) : (
           <p className="text-[12px] text-muted-foreground">Rascunho até teres datas e activares.</p>
         )}
-        {campaign ? (
-          <div className="flex flex-wrap gap-1.5">
-            {status !== "live" ? (
-              <Button
-                type="button"
-                size="sm"
-                className="h-7 text-[11px]"
-                disabled={!!statusBusy}
-                onClick={() => void changeStatus("live")}
-              >
-                {statusBusy === "live" ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
-                Activar
-              </Button>
-            ) : null}
-            {status !== "scheduled" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-7 text-[11px]"
-                disabled={!!statusBusy}
-                onClick={() => void changeStatus("scheduled")}
-              >
-                Agendar
-              </Button>
-            ) : null}
-            {status !== "ended" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="h-7 text-[11px]"
-                disabled={!!statusBusy}
-                onClick={() => void changeStatus("ended")}
-              >
-                Encerrar
-              </Button>
-            ) : null}
-            {status !== "draft" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                className="h-7 text-[11px]"
-                disabled={!!statusBusy}
-                onClick={() => void changeStatus("draft")}
-              >
-                Rascunho
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
+        <p className="hidden min-w-0 truncate text-[11px] text-muted-foreground sm:block">{previewUrl}</p>
+        <div className="ml-auto flex flex-wrap items-center gap-1.5">
+          {campaign && status !== "live" ? (
+            <Button type="button" size="sm" className="h-7 text-[11px]" disabled={!!statusBusy} onClick={() => void changeStatus("live")}>
+              {statusBusy === "live" ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+              Activar
+            </Button>
+          ) : null}
+          {campaign && status !== "scheduled" ? (
+            <Button type="button" size="sm" variant="outline" className="h-7 text-[11px]" disabled={!!statusBusy} onClick={() => void changeStatus("scheduled")}>
+              Agendar
+            </Button>
+          ) : null}
+          {campaign && status !== "ended" ? (
+            <Button type="button" size="sm" variant="outline" className="h-7 text-[11px]" disabled={!!statusBusy} onClick={() => void changeStatus("ended")}>
+              Encerrar
+            </Button>
+          ) : null}
+          {campaign && status !== "draft" ? (
+            <Button type="button" size="sm" variant="ghost" className="h-7 text-[11px]" disabled={!!statusBusy} onClick={() => void changeStatus("draft")}>
+              Rascunho
+            </Button>
+          ) : null}
+          <Button type="button" size="sm" className="h-7 text-[11px]" disabled={saving || !form.name.trim()} onClick={() => void save()}>
+            {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+            Guardar
+          </Button>
+        </div>
       </div>
 
-      <div className="rounded-md border border-border/70 bg-muted/20 px-3 py-2">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Destino do post / anúncio
-        </p>
-        <p className="mt-0.5 truncate text-[11px] text-foreground">{previewUrl}</p>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-lg border border-border/80 bg-card p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Campanha</p>
+      <div className="grid lg:grid-cols-2">
+        <section className="border-b border-border p-4 lg:border-r">
+          <p className="text-[12px] font-semibold">Campanha</p>
           <label className="mt-3 block text-[11px] font-medium text-muted-foreground">Nome</label>
           <Input
             value={form.name}
@@ -481,10 +450,9 @@ export function MarketingCampaignForm({
           />
         </section>
 
-        <section className="rounded-lg border border-border/80 bg-card p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-            A mesma frase em todo o lado
-          </p>
+        <section className="border-b border-border p-4">
+          <p className="text-[12px] font-semibold">Textos</p>
+          <p className="text-[12px] text-muted-foreground">A mesma frase na loja, Facebook e Instagram.</p>
           <label className="mt-3 block text-[11px] font-medium text-muted-foreground">Gancho</label>
           <Input
             value={form.headline}
@@ -519,8 +487,8 @@ export function MarketingCampaignForm({
         </section>
       </div>
 
-      <section className="rounded-lg border border-border/80 bg-card p-4">
-        <p className="text-[12px] font-semibold text-foreground">Produtos na página da campanha</p>
+      <section className="border-b border-border p-4">
+        <p className="text-[12px] font-semibold">Produtos na página da campanha</p>
         <p className="mt-0.5 text-[12px] text-muted-foreground">
           Estes é que aparecem em /campanha. Pesquisa e escolhe. Depois Guardar.
         </p>
@@ -536,8 +504,8 @@ export function MarketingCampaignForm({
       </section>
 
       {campaign && (campaign.bannerIds.length || campaign.couponIds.length || campaign.imageUrls.length) ? (
-        <section className="rounded-lg border border-border/80 bg-card p-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Peças ligadas</p>
+        <section className="border-b border-border p-4">
+          <p className="text-[12px] font-semibold">Peças ligadas</p>
           <dl className="mt-2 grid gap-2 text-[11px] sm:grid-cols-3">
             <div>
               <dt className="text-muted-foreground">Banners</dt>
@@ -555,12 +523,10 @@ export function MarketingCampaignForm({
         </section>
       ) : null}
 
-      <section className="rounded-lg border border-border/80 bg-card p-4">
+      <section className="border-b border-border p-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Faixa no topo do site
-            </p>
+            <p className="text-[12px] font-semibold">Faixa no topo do site</p>
             <p className="mt-0.5 text-[12px] text-muted-foreground">
               Aparece em todas as páginas enquanto a campanha estiver live. Sem deploy.
             </p>
@@ -642,14 +608,10 @@ export function MarketingCampaignForm({
         ) : null}
       </section>
 
-      <MarketingAdsBriefPanel brief={adsBrief} />
-
-      <div className="flex justify-end">
-        <Button type="button" size="sm" className="h-8" disabled={saving || !form.name.trim()} onClick={() => void save()}>
-          {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-          Guardar
-        </Button>
-      </div>
+      <section className="p-4">
+        <p className="mb-2 text-[12px] font-semibold">Links para anúncios</p>
+        <MarketingAdsBriefPanel brief={adsBrief} />
+      </section>
     </div>
   )
 }

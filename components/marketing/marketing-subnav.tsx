@@ -14,7 +14,7 @@ export function MarketingSubnav() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex items-center gap-1 border-b border-border bg-background px-4 md:px-5">
+    <nav className="flex min-w-0 items-center gap-0.5">
       {TABS.map((tab) => {
         const active = tab.exact ? pathname === tab.href : pathname?.startsWith(tab.href)
         return (
@@ -22,14 +22,13 @@ export function MarketingSubnav() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "relative px-2.5 py-2 text-[12px] font-medium tracking-tight",
-              active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+              "rounded-md px-2.5 py-1 text-[13px] font-medium",
+              active
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
             {tab.label}
-            {active ? (
-              <span className="absolute inset-x-2 -bottom-px h-px bg-foreground" />
-            ) : null}
           </Link>
         )
       })}

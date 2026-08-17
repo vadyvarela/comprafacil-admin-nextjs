@@ -3,16 +3,28 @@
 import { Copy } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import type { MarketingDesk } from "@/lib/graphql/marketing/types"
+import { cn } from "@/lib/utils"
 
 export function MarketingContentBoard({
   desk,
   campaignUrl,
+  headline,
+  facebookPost,
+  instagramCaption,
+  whatsappText,
 }: {
   desk: MarketingDesk
   campaignUrl: string
+  headline?: string | null
+  facebookPost?: string | null
+  instagramCaption?: string | null
+  whatsappText?: string | null
 }) {
-  const offer = desk.weeklyOffer
   const images = desk.latestImages
+  const title = headline || desk.weeklyOffer?.headline || "Sem campanha"
+  const fb = facebookPost || desk.weeklyOffer?.facebookPost || ""
+  const ig = instagramCaption || desk.weeklyOffer?.instagramCaption || ""
+  const wa = whatsappText || desk.weeklyOffer?.whatsappText || ""
 
   async function copy(label: string, text: string) {
     if (!text.trim()) {
@@ -24,97 +36,79 @@ export function MarketingContentBoard({
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:p-5">
-      <section className="rounded-lg border border-border/80 bg-card p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Textos prontos
-        </p>
-        <h2 className="mt-1 text-sm font-semibold">{offer?.headline || "Ainda sem campanha"}</h2>
-        <div className="mt-3 grid gap-3 md:grid-cols-2">
-          <PackCard
-            channel="Facebook"
-            body={offer?.facebookPost ?? ""}
-            onCopy={() => copy("Facebook", offer?.facebookPost ?? "")}
-          />
-          <PackCard
-            channel="Instagram"
-            body={offer?.instagramCaption ?? ""}
-            onCopy={() => copy("Instagram", offer?.instagramCaption ?? "")}
-          />
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+      <section className="flex min-h-0 w-full shrink-0 flex-col overflow-hidden max-lg:max-h-[48%] lg:w-[22rem] lg:border-r lg:border-border">
+        <div className="shrink-0 border-b border-border px-4 py-2.5">
+          <p className="truncate text-[13px] font-medium">{title}</p>
+          <p className="text-[12px] text-muted-foreground">Copia e cola no Facebook ou Instagram.</p>
         </div>
-        <div className="mt-3 rounded-md border border-border/70 bg-muted/20 px-3 py-2.5">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[11px] font-semibold">Link destino</p>
-            <button
-              type="button"
-              onClick={() => void copy("Link", campaignUrl)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Copy className="h-3.5 w-3.5" />
-            </button>
-          </div>
-          <p className="mt-1 truncate text-[12px] text-foreground">{campaignUrl}</p>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <PackRow channel="Facebook" body={fb} onCopy={() => copy("Facebook", fb)} />
+          <PackRow channel="Instagram" body={ig} onCopy={() => copy("Instagram", ig)} />
+          <PackRow channel="WhatsApp" body={wa} onCopy={() => copy("WhatsApp", wa)} />
+          <PackRow channel="Link" body={campaignUrl} onCopy={() => copy("Link", campaignUrl)} mono />
         </div>
       </section>
 
-      <section>
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-          Imagens geradas
-        </p>
-        {images.length === 0 ? (
-          <p className="text-[12px] text-muted-foreground">
-            Ainda não há imagens. Gera no separador Hoje.
-          </p>
-        ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {images.map((img) => (
-              <li
-                key={`${img.url}-${img.createdAt}`}
-                className="overflow-hidden rounded-lg border border-border/80 bg-card"
-              >
-                <a href={img.url} target="_blank" rel="noreferrer">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img.url} alt="" className="aspect-square w-full object-cover" />
-                </a>
-                <div className="flex items-center justify-between gap-2 px-3 py-2">
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                    {img.format}
-                  </span>
-                  <a
-                    href={img.url}
-                    download
-                    className="text-[11px] font-medium text-primary hover:underline"
-                  >
-                    Abrir
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden max-lg:border-t max-lg:border-border">
+        <div className="flex h-10 shrink-0 items-center justify-between border-b border-border px-4">
+          <p className="text-[13px] font-medium">Imagens</p>
+          <span className="text-[11px] tabular-nums text-muted-foreground">{images.length}</span>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-3">
+          {images.length === 0 ? (
+            <p className="px-1 py-8 text-[13px] text-muted-foreground">
+              Ainda não há imagens. Gera no separador Hoje, painel Imagem.
+            </p>
+          ) : (
+            <ul className="grid grid-cols-2 gap-2 xl:grid-cols-3">
+              {images.map((img) => (
+                <li key={`${img.url}-${img.createdAt}`} className="overflow-hidden rounded-md border border-border">
+                  <a href={img.url} target="_blank" rel="noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.url} alt="" className="aspect-square w-full object-cover" />
                   </a>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                  <div className="flex items-center justify-between px-2 py-1">
+                    <span className="text-[10px] uppercase text-muted-foreground">{img.format}</span>
+                    <a
+                      href={img.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[11px] text-muted-foreground hover:text-foreground"
+                    >
+                      Abrir
+                    </a>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
     </div>
   )
 }
 
-function PackCard({
+function PackRow({
   channel,
   body,
   onCopy,
+  mono,
 }: {
   channel: string
   body: string
   onCopy: () => void
+  mono?: boolean
 }) {
   return (
-    <div className="rounded-md border border-border/70 bg-muted/20 p-3">
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold">{channel}</p>
-        <button type="button" onClick={onCopy} className="text-muted-foreground hover:text-foreground">
+    <div className="border-b border-border px-4 py-3">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[12px] font-medium">{channel}</p>
+        <button type="button" onClick={onCopy} className="text-muted-foreground hover:text-foreground" aria-label={`Copiar ${channel}`}>
           <Copy className="h-3.5 w-3.5" />
         </button>
       </div>
-      <p className="mt-2 whitespace-pre-wrap text-[12px] leading-relaxed text-foreground">
+      <p className={cn("mt-1 whitespace-pre-wrap text-[13px] leading-relaxed", mono && "font-mono text-[12px]")}>
         {body.trim() || "—"}
       </p>
     </div>

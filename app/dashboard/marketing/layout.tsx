@@ -6,5 +6,7 @@ export default async function MarketingLayout({
   children: React.ReactNode
 }) {
   await requirePageAccess("marketing", "read")
-  return children
+  return (
+    <div className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden">{children}</div>
+  )
 }
