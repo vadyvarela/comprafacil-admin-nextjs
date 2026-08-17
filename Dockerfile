@@ -1,6 +1,7 @@
 FROM oven/bun:1-alpine AS base
 
 RUN apk add --no-cache libc6-compat
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 
 WORKDIR /app
 
@@ -24,6 +25,8 @@ RUN adduser -S nextjs -u 1001
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/sharp ./node_modules/sharp
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@img ./node_modules/@img
 
 USER nextjs
 

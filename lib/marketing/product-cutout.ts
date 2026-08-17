@@ -1,5 +1,3 @@
-import sharp from "sharp"
-
 function at(data: Buffer, width: number, x: number, y: number) {
   const i = (y * width + x) * 4
   return { r: data[i], g: data[i + 1], b: data[i + 2], i }
@@ -152,19 +150,25 @@ function transparentRatio(data: Buffer) {
 }
 
 export async function punchBannerCutout(bytes: Uint8Array): Promise<Uint8Array> {
-  const { data, info } = await sharp(Buffer.from(bytes))
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true })
-  const width = info.width
-  const height = info.height
-  const pixels = Buffer.from(data)
+  try {
+    const { default: sharp } = await import("sharp")
+    const { data, info } = await sharp(Buffer.from(bytes))
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true })
+    const width = info.width
+    const height = info.height
+    const pixels = Buffer.from(data)
 
-  keyGreen(pixels)
-  keyCheckerboard(pixels, width, height)
-  if (transparentRatio(pixels) < 0.12) {
-    floodFlatBackdrop(pixels, width, height)
+    keyGreen(pixels)
+    keyCheckerboard(pixels, width, height)
+    if (transparentRatio(pixels) < 0.12) {
+      floodFlatBackdrop(pixels, width, height)
+    }
+
+    return sharp(pixels, { raw: { width, height, channels: 4 } }).png().toBuffer()
+  } catch (err) {
+    console.error("Recorte sharp indisponível, a usar a imagem original.", err)
+    return bytes
   }
-
-  return sharp(pixels, { raw: { width, height, channels: 4 } }).png().toBuffer()
 }
