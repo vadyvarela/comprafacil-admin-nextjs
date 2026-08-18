@@ -31,3 +31,5 @@ export type {
   GetCustomersResult,
   GetCustomerDetailsResult,
 } from "./customers"
+export { getProducts, getProductFilterOptions } from "./products"
+export type { GetProductsResult, GetProductsParams } from "./products"

@@ -1,136 +1,27 @@
 "use client"
 
-/* eslint-disable @next/next/no-img-element */
-
 import { useMemo, useState } from "react"
-import { useQuery } from "@apollo/client/react"
+import { useMutation, useQuery } from "@apollo/client/react"
 import { GET_CATEGORIES } from "@/lib/graphql/categories/queries"
+import { DELETE_CATEGORY } from "@/lib/graphql/categories/mutations"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { PageToolbar } from "@/components/admin/page-toolbar"
 import { CreateCategoryModal } from "@/components/categories/create-category-modal"
+import { CategoryTree } from "@/components/categories/category-tree"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
-import { FolderTree, Plus, Pencil, Trash2, MoreVertical } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { FolderTree, Plus, Search } from "lucide-react"
 import { Category } from "@/lib/graphql/categories/types"
 import { groupCategoriesByParent } from "@/lib/categories/format-category-label"
-import { cn } from "@/lib/utils"
-
-function categoryStatusClass(code: string | undefined): string {
-  const c = code?.toUpperCase()
-  if (c === "ACTIVE") return "badge-success"
-  if (c === "INACTIVE" || c === "DISABLED") return "badge-neutral"
-  return "badge-info"
-}
-
-function CategoryCard({
-  category,
-  nested,
-  onEdit,
-}: {
-  category: Category
-  nested?: boolean
-  onEdit: (category: Category) => void
-}) {
-  const imageUrl = category.image?.trim()
-  return (
-    <div
-      className={cn(
-        "group relative rounded-lg border border-border/80 bg-card p-3.5 shadow-none transition-colors hover:border-border hover:bg-muted/25",
-        nested && "ml-4 border-dashed sm:ml-6",
-      )}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div
-          className={`flex h-9 w-9 items-center justify-center rounded-md border border-border/60 overflow-hidden shrink-0 ${
-            imageUrl ? "bg-muted" : "bg-blue-50"
-          }`}
-        >
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={category.name}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            category.icon || <FolderTree className="h-4 w-4 text-blue-800" />
-          )}
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-            >
-              <MoreVertical className="h-3.5 w-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-36">
-            <DropdownMenuItem onClick={() => onEdit(category)}>
-              <Pencil className="h-3.5 w-3.5 mr-2" />
-              Editar
-            </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
-              <Trash2 className="h-3.5 w-3.5 mr-2" />
-              Excluir
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <h3 className="font-semibold text-sm text-foreground truncate mb-0.5">
-        {category.name}
-      </h3>
-      <p className="text-xs text-muted-foreground truncate mb-2 font-mono">
-        {category.slug}
-      </p>
-
-      {category.description && (
-        <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
-          {category.description}
-        </p>
-      )}
-
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {nested ? (
-          <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
-            Subcategoria
-          </span>
-        ) : (
-          <span className="inline-flex items-center rounded-full border border-blue-200/80 bg-blue-50/80 px-2 py-0.5 text-[10px] font-medium text-blue-800">
-            Principal
-          </span>
-        )}
-        {category.showOnHome !== false ? (
-          <span className="inline-flex items-center rounded-full border border-blue-200/80 bg-blue-50/80 px-2 py-0.5 text-[10px] font-medium text-blue-800">
-            Home
-          </span>
-        ) : (
-          <span className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-[10px] text-muted-foreground">
-            Sem home
-          </span>
-        )}
-        {category.status && (
-          <span
-            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${categoryStatusClass(category.status.code)}`}
-          >
-            {category.status.code}
-          </span>
-        )}
-      </div>
-    </div>
-  )
-}
+import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 export default function CategoriesPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const { data, loading, error, refetch } = useQuery<{
     categories: { data: Category[] }
@@ -138,16 +29,53 @@ export default function CategoriesPage() {
     variables: { filter: null, page: { page: 0, size: 100 } },
   })
 
+  const [deleteCategory] = useMutation(DELETE_CATEGORY)
+
   const categories = data?.categories?.data || []
-  const groups = useMemo(
-    () => groupCategoriesByParent(categories),
-    [categories],
-  )
+  const groups = useMemo(() => groupCategoriesByParent(categories), [categories])
+  const rootCount = groups.length
+  const subCount = Math.max(0, categories.length - rootCount)
+
+  const openCreate = () => {
+    setSelectedCategory(null)
+    setCreateModalOpen(true)
+  }
 
   const openEdit = (category: Category) => {
     setSelectedCategory(category)
     setCreateModalOpen(true)
   }
+
+  const handleDelete = async (category: Category, childCount: number) => {
+    const extra =
+      childCount > 0
+        ? `\n\nTem ${childCount} subcategoria${childCount !== 1 ? "s" : ""}.`
+        : ""
+    if (
+      !confirm(
+        `Excluir a categoria "${category.name}"?${extra}\nEsta ação não pode ser desfeita.`,
+      )
+    ) {
+      return
+    }
+
+    setDeletingId(category.id)
+    try {
+      await deleteCategory({ variables: { id: category.id } })
+      await refetch()
+      showToast.success("Categoria excluída", `"${category.name}" foi excluída`)
+    } catch (err: unknown) {
+      showToast.error("Erro ao excluir", getErrorMessage(err, "Não foi possível excluir a categoria."))
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const subtitle = loading
+    ? "A carregar…"
+    : subCount > 0
+      ? `${rootCount} ${rootCount === 1 ? "principal" : "principais"} · ${subCount} sub`
+      : `${categories.length} categoria${categories.length !== 1 ? "s" : ""}`
 
   return (
     <>
@@ -160,17 +88,19 @@ export default function CategoriesPage() {
           iconBg="bg-blue-50"
           iconColor="text-blue-800"
           title="Categorias"
-          subtitle={
-            loading
-              ? "A carregar…"
-              : `${categories.length} categoria${categories.length !== 1 ? "s" : ""}`
-          }
+          subtitle={subtitle}
         >
-          <Button
-            onClick={() => setCreateModalOpen(true)}
-            size="sm"
-            className="h-8 text-xs gap-1.5"
-          >
+          <div className="relative w-44 sm:w-56">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Filtrar categorias…"
+              className="h-8 pl-8 text-xs"
+              aria-label="Filtrar categorias"
+            />
+          </div>
+          <Button onClick={openCreate} size="sm" className="h-8 text-xs gap-1.5">
             <Plus className="h-3.5 w-3.5" />
             Nova categoria
           </Button>
@@ -178,16 +108,25 @@ export default function CategoriesPage() {
 
         <div className="flex-1 overflow-auto p-4 md:p-5 bg-background">
           {loading && (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {[...Array(8)].map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-lg" />
+            <div className="overflow-hidden rounded-xl border border-border bg-card">
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 border-b border-border/60 px-3 py-2.5 last:border-0"
+                >
+                  <Skeleton className="h-9 w-9 rounded-md" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-3.5 w-40" />
+                    <Skeleton className="h-2.5 w-24" />
+                  </div>
+                </div>
               ))}
             </div>
           )}
 
           {error && (
             <div className="p-4 rounded-lg border border-destructive/30 bg-destructive/5 text-xs">
-              <p className="font-semibold text-destructive mb-1">Erro ao carregar</p>
+              <p className="font-semibold text-destructive mb-1">Erro ao carregar categorias</p>
               <p className="text-muted-foreground mb-3">{error.message}</p>
               <Button variant="outline" size="sm" onClick={() => refetch()}>
                 Tentar novamente
@@ -198,40 +137,26 @@ export default function CategoriesPage() {
           {!loading && !error && (
             categories.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40">
                   <FolderTree className="h-7 w-7 text-muted-foreground/40" />
                 </div>
-                <h2 className="text-sm font-semibold mb-1">Sem categorias</h2>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Crie categorias para organizar os produtos.
+                <h2 className="mb-1 text-sm font-semibold">Sem categorias</h2>
+                <p className="mb-4 text-xs text-muted-foreground">
+                  Organize o catálogo em grupos principais e subcategorias.
                 </p>
-                <Button
-                  size="sm"
-                  onClick={() => setCreateModalOpen(true)}
-                  className="gap-1.5"
-                >
+                <Button size="sm" onClick={openCreate} className="gap-1.5">
                   <Plus className="h-3.5 w-3.5" />
                   Criar categoria
                 </Button>
               </div>
             ) : (
-              <div className="space-y-6">
-                {groups.map(({ root, children }) => (
-                  <div key={root.id} className="space-y-2">
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                      <CategoryCard category={root} onEdit={openEdit} />
-                      {children.map((child) => (
-                        <CategoryCard
-                          key={child.id}
-                          category={child}
-                          nested
-                          onEdit={openEdit}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <CategoryTree
+                groups={groups}
+                query={searchQuery}
+                deletingId={deletingId}
+                onEdit={openEdit}
+                onDelete={handleDelete}
+              />
             )
           )}
         </div>
