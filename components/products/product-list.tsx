@@ -12,6 +12,8 @@ import {
   Trash2,
   Loader2,
   Eye,
+  Globe,
+  EyeOff,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -30,11 +32,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { DELETE_PRODUCT } from "@/lib/graphql/products/mutations"
+import { DELETE_PRODUCT, UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { Product } from "@/lib/graphql/products/types"
 import { showToast } from "@/lib/utils/toast"
 import { getErrorMessage } from "@/lib/utils/errors"
 import { ProductPagination } from "@/components/products/product-pagination"
+import {
+  isProductDraft,
+  productVisibilityLabel,
+  productVisibilityToggleCode,
+  productVisibilityToggleLabel,
+  productVisibilityUpdateInput,
+} from "@/lib/products/product-visibility"
 
 type ProductMetadata = {
   sku?: string
@@ -56,8 +65,39 @@ export function ProductList({
   pageSize,
 }: ProductListProps) {
   const router = useRouter()
-  const [deletingProductId, setDeletingProductId] = useState<string | null>(null)
+  const [busyProductId, setBusyProductId] = useState<string | null>(null)
   const [deleteProduct] = useMutation(DELETE_PRODUCT)
+  const [updateProduct] = useMutation(UPDATE_PRODUCT)
+
+  const handleToggleVisibility = async (product: Product, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    const nextCode = productVisibilityToggleCode(product.status?.code)
+    const actionLabel = productVisibilityToggleLabel(product.status?.code)
+    setBusyProductId(product.id)
+    try {
+      await updateProduct({
+        variables: {
+          id: product.id,
+          input: productVisibilityUpdateInput(product, nextCode),
+        },
+      })
+      router.refresh()
+      showToast.success(
+        nextCode === "ACTIVE" ? "Produto publicado" : "Produto em rascunho",
+        `"${product.title}" foi marcado como ${productVisibilityLabel(nextCode).toLowerCase()}.`,
+      )
+    } catch (err: unknown) {
+      console.error("Error toggling product visibility:", err)
+      showToast.error(
+        `Erro ao ${actionLabel.toLowerCase()}`,
+        getErrorMessage(err, "Tente novamente."),
+      )
+    } finally {
+      setBusyProductId(null)
+    }
+  }
 
   const handleDeleteProduct = async (
     productId: string,
@@ -75,7 +115,7 @@ export function ProductList({
       return
     }
 
-    setDeletingProductId(productId)
+    setBusyProductId(productId)
     try {
       await deleteProduct({ variables: { id: productId } })
       router.refresh()
@@ -85,7 +125,7 @@ export function ProductList({
       const errorMessage = getErrorMessage(err, "Erro ao excluir produto. Tente novamente.")
       showToast.error("Erro ao excluir produto", errorMessage)
     } finally {
-      setDeletingProductId(null)
+      setBusyProductId(null)
     }
   }
 
@@ -111,7 +151,8 @@ export function ProductList({
               metadata = product.metadata ? (JSON.parse(product.metadata) as ProductMetadata) : null
             } catch {}
 
-            const isDeleting = deletingProductId === product.id
+            const isBusy = busyProductId === product.id
+            const draft = isProductDraft(product.status?.code)
 
             return (
               <TableRow key={product.id} className="group cursor-pointer hover:bg-muted/20">
@@ -147,16 +188,16 @@ export function ProductList({
                 </TableCell>
 
                 <TableCell className="py-2 hidden sm:table-cell">
-                  {product.status?.code === "INACTIVE" ? (
+                  {draft ? (
                     <Badge
                       variant="outline"
                       className="text-[11px] h-5 px-1.5 text-amber-700 border-amber-500/40 bg-amber-50"
                     >
-                      Rascunho
+                      {productVisibilityLabel(product.status?.code)}
                     </Badge>
                   ) : (
                     <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
-                      Ativo
+                      {productVisibilityLabel(product.status?.code)}
                     </Badge>
                   )}
                 </TableCell>
@@ -216,16 +257,16 @@ export function ProductList({
                           e.preventDefault()
                           e.stopPropagation()
                         }}
-                        disabled={isDeleting}
+                        disabled={isBusy}
                       >
-                        {isDeleting ? (
+                        {isBusy ? (
                           <Loader2 className="h-3.5 w-3.5 animate-spin" />
                         ) : (
                           <MoreVertical className="h-3.5 w-3.5" />
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuContent align="end" className="w-44">
                       <DropdownMenuItem asChild>
                         <Link
                           href={`/dashboard/products/${product.id}`}
@@ -235,11 +276,22 @@ export function ProductList({
                           Ver produto
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => handleToggleVisibility(product, e)}
+                        disabled={isBusy}
+                      >
+                        {draft ? (
+                          <Globe className="h-3.5 w-3.5 mr-2" />
+                        ) : (
+                          <EyeOff className="h-3.5 w-3.5 mr-2" />
+                        )}
+                        {productVisibilityToggleLabel(product.status?.code)}
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive"
                         onClick={(e) => handleDeleteProduct(product.id, product.title, e)}
-                        disabled={isDeleting}
+                        disabled={isBusy}
                       >
                         <Trash2 className="h-3.5 w-3.5 mr-2" />
                         Excluir

@@ -27,7 +27,7 @@ export default function NewProductPage() {
     summary: "",
     discount: "",
     condition: "novo",
-    status: "ACTIVE",
+    status: "INACTIVE",
     sku: "",
     price: "",
     quantity: "",
@@ -313,7 +313,7 @@ export default function NewProductPage() {
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ACTIVE">Ativo</SelectItem>
+                      <SelectItem value="ACTIVE">Publicado</SelectItem>
                       <SelectItem value="INACTIVE">Rascunho</SelectItem>
                     </SelectContent>
                   </Select>

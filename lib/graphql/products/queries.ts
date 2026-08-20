@@ -11,6 +11,9 @@ export const GET_PRODUCTS = gql`
         discount
         condition
         metadata
+        type {
+          code
+        }
         status {
           code
           description

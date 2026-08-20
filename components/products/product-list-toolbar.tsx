@@ -171,7 +171,7 @@ export function ProductListToolbar({
                 Todos
               </SelectItem>
               <SelectItem value="ACTIVE" className="text-xs">
-                Ativos
+                Publicados
               </SelectItem>
               <SelectItem value="INACTIVE" className="text-xs">
                 Rascunhos

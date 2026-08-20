@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { useParams, useRouter } from "next/navigation"
 import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
-import { DELETE_PRODUCT } from "@/lib/graphql/products/mutations"
+import { DELETE_PRODUCT, UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { EditProductModal } from "@/components/products/edit-product-modal"
@@ -32,12 +32,21 @@ import {
   Settings,
   Layers,
   BoxesIcon,
+  Globe,
+  EyeOff,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { showToast } from "@/lib/utils/toast"
 import { looksLikeIphoneProduct } from "@/lib/utils/iphone-seminovo-metadata"
 import { parseProductOffer } from "@/lib/products/product-offer"
+import {
+  isProductDraft,
+  productVisibilityLabel,
+  productVisibilityToggleCode,
+  productVisibilityToggleLabel,
+  productVisibilityUpdateInput,
+} from "@/lib/products/product-visibility"
 
 export default function ProductDetailPage() {
   const params = useParams()
@@ -56,6 +65,8 @@ export default function ProductDetailPage() {
     }
   )
 
+  const [updateProduct, { loading: updatingVisibility }] = useMutation(UPDATE_PRODUCT)
+
   const { data, loading, error, refetch } = useQuery<{ productDetails?: Product }>(
     GET_PRODUCT,
     {
@@ -68,7 +79,7 @@ export default function ProductDetailPage() {
     products?: { data?: Array<{ id: string; brand?: Product["brand"] }> }
   }>(GET_PRODUCTS, {
     variables: {
-      filter: null,
+      filter: { includeInactive: true },
       page: {
         page: 0,
         size: 1000,
@@ -130,6 +141,31 @@ export default function ProductDetailPage() {
       const errorMessage = err instanceof Error ? err.message : "Erro ao excluir produto. Tente novamente."
       console.error("Error deleting product:", err)
       showToast.error("Erro ao excluir produto", errorMessage)
+    }
+  }
+
+  const handleToggleVisibility = async () => {
+    if (!product) return
+    const nextCode = productVisibilityToggleCode(product.status?.code)
+    const actionLabel = productVisibilityToggleLabel(product.status?.code)
+    try {
+      await updateProduct({
+        variables: {
+          id: product.id,
+          input: productVisibilityUpdateInput(product, nextCode),
+        },
+      })
+      await refetch()
+      showToast.success(
+        nextCode === "ACTIVE" ? "Produto publicado" : "Produto em rascunho",
+        `"${product.title}" foi marcado como ${productVisibilityLabel(nextCode).toLowerCase()}.`,
+      )
+    } catch (err: unknown) {
+      console.error("Error toggling product visibility:", err)
+      showToast.error(
+        `Erro ao ${actionLabel.toLowerCase()}`,
+        err instanceof Error ? err.message : "Tente novamente.",
+      )
     }
   }
 
@@ -201,13 +237,13 @@ export default function ProductDetailPage() {
                     <h1 className="truncate text-xl font-semibold md:text-2xl">
                       {product.title}
                     </h1>
-                    {product.status?.code === "INACTIVE" ? (
+                    {isProductDraft(product.status?.code) ? (
                       <Badge variant="outline" className="text-xs text-amber-700 border-amber-500/40 bg-amber-50">
-                        Rascunho
+                        {productVisibilityLabel(product.status?.code)}
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="text-xs">
-                        Ativo
+                        {productVisibilityLabel(product.status?.code)}
                       </Badge>
                     )}
                     {product.category && (
@@ -223,6 +259,21 @@ export default function ProductDetailPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    variant={isProductDraft(product.status?.code) ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleToggleVisibility}
+                    disabled={updatingVisibility}
+                  >
+                    {updatingVisibility ? (
+                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    ) : isProductDraft(product.status?.code) ? (
+                      <Globe className="mr-1.5 h-3.5 w-3.5" />
+                    ) : (
+                      <EyeOff className="mr-1.5 h-3.5 w-3.5" />
+                    )}
+                    {productVisibilityToggleLabel(product.status?.code)}
+                  </Button>
                   <Button onClick={() => setEditModalOpen(true)} size="sm">
                     <Pencil className="mr-1.5 h-3.5 w-3.5" />
                     Editar

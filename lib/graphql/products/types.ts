@@ -11,8 +11,10 @@ export interface ProductFilterInput {
   featured?: boolean | null
   /** Filtra por estes IDs; ordem da resposta segue a lista no gateway. */
   ids?: string[] | null
-  /** ACTIVE | INACTIVE (rascunho / oculto na loja). */
+  /** ACTIVE = publicado | INACTIVE = rascunho. */
   status?: string | null
+  /** Quando true e status omitido, inclui rascunhos (lista admin "Todos"). */
+  includeInactive?: boolean | null
 }
 
 export interface Product {

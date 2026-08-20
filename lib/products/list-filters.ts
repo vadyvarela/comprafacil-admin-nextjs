@@ -22,7 +22,7 @@ export type ProductListFilterParams = {
   status?: string | null
 }
 
-export function buildProductListFilter(params: ProductListFilterParams): ProductFilterInput | null {
+export function buildProductListFilter(params: ProductListFilterParams): ProductFilterInput {
   const search = params.search?.trim() || null
   const category = params.category?.trim() || FILTER_ALL
   const brand = params.brand?.trim() || FILTER_ALL
@@ -34,17 +34,13 @@ export function buildProductListFilter(params: ProductListFilterParams): Product
   else if (category !== FILTER_ALL) f.categoryId = category
   if (brand === FILTER_NONE) f.withoutBrand = true
   else if (brand !== FILTER_ALL) f.brandId = brand
-  if (status !== FILTER_ALL) f.status = status
 
-  if (
-    !f.search &&
-    f.categoryId == null &&
-    f.brandId == null &&
-    !f.withoutCategory &&
-    !f.withoutBrand &&
-    !f.status
-  ) {
-    return null
+  if (status === FILTER_ALL) {
+    // Admin "Todos": incluir rascunhos; sem isto a API devolve só publicados.
+    f.includeInactive = true
+  } else {
+    f.status = status
   }
+
   return f
 }

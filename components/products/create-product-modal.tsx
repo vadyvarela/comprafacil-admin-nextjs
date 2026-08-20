@@ -56,7 +56,7 @@ export function CreateProductModal({
     categoryId: "none",
     brandId: "none",
     condition: "novo",
-    status: "ACTIVE",
+    status: "INACTIVE",
     discount: "",
     price: "",
     quantity: "",
@@ -97,7 +97,7 @@ export function CreateProductModal({
       categoryId: "none",
       brandId: "none",
       condition: "novo",
-      status: "ACTIVE",
+      status: "INACTIVE",
       discount: "",
       price: "",
       quantity: "",
@@ -368,7 +368,7 @@ export function CreateProductModal({
                       <SelectValue placeholder="Selecione…" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ACTIVE">Ativo</SelectItem>
+                      <SelectItem value="ACTIVE">Publicado</SelectItem>
                       <SelectItem value="INACTIVE">Rascunho</SelectItem>
                     </SelectContent>
                   </Select>
