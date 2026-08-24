@@ -143,7 +143,8 @@ const ROOT_FIELD_ACCESS: Record<string, OperationAccess> = {
   publishStoreHomeLayout: { module: "settings", mode: "write" },
 
   countries: { module: "settings", mode: "read" },
-  islands: { module: "settings", mode: "read" },
+  locations: { module: "settings", mode: "read" },
+  cities: { module: "settings", mode: "read" },
   states: { module: "settings", mode: "read" },
   shippingTiers: { module: "settings", mode: "read" },
   pickupPoints: { module: "settings", mode: "read" },
