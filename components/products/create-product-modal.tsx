@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select"
 import { Loader2, Package, FileText, Layers, Tag } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
+import { recordAuditLog } from "@/lib/actions/auditLogs"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { Field, FormSection } from "@/components/products/product-form-layout"
 import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
@@ -201,6 +202,13 @@ export function CreateProductModal({
       if (!productId) {
         throw new Error("Erro ao criar produto: ID não retornado")
       }
+
+      void recordAuditLog({
+        action: "PRODUCT_CREATED",
+        entityType: "PRODUCT",
+        entityId: productId,
+        metadata: { title: formData.title.trim() },
+      })
 
       // Se preço foi fornecido e createDefaultVariant está ativo, criar variante padrão
       if (formData.createDefaultVariant && formData.price) {

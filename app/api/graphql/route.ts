@@ -58,6 +58,8 @@ const ROOT_FIELD_ACCESS: Record<string, OperationAccess> = {
   checkoutSessionSearch: { module: "orders", mode: "read" },
   checkoutSessionDetails: { module: "orders", mode: "read" },
   updateOrderFulfillmentStatus: { module: "orders", mode: "write" },
+  auditLogs: { module: "logs", mode: "read" },
+  createAuditLog: { module: "logs", mode: "write" },
 
   customers: { module: "customers", mode: "read" },
   customerDetails: { module: "customers", mode: "read" },

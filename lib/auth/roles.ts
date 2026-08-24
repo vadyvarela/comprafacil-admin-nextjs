@@ -50,6 +50,7 @@ export type AccessModule =
   | "banners"
   | "media"
   | "marketing"
+  | "logs"
   | "settings"
   | "settings.team"
   | "settings.security";
@@ -72,6 +73,7 @@ const MODULE_ACCESS: Record<AccessModule, AccessRule> = {
   banners: { read: "manager", write: "manager" },
   media: { read: "manager", write: "manager" },
   marketing: { read: "manager", write: "manager" },
+  logs: { read: "manager", write: "manager" },
   settings: { read: "manager", write: "manager" },
   "settings.team": { read: "owner", write: "owner" },
   "settings.security": { read: "owner", write: "owner" },
@@ -85,6 +87,7 @@ const ROUTE_MODULES: { prefix: string; module: AccessModule }[] = [
   { prefix: "/dashboard/orders", module: "orders" },
   { prefix: "/dashboard/customers", module: "customers" },
   { prefix: "/dashboard/transactions", module: "transactions" },
+  { prefix: "/dashboard/logs", module: "logs" },
   { prefix: "/dashboard/products", module: "products" },
   { prefix: "/dashboard/categories", module: "categories" },
   { prefix: "/dashboard/brands", module: "brands" },
@@ -101,6 +104,7 @@ const NAV_MODULE_MAP: Record<string, AccessModule> = {
   "/dashboard/orders": "orders",
   "/dashboard/customers": "customers",
   "/dashboard/transactions": "transactions",
+  "/dashboard/logs": "logs",
   "/dashboard/products": "products",
   "/dashboard/categories": "categories",
   "/dashboard/brands": "brands",

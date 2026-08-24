@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/select"
 import { Loader2, Package, FileText, Layers, Puzzle, Tag, X as XIcon } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
+import { recordAuditLog } from "@/lib/actions/auditLogs"
 import { RichTextEditor } from "../ui/rich-text-editor"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
@@ -264,6 +265,12 @@ export function EditProductModal({
             brandId: formData.brandId && formData.brandId !== "none" ? formData.brandId : null,
           },
         },
+      })
+      void recordAuditLog({
+        action: "PRODUCT_UPDATED",
+        entityType: "PRODUCT",
+        entityId: product.id,
+        metadata: { title: formData.title },
       })
     } catch (err: unknown) {
       console.error("Error updating product:", err)

@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react"
+import { recordAuditLog } from "@/lib/actions/auditLogs"
 
 interface CreateCouponModalProps {
   coupon?: Coupon | null
@@ -180,12 +181,28 @@ export function CreateCouponModal({
             input,
           },
         })
+        void recordAuditLog({
+          action: "COUPON_UPDATED",
+          entityType: "COUPON",
+          entityId: coupon.id,
+          metadata: { name: formData.name.trim() },
+        })
       } else {
-        await createCoupon({
+        const result = await createCoupon({
           variables: {
             input,
           },
         })
+        const createdId = (result.data as { createCoupon?: { id?: string } } | undefined)
+          ?.createCoupon?.id
+        if (createdId) {
+          void recordAuditLog({
+            action: "COUPON_CREATED",
+            entityType: "COUPON",
+            entityId: createdId,
+            metadata: { name: formData.name.trim() },
+          })
+        }
       }
     } catch (err) {
       console.error("Error saving coupon:", err)

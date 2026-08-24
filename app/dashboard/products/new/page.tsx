@@ -19,6 +19,7 @@ import {
 import { Package, Tag, Layers, ArrowLeft, AlertCircle } from "lucide-react"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { Label } from "@/components/ui/label"
+import { recordAuditLog } from "@/lib/actions/auditLogs"
 
 export default function NewProductPage() {
   const router = useRouter()
@@ -74,6 +75,13 @@ export default function NewProductPage() {
 
       const productId = productData?.createProduct?.id
       if (!productId) throw new Error("Erro ao criar produto")
+
+      void recordAuditLog({
+        action: "PRODUCT_CREATED",
+        entityType: "PRODUCT",
+        entityId: productId,
+        metadata: { title: formData.title },
+      })
 
       if (formData.createDefaultVariant && formData.price) {
         const priceAmount = parseFloat(formData.price)

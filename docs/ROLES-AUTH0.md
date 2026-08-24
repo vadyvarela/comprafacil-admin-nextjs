@@ -103,6 +103,7 @@ Se o email não chegar: copia o link mostrado no diálogo após o convite. Confi
 | Clientes (leitura) | ✓ | ✓ | ✓ | ✓ |
 | Clientes (editar) | | | ✓ | ✓ |
 | Transações | | | ✓ | ✓ |
+| Logs / auditoria | | | ✓ | ✓ |
 | Catálogo / Marketing | | | ✓ | ✓ |
 | Definições | | | ✓ | ✓ |
 | Equipa / Tokens API | | | | ✓ |

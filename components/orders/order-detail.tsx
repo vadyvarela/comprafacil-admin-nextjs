@@ -30,10 +30,14 @@ import {
 } from "@/lib/orders/status"
 import { OrderDetailActions } from "./order-detail-actions"
 import { OrderFulfillmentStatus } from "./order-fulfillment-status"
+import { OrderAuditTimeline } from "./order-audit-timeline"
+import type { AuditLog } from "@/lib/graphql/audit/types"
 
 type OrderDetailProps = {
   order: CheckoutSessionDetailsResponse
   customerDetails?: CustomerDetailsResponse | null
+  auditLogs?: AuditLog[]
+  auditError?: string | null
 }
 
 function phoneFromAddressLegacy(metadata: string | null | undefined): string | null {
@@ -139,7 +143,12 @@ function SectionCard({
   )
 }
 
-export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
+export function OrderDetail({
+  order,
+  customerDetails,
+  auditLogs = [],
+  auditError = null,
+}: OrderDetailProps) {
   const shippingFromMetadata = getShippingAddressFromMetadata(order.metadata)
   const displayShipping = resolveDisplayShipping(shippingFromMetadata, customerDetails)
   const accountPhone =
@@ -219,11 +228,12 @@ export function OrderDetail({ order, customerDetails }: OrderDetailProps) {
           </div>
 
           {/* Fulfillment */}
-          <div className="animate-enter-delay-1">
+          <div className="animate-enter-delay-1 space-y-4">
             <OrderFulfillmentStatus
               orderId={order.id}
               fulfillmentStatus={order.fulfillmentStatus}
             />
+            <OrderAuditTimeline logs={auditLogs} error={auditError} />
           </div>
 
           {/* Grid */}

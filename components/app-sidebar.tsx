@@ -18,6 +18,7 @@ import {
   Settings,
   Megaphone,
   CalendarRange,
+  ScrollText,
 } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
@@ -53,6 +54,7 @@ const NAV = [
       { title: "Pedidos", url: "/dashboard/orders", icon: ShoppingCart, exact: false },
       { title: "Clientes", url: "/dashboard/customers", icon: Users, exact: false },
       { title: "Transações", url: "/dashboard/transactions", icon: CreditCard, exact: false },
+      { title: "Logs", url: "/dashboard/logs", icon: ScrollText, exact: false },
     ],
   },
   {

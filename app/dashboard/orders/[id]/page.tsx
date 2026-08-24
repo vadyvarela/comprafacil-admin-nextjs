@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { getOrderById } from "@/lib/actions/orders"
+import { getOrderAuditLogs } from "@/lib/actions/auditLogs"
 import {
   getCustomerDetails,
   getCustomerDetailsByExternalId,
@@ -62,6 +63,8 @@ export default async function OrderDetailPage({ params }: PageProps) {
     }
   }
 
+  const auditResult = await getOrderAuditLogs(order.id)
+
   return (
     <>
       <DashboardHeader
@@ -71,7 +74,12 @@ export default async function OrderDetailPage({ params }: PageProps) {
           { label: `${shortId}…` },
         ]}
       />
-      <OrderDetail order={order} customerDetails={customerDetails} />
+      <OrderDetail
+        order={order}
+        customerDetails={customerDetails}
+        auditLogs={auditResult.ok ? auditResult.data.data : []}
+        auditError={auditResult.ok ? null : auditResult.error}
+      />
     </>
   )
 }
