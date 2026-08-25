@@ -80,6 +80,7 @@ export const DEFAULT_HERO_V2_TRUST_ITEMS = [
 
 export function defaultHeroV2Props() {
   return {
+    theme: "darkOrange" as const,
     slides: DEFAULT_HERO_V2_SLIDES.map((s) => ({ ...s })),
     sideFeatures: DEFAULT_HERO_V2_SIDE_FEATURES.map((f) => ({ ...f })),
     trustItems: DEFAULT_HERO_V2_TRUST_ITEMS.map((t) => ({ ...t })),

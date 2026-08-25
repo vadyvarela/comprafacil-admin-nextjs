@@ -432,6 +432,37 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
       return (
         <div className="grid gap-4">
           <div className="space-y-1">
+            <Label className="text-[10px]">Tema de fundo</Label>
+            <Select
+              value={block.props.theme ?? "darkOrange"}
+              onValueChange={(v) =>
+                onChange({
+                  ...block,
+                  props: {
+                    ...block.props,
+                    theme: v as NonNullable<(typeof block.props)["theme"]>,
+                  },
+                })
+              }
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="darkOrange">Escuro · laranja</SelectItem>
+                <SelectItem value="midnightBlue">Meia-noite · azul</SelectItem>
+                <SelectItem value="emeraldNight">Noite · esmeralda</SelectItem>
+                <SelectItem value="violetDusk">Crepúsculo · violeta</SelectItem>
+                <SelectItem value="slateSteel">Aço · ardósia</SelectItem>
+                <SelectItem value="oceanTeal">Oceano · teal</SelectItem>
+                <SelectItem value="roseNight">Noite · rosa</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground leading-snug">
+              Muda o gradiente e a cor de destaque (badge, CTA, headline).
+            </p>
+          </div>
+          <div className="space-y-1">
             <Label className="text-[10px]">Autoplay (ms)</Label>
             <Input
               type="number"

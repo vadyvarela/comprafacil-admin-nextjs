@@ -437,6 +437,17 @@ const heroV2TrustItemSchema = z
 
 const heroV2PropsSchema = z
   .object({
+    theme: z
+      .enum([
+        "darkOrange",
+        "midnightBlue",
+        "emeraldNight",
+        "violetDusk",
+        "slateSteel",
+        "oceanTeal",
+        "roseNight",
+      ])
+      .default("darkOrange"),
     slides: z.array(heroV2SlideSchema).min(1).max(6),
     sideFeatures: z.array(heroV2SideFeatureSchema).min(0).max(4),
     trustItems: z.array(heroV2TrustItemSchema).min(0).max(5).optional(),
