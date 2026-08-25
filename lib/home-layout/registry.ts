@@ -2,6 +2,7 @@ import type { StoreVertical } from "@/lib/store-presets"
 
 export const HOME_BLOCK_TYPES = [
   "hero",
+  "heroV2",
   "shoeStoreHero",
   "shoeStoreExplore",
   "shopByCategory",
@@ -33,6 +34,12 @@ export const HOME_BLOCK_REGISTRY: Record<HomeBlockType, HomeBlockRegistryEntry> 
     label: "Hero",
     description: "Carrossel principal no topo da home.",
     hint: "Imagens vêm de Marketing → Banners (posições hero e hero-side). Não escolhes ficheiros aqui.",
+    verticals: ["tech", "beauty", "automotive", "general"],
+  },
+  heroV2: {
+    label: "Hero v2 (editorial)",
+    description: "Hero escuro com copy, CTAs, imagem, benefícios laterais e faixa inferior.",
+    hint: "Alternativa ao Hero clássico. Configuras slides, cartões laterais e a faixa de confiança no bloco.",
     verticals: ["tech", "beauty", "automotive", "general"],
   },
   shoeStoreHero: {

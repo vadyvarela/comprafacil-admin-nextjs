@@ -19,10 +19,26 @@ export const DEFAULT_HOME_LAYOUT: HomeLayoutDocument = {
       enabled: true,
       props: {
         items: [
-          { icon: "truck", label: "Entrega nacional", sublabel: "Prazos no checkout" },
-          { icon: "shield", label: "Pagamento seguro", sublabel: "Dados protegidos" },
-          { icon: "store", label: "Levanta na loja", sublabel: "Sem custo" },
-          { icon: "support", label: "Apoio ao cliente", sublabel: "Resposta rápida" },
+          {
+            icon: "truck",
+            label: "Entrega nacional",
+            sublabel: "Entregamos em todas as ilhas de Cabo Verde",
+          },
+          {
+            icon: "shield",
+            label: "1 ano de garantia",
+            sublabel: "Todos os produtos com garantia incluída",
+          },
+          {
+            icon: "store",
+            label: "Levantamento grátis",
+            sublabel: "Levante na loja em Praia Achada ou Palmarejo",
+          },
+          {
+            icon: "phone",
+            label: "Atendimento rápido",
+            sublabel: "Fala connosco no WhatsApp",
+          },
         ],
       },
     },

@@ -4,6 +4,7 @@ import {
   defaultShoeStoreExploreProps,
   defaultShoeStoreHeroProps,
 } from "./shoe-store-defaults"
+import { defaultHeroV2Props } from "./hero-v2-defaults"
 
 function newId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -21,6 +22,8 @@ export function createEmptyBlock(type: HomeBlockType): HomeBlock {
   switch (type) {
     case "hero":
       return { id, type: "hero", enabled: true, props: {} }
+    case "heroV2":
+      return { id, type: "heroV2", enabled: true, props: defaultHeroV2Props() }
     case "shoeStoreHero":
       return { id, type: "shoeStoreHero", enabled: true, props: defaultShoeStoreHeroProps() }
     case "shoeStoreExplore":
