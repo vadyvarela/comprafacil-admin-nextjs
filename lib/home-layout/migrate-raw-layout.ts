@@ -51,6 +51,11 @@ export function migrateHomeLayoutDocumentRaw(data: unknown): unknown {
           }),
         },
       }
+    }).map((block) => {
+      if (block == null || typeof block !== "object") return block
+      const b = block as { type?: string; props?: Record<string, unknown> }
+      if (b.type !== "trustStrip") return block
+      return { ...b, type: "benefitsBar" }
     }),
   }
 }

@@ -148,23 +148,106 @@ const recentlyViewedBlockSchema = z.object({
     .strict(),
 })
 
-const trustStripItemSchema = z
+const benefitsBarIconSchema = z.enum([
+  "truck",
+  "shield",
+  "store",
+  "card",
+  "support",
+  "tag",
+  "phone",
+])
+
+const benefitsBarItemSchema = z
   .object({
-    icon: z.enum(["truck", "shield", "store", "card", "support"]),
+    icon: benefitsBarIconSchema,
     label: z.string().min(1).max(90),
     sublabel: z.string().max(140).optional(),
   })
   .strict()
 
-const trustStripBlockSchema = z.object({
+const benefitsBarBlockSchema = z.object({
   id: z.string().uuid(),
-  type: z.literal("trustStrip"),
+  type: z.literal("benefitsBar"),
   enabled: z.boolean().default(true),
   props: z
     .object({
-      items: z.array(trustStripItemSchema).min(2).max(4),
+      items: z.array(benefitsBarItemSchema).min(2).max(5),
     })
     .strict(),
+})
+
+const sectionIntroBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("sectionIntro"),
+  enabled: z.boolean().default(true),
+  props: z
+    .object({
+      title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
+      subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
+    })
+    .strict(),
+})
+
+const shopByCategoryItemSchema = z
+  .object({
+    categoryId: z.string().uuid().optional(),
+    categorySlug: slugSchema,
+    title: z.string().min(1).max(80).optional(),
+    imageUrl: z.string().max(2048).optional(),
+    href: internalHrefSchema.optional(),
+    ctaLabel: z.string().min(1).max(40).optional(),
+  })
+  .strict()
+  .superRefine((item, ctx) => {
+    const raw = item.imageUrl?.trim()
+    if (!raw) return
+    if (!/^https?:\/\//i.test(raw) && !(raw.startsWith("/") && raw.length > 1)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Imagem: URL https ou path a começar por /",
+        path: ["imageUrl"],
+      })
+    }
+  })
+
+const shopByCategoryBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("shopByCategory"),
+  enabled: z.boolean().default(true),
+  props: z
+    .object({
+      title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
+      items: z.array(shopByCategoryItemSchema).min(2).max(8),
+    })
+    .strict(),
+})
+
+const weeklyDealBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("weeklyDeal"),
+  enabled: z.boolean().default(true),
+  props: z
+    .object({
+      title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
+      endsAt: z.string().min(1).max(40),
+      productId: z.string().uuid(),
+      productSubtitle: z.string().max(80).optional(),
+      ctaLabel: z.string().min(1).max(40),
+      ctaHref: internalHrefSchema.optional(),
+      badgeLabel: z.string().max(20).optional(),
+    })
+    .strict()
+    .superRefine((p, ctx) => {
+      const ms = new Date(p.endsAt).getTime()
+      if (!Number.isFinite(ms)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "endsAt deve ser uma data/hora ISO válida.",
+          path: ["endsAt"],
+        })
+      }
+    }),
 })
 
 const productPairPropsSchema = z
@@ -382,7 +465,10 @@ export const homeBlockSchema = z.discriminatedUnion("type", [
   multiCategoryRailsBlockSchema,
   newsletterBlockSchema,
   recentlyViewedBlockSchema,
-  trustStripBlockSchema,
+  shopByCategoryBlockSchema,
+  weeklyDealBlockSchema,
+  sectionIntroBlockSchema,
+  benefitsBarBlockSchema,
   productPairBlockSchema,
   promoDuoBlockSchema,
   splitDealRailBlockSchema,

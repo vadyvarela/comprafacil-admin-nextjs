@@ -260,6 +260,151 @@ function CategoryRailHomeFields({
   )
 }
 
+function toDatetimeLocalValue(iso: string): string {
+  const ms = new Date(iso).getTime()
+  if (!Number.isFinite(ms)) return ""
+  const d = new Date(ms)
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+type ShopByCategoryBlock = Extract<HomeBlock, { type: "shopByCategory" }>
+
+function ShopByCategoryHomeFields({
+  block,
+  onChange,
+}: {
+  block: ShopByCategoryBlock
+  onChange: (next: HomeBlock) => void
+}) {
+  const { data, loading } = useQuery<{
+    categoryList: { id: string; name: string; slug: string }[]
+  }>(GET_CATEGORY_LIST, { fetchPolicy: "cache-and-network" })
+
+  const list = useMemo(() => {
+    return [...(data?.categoryList ?? [])].sort((a, b) =>
+      a.name.localeCompare(b.name, "pt", { sensitivity: "base" })
+    )
+  }, [data?.categoryList])
+
+  const items = block.props.items
+  const patchItems = (next: typeof items) =>
+    onChange({ ...block, props: { ...block.props, items: next } })
+  const updateItem = (index: number, patch: Partial<(typeof items)[0]>) => {
+    patchItems(items.map((it, i) => (i === index ? { ...it, ...patch } : it)))
+  }
+
+  return (
+    <div className="grid gap-3">
+      <div className="space-y-1">
+        <Label className="text-[10px]">Título da secção</Label>
+        <Input
+          className="h-8 text-xs"
+          value={block.props.title}
+          onChange={(e) =>
+            onChange({ ...block, props: { ...block.props, title: e.target.value } })
+          }
+        />
+      </div>
+      <p className="text-[10px] text-muted-foreground leading-snug">
+        Entre 2 e 8 categorias. Imagem opcional sobrescreve a do GTW.
+      </p>
+      <div className="flex flex-col gap-3">
+        {items.map((it, idx) => {
+          const derivedId =
+            it.categoryId ?? list.find((c) => c.slug === it.categorySlug)?.id ?? ""
+          return (
+            <div
+              key={idx}
+              className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
+            >
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-[10px]">Categoria</Label>
+                <Select
+                  value={derivedId || undefined}
+                  disabled={loading && list.length === 0}
+                  onValueChange={(id) => {
+                    const cat = list.find((c) => c.id === id)
+                    if (!cat) return
+                    updateItem(idx, {
+                      categoryId: cat.id,
+                      categorySlug: cat.slug,
+                      title: it.title || cat.name,
+                      href: `/categoria/${cat.slug}`,
+                    })
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder={loading ? "A carregar…" : "Escolhe"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    {list.map((c) => (
+                      <SelectItem key={c.id} value={c.id} className="text-xs">
+                        <span className="truncate">{c.name}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-[10px]">Título no cartão (opcional)</Label>
+                <Input
+                  className="h-8 text-xs"
+                  value={it.title ?? ""}
+                  onChange={(e) => updateItem(idx, { title: e.target.value || undefined })}
+                />
+              </div>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-[10px]">Imagem (opcional) — URL ou /path</Label>
+                <Input
+                  className="h-8 text-xs font-mono"
+                  value={it.imageUrl ?? ""}
+                  onChange={(e) => updateItem(idx, { imageUrl: e.target.value || undefined })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">CTA</Label>
+                <Input
+                  className="h-8 text-xs"
+                  value={it.ctaLabel ?? "Ver produtos"}
+                  onChange={(e) => updateItem(idx, { ctaLabel: e.target.value || undefined })}
+                />
+              </div>
+              <div className="flex items-end justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-[10px]"
+                  disabled={items.length <= 2}
+                  onClick={() => patchItems(items.filter((_, i) => i !== idx))}
+                >
+                  Remover
+                </Button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="h-8 text-xs"
+        disabled={items.length >= 8}
+        onClick={() =>
+          patchItems([
+            ...items,
+            { categorySlug: "smartphones", title: "Nova categoria", ctaLabel: "Ver produtos" },
+          ])
+        }
+      >
+        Adicionar categoria
+      </Button>
+    </div>
+  )
+}
+
 export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsProps) {
   switch (block.type) {
     case "hero":
@@ -922,14 +1067,47 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
           />
         </div>
       )
-    case "trustStrip": {
+    case "sectionIntro":
+      return (
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="flex items-center justify-between gap-2 text-[10px]">
+              <span>Título</span>
+              <span className="font-normal text-muted-foreground tabular-nums">
+                {block.props.title.length}/{HOME_LAYOUT_RULES.titleMax}
+              </span>
+            </Label>
+            <Input
+              className="h-8 text-xs"
+              value={block.props.title}
+              onChange={(e) =>
+                onChange({ ...block, props: { ...block.props, title: e.target.value } })
+              }
+            />
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">Subtítulo (opcional)</Label>
+            <Input
+              className="h-8 text-xs"
+              value={block.props.subtitle ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...block,
+                  props: { ...block.props, subtitle: e.target.value || undefined },
+                })
+              }
+            />
+          </div>
+        </div>
+      )
+    case "benefitsBar": {
       const items = block.props.items
       const patchItems = (next: typeof items) => onChange({ ...block, props: { items: next } })
       const updateItem = (index: number, patch: Partial<(typeof items)[0]>) => {
         patchItems(items.map((it, i) => (i === index ? { ...it, ...patch } : it)))
       }
       const addItem = () => {
-        if (items.length >= 4) return
+        if (items.length >= 5) return
         patchItems([...items, { icon: "card" as const, label: "Novo benefício", sublabel: "" }])
       }
       const removeItem = (index: number) => {
@@ -939,7 +1117,7 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
       return (
         <div className="grid gap-3">
           <p className="text-[10px] text-muted-foreground leading-snug">
-            Entre 2 e 4 itens. Ícone + título curto; subtítulo opcional.
+            Entre 2 e 5 itens. Ícones azuis na loja.
           </p>
           <div className="flex flex-col gap-3">
             {items.map((it, idx) => (
@@ -951,19 +1129,19 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                   <Label className="text-[10px]">Ícone</Label>
                   <Select
                     value={it.icon}
-                    onValueChange={(v) =>
-                      updateItem(idx, { icon: v as (typeof it)["icon"] })
-                    }
+                    onValueChange={(v) => updateItem(idx, { icon: v as (typeof it)["icon"] })}
                   >
                     <SelectTrigger className="h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="truck">Caminhão (entrega)</SelectItem>
-                      <SelectItem value="shield">Escudo (segurança)</SelectItem>
+                      <SelectItem value="shield">Escudo (garantia)</SelectItem>
                       <SelectItem value="store">Loja física</SelectItem>
                       <SelectItem value="card">Cartão (pagamento)</SelectItem>
                       <SelectItem value="support">Auriculares (apoio)</SelectItem>
+                      <SelectItem value="tag">Etiqueta (preço)</SelectItem>
+                      <SelectItem value="phone">Telefone / WhatsApp</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1003,7 +1181,7 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
             variant="outline"
             size="sm"
             className="h-8 text-xs"
-            disabled={items.length >= 4}
+            disabled={items.length >= 5}
             onClick={addItem}
           >
             Adicionar item
@@ -1011,6 +1189,98 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
         </div>
       )
     }
+    case "shopByCategory":
+      return <ShopByCategoryHomeFields block={block} onChange={onChange} />
+    case "weeklyDeal":
+      return (
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">Título</Label>
+            <Input
+              className="h-8 text-xs"
+              value={block.props.title}
+              onChange={(e) =>
+                onChange({ ...block, props: { ...block.props, title: e.target.value } })
+              }
+            />
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">Fim do countdown (ISO / datetime-local)</Label>
+            <Input
+              type="datetime-local"
+              className="h-8 text-xs"
+              value={toDatetimeLocalValue(block.props.endsAt)}
+              onChange={(e) => {
+                const v = e.target.value
+                if (!v) return
+                const iso = new Date(v).toISOString()
+                onChange({ ...block, props: { ...block.props, endsAt: iso } })
+              }}
+            />
+            <p className="text-[10px] text-muted-foreground font-mono truncate">
+              {block.props.endsAt}
+            </p>
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">Produto</Label>
+            <CuratedProductPicker
+              value={[block.props.productId]}
+              max={1}
+              onChange={(ids) => {
+                const productId = ids[0]
+                if (!productId) return
+                onChange({ ...block, props: { ...block.props, productId } })
+              }}
+            />
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">Subtítulo do produto (opcional)</Label>
+            <Input
+              className="h-8 text-xs"
+              placeholder="Ex.: Bluetooth"
+              value={block.props.productSubtitle ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...block,
+                  props: { ...block.props, productSubtitle: e.target.value || undefined },
+                })
+              }
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px]">Texto do botão</Label>
+            <Input
+              className="h-8 text-xs"
+              value={block.props.ctaLabel}
+              onChange={(e) =>
+                onChange({ ...block, props: { ...block.props, ctaLabel: e.target.value } })
+              }
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-[10px]">Badge (opcional)</Label>
+            <Input
+              className="h-8 text-xs"
+              placeholder="-30%"
+              value={block.props.badgeLabel ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...block,
+                  props: { ...block.props, badgeLabel: e.target.value || undefined },
+                })
+              }
+            />
+          </div>
+          <InternalPathField
+            className="sm:col-span-2"
+            label="Link do botão (opcional — default = página do produto)"
+            value={block.props.ctaHref}
+            allowEmpty
+            placeholder="/produto/…"
+            onChange={(ctaHref) => onChange({ ...block, props: { ...block.props, ctaHref } })}
+          />
+        </div>
+      )
     case "productPair": {
       const pairIds = [block.props.leftProductId, block.props.rightProductId]
       return (

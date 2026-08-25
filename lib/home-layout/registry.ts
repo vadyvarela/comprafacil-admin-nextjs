@@ -4,7 +4,10 @@ export const HOME_BLOCK_TYPES = [
   "hero",
   "shoeStoreHero",
   "shoeStoreExplore",
-  "trustStrip",
+  "shopByCategory",
+  "weeklyDeal",
+  "sectionIntro",
+  "benefitsBar",
   "productPair",
   "promoDuo",
   "splitDealRail",
@@ -44,10 +47,25 @@ export const HOME_BLOCK_REGISTRY: Record<HomeBlockType, HomeBlockRegistryEntry> 
     hint: "Coloca abaixo do hero calçado. Cada tile: label, link, tamanho (hero / metade / largo) e imagem.",
     verticals: ["fashion", "general"],
   },
-  trustStrip: {
-    label: "Faixa de confiança",
-    description: "Ícones + mensagens curtas (envio, pagamento, loja física, apoio).",
-    hint: "Entre 2 e 4 itens. Boa secção logo abaixo do hero para variar o layout.",
+  shopByCategory: {
+    label: "Compre por categoria",
+    description: "Cartões de categoria com imagem, nome e link «Ver produtos».",
+    hint: "Escolhe 2 a 8 categorias. Imagem: da categoria no GTW ou URL/path opcional.",
+  },
+  weeklyDeal: {
+    label: "Oferta da semana",
+    description: "Banner escuro com countdown, produto, preço e botão.",
+    hint: "Define a data fim do countdown e escolhe um produto. Badge opcional (ex. -30%).",
+  },
+  sectionIntro: {
+    label: "Título de secção",
+    description: "Título (+ subtítulo) para introduzir a secção seguinte.",
+    hint: "Ex.: «Por que comprar na KumpraFácil?». Combina bem com a barra de benefícios.",
+  },
+  benefitsBar: {
+    label: "Barra de benefícios",
+    description: "Cartão com ícones azuis + título e subtítulo por item.",
+    hint: "2 a 5 itens. Ideal a seguir ao título de secção «Por que comprar…».",
   },
   productPair: {
     label: "Dois produtos em destaque",

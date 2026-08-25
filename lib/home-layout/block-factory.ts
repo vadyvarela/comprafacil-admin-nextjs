@@ -25,16 +25,74 @@ export function createEmptyBlock(type: HomeBlockType): HomeBlock {
       return { id, type: "shoeStoreHero", enabled: true, props: defaultShoeStoreHeroProps() }
     case "shoeStoreExplore":
       return { id, type: "shoeStoreExplore", enabled: true, props: defaultShoeStoreExploreProps() }
-    case "trustStrip":
+    case "shopByCategory":
       return {
         id,
-        type: "trustStrip",
+        type: "shopByCategory",
+        enabled: true,
+        props: {
+          title: "Compre por categoria",
+          items: [
+            { categorySlug: "smartphones", title: "Smartphones", ctaLabel: "Ver produtos" },
+            { categorySlug: "acessorios", title: "Acessórios", ctaLabel: "Ver produtos" },
+            { categorySlug: "auriculares", title: "Auriculares", ctaLabel: "Ver produtos" },
+            { categorySlug: "smartwatches", title: "Smartwatches", ctaLabel: "Ver produtos" },
+          ],
+        },
+      }
+    case "weeklyDeal": {
+      const ends = new Date()
+      ends.setDate(ends.getDate() + 7)
+      return {
+        id,
+        type: "weeklyDeal",
+        enabled: true,
+        props: {
+          title: "Oferta da semana",
+          endsAt: ends.toISOString(),
+          productId: "550e8400-e29b-41d4-a716-446655440001",
+          productSubtitle: "Bluetooth",
+          ctaLabel: "Aproveitar oferta",
+          badgeLabel: "-30%",
+        },
+      }
+    }
+    case "sectionIntro":
+      return {
+        id,
+        type: "sectionIntro",
+        enabled: true,
+        props: {
+          title: "Por que comprar na nossa loja?",
+        },
+      }
+    case "benefitsBar":
+      return {
+        id,
+        type: "benefitsBar",
         enabled: true,
         props: {
           items: [
-            { icon: "truck" as const, label: "Entrega em todo o país", sublabel: "Prazos no checkout" },
-            { icon: "shield" as const, label: "Pagamento seguro", sublabel: "Dados protegidos" },
-            { icon: "store" as const, label: "Levanta na loja", sublabel: "Grátis" },
+            {
+              icon: "truck" as const,
+              label: "Entrega nacional",
+              sublabel: "Entregamos em todas as ilhas de Cabo Verde",
+            },
+            {
+              icon: "shield" as const,
+              label: "1 ano de garantia",
+              sublabel: "Todos os produtos com garantia incluída",
+            },
+            {
+              icon: "store" as const,
+              label: "Levantamento grátis",
+              sublabel: "Levante na loja em Praia Achada ou Palmarejo",
+            },
+            {
+              icon: "phone" as const,
+              label: "Atendimento rápido",
+              sublabel: "Fala connosco no WhatsApp",
+            },
           ],
         },
       }

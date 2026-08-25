@@ -15,7 +15,7 @@ export const DEFAULT_HOME_LAYOUT: HomeLayoutDocument = {
     },
     {
       id: "f47ac10b-58cc-4372-a567-0e02b2c3d409",
-      type: "trustStrip",
+      type: "benefitsBar",
       enabled: true,
       props: {
         items: [
