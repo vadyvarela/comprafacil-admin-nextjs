@@ -114,6 +114,7 @@ const NAV_MODULE_MAP: Record<string, AccessModule> = {
   "/dashboard/marketing": "marketing",
   "/dashboard/marketing/content": "marketing",
   "/dashboard/marketing/campaigns": "marketing",
+  "/dashboard/settings/page-builder": "settings",
   "/dashboard/settings": "settings",
 };
 

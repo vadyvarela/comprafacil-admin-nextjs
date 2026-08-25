@@ -19,6 +19,7 @@ import {
   Megaphone,
   CalendarRange,
   ScrollText,
+  LayoutTemplate,
 } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
@@ -40,9 +41,12 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
+/**
+ * Ordem do menu: operação diária → catálogo → aquisição → conteúdo da loja → sistema.
+ */
 const NAV = [
   {
-    section: null,
+    section: "Visão geral",
     items: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, exact: true },
       { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3, exact: false },
@@ -54,7 +58,6 @@ const NAV = [
       { title: "Pedidos", url: "/dashboard/orders", icon: ShoppingCart, exact: false },
       { title: "Clientes", url: "/dashboard/customers", icon: Users, exact: false },
       { title: "Transações", url: "/dashboard/transactions", icon: CreditCard, exact: false },
-      { title: "Logs", url: "/dashboard/logs", icon: ScrollText, exact: false },
     ],
   },
   {
@@ -71,8 +74,25 @@ const NAV = [
       { title: "Secretária", url: "/dashboard/marketing", icon: Megaphone, exact: true },
       { title: "Campanhas", url: "/dashboard/marketing/campaigns", icon: CalendarRange, exact: false },
       { title: "Cupons", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
+    ],
+  },
+  {
+    section: "Conteúdo",
+    items: [
       { title: "Banners", url: "/dashboard/banners", icon: ImageIcon, exact: false },
       { title: "Biblioteca", url: "/dashboard/media", icon: Images, exact: false },
+      {
+        title: "Page Builder",
+        url: "/dashboard/settings/page-builder",
+        icon: LayoutTemplate,
+        exact: false,
+      },
+    ],
+  },
+  {
+    section: "Sistema",
+    items: [
+      { title: "Logs", url: "/dashboard/logs", icon: ScrollText, exact: false },
     ],
   },
 ]
@@ -132,12 +152,12 @@ export function AppSidebar({
           if (visibleItems.length === 0) return null
 
           return (
-            <SidebarGroup key={gi} className={gi > 0 ? "mt-0.5" : ""}>
-              {group.section && (
+            <SidebarGroup key={group.section ?? gi} className={gi > 0 ? "mt-0.5" : ""}>
+              {group.section ? (
                 <SidebarGroupLabel className="px-3 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45 mb-0.5">
                   {group.section}
                 </SidebarGroupLabel>
-              )}
+              ) : null}
               <SidebarGroupContent>
                 <SidebarMenu>
                   {visibleItems.map((item) => {
@@ -166,13 +186,18 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border pb-2">
-        {showSettings && (
+        {showSettings ? (
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
                 tooltip="Definições"
-                isActive={pathname?.startsWith("/dashboard/settings")}
+                isActive={
+                  Boolean(
+                    pathname?.startsWith("/dashboard/settings") &&
+                      !pathname?.startsWith("/dashboard/settings/page-builder")
+                  )
+                }
                 className="h-9"
               >
                 <Link href="/dashboard/settings">
@@ -182,7 +207,7 @@ export function AppSidebar({
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
-        )}
+        ) : null}
         <NavUser user={user} role={primaryRole} />
       </SidebarFooter>
 
