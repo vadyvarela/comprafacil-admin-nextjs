@@ -22,7 +22,7 @@ export default async function MarketingCampaignsPage() {
         <Button asChild size="sm" className="h-7 text-[11px] gap-1.5">
           <Link href="/dashboard/marketing/campaigns/new">
             <Plus className="h-3.5 w-3.5" />
-            Nova
+            Nova campanha
           </Link>
         </Button>
       }

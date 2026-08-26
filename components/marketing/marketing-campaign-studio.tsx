@@ -3,7 +3,19 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useApolloClient } from "@apollo/client/react"
-import { ImageIcon, Loader2, Send, X } from "lucide-react"
+import {
+  CalendarRange,
+  Check,
+  Copy,
+  ImageIcon,
+  Loader2,
+  PackageCheck,
+  Send,
+  Store,
+  Target,
+  type LucideIcon,
+  X,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { showToast } from "@/lib/utils/toast"
@@ -18,6 +30,13 @@ import { useMarketingStudio } from "@/lib/marketing/use-marketing-studio"
 import { cn } from "@/lib/utils"
 
 type ProductThumb = { id: string; title: string; image?: string | null }
+
+const CAMPAIGN_PLAYBOOK_META: Record<string, { icon: LucideIcon; detail: string }> = {
+  "campaign-sell": { icon: Target, detail: "campanha + posts + imagem" },
+  "salary-week": { icon: CalendarRange, detail: "fim do mês em Cabo Verde" },
+  "slow-stock": { icon: PackageCheck, detail: "produtos parados" },
+  launch: { icon: Store, detail: "produto em destaque" },
+}
 
 function asString(value: unknown) {
   return typeof value === "string" ? value : ""
@@ -110,8 +129,11 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
       <section className="flex min-h-0 min-w-0 flex-1 flex-col max-lg:max-h-[48%] lg:max-h-none">
-        <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-3">
-          <p className="text-[13px] font-medium">O que queres vender?</p>
+        <header className="flex h-11 shrink-0 items-center justify-between border-b border-border px-3">
+          <div className="min-w-0">
+            <p className="truncate text-[13px] font-medium">Briefing da campanha</p>
+            <p className="text-[10px] text-muted-foreground">Loja + social + WhatsApp</p>
+          </div>
           {studio.chat.length > 0 ? (
             <button
               type="button"
@@ -124,23 +146,7 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto">
           {showPlaybooks ? (
-            <div className="mx-auto flex max-w-lg flex-col gap-1 px-4 py-6">
-              <p className="text-[13px] font-medium">Estúdio da campanha</p>
-              <p className="mb-2 text-[12px] leading-relaxed text-muted-foreground">
-                O agente monta o post, os produtos e a página /campanha. Tu copias para o Facebook ou metes na loja.
-              </p>
-              {MARKETING_CAMPAIGN_PLAYBOOKS.map((book) => (
-                <button
-                  key={book.id}
-                  type="button"
-                  disabled={studio.busyAgent}
-                  onClick={() => void studio.sendAgent(book.prompt)}
-                  className="rounded-md border border-border px-3 py-2 text-left text-[13px] hover:bg-muted/60 disabled:opacity-50"
-                >
-                  {book.label}
-                </button>
-              ))}
-            </div>
+            <CampaignStudioStart busy={studio.busyAgent} onRun={(prompt) => void studio.sendAgent(prompt)} />
           ) : (
             <div className="mx-auto flex max-w-2xl flex-col gap-2.5 px-4 py-4">
               {studio.chat.map((line, i) => (
@@ -180,7 +186,7 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
           <Input
             value={studio.draft}
             onChange={(e) => studio.setDraft(e.target.value)}
-            placeholder="Ex.: Samsung A16 esta semana"
+            placeholder="Ex.: campanha para Samsung A16 esta semana"
             className="h-9 text-[13px]"
             disabled={studio.busyAgent}
             autoComplete="off"
@@ -191,20 +197,24 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
         </form>
       </section>
 
-      <aside className="flex min-h-0 w-full shrink-0 flex-col overflow-hidden border-t border-border lg:w-[22rem] lg:border-l lg:border-t-0">
-        <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-3">
-          <p className="text-[13px] font-medium">Pack de venda</p>
+      <aside className="flex min-h-0 w-full shrink-0 flex-col overflow-hidden border-t border-border bg-background lg:w-[22rem] lg:border-l lg:border-t-0">
+        <header className="flex h-11 shrink-0 items-center justify-between border-b border-border px-3">
+          <div className="min-w-0">
+            <p className="truncate text-[13px] font-medium">Pack da campanha</p>
+            <p className="text-[10px] text-muted-foreground">Criativo + loja</p>
+          </div>
           {campaignProposal ? (
             <span className="text-[11px] text-muted-foreground">{range}</span>
           ) : null}
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
           {studio.busyAgent && !campaignProposal ? (
-            <p className="text-[12px] text-muted-foreground">A montar o post…</p>
-          ) : !campaignProposal ? (
-            <p className="text-[12px] leading-relaxed text-muted-foreground">
-              O pack aparece aqui: post Facebook, produtos e o que vai para /campanha.
+            <p className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              A montar campanha…
             </p>
+          ) : !campaignProposal ? (
+            <EmptyCampaignPack />
           ) : (
             <div className="space-y-3">
               <MarketingPostPreview
@@ -259,7 +269,7 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
         {campaignProposal ? (
           <div className="flex shrink-0 items-center gap-2 border-t border-border px-3 py-2">
             <Button type="button" size="sm" className="h-8 flex-1" disabled={applying} onClick={() => void putInStore()}>
-              {applying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+              {applying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
               Meter na loja
             </Button>
             {studio.pack.imageUrl ? (
@@ -281,14 +291,96 @@ export function MarketingCampaignStudio({ pulse }: { pulse: MarketingPulse }) {
   )
 }
 
+function CampaignStudioStart({
+  busy,
+  onRun,
+}: {
+  busy: boolean
+  onRun: (prompt: string) => void
+}) {
+  return (
+    <div className="mx-auto w-full max-w-3xl px-4 py-4">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium text-muted-foreground">Nova campanha</p>
+          <h1 className="mt-0.5 text-base font-semibold leading-tight">Briefing rápido</h1>
+        </div>
+        <span className="shrink-0 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground">
+          {MARKETING_CAMPAIGN_PLAYBOOKS.length} modelos
+        </span>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {MARKETING_CAMPAIGN_PLAYBOOKS.map((book, index) => {
+          const meta = CAMPAIGN_PLAYBOOK_META[book.id] ?? { icon: Target, detail: "campanha completa" }
+          const Icon = meta.icon
+          return (
+            <button
+              key={book.id}
+              type="button"
+              disabled={busy}
+              onClick={() => onRun(book.prompt)}
+              className={cn(
+                "flex min-h-14 items-center gap-3 rounded-md border px-3 py-2 text-left disabled:opacity-50",
+                index === 0
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-border hover:bg-muted/60",
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              <span className="min-w-0">
+                <span className="block truncate text-[13px] font-medium">{book.label}</span>
+                <span className={cn("mt-0.5 block truncate text-[11px]", index === 0 ? "text-background/70" : "text-muted-foreground")}>
+                  {meta.detail}
+                </span>
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function EmptyCampaignPack() {
+  return (
+    <div className="space-y-2">
+      <PackStatus icon={Copy} label="Copy social" value="Pendente" />
+      <PackStatus icon={PackageCheck} label="Produtos" value="Pendente" />
+      <PackStatus icon={ImageIcon} label="Imagem" value="Pendente" />
+      <PackStatus icon={Store} label="Loja" value="/campanha" />
+    </div>
+  )
+}
+
+function PackStatus({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon
+  label: string
+  value: string
+}) {
+  return (
+    <div className="flex min-h-11 items-center justify-between gap-3 rounded-md border border-border px-3 py-2">
+      <span className="flex min-w-0 items-center gap-2">
+        <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        <span className="truncate text-[12px] font-medium">{label}</span>
+      </span>
+      <span className="shrink-0 text-[11px] text-muted-foreground">{value}</span>
+    </div>
+  )
+}
+
 function CopyBtn({ label, onClick }: { label: string; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="h-6 rounded border border-border px-2 text-[11px] text-muted-foreground hover:text-foreground"
+      className="inline-flex h-6 items-center gap-1 rounded border border-border px-2 text-[11px] text-muted-foreground hover:text-foreground"
     >
-      Copiar {label}
+      <Copy className="h-3 w-3" />
+      {label}
     </button>
   )
 }

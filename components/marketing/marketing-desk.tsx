@@ -3,7 +3,21 @@
 import { useMemo, useRef, useState, useTransition, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Check, ExternalLink, ImageIcon, Loader2, PanelRight, Send, X } from "lucide-react"
+import {
+  CalendarRange,
+  Check,
+  Copy,
+  ExternalLink,
+  ImageIcon,
+  Loader2,
+  PanelRight,
+  Send,
+  Store,
+  Target,
+  TrendingUp,
+  type LucideIcon,
+  X,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -12,10 +26,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { showToast } from "@/lib/utils/toast"
 import { MARKETING_PLAYBOOKS } from "@/lib/marketing/playbooks"
 import { whatsappHref } from "@/lib/marketing/whatsapp"
-import { campaignStatusClass, campaignStatusLabel } from "@/lib/marketing/campaigns"
+import { campaignStatusClass, campaignStatusLabel, formatCampaignRange } from "@/lib/marketing/campaigns"
 import { AgentMessage } from "@/components/marketing/agent-message"
 import { MarketingPostPreview } from "@/components/marketing/marketing-post-preview"
 import type { MarketingDesk, MarketingImageRecord, MarketingProposal, MarketingPulse } from "@/lib/graphql/marketing/types"
+import { formatCurrency } from "@/lib/utils/currency"
 import { cn } from "@/lib/utils"
 
 type FormatKey = "feed" | "stories" | "banner"
@@ -28,6 +43,22 @@ const FORMATS: { id: FormatKey; label: string }[] = [
 ]
 
 type ChatLine = { role: "user" | "assistant"; content: string }
+
+function asString(value: unknown) {
+  return typeof value === "string" ? value.trim() : ""
+}
+
+function asStringList(value: unknown) {
+  if (!Array.isArray(value)) return []
+  return value.filter((item): item is string => typeof item === "string" && !!item.trim())
+}
+
+function campaignProposalRange(proposal: MarketingProposal) {
+  return formatCampaignRange({
+    startDate: asString(proposal.payload.startDate) || null,
+    endDate: asString(proposal.payload.endDate) || null,
+  })
+}
 
 export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
   const router = useRouter()
@@ -58,6 +89,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
     () => proposals.filter((p) => p.status === "pending"),
     [proposals],
   )
+  const pendingCampaign = pendingProposals.find((p) => p.type === "campaign")
   const pendingCopy = pendingProposals.find(
     (p) =>
       typeof p.payload.facebookPost === "string" || typeof p.payload.instagramCaption === "string",
@@ -130,6 +162,9 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
       if (data.proposals) setProposals(data.proposals)
       if (data.desk) setDesk(data.desk)
       const packProposal = data.pack?.proposal
+      const hasCampaignProposal =
+        packProposal?.type === "campaign" ||
+        data.proposals?.some((p) => p.type === "campaign" && p.status === "pending")
       const lastPrompt =
         data.pack?.imagePrompt ||
         (typeof data.proposals?.find((p) => p.type === "image_prompt" && p.status === "pending")?.payload.prompt ===
@@ -156,7 +191,9 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
           setFormat("feed")
         }
       }
-      if (lastPack || lastPrompt) {
+      if (hasCampaignProposal) {
+        setRailTab("aprovar")
+      } else if (lastPack || lastPrompt) {
         setRailTab("publicar")
       } else if (data.proposals?.some((p) => p.status === "pending")) {
         setRailTab("aprovar")
@@ -231,6 +268,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
       onTab={setRailTab}
       siteName={pulse.siteName}
       pendingProposals={pendingProposals}
+      campaignProposal={pendingCampaign}
       applyingId={applyingId}
       pending={pending}
       onProposal={handleProposal}
@@ -254,10 +292,15 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex h-10 shrink-0 items-center justify-between gap-2 border-b border-border px-3">
-          <p className="min-w-0 truncate text-[13px] font-medium">
-            {headline || "Nenhuma campanha na loja"}
-          </p>
+        <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border px-3">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase text-muted-foreground">
+              Departamento de marketing
+            </p>
+            <p className="truncate text-[13px] font-medium">
+              {headline || "Nenhuma campanha na loja"}
+            </p>
+          </div>
           <div className="flex shrink-0 items-center gap-2">
             {live ? (
               <Badge variant="outline" className={cn("h-5 text-[10px]", campaignStatusClass(live.status))}>
@@ -296,31 +339,16 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {chat.length === 0 && !busyAgent ? (
-            <div className="mx-auto flex max-w-lg flex-col gap-1 px-4 py-6">
-              <p className="text-[13px] font-medium">Publicação pronta a vender</p>
-              <p className="mb-2 text-[12px] leading-relaxed text-muted-foreground">
-                O agente escreve o post, as hashtags e o prompt da imagem. Tu copias e colas no Facebook ou Instagram.
-              </p>
-              <button
-                type="button"
-                disabled={busyAgent}
-                onClick={() => void sendAgent(MARKETING_PLAYBOOKS[0].prompt)}
-                className="rounded-md bg-foreground px-3 py-2 text-left text-[13px] font-medium text-background hover:opacity-90 disabled:opacity-50"
-              >
-                Gerar publicação
-              </button>
-              {MARKETING_PLAYBOOKS.slice(1).map((book) => (
-                <button
-                  key={book.id}
-                  type="button"
-                  disabled={busyAgent}
-                  onClick={() => void sendAgent(book.prompt)}
-                  className="rounded-md border border-border px-3 py-2 text-left text-[13px] hover:bg-muted/60 disabled:opacity-50"
-                >
-                  {book.label}
-                </button>
-              ))}
-            </div>
+            <DepartmentStart
+              pulse={pulse}
+              live={live}
+              pendingCampaign={pendingCampaign}
+              busyAgent={busyAgent}
+              applyingId={applyingId}
+              pending={pending}
+              onRun={(text) => void sendAgent(text)}
+              onProposal={handleProposal}
+            />
           ) : (
             <div className="mx-auto flex max-w-2xl flex-col gap-2.5 px-4 py-4">
               {chat.map((line, i) => (
@@ -372,7 +400,7 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
             <Input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Ex.: publicação que venda o Samsung A16"
+              placeholder="Ex.: campanha para vender Samsung A16 esta semana"
               className="h-9 text-[13px]"
               disabled={busyAgent}
               autoComplete="off"
@@ -400,11 +428,331 @@ export function MarketingDesk({ pulse }: { pulse: MarketingPulse }) {
   )
 }
 
+function DepartmentStart({
+  pulse,
+  live,
+  pendingCampaign,
+  busyAgent,
+  applyingId,
+  pending,
+  onRun,
+  onProposal,
+}: {
+  pulse: MarketingPulse
+  live: MarketingPulse["liveCampaign"]
+  pendingCampaign?: MarketingProposal | null
+  busyAgent: boolean
+  applyingId: string | null
+  pending: boolean
+  onRun: (prompt: string) => void
+  onProposal: (id: string, action: "apply" | "reject") => void
+}) {
+  const revenueDelta = pulse.revenueThisWeek - pulse.revenueLastWeek
+  const unitsDelta = pulse.ordersThisWeek - pulse.ordersLastWeek
+  const topProducts = pulse.topProducts.slice(0, 4)
+
+  return (
+    <div className="mx-auto grid w-full max-w-6xl gap-4 px-4 py-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <section className="min-w-0 space-y-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-muted-foreground">Departamento</p>
+            <h1 className="mt-0.5 text-base font-semibold leading-tight">Plano de venda</h1>
+          </div>
+          <Button asChild size="sm" variant="outline" className="h-8 shrink-0 gap-1.5 px-2.5 text-[12px]">
+            <Link href="/dashboard/marketing/campaigns">
+              <CalendarRange className="h-3.5 w-3.5" />
+              Campanhas
+            </Link>
+          </Button>
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2 md:grid-cols-4">
+          <MetricTile
+            icon={TrendingUp}
+            label="Receita 7d"
+            value={formatCurrency(pulse.revenueThisWeek)}
+            detail={`vs semana ant. ${formatSignedCurrency(revenueDelta)}`}
+            detailClassName={trendClass(revenueDelta)}
+          />
+          <MetricTile
+            icon={Store}
+            label="Unidades 7d"
+            value={String(pulse.ordersThisWeek)}
+            detail={`vs semana ant. ${formatSignedNumber(unitsDelta)}`}
+            detailClassName={trendClass(unitsDelta)}
+          />
+          <MetricTile
+            icon={CalendarRange}
+            label="Campanha live"
+            value={live ? "Activa" : "Nenhuma"}
+            detail={live?.name || "Criar campanha"}
+          />
+          <MetricTile
+            icon={Target}
+            label="Pixel"
+            value={pulse.metaPixelId ? "Pronto" : "Pendente"}
+            detail={pulse.metaPixelId ? "Conversões" : "Sem medição"}
+          />
+        </div>
+
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-[12px] font-semibold">Acções rápidas</p>
+            <span className="text-[11px] text-muted-foreground">{MARKETING_PLAYBOOKS.length} rotinas</span>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+          {MARKETING_PLAYBOOKS.map((book, index) => (
+            <QuickPlaybookButton
+              key={book.id}
+              icon={PLAYBOOK_META[book.id]?.icon ?? Target}
+              label={book.label}
+              detail={PLAYBOOK_META[book.id]?.detail}
+              primary={index === 0}
+              disabled={busyAgent}
+              onClick={() => onRun(book.prompt)}
+            />
+          ))}
+          </div>
+        </div>
+      </section>
+
+      <aside className="min-w-0 space-y-3 border-t border-border pt-3 lg:border-l lg:border-t-0 lg:pl-4 lg:pt-0">
+        {pendingCampaign ? (
+          <CampaignProposalPanel
+            proposal={pendingCampaign}
+            applying={applyingId === pendingCampaign.id}
+            pending={pending}
+            onApply={() => onProposal(pendingCampaign.id, "apply")}
+          />
+        ) : (
+          <div className="rounded-md border border-border bg-background p-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-[12px] font-semibold">Na loja</p>
+              {live ? (
+                <Badge variant="outline" className={cn("shrink-0 text-[10px]", campaignStatusClass(live.status))}>
+                  {campaignStatusLabel(live.status)}
+                </Badge>
+              ) : null}
+            </div>
+            <p className="mt-2 text-[13px] font-medium leading-snug">
+              {live?.headline || live?.name || "Sem campanha activa"}
+            </p>
+            {live?.hook ? <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">{live.hook}</p> : null}
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {live ? (
+                <>
+                  <Button asChild size="sm" variant="outline" className="h-7 px-2 text-[11px]">
+                    <Link href={`/dashboard/marketing/campaigns/${live.id}`}>Editar</Link>
+                  </Button>
+                  <Button asChild size="sm" variant="outline" className="h-7 gap-1 px-2 text-[11px]">
+                    <a href={pulse.campaignUrl} target="_blank" rel="noreferrer">
+                      <ExternalLink className="h-3 w-3" />
+                      Loja
+                    </a>
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-7 px-2 text-[11px]"
+                  disabled={busyAgent}
+                  onClick={() => onRun(MARKETING_PLAYBOOKS[0].prompt)}
+                >
+                  Criar campanha
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="rounded-md border border-border bg-background p-3">
+          <p className="text-[12px] font-semibold">Mais vendidos 7d</p>
+          {topProducts.length ? (
+            <ul className="mt-2 space-y-1.5">
+              {topProducts.map((product, index) => (
+                <li key={product.productId} className="flex items-center justify-between gap-2 text-[12px]">
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-[10px] tabular-nums text-muted-foreground">
+                      {index + 1}
+                    </span>
+                    <span className="min-w-0 truncate">{product.productTitle}</span>
+                  </span>
+                  <span className="shrink-0 tabular-nums text-muted-foreground">{product.totalSold} un.</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-[12px] text-muted-foreground">Sem vendas recentes.</p>
+          )}
+        </div>
+      </aside>
+    </div>
+  )
+}
+
+const PLAYBOOK_META: Record<string, { icon: LucideIcon; detail: string }> = {
+  "campaign-sell": { icon: Target, detail: "campanha + posts + imagem" },
+  "social-post": { icon: Send, detail: "copy para Facebook e Instagram" },
+  "salary-week": { icon: CalendarRange, detail: "fim do mês em Cabo Verde" },
+  "slow-stock": { icon: TrendingUp, detail: "rodar produtos parados" },
+  launch: { icon: Store, detail: "produto novo em destaque" },
+}
+
+function MetricTile({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  detailClassName,
+}: {
+  icon: LucideIcon
+  label: string
+  value: string
+  detail?: string
+  detailClassName?: string
+}) {
+  return (
+    <div className="min-h-[5.25rem] rounded-md border border-border bg-background px-3 py-2">
+      <div className="flex items-center gap-1.5 text-muted-foreground">
+        <Icon className="h-3.5 w-3.5" />
+        <span className="text-[11px]">{label}</span>
+      </div>
+      <p className="mt-1 truncate text-[15px] font-semibold tabular-nums">{value}</p>
+      {detail ? (
+        <p className={cn("mt-0.5 truncate text-[11px] text-muted-foreground", detailClassName)}>
+          {detail}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
+function QuickPlaybookButton({
+  icon: Icon,
+  label,
+  detail,
+  primary,
+  disabled,
+  onClick,
+}: {
+  icon: LucideIcon
+  label: string
+  detail?: string
+  primary?: boolean
+  disabled?: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "flex min-h-14 items-center gap-3 rounded-md border px-3 py-2 text-left disabled:opacity-50",
+        primary
+          ? "border-foreground bg-foreground text-background"
+          : "border-border hover:bg-muted/60",
+      )}
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <span className="min-w-0">
+        <span className="block truncate text-[13px] font-medium">{label}</span>
+        {detail ? (
+          <span className={cn("mt-0.5 block truncate text-[11px]", primary ? "text-background/70" : "text-muted-foreground")}>
+            {detail}
+          </span>
+        ) : null}
+      </span>
+    </button>
+  )
+}
+
+function CampaignProposalPanel({
+  proposal,
+  applying,
+  pending,
+  onApply,
+  onReview,
+}: {
+  proposal: MarketingProposal
+  applying: boolean
+  pending: boolean
+  onApply: () => void
+  onReview?: () => void
+}) {
+  const name = asString(proposal.payload.name) || proposal.title || "Campanha"
+  const headline = asString(proposal.payload.headline)
+  const hook = asString(proposal.payload.hook)
+  const products = asStringList(proposal.payload.productIds)
+  const channels = asStringList(proposal.payload.channels)
+
+  return (
+    <div className="rounded-md border border-border border-l-4 border-l-emerald-500 bg-background p-3">
+      <div className="flex items-center justify-between gap-2">
+        <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700">
+          Campanha pronta
+        </Badge>
+        <span className="truncate text-[11px] text-muted-foreground">{campaignProposalRange(proposal)}</span>
+      </div>
+      <p className="mt-2 text-[13px] font-semibold leading-snug">{headline || name}</p>
+      {hook ? <p className="mt-1 text-[12px] leading-relaxed text-muted-foreground">{hook}</p> : null}
+      <div className="mt-2 flex flex-wrap gap-1 text-[11px] text-muted-foreground">
+        <span>{products.length || 0} produtos</span>
+        <span>·</span>
+        <span>{channels.length ? channels.join(" + ") : "store + social"}</span>
+      </div>
+      <div className="mt-3 flex gap-1.5">
+        <Button
+          type="button"
+          size="sm"
+          className="h-8 flex-1 text-[12px]"
+          disabled={applying || pending}
+          onClick={onApply}
+        >
+          {applying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+          Meter na loja
+        </Button>
+        {onReview ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8 px-2 text-[12px]"
+            disabled={applying}
+            onClick={onReview}
+          >
+            Rever
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function formatSignedCurrency(value: number) {
+  if (!value) return "sem variação"
+  return `${value > 0 ? "+" : ""}${formatCurrency(value)}`
+}
+
+function formatSignedNumber(value: number) {
+  if (!value) return "sem variação"
+  return `${value > 0 ? "+" : ""}${value}`
+}
+
+function trendClass(value: number) {
+  if (value > 0) return "text-emerald-600"
+  if (value < 0) return "text-rose-600"
+  return undefined
+}
+
 function DeskRail({
   tab,
   onTab,
   siteName,
   pendingProposals,
+  campaignProposal,
   applyingId,
   pending,
   onProposal,
@@ -427,6 +775,7 @@ function DeskRail({
   onTab: (tab: RailTab) => void
   siteName: string
   pendingProposals: MarketingProposal[]
+  campaignProposal?: MarketingProposal | null
   applyingId: string | null
   pending: boolean
   onProposal: (id: string, action: "apply" | "reject") => void
@@ -477,6 +826,15 @@ function DeskRail({
       <div className="min-h-0 flex-1 overflow-y-auto p-3">
         {tab === "publicar" ? (
           <div className="space-y-3">
+            {campaignProposal ? (
+              <CampaignProposalPanel
+                proposal={campaignProposal}
+                applying={applyingId === campaignProposal.id}
+                pending={pending}
+                onApply={() => onProposal(campaignProposal.id, "apply")}
+                onReview={() => onTab("aprovar")}
+              />
+            ) : null}
             <MarketingPostPreview
               siteName={siteName}
               imageUrl={latestImage?.url}
@@ -522,7 +880,7 @@ function DeskRail({
                 <Textarea
                   value={prompt}
                   onChange={(e) => onPrompt(e.target.value)}
-                  placeholder="O agente preenche o prompt da imagem"
+                  placeholder="Prompt da imagem"
                   className="mt-2 min-h-16 field-sizing-fixed text-[12px]"
                 />
                 <Button
@@ -550,7 +908,7 @@ function DeskRail({
               </Button>
             )}
             {hasDraftCopy ? (
-              <p className="text-[11px] text-muted-foreground">Pack novo. Copia e cola — a loja não publica sozinha.</p>
+              <p className="text-[11px] text-muted-foreground">Pack novo. Copia e cola nas redes.</p>
             ) : null}
           </div>
         ) : null}
@@ -558,7 +916,7 @@ function DeskRail({
         {tab === "aprovar" ? (
           pendingProposals.length === 0 ? (
             <p className="text-[12px] leading-relaxed text-muted-foreground">
-              Nada à espera. Gera uma publicação no chat.
+              Nada à espera. Cria uma campanha no chat.
             </p>
           ) : (
             <ul className="space-y-2">
@@ -575,7 +933,7 @@ function DeskRail({
                       onClick={() => onProposal(p.id, "apply")}
                     >
                       {applyingId === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-                      Guardar
+                      {p.type === "campaign" ? "Meter na loja" : "Guardar"}
                     </Button>
                     <Button
                       type="button"
@@ -619,9 +977,10 @@ function CopyChip({ label, onClick }: { label: string; onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="h-6 rounded border border-border px-2 text-[11px] text-muted-foreground hover:text-foreground"
+      className="inline-flex h-6 items-center gap-1 rounded border border-border px-2 text-[11px] text-muted-foreground hover:text-foreground"
     >
-      Copiar {label}
+      <Copy className="h-3 w-3" />
+      {label}
     </button>
   )
 }

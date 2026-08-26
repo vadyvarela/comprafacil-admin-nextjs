@@ -1,7 +1,13 @@
 export const MARKETING_PLAYBOOKS = [
   {
+    id: "campaign-sell",
+    label: "Criar campanha que venda",
+    prompt:
+      "Cria uma campanha de venda para esta semana. Analisa vendas dos últimos 7 dias e catálogo; escolhe 1–3 produtos com maior potencial. Usa propose_campaign completo: nome, datas desta semana, objective sell, canais store+facebook+instagram+whatsapp, headline forte, hook, facebookPost com preço CVE se existir, CTA e 3–5 hashtags, instagramCaption com 8–12 hashtags, whatsappText sem hashtags, productIds reais, destinationType campaign e slug simples. Propõe também propose_image_prompt formato Feed. Não apliques.",
+  },
+  {
     id: "social-post",
-    label: "Gerar publicação",
+    label: "Publicação de hoje",
     prompt:
       "Quero um pack de publicação pronto a colar nas redes, que venda. Escolhe 1 produto do catálogo (ou a campanha live). Usa propose_social_pack: facebookPost que vende (gancho, produto, preço CVE se existir, porquê agora, CTA, 3–5 hashtags), instagramCaption (gancho, corpo, CTA, linha em branco, 8–12 hashtags) e whatsappText sem hashtags. Propõe também propose_image_prompt formato feed do mesmo produto. Se houver campanha live, usa campaignId. Não cries campanha nova. Não apliques.",
   },
@@ -26,6 +32,12 @@ export const MARKETING_PLAYBOOKS = [
 ] as const
 
 export const MARKETING_CAMPAIGN_PLAYBOOKS = [
+  {
+    id: "campaign-sell",
+    label: "Campanha que venda",
+    prompt:
+      "Cria uma campanha de venda para esta semana. search_products no catálogo e escolhe 1–3 produtos com maior potencial. propose_campaign completo: nome, datas desta semana, headline, hook, facebookPost que venda (preço CVE se souberes, CTA, 3–5 hashtags), instagramCaption (8–12 hashtags), whatsappText sem hashtags, productIds reais, destinationType campaign e slug simples. propose_image_prompt Feed. Não apliques.",
+  },
   {
     id: "salary-week",
     label: "Semana de salário",

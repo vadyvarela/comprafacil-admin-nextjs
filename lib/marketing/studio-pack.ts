@@ -25,7 +25,7 @@ const IMAGE_FORMAT: Record<MarketingIntent, string> = {
 export const THREAD_TITLES: Record<MarketingIntent, string> = {
   banner: "Banner",
   campaign: "Campanha",
-  desk: "Hoje",
+  desk: "Departamento",
 }
 
 function stamp(p: MarketingProposal) {

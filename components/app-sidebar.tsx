@@ -71,7 +71,7 @@ const NAV = [
   {
     section: "Marketing",
     items: [
-      { title: "Secretária", url: "/dashboard/marketing", icon: Megaphone, exact: true },
+      { title: "Departamento", url: "/dashboard/marketing", icon: Megaphone, exact: true },
       { title: "Campanhas", url: "/dashboard/marketing/campaigns", icon: CalendarRange, exact: false },
       { title: "Cupons", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
     ],

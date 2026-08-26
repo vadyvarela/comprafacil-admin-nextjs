@@ -14,7 +14,7 @@ import {
   startOfWeek,
 } from "date-fns"
 import { pt } from "date-fns/locale"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { CalendarRange, ChevronLeft, ChevronRight, Plus } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -65,48 +65,76 @@ export function MarketingCampaignsBoard({
     )
   }, [campaigns, selectedDay, status])
 
+  const counts = useMemo(() => {
+    const rows: Record<string, number> = { all: campaigns.length }
+    campaigns.forEach((campaign) => {
+      rows[campaign.status] = (rows[campaign.status] ?? 0) + 1
+    })
+    return rows
+  }, [campaigns])
+
   return (
     <div className="flex min-h-0 flex-1 overflow-hidden">
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="flex h-10 shrink-0 items-center gap-1 overflow-x-auto border-b border-border px-3">
+        <div className="flex h-11 shrink-0 items-center gap-1 overflow-x-auto border-b border-border px-3">
           {FILTERS.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => setStatus(item.id)}
               className={cn(
-                "h-6 shrink-0 rounded-md px-2 text-[12px] font-medium",
+                "inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-2 text-[12px] font-medium",
                 status === item.id
                   ? "bg-foreground text-background"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
               {item.label}
+              <span className={cn("text-[10px] tabular-nums", status === item.id ? "opacity-75" : "text-muted-foreground")}>
+                {counts[item.id] ?? 0}
+              </span>
             </button>
           ))}
           <span className="ml-auto shrink-0 text-[11px] tabular-nums text-muted-foreground">
-            {visible.length}
+            {visible.length} visíveis
           </span>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto">
           {visible.length === 0 ? (
-            <div className="px-4 py-10">
-              <p className="text-[13px] font-medium">
+            <div className="mx-auto flex max-w-sm flex-col items-center px-4 py-12 text-center">
+              <span className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/40">
+                <CalendarRange className="h-4 w-4 text-muted-foreground" />
+              </span>
+              <p className="mt-3 text-[13px] font-medium">
                 {selectedDay ? "Nada neste dia." : "Ainda não há campanhas."}
               </p>
               <p className="mt-1 text-[12px] text-muted-foreground">
-                Cria uma com Nova, ou pede ao agente no separador Hoje.
+                Cria uma campanha para loja, Facebook, Instagram e WhatsApp.
               </p>
+              <Button asChild size="sm" className="mt-4 h-8 gap-1.5 text-[12px]">
+                <Link href="/dashboard/marketing/campaigns/new">
+                  <Plus className="h-3.5 w-3.5" />
+                  Nova campanha
+                </Link>
+              </Button>
             </div>
           ) : (
-            <ul className="divide-y divide-border">
+            <>
+              <div className="hidden grid-cols-[2.25rem_minmax(0,1fr)_8.5rem_6.5rem_5.75rem] gap-3 border-b border-border bg-muted/20 px-4 py-2 text-[10px] font-semibold uppercase text-muted-foreground md:grid">
+                <span />
+                <span>Campanha</span>
+                <span>Período</span>
+                <span>Produtos</span>
+                <span className="text-right">Estado</span>
+              </div>
+              <ul className="divide-y divide-border">
               {visible.map((c) => {
                 const isLive = live?.id === c.id
                 return (
                   <li key={c.id}>
                     <Link
                       href={`/dashboard/marketing/campaigns/${c.id}`}
-                      className="flex items-center gap-3 px-4 py-2 hover:bg-muted/50"
+                      className="grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5 hover:bg-muted/50 md:grid-cols-[2.25rem_minmax(0,1fr)_8.5rem_6.5rem_5.75rem]"
                     >
                       {c.imageUrls[0] ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -123,14 +151,20 @@ export function MarketingCampaignsBoard({
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-[13px] font-medium">{c.name}</p>
                         <p className="truncate text-[12px] text-muted-foreground">
-                          {c.headline || formatCampaignRange(c)}
+                          {c.headline || c.hook || "Sem headline"}
                           <span className="text-border"> · </span>
                           {campaignObjectiveLabel(c.objective)}
                         </p>
                       </div>
+                      <span className="hidden truncate text-[12px] text-muted-foreground md:block">
+                        {formatCampaignRange(c)}
+                      </span>
+                      <span className="hidden text-[12px] tabular-nums text-muted-foreground md:block">
+                        {c.productIds.length || 0}
+                      </span>
                       <Badge
                         variant="outline"
-                        className={cn("shrink-0 text-[10px]", campaignStatusClass(c.status))}
+                        className={cn("justify-self-end text-[10px]", campaignStatusClass(c.status))}
                       >
                         {isLive ? "Na loja" : campaignStatusLabel(c.status)}
                       </Badge>
@@ -138,16 +172,20 @@ export function MarketingCampaignsBoard({
                   </li>
                 )
               })}
-            </ul>
+              </ul>
+            </>
           )}
         </div>
       </section>
 
       <section className="hidden w-[18rem] shrink-0 overflow-y-auto border-l border-border p-3 lg:block">
-        <div className="mb-2 flex items-center justify-between">
-          <p className="text-[12px] font-semibold capitalize">
-            {format(month, "MMMM yyyy", { locale: pt })}
-          </p>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-muted-foreground">Calendário</p>
+            <p className="truncate text-[12px] font-semibold capitalize">
+              {format(month, "MMMM yyyy", { locale: pt })}
+            </p>
+          </div>
           <div className="flex items-center gap-0.5">
             <Button
               type="button"
@@ -202,7 +240,7 @@ export function MarketingCampaignsBoard({
                 type="button"
                 onClick={() => setSelectedDay(selected ? null : day)}
                 className={cn(
-                  "flex min-h-9 flex-col items-start gap-0.5 bg-background px-1 py-1 text-left hover:bg-muted/50",
+                  "flex aspect-square min-h-9 flex-col items-start gap-0.5 bg-background px-1 py-1 text-left hover:bg-muted/50",
                   !inMonth && "bg-muted/40 text-muted-foreground",
                   selected && "ring-1 ring-inset ring-foreground/30",
                   isToday(day) && "font-semibold",

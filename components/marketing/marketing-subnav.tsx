@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const TABS = [
-  { href: "/dashboard/marketing", label: "Hoje", exact: true },
+  { href: "/dashboard/marketing", label: "Departamento", exact: true },
   { href: "/dashboard/marketing/campaigns", label: "Campanhas", exact: false },
 ]
 
