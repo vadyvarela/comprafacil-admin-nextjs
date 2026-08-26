@@ -24,14 +24,20 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { showToast } from "@/lib/utils/toast"
 import { getErrorMessage } from "@/lib/utils/errors"
-import { Plus, Trash2, X as XIcon } from "lucide-react"
+import { looksLikeIphoneProduct } from "@/lib/utils/iphone-seminovo-metadata"
+import { Plus, Trash2, X as XIcon, Settings2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { VariantImageUpload } from "./variant-image-upload"
 import {
   deriveOptionCatalogFromVariants,
   mergeProductMetadataAttributes,
 } from "@/lib/products/option-catalog"
+import {
+  buildVariantMetadataJson,
+  variantMetadataToInput,
+} from "@/lib/products/variant-metadata"
 import type { ProductVariant } from "@/lib/graphql/products/types"
+import { VariantDetailDialog } from "./variant-detail-dialog"
+import type { ProductVariantCombination } from "./variant-manager-types"
 
 interface VariantManagerProps {
   productId: string
@@ -41,17 +47,8 @@ interface VariantManagerProps {
 
 interface ProductOption {
   id: string
-  title: string // Ex: "Cor", "Capacidade"
-  values: string[] // Ex: ["Azul", "Verde"], ["128GB", "256GB"]
-}
-
-interface ProductVariantCombination {
-  id?: string // ID da variante existente (se já foi criada)
-  optionValues: Record<string, string> // { "Cor": "Azul", "Capacidade": "128GB" }
-  price: string
-  stock: number
-  image?: string
-  sku?: string
+  title: string
+  values: string[]
 }
 
 export function VariantManager({
@@ -71,26 +68,37 @@ export function VariantManager({
   const [variantCombinations, setVariantCombinations] = useState<ProductVariantCombination[]>([])
   const [activeVariants, setActiveVariants] = useState(true)
   const [savingVariants, setSavingVariants] = useState(false)
+  const [detailIndex, setDetailIndex] = useState<number | null>(null)
 
-  // Carregar opções e variantes existentes
+  const showIphoneSeminovoFields = useMemo(() => {
+    if (product?.condition !== "seminovo") return false
+    return looksLikeIphoneProduct({
+      title: product.title ?? "",
+      categoryName: product.category?.name,
+      categorySlug: product.category?.slug,
+      brandName: product.brand?.name,
+    })
+  }, [product])
+
   useEffect(() => {
     if (existingVariants.length > 0) {
-      // Extrair opções das variantes existentes
       const extractedOptions: Record<string, Set<string>> = {}
-      
+
       existingVariants.forEach((variant) => {
         if (variant.metadata) {
           try {
             const metadata = JSON.parse(variant.metadata)
             const attributes = metadata.attributes || {}
-            
+
             Object.entries(attributes).forEach(([key, value]) => {
               if (!extractedOptions[key]) {
                 extractedOptions[key] = new Set()
               }
               extractedOptions[key].add(String(value))
             })
-          } catch {}
+          } catch {
+            /* ignore */
+          }
         }
       })
 
@@ -99,34 +107,42 @@ export function VariantManager({
           id: `option-${index}`,
           title,
           values: Array.from(valuesSet),
-        })
+        }),
       )
 
       if (optionsArray.length > 0) {
         setOptions(optionsArray)
       }
 
-      // Mapear variantes existentes para combinações
       const combinations: ProductVariantCombination[] = existingVariants.map((variant) => {
-        const metadata = variant.metadata
-          ? (() => {
-              try {
-                return JSON.parse(variant.metadata)
-              } catch {
-                return {}
-              }
-            })()
-          : {}
+        let optionValues: Record<string, string> = {}
+        if (variant.metadata) {
+          try {
+            const metadata = JSON.parse(variant.metadata)
+            optionValues = metadata.attributes || {}
+          } catch {
+            /* ignore */
+          }
+        }
 
-        const optionValues: Record<string, string> = metadata.attributes || {}
-        
+        const metaFields = variantMetadataToInput(variant.image, variant.metadata)
+
         return {
           id: variant.id,
           optionValues,
           price: variant.price ? (variant.price.unitAmount / 100).toFixed(2) : "",
           stock: variant.quantity || 0,
-          image: variant.image || metadata.image || undefined,
-          sku: metadata.sku || undefined,
+          image: metaFields.image,
+          images: metaFields.images,
+          hoverImageUrl: metaFields.hoverImageUrl,
+          sku: metaFields.sku,
+          semFaceId: metaFields.semFaceId,
+          batteryHealthPercent: metaFields.batteryHealthPercent,
+          offerEnabled: metaFields.offerEnabled,
+          offerTitle: metaFields.offerTitle,
+          offerItems: metaFields.offerItems,
+          discount: metaFields.discount,
+          originalPrice: metaFields.originalPrice,
         }
       })
 
@@ -134,14 +150,15 @@ export function VariantManager({
     }
   }, [existingVariants])
 
-  // Gerar todas as combinações possíveis das opções
   const generatedCombinations = useMemo(() => {
     if (options.length === 0) return []
 
-    const generate = (opts: ProductOption[], index = 0, current: Record<string, string> = {}): Record<string, string>[] => {
-      if (index >= opts.length) {
-        return [current]
-      }
+    const generate = (
+      opts: ProductOption[],
+      index = 0,
+      current: Record<string, string> = {},
+    ): Record<string, string>[] => {
+      if (index >= opts.length) return [current]
 
       const results: Record<string, string>[] = []
       const option = opts[index]
@@ -196,9 +213,7 @@ export function VariantManager({
   }
 
   const updateOptionTitle = (optionId: string, title: string) => {
-    setOptions(
-      options.map((opt) => (opt.id === optionId ? { ...opt, title } : opt))
-    )
+    setOptions(options.map((opt) => (opt.id === optionId ? { ...opt, title } : opt)))
   }
 
   const addOptionValue = (optionId: string, value: string) => {
@@ -212,17 +227,15 @@ export function VariantManager({
           }
         }
         return opt
-      })
+      }),
     )
   }
 
   const removeOptionValue = (optionId: string, value: string) => {
     setOptions(
       options.map((opt) =>
-        opt.id === optionId
-          ? { ...opt, values: opt.values.filter((v) => v !== value) }
-          : opt
-      )
+        opt.id === optionId ? { ...opt, values: opt.values.filter((v) => v !== value) } : opt,
+      ),
     )
   }
 
@@ -244,23 +257,24 @@ export function VariantManager({
       return
     }
 
-    // Inicializar combinações se ainda não existirem
     const newCombinations: ProductVariantCombination[] = generatedCombinations.map((combo) => {
-      // Verificar se já existe uma combinação similar
       const existing = variantCombinations.find((vc) => {
         const vcKeys = Object.keys(vc.optionValues).sort()
         const comboKeys = Object.keys(combo).sort()
         if (vcKeys.length !== comboKeys.length) return false
-
         return vcKeys.every((key) => vc.optionValues[key] === combo[key])
       })
 
-      return existing || {
-        optionValues: combo,
-        price: "",
-        stock: 0,
-        sku: "",
-      }
+      return (
+        existing || {
+          optionValues: combo,
+          price: "",
+          stock: 0,
+          sku: "",
+          offerTitle: "Pack de proteção",
+          offerItems: [],
+        }
+      )
     })
 
     setVariantCombinations(newCombinations)
@@ -270,7 +284,7 @@ export function VariantManager({
   const updateCombination = <K extends keyof ProductVariantCombination>(
     index: number,
     field: K,
-    value: ProductVariantCombination[K]
+    value: ProductVariantCombination[K],
   ) => {
     const updated = [...variantCombinations]
     updated[index] = { ...updated[index], [field]: value }
@@ -281,45 +295,38 @@ export function VariantManager({
     combo: ProductVariantCombination,
     imageOverride?: string | null,
   ): string => {
-    const existing = combo.id
-      ? existingVariants.find((v) => v.id === combo.id)
-      : undefined
-    let existingMeta: Record<string, unknown> = {}
-    if (existing?.metadata) {
-      try {
-        existingMeta = JSON.parse(existing.metadata) as Record<string, unknown>
-      } catch {
-        existingMeta = {}
-      }
-    }
+    const existing = combo.id ? existingVariants.find((v) => v.id === combo.id) : undefined
+    const galleryUrls =
+      combo.images && combo.images.length > 0
+        ? combo.images
+        : combo.image?.trim()
+          ? [combo.image.trim()]
+          : []
 
-    const resolvedImage =
+    const cover =
       imageOverride !== undefined
         ? (imageOverride ?? "").trim()
-        : combo.image?.trim() ||
-          (typeof existingMeta.image === "string" ? existingMeta.image : "") ||
-          existing?.image?.trim() ||
-          ""
+        : galleryUrls[0] || combo.image?.trim() || ""
 
-    const metadata: Record<string, unknown> = {
-      ...existingMeta,
+    return buildVariantMetadataJson(existing?.metadata, {
       attributes: combo.optionValues,
-    }
-    if (combo.sku?.trim()) {
-      metadata.sku = combo.sku.trim()
-    } else {
-      delete metadata.sku
-    }
-    if (resolvedImage) {
-      metadata.image = resolvedImage
-    } else {
-      delete metadata.image
-    }
-
-    return JSON.stringify(metadata)
+      sku: combo.sku,
+      image: cover || undefined,
+      images: galleryUrls,
+      hoverImageUrl: combo.hoverImageUrl,
+      semFaceId: combo.semFaceId,
+      batteryHealthPercent: combo.batteryHealthPercent,
+      offerEnabled: combo.offerEnabled,
+      offerTitle: combo.offerTitle,
+      offerItems: combo.offerItems,
+      discount: combo.discount,
+      originalPrice: combo.originalPrice,
+    }, imageOverride)
   }
 
   const resolveVariantImage = (combo: ProductVariantCombination): string | undefined => {
+    const fromGallery = combo.images?.[0]?.trim()
+    if (fromGallery) return fromGallery
     const fromCombo = combo.image?.trim()
     if (fromCombo) return fromCombo
     if (!combo.id) return undefined
@@ -334,76 +341,6 @@ export function VariantManager({
       }
     }
     return undefined
-  }
-
-  const persistVariantImage = async (
-    combo: ProductVariantCombination,
-    imageUrl: string,
-  ) => {
-    if (!combo.id || !imageUrl.trim()) return
-
-    const comboWithImage = { ...combo, image: imageUrl.trim() }
-    await updateVariant({
-      variables: {
-        id: combo.id,
-        input: {
-          title: Object.values(combo.optionValues).join(" / "),
-          quantity: combo.stock || 0,
-          image: imageUrl.trim(),
-          metadata: buildVariantMetadata(comboWithImage, imageUrl.trim()),
-          productId,
-        },
-      },
-    })
-  }
-
-  const handleVariantImageChange = async (
-    index: number,
-    imageUrl: string,
-  ) => {
-    const combo = variantCombinations[index]
-    if (!combo) return
-
-    updateCombination(index, "image", imageUrl)
-
-    if (!imageUrl.trim()) {
-      if (combo.id) {
-        try {
-          await updateVariant({
-            variables: {
-              id: combo.id,
-              input: {
-                title: Object.values(combo.optionValues).join(" / "),
-                quantity: combo.stock || 0,
-                image: "",
-                metadata: buildVariantMetadata({ ...combo, image: "" }, null),
-                productId,
-              },
-            },
-          })
-        } catch {
-          /* ignore */
-        }
-      }
-      return
-    }
-
-    if (!combo.id) {
-      showToast.info(
-        "Imagem carregada",
-        "Clica «Salvar Todas as Variantes» para gravar esta combinação na API.",
-      )
-      return
-    }
-
-    try {
-      await persistVariantImage({ ...combo, image: imageUrl.trim() }, imageUrl.trim())
-      showToast.success("Imagem guardada", "A imagem da variante foi gravada na API.")
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Erro ao guardar imagem da variante"
-      showToast.error("Erro", message)
-    }
   }
 
   const syncProductOptionCatalog = async (combinations: ProductVariantCombination[]) => {
@@ -455,6 +392,14 @@ export function VariantManager({
           return
         }
 
+        if (combo.offerEnabled && (combo.offerItems?.length ?? 0) === 0) {
+          showToast.error(
+            "Oferta incompleta",
+            `Adiciona itens à oferta da variante «${getCombinationLabel(combo.optionValues)}» ou desactiva-a.`,
+          )
+          return
+        }
+
         const imageUrl = resolveVariantImage(combo)
         const metadataJson = buildVariantMetadata(combo, imageUrl)
 
@@ -465,7 +410,6 @@ export function VariantManager({
         }
 
         if (combo.id) {
-          // Atualizar variante existente
           await updateVariant({
             variables: {
               id: combo.id,
@@ -479,7 +423,6 @@ export function VariantManager({
             },
           })
 
-          // Atualizar preço se existir
           const existingVariant = existingVariants.find((v) => v.id === combo.id)
           if (existingVariant?.price?.id) {
             await updatePrice({
@@ -491,7 +434,6 @@ export function VariantManager({
           }
           updatedCount += 1
         } else {
-          // Criar nova variante
           await createVariant({
             variables: {
               input: {
@@ -531,10 +473,8 @@ export function VariantManager({
   const deleteCombination = (index: number) => {
     const combo = variantCombinations[index]
     if (combo.id) {
-      // Se tem ID, deletar do backend
       deleteVariant({ variables: { id: combo.id } })
     }
-    // Remover da lista local
     setVariantCombinations(variantCombinations.filter((_, i) => i !== index))
   }
 
@@ -544,257 +484,300 @@ export function VariantManager({
       .join(" / ")
   }
 
+  const detailCombo = detailIndex !== null ? variantCombinations[detailIndex] ?? null : null
+
+  const handleDetailSave = (updated: ProductVariantCombination) => {
+    if (detailIndex === null) return
+    const next = [...variantCombinations]
+    next[detailIndex] = updated
+    setVariantCombinations(next)
+  }
+
+  const galleryCount = (combo: ProductVariantCombination) =>
+    combo.images?.length ?? (combo.image ? 1 : 0)
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Opções e Variantes de Produto</DialogTitle>
-          <DialogDescription>
-            Defina as opções do produto (Cor, Capacidade, etc.) e suas variantes. 
-            O sistema gerará automaticamente todas as combinações possíveis.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[1200px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Opções e Variantes de Produto</DialogTitle>
+            <DialogDescription>
+              Defina opções, preços, stock e detalhes por variante (galeria, bateria, ofertas).
+            </DialogDescription>
+          </DialogHeader>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <p className="text-sm text-muted-foreground">Carregando...</p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {/* Toggle para ativar variantes */}
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <Label className="text-base font-medium">Activar variantes para este produto</Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  As opções permitem criar variações do produto (Cor, Tamanho, etc.)
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveVariants(!activeVariants)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  activeVariants ? "bg-green-600" : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    activeVariants ? "translate-x-6" : "translate-x-1"
-                  }`}
-                />
-              </button>
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-sm text-muted-foreground">Carregando...</p>
             </div>
-
-            {activeVariants && (
-              <>
-                {/* Seção de Opções */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-base font-medium">Opções do Produto</Label>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Defina as opções (ex: Cor, Capacidade) e seus valores possíveis
-                      </p>
-                    </div>
-                    <Button type="button" variant="outline" size="sm" onClick={addOption}>
-                      <Plus className="h-3.5 w-3.5 mr-1.5" />
-                      Adicionar Opção
-                    </Button>
-                  </div>
-
-                  {options.map((option) => (
-                    <div key={option.id} className="border rounded-lg p-4 space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 space-y-2">
-                          <Label>Título da Opção</Label>
-                          <Input
-                            value={option.title}
-                            onChange={(e) => updateOptionTitle(option.id, e.target.value)}
-                            placeholder="Ex: Cor, Capacidade, Tamanho"
-                          />
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeOption(option.id)}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Variantes da Opção</Label>
-                        <div className="flex flex-wrap gap-2 items-center">
-                          {option.values.map((value) => (
-                            <Badge
-                              key={value}
-                              variant="secondary"
-                              className="px-3 py-1 flex items-center gap-1"
-                            >
-                              {value}
-                              <button
-                                type="button"
-                                onClick={() => removeOptionValue(option.id, value)}
-                                className="ml-1 hover:text-red-600"
-                              >
-                                <XIcon className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                          <Input
-                            placeholder="Ex: Azul, Verde"
-                            className="w-48 h-8 text-sm"
-                            onKeyPress={(e) => handleInputKeyPress(e, option.id)}
-                            onBlur={(e) => {
-                              if (e.target.value.trim()) {
-                                addOptionValue(option.id, e.target.value.trim())
-                                e.target.value = ""
-                              }
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <Label className="text-base font-medium">Activar variantes para este produto</Label>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    As opções permitem criar variações do produto (Cor, Tamanho, etc.)
+                  </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveVariants(!activeVariants)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    activeVariants ? "bg-green-600" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      activeVariants ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
 
-                {/* Botão para gerar variantes */}
-                {options.length > 0 && generatedCombinations.length > 0 && (
-                  <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={variantCombinations.length > 0}
-                        onChange={generateVariants}
-                        className="h-4 w-4"
-                      />
-                      <Label className="text-sm">
-                        Criar variantes de produto com os valores acima definidos (Preço, Stock, SKU, Imagem)
-                      </Label>
-                    </div>
-                    <Badge variant="secondary">
-                      Total de variantes: {generatedCombinations.length}
-                    </Badge>
-                  </div>
-                )}
-
-                {/* Tabela de Variantes Geradas */}
-                {variantCombinations.length > 0 && (
+              {activeVariants && (
+                <>
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <Label className="text-base font-medium">Variantes do Produto</Label>
-                      <Button onClick={saveAllVariants} size="sm" disabled={savingVariants}>
-                        {savingVariants ? "A guardar..." : "Salvar Todas as Variantes"}
+                      <div>
+                        <Label className="text-base font-medium">Opções do Produto</Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Defina as opções (ex: Cor, Capacidade) e seus valores possíveis
+                        </p>
+                      </div>
+                      <Button type="button" variant="outline" size="sm" onClick={addOption}>
+                        <Plus className="h-3.5 w-3.5 mr-1.5" />
+                        Adicionar Opção
                       </Button>
                     </div>
 
-                    <div className="border rounded-lg overflow-hidden">
-                      <div className="overflow-x-auto">
-                        <table className="w-full">
-                          <thead className="bg-muted/50 border-b">
-                            <tr>
-                              <th className="text-left p-3 text-xs font-medium text-muted-foreground">
-                                Variante
-                              </th>
-                              <th className="text-left p-3 text-xs font-medium text-muted-foreground">
-                                Preço (CVE)
-                              </th>
-                              <th className="text-left p-3 text-xs font-medium text-muted-foreground">
-                                Stock
-                              </th>
-                              <th className="text-left p-3 text-xs font-medium text-muted-foreground">
-                                SKU
-                              </th>
-                              <th className="text-left p-3 text-xs font-medium text-muted-foreground">
-                                Imagem
-                              </th>
-                              <th className="text-right p-3 text-xs font-medium text-muted-foreground">
-                                Ações
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {variantCombinations.map((combo, index) => (
-                              <tr
-                                key={combo.id ?? `combo-${index}`}
-                                className="border-b hover:bg-muted/30 transition-colors"
+                    {options.map((option) => (
+                      <div key={option.id} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 space-y-2">
+                            <Label>Título da Opção</Label>
+                            <Input
+                              value={option.title}
+                              onChange={(e) => updateOptionTitle(option.id, e.target.value)}
+                              placeholder="Ex: Cor, Capacidade, Tamanho"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeOption(option.id)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Variantes da Opção</Label>
+                          <div className="flex flex-wrap gap-2 items-center">
+                            {option.values.map((value) => (
+                              <Badge
+                                key={value}
+                                variant="secondary"
+                                className="px-3 py-1 flex items-center gap-1"
                               >
-                                <td className="p-3">
-                                  <div className="font-medium text-sm">
-                                    {getCombinationLabel(combo.optionValues)}
-                                  </div>
-                                </td>
-                                <td className="p-3">
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    value={combo.price}
-                                    onChange={(e) => updateCombination(index, "price", e.target.value)}
-                                    placeholder="0.00"
-                                    className="h-8 text-sm w-32"
-                                  />
-                                </td>
-                                <td className="p-3">
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    value={combo.stock}
-                                    onChange={(e) => updateCombination(index, "stock", parseInt(e.target.value) || 0)}
-                                    className="h-8 text-sm w-24"
-                                  />
-                                </td>
-                                <td className="p-3">
-                                  <Input
-                                    value={combo.sku || ""}
-                                    onChange={(e) => updateCombination(index, "sku", e.target.value)}
-                                    placeholder="SKU"
-                                    className="h-8 text-sm w-32"
-                                  />
-                                </td>
-                                <td className="p-3">
-                                  <VariantImageUpload
-                                    key={`${combo.id ?? index}-${combo.image ?? "empty"}`}
-                                    value={combo.image || ""}
-                                    onChange={(imageUrl) =>
-                                      void handleVariantImageChange(index, imageUrl)
-                                    }
-                                    disabled={savingVariants}
-                                    brandSlug={product?.brand?.slug}
-                                  />
-                                </td>
-                                <td className="p-3">
-                                  <div className="flex items-center justify-end gap-1">
+                                {value}
+                                <button
+                                  type="button"
+                                  onClick={() => removeOptionValue(option.id, value)}
+                                  className="ml-1 hover:text-red-600"
+                                >
+                                  <XIcon className="h-3 w-3" />
+                                </button>
+                              </Badge>
+                            ))}
+                            <Input
+                              placeholder="Ex: Azul, Verde"
+                              className="w-48 h-8 text-sm"
+                              onKeyPress={(e) => handleInputKeyPress(e, option.id)}
+                              onBlur={(e) => {
+                                if (e.target.value.trim()) {
+                                  addOptionValue(option.id, e.target.value.trim())
+                                  e.target.value = ""
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {options.length > 0 && generatedCombinations.length > 0 && (
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={variantCombinations.length > 0}
+                          onChange={generateVariants}
+                          className="h-4 w-4"
+                        />
+                        <Label className="text-sm">
+                          Criar variantes com os valores acima (Preço, Stock, Detalhes por variante)
+                        </Label>
+                      </div>
+                      <Badge variant="secondary">
+                        Total de variantes: {generatedCombinations.length}
+                      </Badge>
+                    </div>
+                  )}
+
+                  {variantCombinations.length > 0 && (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-base font-medium">Variantes do Produto</Label>
+                        <Button onClick={saveAllVariants} size="sm" disabled={savingVariants}>
+                          {savingVariants ? "A guardar..." : "Salvar Todas as Variantes"}
+                        </Button>
+                      </div>
+
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="overflow-x-auto">
+                          <table className="w-full">
+                            <thead className="bg-muted/50 border-b">
+                              <tr>
+                                <th className="text-left p-3 text-xs font-medium text-muted-foreground">
+                                  Variante
+                                </th>
+                                <th className="text-left p-3 text-xs font-medium text-muted-foreground">
+                                  Preço (CVE)
+                                </th>
+                                <th className="text-left p-3 text-xs font-medium text-muted-foreground">
+                                  Stock
+                                </th>
+                                <th className="text-left p-3 text-xs font-medium text-muted-foreground">
+                                  SKU
+                                </th>
+                                <th className="text-left p-3 text-xs font-medium text-muted-foreground">
+                                  Detalhes
+                                </th>
+                                <th className="text-right p-3 text-xs font-medium text-muted-foreground">
+                                  Ações
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {variantCombinations.map((combo, index) => (
+                                <tr
+                                  key={combo.id ?? `combo-${index}`}
+                                  className="border-b hover:bg-muted/30 transition-colors"
+                                >
+                                  <td className="p-3">
+                                    <div className="font-medium text-sm">
+                                      {getCombinationLabel(combo.optionValues)}
+                                    </div>
+                                    <div className="flex flex-wrap gap-1 mt-1">
+                                      {galleryCount(combo) > 0 && (
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                          {galleryCount(combo)} foto{galleryCount(combo) !== 1 ? "s" : ""}
+                                        </Badge>
+                                      )}
+                                      {combo.discount && parseInt(combo.discount, 10) > 0 && (
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-rose-700">
+                                          -{combo.discount}%
+                                        </Badge>
+                                      )}
+                                      {combo.offerEnabled && (
+                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-orange-700">
+                                          Pack
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </td>
+                                  <td className="p-3">
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      value={combo.price}
+                                      onChange={(e) => updateCombination(index, "price", e.target.value)}
+                                      placeholder="0.00"
+                                      className="h-8 text-sm w-32"
+                                    />
+                                  </td>
+                                  <td className="p-3">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      value={combo.stock}
+                                      onChange={(e) =>
+                                        updateCombination(index, "stock", parseInt(e.target.value) || 0)
+                                      }
+                                      className="h-8 text-sm w-24"
+                                    />
+                                  </td>
+                                  <td className="p-3">
+                                    <Input
+                                      value={combo.sku || ""}
+                                      onChange={(e) => updateCombination(index, "sku", e.target.value)}
+                                      placeholder="SKU"
+                                      className="h-8 text-sm w-32"
+                                    />
+                                  </td>
+                                  <td className="p-3">
                                     <Button
                                       type="button"
                                       size="sm"
-                                      variant="ghost"
-                                      className="h-7 w-7 p-0 text-destructive"
-                                      onClick={() => deleteCombination(index)}
+                                      variant="outline"
+                                      className="h-8 text-xs gap-1.5"
+                                      onClick={() => setDetailIndex(index)}
+                                      disabled={savingVariants}
                                     >
-                                      <Trash2 className="h-3.5 w-3.5" />
+                                      <Settings2 className="h-3.5 w-3.5" />
+                                      Galeria &amp; mais
                                     </Button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                  </td>
+                                  <td className="p-3">
+                                    <div className="flex items-center justify-end gap-1">
+                                      <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-7 w-7 p-0 text-destructive"
+                                        onClick={() => deleteCombination(index)}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
+                  )}
+                </>
+              )}
+            </div>
+          )}
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Fechar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <VariantDetailDialog
+        open={detailIndex !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setDetailIndex(null)
+        }}
+        combo={detailCombo}
+        comboLabel={detailCombo ? getCombinationLabel(detailCombo.optionValues) : ""}
+        showIphoneSeminovoFields={showIphoneSeminovoFields}
+        brandSlug={product?.brand?.slug}
+        disabled={savingVariants}
+        onSave={handleDetailSave}
+      />
+    </>
   )
 }

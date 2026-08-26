@@ -40,6 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { showToast } from "@/lib/utils/toast"
 import { looksLikeIphoneProduct } from "@/lib/utils/iphone-seminovo-metadata"
 import { parseProductOffer } from "@/lib/products/product-offer"
+import { parseVariantMetadata } from "@/lib/products/variant-metadata"
 import {
   isProductDraft,
   productVisibilityLabel,
@@ -408,7 +409,7 @@ export default function ProductDetailPage() {
                       <span className="text-muted-foreground shrink-0">ID</span>
                       <span className="break-all font-mono text-[10px] text-right">{product.id}</span>
                     </div>
-                    {product.discount !== undefined && product.discount !== null && product.discount > 0 && (
+                    {product.discount !== undefined && product.discount !== null && product.discount > 0 && variantCount === 0 && (
                       <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground">Desconto</span>
                         <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-[11px] font-medium text-rose-800">
@@ -446,13 +447,14 @@ export default function ProductDetailPage() {
                         <span className="font-medium">{metadata.warranty}</span>
                       </div>
                     )}
-                    {showIphoneSeminovoRead && metadata?.semFaceId === true && (
+                    {showIphoneSeminovoRead && variantCount === 0 && metadata?.semFaceId === true && (
                       <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground">Face ID</span>
                         <span className="font-medium text-amber-800">Sem Face ID</span>
                       </div>
                     )}
                     {showIphoneSeminovoRead &&
+                      variantCount === 0 &&
                       metadata?.batteryHealthPercent !== undefined &&
                       metadata?.batteryHealthPercent !== null && (
                         <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
@@ -460,7 +462,7 @@ export default function ProductDetailPage() {
                           <span className="font-medium">{String(metadata.batteryHealthPercent)}%</span>
                         </div>
                       )}
-                    {productOffer?.enabled ? (
+                    {productOffer?.enabled && variantCount === 0 ? (
                       <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/50">
                         <span className="text-muted-foreground shrink-0">Oferta</span>
                         <div className="text-right space-y-1">
@@ -507,31 +509,32 @@ export default function ProductDetailPage() {
                   {product.variants && product.variants.length > 0 ? (
                     <div className="divide-y divide-border">
                       {product.variants.map((variant: ProductVariant) => {
-                        const variantMetadata = variant.metadata
-                          ? (() => {
-                              try {
-                                return JSON.parse(variant.metadata)
-                              } catch {
-                                return null
-                              }
-                            })()
-                          : null
-                        const attributes = variantMetadata?.attributes || {}
+                        const parsed = parseVariantMetadata(variant.image, variant.metadata)
+                        const attributes = parsed.attributes
 
                         return (
                           <div
                             key={variant.id}
                             className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/20"
                           >
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/50">
-                              <Package className="h-4 w-4 text-muted-foreground" />
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 overflow-hidden">
+                              {parsed.image ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={parsed.image}
+                                  alt=""
+                                  className="h-full w-full object-contain p-0.5"
+                                />
+                              ) : (
+                                <Package className="h-4 w-4 text-muted-foreground" />
+                              )}
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-semibold truncate">{variant.title}</p>
                               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                {variantMetadata?.sku && (
+                                {parsed.sku && (
                                   <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-                                    SKU: {variantMetadata.sku}
+                                    SKU: {parsed.sku}
                                   </span>
                                 )}
                                 {Object.entries(attributes).map(([key, value]) => (
@@ -539,6 +542,35 @@ export default function ProductDetailPage() {
                                     {key}: {String(value)}
                                   </span>
                                 ))}
+                                {parsed.images.length > 1 && (
+                                  <span className="inline-flex items-center rounded-md bg-blue-50 border border-blue-100 px-1.5 py-0.5 text-[10px] text-blue-800">
+                                    {parsed.images.length} fotos
+                                  </span>
+                                )}
+                                {showIphoneSeminovoRead && parsed.semFaceId && (
+                                  <span className="inline-flex items-center rounded-md bg-amber-50 border border-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800">
+                                    Sem Face ID
+                                  </span>
+                                )}
+                                {showIphoneSeminovoRead &&
+                                  parsed.batteryHealthPercent !== undefined &&
+                                  parsed.batteryHealthPercent !== null && (
+                                    <span className="inline-flex items-center rounded-md bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-800">
+                                      Bateria {parsed.batteryHealthPercent}%
+                                    </span>
+                                  )}
+                                {parsed.discount !== undefined &&
+                                  parsed.discount !== null &&
+                                  parsed.discount > 0 && (
+                                    <span className="inline-flex items-center rounded-md bg-rose-50 border border-rose-100 px-1.5 py-0.5 text-[10px] text-rose-800">
+                                      -{parsed.discount}%
+                                    </span>
+                                  )}
+                                {parsed.productOffer?.enabled && (
+                                  <span className="inline-flex items-center rounded-md bg-orange-50 border border-orange-100 px-1.5 py-0.5 text-[10px] text-orange-800">
+                                    {parsed.productOffer.title}
+                                  </span>
+                                )}
                               </div>
                             </div>
                             <div className="text-right shrink-0 space-y-0.5">

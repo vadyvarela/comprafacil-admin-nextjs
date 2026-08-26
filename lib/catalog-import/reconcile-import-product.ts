@@ -4,7 +4,7 @@ import { GET_PRODUCT } from "@/lib/graphql/products/queries"
 import { CREATE_PRODUCT_VARIANT, UPDATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
 import { UPDATE_STOCK } from "@/lib/graphql/stocks/mutations"
 import type { CatalogSeedProduct } from "./types"
-import { seedVariantAttributes, variantTitleFromAttributes } from "./variant-metadata"
+import { seedVariantAttributes, variantTitleFromAttributes, buildSeedVariantMetadata } from "./variant-metadata"
 
 type GtwClient = typeof gtwClient
 
@@ -197,8 +197,7 @@ export async function syncExistingProductFromCatalog(
 
   for (const v of p.variants) {
     const attrs = seedVariantAttributes(p, v)
-    const variantMeta: Record<string, unknown> = { attributes: attrs }
-    if (v.sku?.trim()) variantMeta.sku = v.sku.trim()
+    const variantMeta = buildSeedVariantMetadata(p, v)
     const variantTitle = v.title?.trim() || variantTitleFromAttributes(attrs)
     const metaJson = JSON.stringify(variantMeta)
     const seedSku = v.sku?.trim() ? norm(v.sku.trim()) : null

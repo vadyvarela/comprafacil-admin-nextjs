@@ -173,6 +173,8 @@ export function EditProductModal({
     return brands.find((b) => b.id === formData.brandId)?.name
   }, [brands, formData.brandId])
 
+  const hasVariants = (product?.variants?.length ?? 0) > 0
+
   const addOfferItem = (raw: string) => {
     const value = raw.trim()
     if (!value) return
@@ -197,7 +199,7 @@ export function EditProductModal({
 
     if (!product) return
 
-    if (formData.offerEnabled && formData.offerItems.length === 0) {
+    if (!hasVariants && formData.offerEnabled && formData.offerItems.length === 0) {
       showToast.error(
         "Oferta incompleta",
         "Adiciona pelo menos um item (ex.: Capa, Película) ou desativa a oferta.",
@@ -220,7 +222,11 @@ export function EditProductModal({
     if (addOnProductIds.length > 0) base.addOnProductIds = addOnProductIds
     else delete base.addOnProductIds
 
-    if (showIphoneSeminovoFields) {
+    if (hasVariants) {
+      delete base.semFaceId
+      delete base.batteryHealthPercent
+      delete base.productOffer
+    } else if (showIphoneSeminovoFields) {
       if (formData.semFaceId) base.semFaceId = true
       else delete base.semFaceId
       const pct = normalizeBatteryHealthPercent(formData.batteryHealthPercent)
@@ -235,13 +241,15 @@ export function EditProductModal({
     if (specsField) base.specifications = specsField
     else delete base.specifications
 
-    const offerMeta = productOfferToMetadata({
-      enabled: formData.offerEnabled,
-      title: formData.offerTitle,
-      items: formData.offerItems,
-    })
-    if (offerMeta) base.productOffer = offerMeta
-    else delete base.productOffer
+    if (!hasVariants) {
+      const offerMeta = productOfferToMetadata({
+        enabled: formData.offerEnabled,
+        title: formData.offerTitle,
+        items: formData.offerItems,
+      })
+      if (offerMeta) base.productOffer = offerMeta
+      else delete base.productOffer
+    }
 
     const metadataJson = Object.keys(base).length > 0 ? JSON.stringify(base) : null
 
@@ -254,7 +262,11 @@ export function EditProductModal({
           input: {
             title: formData.title,
             summary: formData.summary || null,
-            discount: formData.discount ? parseInt(formData.discount) : null,
+            discount: hasVariants
+              ? null
+              : formData.discount
+                ? parseInt(formData.discount)
+                : null,
             condition: formData.condition,
             type: productType,
             status: {
@@ -419,22 +431,30 @@ export function EditProductModal({
                   />
                 </Field>
 
-                <Field label="Desconto (%)" htmlFor="edit-discount">
-                  <Input
-                    id="edit-discount"
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={formData.discount}
-                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-                    placeholder="0"
-                    disabled={loading}
-                    className="h-9"
-                  />
-                </Field>
+                {!hasVariants && (
+                  <Field label="Desconto (%)" htmlFor="edit-discount">
+                    <Input
+                      id="edit-discount"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={formData.discount}
+                      onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                      placeholder="0"
+                      disabled={loading}
+                      className="h-9"
+                    />
+                  </Field>
+                )}
               </div>
 
-              {showIphoneSeminovoFields && (
+              {hasVariants && (
+                <p className="text-[11px] text-muted-foreground rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+                  Desconto, bateria, Face ID e ofertas são geridos por variante no gestor de variantes.
+                </p>
+              )}
+
+              {!hasVariants && showIphoneSeminovoFields && (
                 <div className="rounded-md border border-border/70 bg-muted/20 p-3 space-y-2.5">
                   <div>
                     <p className="text-xs font-medium text-foreground">iPhone seminovo</p>
@@ -485,6 +505,7 @@ export function EditProductModal({
               disabled={loading}
             />
 
+            {!hasVariants && (
             <FormSection icon={Tag} title="Oferta na loja" iconTone="bg-orange-50 text-orange-800">
               <div className="flex items-start justify-between gap-3 rounded-md border border-border/70 bg-muted/15 px-3 py-2.5">
                 <div className="min-w-0">
@@ -583,6 +604,7 @@ export function EditProductModal({
                 </div>
               ) : null}
             </FormSection>
+            )}
 
             <FormSection icon={Puzzle} title="Produtos complementares" iconTone="bg-amber-50 text-amber-900">
               <Field

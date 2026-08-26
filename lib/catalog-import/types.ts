@@ -9,6 +9,18 @@ export interface CatalogSeedVariant {
   sku?: string
   /** Dimensões da variante (ex.: { "Cor": "Azul", "Capacidade": "128GB" }). Se omitido, usa-se «variantOptionTitle» + «title». */
   attributes?: Record<string, string>
+  image?: string
+  images?: string[]
+  hoverImageUrl?: string
+  semFaceId?: boolean
+  batteryHealthPercent?: number
+  discount?: number
+  originalPrice?: number
+  productOffer?: {
+    enabled?: boolean
+    title?: string
+    items?: string[]
+  }
 }
 
 export interface CatalogSeedProduct {
