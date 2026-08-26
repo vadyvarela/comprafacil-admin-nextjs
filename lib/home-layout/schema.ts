@@ -267,6 +267,8 @@ const weeklyDealBlockSchema = z.object({
       ctaHref: anyHrefSchema.optional(),
       badgeLabel: z.string().max(20).optional(),
       glow: weeklyDealGlowSchema.optional(),
+      /** Imagem custom (opcional). Se vazio, usa a imagem do produto. */
+      imageUrl: z.string().max(2048).optional(),
     })
     .strict()
     .superRefine((p, ctx) => {
@@ -277,6 +279,16 @@ const weeklyDealBlockSchema = z.object({
           message: "endsAt deve ser uma data/hora ISO válida.",
           path: ["endsAt"],
         })
+      }
+      const img = p.imageUrl?.trim()
+      if (img) {
+        if (!/^https?:\/\//i.test(img) && !(img.startsWith("/") && img.length > 1)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "imageUrl: URL https ou path a começar por /",
+            path: ["imageUrl"],
+          })
+        }
       }
     }),
 })

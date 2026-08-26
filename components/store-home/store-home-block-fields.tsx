@@ -1698,6 +1698,31 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
             />
           </div>
           <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">Imagem custom (opcional)</Label>
+            <Input
+              className="h-8 text-xs font-mono"
+              placeholder="https://… ou /media/… — vazio = imagem do produto"
+              value={block.props.imageUrl ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...block,
+                  props: { ...block.props, imageUrl: e.target.value.trim() || undefined },
+                })
+              }
+            />
+            <p className="text-[10px] text-muted-foreground leading-snug">
+              Se preenchido, substitui a foto do produto no banner.
+            </p>
+            {block.props.imageUrl?.trim() ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={block.props.imageUrl.trim()}
+                alt=""
+                className="mt-1 h-16 w-16 rounded-md border border-border object-contain bg-muted/30"
+              />
+            ) : null}
+          </div>
+          <div className="space-y-1 sm:col-span-2">
             <Label className="text-[10px]">Subtítulo do produto (opcional)</Label>
             <Input
               className="h-8 text-xs"
