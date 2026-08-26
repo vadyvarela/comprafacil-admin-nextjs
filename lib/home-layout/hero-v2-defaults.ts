@@ -3,12 +3,12 @@
 export const DEFAULT_HERO_V2_SLIDES = [
   {
     id: "slide-1",
-    badge: "ENTREGA EM TODO CABO VERDE",
+    badge: "NOVO",
     productLabel: "iPhone 17 Pro Max",
-    headline: "Tecnologia original,",
-    headlineAccent: "sem complicações.",
+    headline: "Tecnologia sem",
+    headlineAccent: "complicações.",
     subtitle:
-      "Smartphones e acessórios com garantia de 1 ano, entrega rápida e atendimento próximo.",
+      "Os melhores smartphones e acessórios, com garantia, entrega rápida e atendimento próximo.",
     primaryCtaLabel: "Ver oferta",
     primaryCtaHref: "/categoria/smartphones",
     secondaryCtaLabel: "Comprar no WhatsApp",

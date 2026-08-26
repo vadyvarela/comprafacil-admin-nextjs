@@ -455,7 +455,7 @@ const heroV2SlideSchema = z
     headlineAccent: z.string().max(40).optional(),
     subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
     primaryCtaLabel: z.string().min(1).max(40),
-    primaryCtaHref: looseInternalHrefSchema,
+    primaryCtaHref: anyHrefSchema,
     secondaryCtaLabel: z.string().max(40).optional(),
     imageUrl: mediaUrlSchema,
     imageAlt: z.string().min(1).max(120),

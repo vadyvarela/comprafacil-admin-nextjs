@@ -485,8 +485,8 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
             />
           </div>
           <p className="text-[10px] text-muted-foreground leading-snug">
-            Slides (1–6). Badge = kicker com pin. Card direito: nome, preço, stock, garantia.
-            CTA secundário usa o WhatsApp das settings.
+            Slides (1–6). Badge + nome do produto no topo. Card direito: preço, stock, garantia.
+            CTA aceita `/produto/…` ou `https://…`. WhatsApp usa as settings da loja.
           </p>
           {slides.map((slide, idx) => (
             <div
@@ -494,13 +494,22 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
               className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
             >
               <p className="text-[10px] font-semibold sm:col-span-2">Slide {idx + 1}</p>
-              <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Badge / kicker (com ícone pin)</Label>
+              <div className="space-y-1">
+                <Label className="text-[10px]">Badge</Label>
                 <Input
                   className="h-8 text-xs"
                   value={slide.badge ?? ""}
-                  placeholder="ENTREGA EM TODO CABO VERDE"
+                  placeholder="NOVO"
                   onChange={(e) => updateSlide(idx, { badge: e.target.value || undefined })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">Nome do produto (topo)</Label>
+                <Input
+                  className="h-8 text-xs"
+                  value={slide.productLabel ?? ""}
+                  placeholder="iPhone 17 Pro Max"
+                  onChange={(e) => updateSlide(idx, { productLabel: e.target.value || undefined })}
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
@@ -537,15 +546,27 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                   onChange={(e) => updateSlide(idx, { primaryCtaLabel: e.target.value })}
                 />
               </div>
-              <InternalPathField
-                label="Link CTA"
-                value={slide.primaryCtaHref}
-                allowEmpty={false}
-                placeholder="/categoria/smartphones"
-                onChange={(href) =>
-                  updateSlide(idx, { primaryCtaHref: href?.trim() ? href : "/produtos" })
-                }
-              />
+              <div className="space-y-1">
+                <Label className="text-[10px]">Link CTA (produto ou URL)</Label>
+                <Input
+                  className={cn(
+                    "h-8 text-xs font-mono",
+                    slide.primaryCtaHref?.trim() &&
+                      !isWeeklyDealHref(slide.primaryCtaHref)
+                      ? "border-destructive/60 focus-visible:ring-destructive/30"
+                      : "",
+                  )}
+                  placeholder="/produto/… ou https://…"
+                  value={slide.primaryCtaHref}
+                  onChange={(e) => {
+                    const v = e.target.value.trim()
+                    updateSlide(idx, { primaryCtaHref: v || "/produtos" })
+                  }}
+                />
+                <p className="text-[10px] text-muted-foreground leading-snug">
+                  Ex.: /produto/iphone-17-pro-max ou URL completa.
+                </p>
+              </div>
               <div className="space-y-1 sm:col-span-2">
                 <Label className="text-[10px]">CTA WhatsApp (opcional)</Label>
                 <Input
@@ -576,15 +597,6 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
               <p className="text-[10px] font-semibold text-foreground sm:col-span-2 pt-1">
                 Card de produto (direita)
               </p>
-              <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Nome do produto</Label>
-                <Input
-                  className="h-8 text-xs"
-                  value={slide.productLabel ?? ""}
-                  placeholder="iPhone 17 Pro Max"
-                  onChange={(e) => updateSlide(idx, { productLabel: e.target.value || undefined })}
-                />
-              </div>
               <div className="space-y-1">
                 <Label className="text-[10px]">Prefixo preço</Label>
                 <Input
@@ -649,10 +661,10 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                 ...slides,
                 {
                   id: `slide-${slides.length + 1}`,
-                  badge: "ENTREGA EM TODO CABO VERDE",
+                  badge: "NOVO",
                   productLabel: "Produto",
-                  headline: "Tecnologia original,",
-                  headlineAccent: "sem complicações.",
+                  headline: "Tecnologia sem",
+                  headlineAccent: "complicações.",
                   subtitle: "Descrição curta.",
                   primaryCtaLabel: "Ver oferta",
                   primaryCtaHref: "/produtos",
