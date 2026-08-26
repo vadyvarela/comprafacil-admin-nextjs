@@ -151,8 +151,8 @@ export function validateProductShape(p: unknown, index: number): string[] {
   const o = p as Record<string, unknown>
   if (typeof o.title !== "string" || !o.title.trim()) err.push(`${path}.title obrigatório`)
   const cond = o.condition
-  if (cond !== "novo" && cond !== "seminovo") {
-    err.push(`${path}.condition deve ser "novo" ou "seminovo"`)
+  if (cond !== "novo" && cond !== "seminovo" && cond !== "usado") {
+    err.push(`${path}.condition deve ser "novo", "seminovo" ou "usado"`)
   }
   const ch = pickCategoryRef(o)
   const bh = pickBrandRef(o)

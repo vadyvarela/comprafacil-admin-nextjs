@@ -306,6 +306,7 @@ export default function NewProductPage() {
                     <SelectContent>
                       <SelectItem value="novo">Novo</SelectItem>
                       <SelectItem value="seminovo">Seminovo</SelectItem>
+                      <SelectItem value="usado">Usado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -329,7 +330,7 @@ export default function NewProductPage() {
                 </div>
               </div>
 
-              {formData.condition === "seminovo" && looksLikeIphoneProduct({ title: formData.title }) && (
+              {(formData.condition === "seminovo" || formData.condition === "usado") && looksLikeIphoneProduct({ title: formData.title }) && (
                 <div className="rounded-md border border-border/80 bg-muted/25 p-3 space-y-3 mt-2">
                   <p className="text-xs font-medium text-foreground">iPhone seminovo (informativo)</p>
                   <div className="flex items-center gap-2">

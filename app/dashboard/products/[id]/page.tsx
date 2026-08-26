@@ -117,7 +117,7 @@ export default function ProductDetailPage() {
 
   const showIphoneSeminovoRead = !!(
     product &&
-    product.condition === "seminovo" &&
+    (product.condition === "seminovo" || product.condition === "usado") &&
     looksLikeIphoneProduct({
       title: product.title || "",
       categoryName: product.category?.name,

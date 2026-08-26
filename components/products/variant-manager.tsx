@@ -71,7 +71,7 @@ export function VariantManager({
   const [detailIndex, setDetailIndex] = useState<number | null>(null)
 
   const showIphoneSeminovoFields = useMemo(() => {
-    if (product?.condition !== "seminovo") return false
+    if (product?.condition !== "seminovo" && product?.condition !== "usado") return false
     return looksLikeIphoneProduct({
       title: product.title ?? "",
       categoryName: product.category?.name,

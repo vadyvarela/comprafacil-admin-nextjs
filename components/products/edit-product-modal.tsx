@@ -159,7 +159,7 @@ export function EditProductModal({
     const cat = categories.find((c) => c.id === formData.categoryId)
     const br = brands.find((b) => b.id === formData.brandId)
     return (
-      formData.condition === "seminovo" &&
+      (formData.condition === "seminovo" || formData.condition === "usado") &&
       looksLikeIphoneProduct({
         title: formData.title,
         categoryName: cat?.name,
@@ -394,6 +394,7 @@ export function EditProductModal({
                     <SelectContent>
                       <SelectItem value="novo">Novo</SelectItem>
                       <SelectItem value="seminovo">Seminovo</SelectItem>
+                      <SelectItem value="usado">Usado</SelectItem>
                     </SelectContent>
                   </Select>
                 </Field>
