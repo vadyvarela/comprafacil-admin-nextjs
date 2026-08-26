@@ -52,11 +52,13 @@ export function createEmptyBlock(type: HomeBlockType): HomeBlock {
         enabled: true,
         props: {
           title: "Oferta da semana",
+          headline: "Som premium.\nPreço especial.",
           endsAt: ends.toISOString(),
           productId: "550e8400-e29b-41d4-a716-446655440001",
           productSubtitle: "Bluetooth",
           ctaLabel: "Aproveitar oferta",
           badgeLabel: "-30%",
+          glow: "blue",
         },
       }
     }

@@ -33,6 +33,35 @@ const looseInternalHrefSchema = z
   .max(2048)
   .refine(isInternalPathHref, "Destino deve ser um path interno (ex.: /produtos)")
 
+/** Path interno (/…) ou URL http(s) — Oferta da semana. */
+const anyHrefSchema = z
+  .string()
+  .min(1)
+  .max(2048)
+  .refine((v) => {
+    const t = v.trim()
+    if (/^https?:\/\//i.test(t)) {
+      try {
+        const u = new URL(t)
+        return u.protocol === "http:" || u.protocol === "https:"
+      } catch {
+        return false
+      }
+    }
+    return t.startsWith("/") && !t.startsWith("//")
+  }, "ctaHref deve ser um path (/…) ou URL http(s)")
+
+const weeklyDealGlowSchema = z.enum([
+  "blue",
+  "purple",
+  "orange",
+  "green",
+  "slate",
+  "rose",
+  "cyan",
+  "amber",
+])
+
 const railLimitSchema = z
   .number()
   .int()
@@ -230,12 +259,14 @@ const weeklyDealBlockSchema = z.object({
   props: z
     .object({
       title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax),
+      headline: z.string().max(HOME_LAYOUT_RULES.titleMax).optional(),
       endsAt: z.string().min(1).max(40),
       productId: z.string().uuid(),
       productSubtitle: z.string().max(80).optional(),
       ctaLabel: z.string().min(1).max(40),
-      ctaHref: internalHrefSchema.optional(),
+      ctaHref: anyHrefSchema.optional(),
       badgeLabel: z.string().max(20).optional(),
+      glow: weeklyDealGlowSchema.optional(),
     })
     .strict()
     .superRefine((p, ctx) => {

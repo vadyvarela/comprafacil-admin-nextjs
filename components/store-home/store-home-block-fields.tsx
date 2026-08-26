@@ -18,6 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
+import {
+  isWeeklyDealHref,
+  WEEKLY_DEAL_GLOW_OPTIONS,
+} from "@/lib/home-layout/weekly-deal-theme"
 
 interface StoreHomeBlockFieldsProps {
   block: HomeBlock
@@ -1637,7 +1642,7 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
       return (
         <div className="grid gap-2 sm:grid-cols-2">
           <div className="space-y-1 sm:col-span-2">
-            <Label className="text-[10px]">Título</Label>
+            <Label className="text-[10px]">Rótulo (ex.: Oferta da semana)</Label>
             <Input
               className="h-8 text-xs"
               value={block.props.title}
@@ -1645,6 +1650,23 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                 onChange({ ...block, props: { ...block.props, title: e.target.value } })
               }
             />
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">Headline (grande)</Label>
+            <Textarea
+              className="min-h-[64px] text-xs resize-y"
+              placeholder={"Ex.: Som premium.\nPreço especial."}
+              value={block.props.headline ?? ""}
+              onChange={(e) =>
+                onChange({
+                  ...block,
+                  props: { ...block.props, headline: e.target.value || undefined },
+                })
+              }
+            />
+            <p className="text-[10px] text-muted-foreground">
+              Enter = quebra de linha na loja.
+            </p>
           </div>
           <div className="space-y-1 sm:col-span-2">
             <Label className="text-[10px]">Fim do countdown (ISO / datetime-local)</Label>
@@ -1713,14 +1735,66 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
               }
             />
           </div>
-          <InternalPathField
-            className="sm:col-span-2"
-            label="Link do botão (opcional — default = página do produto)"
-            value={block.props.ctaHref}
-            allowEmpty
-            placeholder="/produto/…"
-            onChange={(ctaHref) => onChange({ ...block, props: { ...block.props, ctaHref } })}
-          />
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">Glow / gradiente do produto</Label>
+            <Select
+              value={block.props.glow ?? "blue"}
+              onValueChange={(v) =>
+                onChange({
+                  ...block,
+                  props: {
+                    ...block.props,
+                    glow: v as NonNullable<typeof block.props.glow>,
+                  },
+                })
+              }
+            >
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {WEEKLY_DEAL_GLOW_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value} className="text-xs">
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground">
+              Cor do brilho atrás do produto e do botão/badge.
+            </p>
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label className="text-[10px]">
+              Link do botão (opcional — path ou URL completa)
+            </Label>
+            <Input
+              className={cn(
+                "h-8 text-xs font-mono",
+                block.props.ctaHref?.trim() &&
+                  !isWeeklyDealHref(block.props.ctaHref)
+                  ? "border-destructive/60 focus-visible:ring-destructive/30"
+                  : "",
+              )}
+              placeholder="/produto/… ou https://…"
+              value={block.props.ctaHref ?? ""}
+              onChange={(e) => {
+                const v = e.target.value.trim()
+                onChange({
+                  ...block,
+                  props: { ...block.props, ctaHref: v || undefined },
+                })
+              }}
+            />
+            <p className="text-[10px] text-muted-foreground leading-snug">
+              Vazio = página do produto. Aceita paths internos (/…) ou links externos (https://…).
+            </p>
+            {block.props.ctaHref?.trim() && !isWeeklyDealHref(block.props.ctaHref) ? (
+              <p className="text-[10px] text-destructive leading-snug">
+                Link inválido: usa /caminho ou http(s)://…
+              </p>
+            ) : null}
+          </div>
         </div>
       )
     case "productPair": {
