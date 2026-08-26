@@ -3,47 +3,27 @@
 export const DEFAULT_HERO_V2_SLIDES = [
   {
     id: "slide-1",
-    badge: "NOVO",
+    badge: "ENTREGA EM TODO CABO VERDE",
     productLabel: "iPhone 17 Pro Max",
-    headline: "Tecnologia sem",
-    headlineAccent: "complicações.",
+    headline: "Tecnologia original,",
+    headlineAccent: "sem complicações.",
     subtitle:
-      "Os melhores smartphones e acessórios, com garantia, entrega rápida e atendimento próximo.",
-    primaryCtaLabel: "Ver Smartphones",
+      "Smartphones e acessórios com garantia de 1 ano, entrega rápida e atendimento próximo.",
+    primaryCtaLabel: "Ver oferta",
     primaryCtaHref: "/categoria/smartphones",
-    secondaryCtaLabel: "Falar no WhatsApp",
+    secondaryCtaLabel: "Comprar no WhatsApp",
     imageUrl:
       "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=1200&q=85",
-    imageAlt: "Smartphones em destaque",
+    imageAlt: "iPhone 17 Pro Max",
+    pricePrefix: "A partir de",
+    price: "149.900 CVE",
+    stockLabel: "Em stock",
+    warrantyLabel: "Garantia de 1 ano",
   },
 ] as const
 
-export const DEFAULT_HERO_V2_SIDE_FEATURES = [
-  {
-    icon: "shield" as const,
-    tone: "green" as const,
-    label: "1 Ano de Garantia",
-    sublabel: "Compra protegida",
-  },
-  {
-    icon: "truck" as const,
-    tone: "blue" as const,
-    label: "Entrega Rápida",
-    sublabel: "24-48h na Praia",
-  },
-  {
-    icon: "pin" as const,
-    tone: "orange" as const,
-    label: "Levantamento Grátis",
-    sublabel: "A. Santo Antonio / Palmarejo",
-  },
-  {
-    icon: "lock" as const,
-    tone: "purple" as const,
-    label: "Pagamentos Seguros",
-    sublabel: "Compra com confiança",
-  },
-] as const
+/** @deprecated — UI usa card de produto no slide */
+export const DEFAULT_HERO_V2_SIDE_FEATURES = [] as const
 
 export const DEFAULT_HERO_V2_TRUST_ITEMS = [
   {
@@ -70,13 +50,19 @@ export const DEFAULT_HERO_V2_TRUST_ITEMS = [
     label: "Suporte WhatsApp",
     sublabel: "Rápido e próximo",
   },
+  {
+    icon: "star" as const,
+    tone: "yellow" as const,
+    label: "Clientes satisfeitos",
+    sublabel: "4.9/5 (mais de 50+)",
+  },
 ] as const
 
 export function defaultHeroV2Props() {
   return {
     theme: "darkOrange" as const,
     slides: DEFAULT_HERO_V2_SLIDES.map((s) => ({ ...s })),
-    sideFeatures: DEFAULT_HERO_V2_SIDE_FEATURES.map((f) => ({ ...f })),
+    sideFeatures: [] as [],
     trustItems: DEFAULT_HERO_V2_TRUST_ITEMS.map((t) => ({ ...t })),
     autoplayMs: 6000,
   }

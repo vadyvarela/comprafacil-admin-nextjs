@@ -421,18 +421,15 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
     case "heroV2": {
       const slides = block.props.slides
       const patchSlides = (next: typeof slides) =>
-        onChange({ ...block, props: { ...block.props, slides: next } })
+        onChange({ ...block, props: { ...block.props, slides: next, sideFeatures: [] } })
       const updateSlide = (index: number, patch: Partial<(typeof slides)[0]>) => {
         patchSlides(slides.map((s, i) => (i === index ? { ...s, ...patch } : s)))
       }
-      const features = block.props.sideFeatures
-      const patchFeatures = (next: typeof features) =>
-        onChange({ ...block, props: { ...block.props, sideFeatures: next } })
       const trust = block.props.trustItems ?? []
       const patchTrust = (next: typeof trust) =>
         onChange({
           ...block,
-          props: { ...block.props, trustItems: next.length ? next : undefined },
+          props: { ...block.props, trustItems: next.length ? next : undefined, sideFeatures: [] },
         })
       return (
         <div className="grid gap-4">
@@ -488,7 +485,8 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
             />
           </div>
           <p className="text-[10px] text-muted-foreground leading-snug">
-            Slides (1–6). CTA secundário usa o WhatsApp das settings da loja.
+            Slides (1–6). Badge = kicker com pin. Card direito: nome, preço, stock, garantia.
+            CTA secundário usa o WhatsApp das settings.
           </p>
           {slides.map((slide, idx) => (
             <div
@@ -496,20 +494,13 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
               className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
             >
               <p className="text-[10px] font-semibold sm:col-span-2">Slide {idx + 1}</p>
-              <div className="space-y-1">
-                <Label className="text-[10px]">Badge</Label>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-[10px]">Badge / kicker (com ícone pin)</Label>
                 <Input
                   className="h-8 text-xs"
                   value={slide.badge ?? ""}
+                  placeholder="ENTREGA EM TODO CABO VERDE"
                   onChange={(e) => updateSlide(idx, { badge: e.target.value || undefined })}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px]">Produto / etiqueta</Label>
-                <Input
-                  className="h-8 text-xs"
-                  value={slide.productLabel ?? ""}
-                  onChange={(e) => updateSlide(idx, { productLabel: e.target.value || undefined })}
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
@@ -521,7 +512,7 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Destaque (cor laranja)</Label>
+                <Label className="text-[10px]">Destaque (cor accent)</Label>
                 <Input
                   className="h-8 text-xs"
                   value={slide.headlineAccent ?? ""}
@@ -581,6 +572,58 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                   onChange={(e) => updateSlide(idx, { imageAlt: e.target.value })}
                 />
               </div>
+
+              <p className="text-[10px] font-semibold text-foreground sm:col-span-2 pt-1">
+                Card de produto (direita)
+              </p>
+              <div className="space-y-1 sm:col-span-2">
+                <Label className="text-[10px]">Nome do produto</Label>
+                <Input
+                  className="h-8 text-xs"
+                  value={slide.productLabel ?? ""}
+                  placeholder="iPhone 17 Pro Max"
+                  onChange={(e) => updateSlide(idx, { productLabel: e.target.value || undefined })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">Prefixo preço</Label>
+                <Input
+                  className="h-8 text-xs"
+                  value={slide.pricePrefix ?? ""}
+                  placeholder="A partir de"
+                  onChange={(e) => updateSlide(idx, { pricePrefix: e.target.value || undefined })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">Preço</Label>
+                <Input
+                  className="h-8 text-xs"
+                  value={slide.price ?? ""}
+                  placeholder="149.900 CVE"
+                  onChange={(e) => updateSlide(idx, { price: e.target.value || undefined })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">Stock</Label>
+                <Input
+                  className="h-8 text-xs"
+                  value={slide.stockLabel ?? ""}
+                  placeholder="Em stock"
+                  onChange={(e) => updateSlide(idx, { stockLabel: e.target.value || undefined })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">Garantia</Label>
+                <Input
+                  className="h-8 text-xs"
+                  value={slide.warrantyLabel ?? ""}
+                  placeholder="Garantia de 1 ano"
+                  onChange={(e) =>
+                    updateSlide(idx, { warrantyLabel: e.target.value || undefined })
+                  }
+                />
+              </div>
+
               <div className="sm:col-span-2 flex justify-end">
                 <Button
                   type="button"
@@ -606,137 +649,25 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
                 ...slides,
                 {
                   id: `slide-${slides.length + 1}`,
-                  badge: "NOVO",
+                  badge: "ENTREGA EM TODO CABO VERDE",
                   productLabel: "Produto",
-                  headline: "Tecnologia sem",
-                  headlineAccent: "limites.",
+                  headline: "Tecnologia original,",
+                  headlineAccent: "sem complicações.",
                   subtitle: "Descrição curta.",
-                  primaryCtaLabel: "Ver produtos",
+                  primaryCtaLabel: "Ver oferta",
                   primaryCtaHref: "/produtos",
-                  secondaryCtaLabel: "Falar no WhatsApp",
+                  secondaryCtaLabel: "Comprar no WhatsApp",
                   imageUrl: slides[0]?.imageUrl ?? "",
                   imageAlt: "Produto",
+                  pricePrefix: "A partir de",
+                  price: "0 CVE",
+                  stockLabel: "Em stock",
+                  warrantyLabel: "Garantia de 1 ano",
                 },
               ])
             }
           >
             Adicionar slide
-          </Button>
-
-          <p className="text-[10px] font-semibold text-foreground pt-1">Cartões laterais (0–4)</p>
-          {features.map((f, idx) => (
-            <div
-              key={idx}
-              className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
-            >
-              <div className="space-y-1">
-                <Label className="text-[10px]">Ícone</Label>
-                <Select
-                  value={f.icon}
-                  onValueChange={(v) =>
-                    patchFeatures(
-                      features.map((it, i) =>
-                        i === idx ? { ...it, icon: v as typeof f.icon } : it,
-                      ),
-                    )
-                  }
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="shield">Escudo</SelectItem>
-                    <SelectItem value="truck">Entrega</SelectItem>
-                    <SelectItem value="pin">Local</SelectItem>
-                    <SelectItem value="lock">Cadeado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px]">Cor</Label>
-                <Select
-                  value={f.tone}
-                  onValueChange={(v) =>
-                    patchFeatures(
-                      features.map((it, i) =>
-                        i === idx ? { ...it, tone: v as typeof f.tone } : it,
-                      ),
-                    )
-                  }
-                >
-                  <SelectTrigger className="h-8 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="green">Verde</SelectItem>
-                    <SelectItem value="blue">Azul</SelectItem>
-                    <SelectItem value="orange">Laranja</SelectItem>
-                    <SelectItem value="purple">Roxo</SelectItem>
-                    <SelectItem value="red">Vermelho</SelectItem>
-                    <SelectItem value="yellow">Amarelo</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Título</Label>
-                <Input
-                  className="h-8 text-xs"
-                  value={f.label}
-                  onChange={(e) =>
-                    patchFeatures(
-                      features.map((it, i) =>
-                        i === idx ? { ...it, label: e.target.value } : it,
-                      ),
-                    )
-                  }
-                />
-              </div>
-              <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Subtítulo</Label>
-                <Input
-                  className="h-8 text-xs"
-                  value={f.sublabel ?? ""}
-                  onChange={(e) =>
-                    patchFeatures(
-                      features.map((it, i) =>
-                        i === idx ? { ...it, sublabel: e.target.value || undefined } : it,
-                      ),
-                    )
-                  }
-                />
-              </div>
-              <div className="sm:col-span-2 flex justify-end">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-[10px]"
-                  onClick={() => patchFeatures(features.filter((_, i) => i !== idx))}
-                >
-                  Remover
-                </Button>
-              </div>
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs"
-            disabled={features.length >= 4}
-            onClick={() =>
-              patchFeatures([
-                ...features,
-                {
-                  icon: "shield" as const,
-                  tone: "green" as const,
-                  label: "Novo benefício",
-                  sublabel: "Descrição",
-                },
-              ])
-            }
-          >
-            Adicionar cartão lateral
           </Button>
 
           <p className="text-[10px] font-semibold text-foreground pt-1">

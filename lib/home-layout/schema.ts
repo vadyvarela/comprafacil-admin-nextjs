@@ -447,7 +447,9 @@ const heroV2ToneSchema = z.enum(["green", "blue", "orange", "purple", "red", "ye
 const heroV2SlideSchema = z
   .object({
     id: z.string().min(1).max(40),
-    badge: z.string().max(24).optional(),
+    /** Kicker / badge (ex.: ENTREGA EM TODO CABO VERDE) */
+    badge: z.string().max(48).optional(),
+    /** Nome no card de produto */
     productLabel: z.string().max(60).optional(),
     headline: z.string().min(1).max(80),
     headlineAccent: z.string().max(40).optional(),
@@ -457,6 +459,10 @@ const heroV2SlideSchema = z
     secondaryCtaLabel: z.string().max(40).optional(),
     imageUrl: mediaUrlSchema,
     imageAlt: z.string().min(1).max(120),
+    pricePrefix: z.string().max(40).optional(),
+    price: z.string().max(40).optional(),
+    stockLabel: z.string().max(40).optional(),
+    warrantyLabel: z.string().max(40).optional(),
   })
   .strict()
 
@@ -492,7 +498,8 @@ const heroV2PropsSchema = z
       ])
       .default("darkOrange"),
     slides: z.array(heroV2SlideSchema).min(1).max(6),
-    sideFeatures: z.array(heroV2SideFeatureSchema).min(0).max(4),
+    /** @deprecated — substituído pelo card de produto no slide */
+    sideFeatures: z.array(heroV2SideFeatureSchema).max(4).optional().default([]),
     trustItems: z.array(heroV2TrustItemSchema).min(0).max(5).optional(),
     autoplayMs: z.number().int().min(3000).max(15000).optional(),
   })
