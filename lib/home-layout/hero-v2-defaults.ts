@@ -35,7 +35,7 @@ export const DEFAULT_HERO_V2_SIDE_FEATURES = [
     icon: "pin" as const,
     tone: "orange" as const,
     label: "Levantamento Grátis",
-    sublabel: "Achada / Palmarejo",
+    sublabel: "A. Santo Antonio / Palmarejo",
   },
   {
     icon: "lock" as const,
@@ -62,19 +62,13 @@ export const DEFAULT_HERO_V2_TRUST_ITEMS = [
     icon: "pin" as const,
     tone: "red" as const,
     label: "Levantamento grátis",
-    sublabel: "Achada e Palmarejo",
+    sublabel: "A. Santo Antonio e Palmarejo",
   },
   {
     icon: "support" as const,
     tone: "blue" as const,
     label: "Suporte WhatsApp",
     sublabel: "Rápido e próximo",
-  },
-  {
-    icon: "star" as const,
-    tone: "yellow" as const,
-    label: "Clientes satisfeitos",
-    sublabel: "4.9/5 (mais de 50+)",
   },
 ] as const
 
