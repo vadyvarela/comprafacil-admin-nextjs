@@ -177,34 +177,6 @@ const recentlyViewedBlockSchema = z.object({
     .strict(),
 })
 
-const benefitsBarIconSchema = z.enum([
-  "truck",
-  "shield",
-  "store",
-  "card",
-  "support",
-  "tag",
-  "phone",
-])
-
-const benefitsBarItemSchema = z
-  .object({
-    icon: benefitsBarIconSchema,
-    label: z.string().min(1).max(90),
-    sublabel: z.string().max(140).optional(),
-  })
-  .strict()
-
-const benefitsBarBlockSchema = z.object({
-  id: z.string().uuid(),
-  type: z.literal("benefitsBar"),
-  enabled: z.boolean().default(true),
-  props: z
-    .object({
-      items: z.array(benefitsBarItemSchema).min(2).max(5),
-    })
-    .strict(),
-})
 
 const sectionIntroBlockSchema = z.object({
   id: z.string().uuid(),
@@ -293,27 +265,6 @@ const weeklyDealBlockSchema = z.object({
     }),
 })
 
-const productPairPropsSchema = z
-  .object({
-    eyebrow: z.string().max(48).optional(),
-    title: z.string().max(HOME_LAYOUT_RULES.titleMax).optional(),
-    subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
-    leftProductId: z.string().uuid(),
-    rightProductId: z.string().uuid(),
-    layout: z.enum(["equal", "asymmetric"]).default("equal"),
-  })
-  .strict()
-  .refine((p) => p.leftProductId !== p.rightProductId, {
-    message: "Os dois produtos devem ser diferentes.",
-    path: ["rightProductId"],
-  })
-
-const productPairBlockSchema = z.object({
-  id: z.string().uuid(),
-  type: z.literal("productPair"),
-  enabled: z.boolean().default(true),
-  props: productPairPropsSchema,
-})
 
 const promoGradientSchema = z.enum(["blue", "purple", "orange", "green", "slate", "rose"])
 
@@ -583,8 +534,6 @@ export const homeBlockSchema = z.discriminatedUnion("type", [
   shopByCategoryBlockSchema,
   weeklyDealBlockSchema,
   sectionIntroBlockSchema,
-  benefitsBarBlockSchema,
-  productPairBlockSchema,
   promoDuoBlockSchema,
   splitDealRailBlockSchema,
 ])

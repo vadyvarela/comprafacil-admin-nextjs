@@ -71,50 +71,6 @@ export function createEmptyBlock(type: HomeBlockType): HomeBlock {
           title: "Por que comprar na nossa loja?",
         },
       }
-    case "benefitsBar":
-      return {
-        id,
-        type: "benefitsBar",
-        enabled: true,
-        props: {
-          items: [
-            {
-              icon: "truck" as const,
-              label: "Entrega nacional",
-              sublabel: "Entregamos em todas as ilhas de Cabo Verde",
-            },
-            {
-              icon: "shield" as const,
-              label: "1 ano de garantia",
-              sublabel: "Todos os produtos com garantia incluída",
-            },
-            {
-              icon: "store" as const,
-              label: "Levantamento grátis",
-              sublabel: "Levante na loja em Praia Achada ou Palmarejo",
-            },
-            {
-              icon: "phone" as const,
-              label: "Atendimento rápido",
-              sublabel: "Fala connosco no WhatsApp",
-            },
-          ],
-        },
-      }
-    case "productPair":
-      return {
-        id,
-        type: "productPair",
-        enabled: true,
-        props: {
-          eyebrow: "Em destaque",
-          title: "Escolhe dois produtos",
-          subtitle: "Substitui pelos produtos reais no picker abaixo.",
-          leftProductId: "550e8400-e29b-41d4-a716-446655440001",
-          rightProductId: "550e8400-e29b-41d4-a716-446655440002",
-          layout: "equal" as const,
-        },
-      }
     case "promoDuo":
       return {
         id,

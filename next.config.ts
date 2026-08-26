@@ -12,12 +12,6 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: 'standalone',
   serverExternalPackages: ["sharp"],
-  outputFileTracingIncludes: {
-    "/api/marketing/images": [
-      "./node_modules/sharp/**/*",
-      "./node_modules/@img/**/*",
-    ],
-  },
   turbopack: {
     root: process.cwd(),
   },

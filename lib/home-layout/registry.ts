@@ -8,8 +8,6 @@ export const HOME_BLOCK_TYPES = [
   "shopByCategory",
   "weeklyDeal",
   "sectionIntro",
-  "benefitsBar",
-  "productPair",
   "promoDuo",
   "splitDealRail",
   "productRail",
@@ -67,17 +65,7 @@ export const HOME_BLOCK_REGISTRY: Record<HomeBlockType, HomeBlockRegistryEntry> 
   sectionIntro: {
     label: "Título de secção",
     description: "Título (+ subtítulo) para introduzir a secção seguinte.",
-    hint: "Ex.: «Por que comprar na KumpraFácil?». Combina bem com a barra de benefícios.",
-  },
-  benefitsBar: {
-    label: "Barra de benefícios",
-    description: "Cartão com ícones azuis + título e subtítulo por item.",
-    hint: "2 a 5 itens. Ideal a seguir ao título de secção «Por que comprar…».",
-  },
-  productPair: {
-    label: "Dois produtos em destaque",
-    description: "Dois cartões grandes lado a lado (ou destaque + secundário).",
-    hint: "Escolhe exactamente dois produtos no picker. Layout «assimétrico» = primeiro cartão mais largo em desktop.",
+    hint: "Ex.: «Por que comprar na KumpraFácil?».",
   },
   promoDuo: {
     label: "Banners promocionais (2–4)",

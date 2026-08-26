@@ -1490,95 +1490,6 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
           </div>
         </div>
       )
-    case "benefitsBar": {
-      const items = block.props.items
-      const patchItems = (next: typeof items) => onChange({ ...block, props: { items: next } })
-      const updateItem = (index: number, patch: Partial<(typeof items)[0]>) => {
-        patchItems(items.map((it, i) => (i === index ? { ...it, ...patch } : it)))
-      }
-      const addItem = () => {
-        if (items.length >= 5) return
-        patchItems([...items, { icon: "card" as const, label: "Novo benefício", sublabel: "" }])
-      }
-      const removeItem = (index: number) => {
-        if (items.length <= 2) return
-        patchItems(items.filter((_, i) => i !== index))
-      }
-      return (
-        <div className="grid gap-3">
-          <p className="text-[10px] text-muted-foreground leading-snug">
-            Entre 2 e 5 itens. Ícones azuis na loja.
-          </p>
-          <div className="flex flex-col gap-3">
-            {items.map((it, idx) => (
-              <div
-                key={idx}
-                className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
-              >
-                <div className="space-y-1">
-                  <Label className="text-[10px]">Ícone</Label>
-                  <Select
-                    value={it.icon}
-                    onValueChange={(v) => updateItem(idx, { icon: v as (typeof it)["icon"] })}
-                  >
-                    <SelectTrigger className="h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="truck">Caminhão (entrega)</SelectItem>
-                      <SelectItem value="shield">Escudo (garantia)</SelectItem>
-                      <SelectItem value="store">Loja física</SelectItem>
-                      <SelectItem value="card">Cartão (pagamento)</SelectItem>
-                      <SelectItem value="support">Auriculares (apoio)</SelectItem>
-                      <SelectItem value="tag">Etiqueta (preço)</SelectItem>
-                      <SelectItem value="phone">Telefone / WhatsApp</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1 sm:col-span-2">
-                  <Label className="text-[10px]">Título</Label>
-                  <Input
-                    className="h-8 text-xs"
-                    value={it.label}
-                    onChange={(e) => updateItem(idx, { label: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-1 sm:col-span-2">
-                  <Label className="text-[10px]">Subtítulo (opcional)</Label>
-                  <Input
-                    className="h-8 text-xs"
-                    value={it.sublabel ?? ""}
-                    onChange={(e) => updateItem(idx, { sublabel: e.target.value || undefined })}
-                  />
-                </div>
-                <div className="sm:col-span-2 flex justify-end">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-[10px]"
-                    disabled={items.length <= 2}
-                    onClick={() => removeItem(idx)}
-                  >
-                    Remover
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-8 text-xs"
-            disabled={items.length >= 5}
-            onClick={addItem}
-          >
-            Adicionar item
-          </Button>
-        </div>
-      )
-    }
     case "shopByCategory":
       return <ShopByCategoryHomeFields block={block} onChange={onChange} />
     case "weeklyDeal":
@@ -1765,92 +1676,11 @@ export function StoreHomeBlockFields({ block, onChange }: StoreHomeBlockFieldsPr
           </div>
         </div>
       )
-    case "productPair": {
-      const pairIds = [block.props.leftProductId, block.props.rightProductId]
-      return (
-        <div className="grid gap-2 sm:grid-cols-2">
-          <p className="text-[10px] text-muted-foreground leading-snug sm:col-span-2">
-            Escolhe exactamente dois produtos diferentes. A ordem na lista = esquerda e depois direita na loja.
-          </p>
-          <CuratedProductPicker
-            value={pairIds}
-            max={2}
-            onChange={(ids) => {
-              if (ids.length === 0) return
-              const left = ids[0]!
-              const right = ids.length >= 2 ? ids[1]! : block.props.rightProductId
-              if (left === right) return
-              onChange({ ...block, props: { ...block.props, leftProductId: left, rightProductId: right } })
-            }}
-          />
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-[10px]">Etiqueta (opcional)</Label>
-            <Input
-              className="h-8 text-xs"
-              placeholder="Ex.: Destaque"
-              value={block.props.eyebrow ?? ""}
-              onChange={(e) =>
-                onChange({
-                  ...block,
-                  props: { ...block.props, eyebrow: e.target.value || undefined },
-                })
-              }
-            />
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-[10px]">Título da secção (opcional)</Label>
-            <Input
-              className="h-8 text-xs"
-              value={block.props.title ?? ""}
-              onChange={(e) =>
-                onChange({
-                  ...block,
-                  props: { ...block.props, title: e.target.value || undefined },
-                })
-              }
-            />
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-[10px]">Subtítulo (opcional)</Label>
-            <Input
-              className="h-8 text-xs"
-              value={block.props.subtitle ?? ""}
-              onChange={(e) =>
-                onChange({
-                  ...block,
-                  props: { ...block.props, subtitle: e.target.value || undefined },
-                })
-              }
-            />
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <Label className="text-[10px]">Layout em desktop</Label>
-            <Select
-              value={block.props.layout ?? "equal"}
-              onValueChange={(v) =>
-                onChange({
-                  ...block,
-                  props: { ...block.props, layout: v as "equal" | "asymmetric" },
-                })
-              }
-            >
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="equal">Dois cartões iguais (50/50)</SelectItem>
-                <SelectItem value="asymmetric">Destaque + secundário (60/40)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      )
-    }
     case "promoDuo": {
       const items = block.props.items
       const patchItems = (next: typeof items) => onChange({ ...block, props: { items: next } })
       const defaultCell = (): PromoDuoCell => ({
-        title: "Nova campanha",
+        title: "Nova oferta",
         ctaLabel: "Ver",
         href: "/produtos",
         gradient: "blue",

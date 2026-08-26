@@ -1,7 +1,9 @@
 /**
  * Normaliza payloads antigos antes do Zod (ex.: `promoDuo` com `left`/`right` → `items`;
- * `categoryMenuSlugs` → `headerNavItems`).
+ * `categoryMenuSlugs` → `headerNavItems`; remove blocos descontinuados).
  */
+
+const REMOVED_BLOCK_TYPES = new Set(["trustStrip", "benefitsBar", "productPair"])
 export function migrateHomeLayoutDocumentRaw(data: unknown): unknown {
   if (data == null || typeof data !== "object") return data
   let doc = data as Record<string, unknown>
@@ -51,11 +53,10 @@ export function migrateHomeLayoutDocumentRaw(data: unknown): unknown {
           }),
         },
       }
-    }).map((block) => {
-      if (block == null || typeof block !== "object") return block
-      const b = block as { type?: string; props?: Record<string, unknown> }
-      if (b.type !== "trustStrip") return block
-      return { ...b, type: "benefitsBar" }
+    }).filter((block) => {
+      if (block == null || typeof block !== "object") return false
+      const t = (block as { type?: string }).type
+      return typeof t === "string" && !REMOVED_BLOCK_TYPES.has(t)
     }),
   }
 }

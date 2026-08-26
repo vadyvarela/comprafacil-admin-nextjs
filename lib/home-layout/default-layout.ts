@@ -14,35 +14,6 @@ export const DEFAULT_HOME_LAYOUT: HomeLayoutDocument = {
       props: {},
     },
     {
-      id: "f47ac10b-58cc-4372-a567-0e02b2c3d409",
-      type: "benefitsBar",
-      enabled: true,
-      props: {
-        items: [
-          {
-            icon: "truck",
-            label: "Entrega nacional",
-            sublabel: "Entregamos em todas as ilhas de Cabo Verde",
-          },
-          {
-            icon: "shield",
-            label: "1 ano de garantia",
-            sublabel: "Todos os produtos com garantia incluída",
-          },
-          {
-            icon: "store",
-            label: "Levantamento grátis",
-            sublabel: "Levante na loja em Praia Achada ou Palmarejo",
-          },
-          {
-            icon: "phone",
-            label: "Atendimento rápido",
-            sublabel: "Fala connosco no WhatsApp",
-          },
-        ],
-      },
-    },
-    {
       id: "f47ac10b-58cc-4372-a567-0e02b2c3d40a",
       type: "promoDuo",
       enabled: true,
@@ -50,7 +21,7 @@ export const DEFAULT_HOME_LAYOUT: HomeLayoutDocument = {
         items: [
           {
             title: "Mega descontos esta semana",
-            subtitle: "Campanhas por tempo limitado na loja.",
+            subtitle: "Ofertas por tempo limitado na loja.",
             ctaLabel: "Ver ofertas",
             href: "/ofertas",
             gradient: "purple",

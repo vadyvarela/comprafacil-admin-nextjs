@@ -16,8 +16,6 @@ import {
   Users,
   BarChart3,
   Settings,
-  Megaphone,
-  CalendarRange,
   ScrollText,
   LayoutTemplate,
 } from "lucide-react"
@@ -71,8 +69,6 @@ const NAV = [
   {
     section: "Marketing",
     items: [
-      { title: "Departamento", url: "/dashboard/marketing", icon: Megaphone, exact: true },
-      { title: "Campanhas", url: "/dashboard/marketing/campaigns", icon: CalendarRange, exact: false },
       { title: "Cupons", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
     ],
   },
