@@ -20,6 +20,12 @@ const TABS = [
     ownerOnly: false,
   },
   {
+    href: "/dashboard/settings/integrations/meta",
+    label: "Meta",
+    isActive: (p: string) => p.startsWith("/dashboard/settings/integrations"),
+    ownerOnly: false,
+  },
+  {
     href: "/dashboard/settings/appearance",
     label: "Aparência",
     isActive: (p: string) => p.startsWith("/dashboard/settings/appearance"),

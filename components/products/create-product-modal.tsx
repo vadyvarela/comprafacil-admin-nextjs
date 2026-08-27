@@ -27,14 +27,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, Package, FileText, Layers, Tag } from "lucide-react"
+import { Loader2, Package, FileText, Layers, Megaphone, Tag } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { recordAuditLog } from "@/lib/actions/auditLogs"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { Field, FormSection } from "@/components/products/product-form-layout"
+import { MetaCatalogFields } from "@/components/products/meta-catalog-fields"
 import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
 import { specificationsToMetadataField } from "@/lib/product-specs/map-mobileapi-to-specifications"
 import type { ProductSpecifications } from "@/lib/product-specs/types"
+import {
+  applyMetaCatalogMetadata,
+  EMPTY_META_CATALOG_METADATA,
+} from "@/lib/products/meta-catalog-metadata"
 import {
   formatCategoryLabel,
   sortCategoriesForSelect,
@@ -65,6 +70,7 @@ export function CreateProductModal({
     semFaceId: false,
     batteryHealthPercent: "",
     specifications: {} as ProductSpecifications,
+    metaCatalog: { ...EMPTY_META_CATALOG_METADATA },
   })
 
   const { data: categoriesData, loading: categoriesLoading } = useQuery<{
@@ -106,6 +112,7 @@ export function CreateProductModal({
       semFaceId: false,
       batteryHealthPercent: "",
       specifications: {},
+      metaCatalog: { ...EMPTY_META_CATALOG_METADATA },
     })
   }, [])
 
@@ -160,6 +167,8 @@ export function CreateProductModal({
     const specsField = specificationsToMetadataField(formData.specifications)
     if (specsField) metadata.specifications = specsField
 
+    const productMetadata = applyMetaCatalogMetadata(metadata, formData.metaCatalog)
+
     const categoryId =
       formData.categoryId && formData.categoryId !== "none"
         ? formData.categoryId
@@ -185,7 +194,7 @@ export function CreateProductModal({
             status: {
               code: formData.status,
             },
-            metadata: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
+            metadata: Object.keys(productMetadata).length > 0 ? JSON.stringify(productMetadata) : null,
             condition: formData.condition,
             categoryId,
             brandId,
@@ -450,6 +459,15 @@ export function CreateProductModal({
                   </div>
                 </div>
               )}
+            </FormSection>
+
+            <FormSection icon={Megaphone} title="Meta Catalog" iconTone="bg-blue-50 text-blue-800">
+              <MetaCatalogFields
+                idPrefix="create-meta-catalog"
+                value={formData.metaCatalog}
+                onChange={(metaCatalog) => setFormData({ ...formData, metaCatalog })}
+                disabled={isLoading}
+              />
             </FormSection>
 
             <ProductSpecsSection

@@ -25,19 +25,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, Package, FileText, Layers, Puzzle, Tag, X as XIcon } from "lucide-react"
+import { Loader2, Package, FileText, Layers, Megaphone, Puzzle, Tag, X as XIcon } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { recordAuditLog } from "@/lib/actions/auditLogs"
 import { RichTextEditor } from "../ui/rich-text-editor"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
 import { Field, FormSection } from "@/components/products/product-form-layout"
+import { MetaCatalogFields } from "@/components/products/meta-catalog-fields"
 import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
 import {
   parseSpecificationsFromMetadata,
   specificationsToMetadataField,
 } from "@/lib/product-specs/map-mobileapi-to-specifications"
 import type { ProductSpecifications } from "@/lib/product-specs/types"
+import {
+  applyMetaCatalogMetadata,
+  EMPTY_META_CATALOG_METADATA,
+  parseMetaCatalogMetadata,
+} from "@/lib/products/meta-catalog-metadata"
 import {
   formatCategoryLabel,
   sortCategoriesForSelect,
@@ -83,6 +89,7 @@ export function EditProductModal({
     offerEnabled: false,
     offerTitle: "Pack de proteção",
     offerItems: [] as string[],
+    metaCatalog: { ...EMPTY_META_CATALOG_METADATA },
   })
   const [offerItemDraft, setOfferItemDraft] = useState("")
 
@@ -150,6 +157,7 @@ export function EditProductModal({
         offerEnabled: offer?.enabled === true,
         offerTitle: offer?.title || "Pack de proteção",
         offerItems: offer?.items ?? [],
+        metaCatalog: parseMetaCatalogMetadata(product.metadata),
       })
       setOfferItemDraft("")
     }
@@ -251,7 +259,8 @@ export function EditProductModal({
       else delete base.productOffer
     }
 
-    const metadataJson = Object.keys(base).length > 0 ? JSON.stringify(base) : null
+    const metadata = applyMetaCatalogMetadata(base, formData.metaCatalog)
+    const metadataJson = Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null
 
     try {
       const productType = product.type ? { code: product.type.code } : { code: "TICKET" }
@@ -496,6 +505,15 @@ export function EditProductModal({
                   </div>
                 </div>
               )}
+            </FormSection>
+
+            <FormSection icon={Megaphone} title="Meta Catalog" iconTone="bg-blue-50 text-blue-800">
+              <MetaCatalogFields
+                idPrefix="edit-meta-catalog"
+                value={formData.metaCatalog}
+                onChange={(metaCatalog) => setFormData({ ...formData, metaCatalog })}
+                disabled={loading}
+              />
             </FormSection>
 
             <ProductSpecsSection

@@ -8,6 +8,7 @@ import { DELETE_PRODUCT, UPDATE_PRODUCT } from "@/lib/graphql/products/mutations
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { EditProductModal } from "@/components/products/edit-product-modal"
+import { MetaCatalogPreview } from "@/components/products/meta-catalog-preview"
 import { VariantManager } from "@/components/products/variant-manager"
 import { ProductOptionCatalogPanel } from "@/components/products/product-option-catalog-panel"
 import { ProductGalleryUpload } from "@/components/products/product-gallery-upload"
@@ -486,6 +487,8 @@ export default function ProductDetailPage() {
                   variants={product.variants ?? []}
                   onSynced={() => void refetch()}
                 />
+
+                <MetaCatalogPreview product={product} />
 
                 <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 bg-muted/25">

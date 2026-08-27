@@ -3,6 +3,12 @@ import {
   parseProductGalleryUrls,
 } from "@/lib/products/product-gallery-metadata"
 import {
+  applyMetaCatalogMetadata,
+  EMPTY_META_CATALOG_METADATA,
+  parseMetaCatalogMetadata,
+  type MetaCatalogMetadataInput,
+} from "@/lib/products/meta-catalog-metadata"
+import {
   parseProductOffer,
   productOfferToMetadata,
   type ProductOffer,
@@ -20,6 +26,7 @@ export type ParsedVariantMetadata = {
   productOffer?: ProductOffer | null
   discount?: number | null
   originalPrice?: number | null
+  metaCatalog: MetaCatalogMetadataInput
 }
 
 export type VariantMetadataInput = {
@@ -35,6 +42,7 @@ export type VariantMetadataInput = {
   offerItems?: string[]
   discount?: string
   originalPrice?: string
+  metaCatalog?: MetaCatalogMetadataInput
 }
 
 function parseMetadataBase(metadataJson?: string | null): Record<string, unknown> {
@@ -89,6 +97,7 @@ export function parseVariantMetadata(
     productOffer: parseProductOffer(base.productOffer),
     discount: parseOptionalDiscount(base.discount),
     originalPrice: parseOptionalNumber(base.originalPrice),
+    metaCatalog: parseMetaCatalogMetadata(metadataJson),
   }
 }
 
@@ -154,7 +163,12 @@ export function buildVariantMetadataJson(
   if (originalPrice !== null && originalPrice > 0) metadata.originalPrice = originalPrice
   else delete metadata.originalPrice
 
-  return JSON.stringify(metadata)
+  const withMetaCatalog = applyMetaCatalogMetadata(
+    metadata,
+    input.metaCatalog ?? EMPTY_META_CATALOG_METADATA,
+  )
+
+  return JSON.stringify(withMetaCatalog)
 }
 
 /** Extrai campos editáveis a partir de variante existente. */
@@ -185,5 +199,6 @@ export function variantMetadataToInput(
       parsed.originalPrice !== undefined && parsed.originalPrice !== null
         ? String(parsed.originalPrice)
         : "",
+    metaCatalog: parsed.metaCatalog,
   }
 }

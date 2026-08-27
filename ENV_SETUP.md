@@ -7,6 +7,9 @@ Crie um arquivo `.env.local` na raiz do projeto com as seguintes variáveis:
 GTW_URL=https://your-gateway-url.com
 GTW_TOKEN=your-gateway-token
 CMS_ACCESS_TOKEN=your-access-token
+
+# Public store URL for previews and Meta Commerce catalog links
+NEXT_PUBLIC_TECHARENA_URL=https://kumprafacil.cv
 ```
 
 **Importante:**

@@ -18,6 +18,7 @@ import {
   Construction,
   LayoutGrid,
   Users,
+  Megaphone,
 } from "lucide-react"
 
 const SETTINGS_SECTIONS = [
@@ -36,6 +37,14 @@ const SETTINGS_SECTIONS = [
     color: "text-blue-800",
     bg: "bg-blue-50 border border-border/60",
     href: "/dashboard/settings/store",
+  },
+  {
+    title: "Integrações Meta",
+    description: "Diagnóstico Pixel, CAPI, catálogo e tracking",
+    icon: Megaphone,
+    color: "text-sky-800",
+    bg: "bg-sky-50 border border-border/60",
+    href: "/dashboard/settings/integrations/meta",
   },
   {
     title: "Aparência",

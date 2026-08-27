@@ -6,6 +6,7 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { PageHeader } from "@/components/admin/page-header"
 import { StoreImageField } from "@/components/settings/store-image-field"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -31,7 +32,7 @@ import {
   serializeProductPageTrustBadges,
   type ProductPageTrustBadges,
 } from "@/lib/product-page-trust-badges"
-import { Loader2 } from "lucide-react"
+import { CheckCircle2, Copy, ExternalLink, Loader2, Megaphone } from "lucide-react"
 import { toast } from "sonner"
 
 type StoreDraft = {
@@ -115,6 +116,12 @@ export default function StoreSettingsPage() {
   const activeDraft = draft?.version === serverVersion ? draft.values : null
   const values = activeDraft ?? serverDraft
   const dirty = activeDraft !== null
+  const storeOrigin = (
+    process.env.NEXT_PUBLIC_TECHARENA_URL?.trim() ||
+    process.env.NEXT_PUBLIC_STORE_URL?.trim() ||
+    "https://kumprafacil.cv"
+  ).replace(/\/$/, "")
+  const catalogFeedUrl = `${storeOrigin}/api/meta/catalog`
 
   function patch(partial: Partial<StoreDraft>) {
     setDraft((prev) => ({
@@ -159,6 +166,15 @@ export default function StoreSettingsPage() {
       toast.error("Não foi possível guardar", {
         description: e instanceof Error ? e.message : "Erro desconhecido",
       })
+    }
+  }
+
+  async function copyCatalogFeedUrl() {
+    try {
+      await navigator.clipboard.writeText(catalogFeedUrl)
+      toast.success("URL do catálogo copiada")
+    } catch {
+      toast.error("Não foi possível copiar a URL")
     }
   }
 
@@ -355,6 +371,24 @@ export default function StoreSettingsPage() {
                     Número com indicativo (só dígitos e +). A loja gera o link wa.me.
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-blue-50">
+                      <Megaphone className="h-3.5 w-3.5 text-blue-800" aria-hidden />
+                    </div>
+                    <CardTitle className="text-sm font-semibold">Meta Commerce</CardTitle>
+                  </div>
+                  <Badge variant={values.metaPixelId.trim() ? "secondary" : "outline"} className="text-[11px]">
+                    {values.metaPixelId.trim() ? "Pixel configurado" : "Pixel pendente"}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="meta-pixel">Meta Pixel ID</Label>
                   <Input
@@ -365,8 +399,44 @@ export default function StoreSettingsPage() {
                     inputMode="numeric"
                   />
                   <p className="text-[11px] text-muted-foreground">
-                    ID numérico do pixel (Events Manager → Pixel). Usado nos anúncios Facebook/Instagram.
+                    ID numérico do pixel no Events Manager. A loja usa este valor para Facebook/Instagram.
                   </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="meta-catalog-url">URL do catálogo</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="meta-catalog-url"
+                      readOnly
+                      value={catalogFeedUrl}
+                      className="h-9 font-mono text-xs"
+                    />
+                    <Button type="button" variant="outline" size="icon-sm" onClick={copyCatalogFeedUrl}>
+                      <Copy className="h-3.5 w-3.5" aria-hidden />
+                      <span className="sr-only">Copiar URL</span>
+                    </Button>
+                    <Button type="button" variant="outline" size="icon-sm" asChild>
+                      <a href={catalogFeedUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+                        <span className="sr-only">Abrir catálogo</span>
+                      </a>
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Usa esta URL como Data Feed no Commerce Manager e agenda atualização automática.
+                  </p>
+                </div>
+
+                <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-xs text-muted-foreground">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700" aria-hidden />
+                    <p>
+                      O token da Conversions API continua nas variáveis da API:
+                      {" "}
+                      <code className="rounded bg-background px-1 py-0.5">META_CONVERSIONS_API_TOKEN</code>.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>

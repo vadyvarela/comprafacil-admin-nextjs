@@ -1,3 +1,5 @@
+import type { MetaCatalogMetadataInput } from "@/lib/products/meta-catalog-metadata"
+
 export interface ProductVariantCombination {
   id?: string
   optionValues: Record<string, string>
@@ -14,4 +16,5 @@ export interface ProductVariantCombination {
   offerItems?: string[]
   discount?: string
   originalPrice?: string
+  metaCatalog?: MetaCatalogMetadataInput
 }

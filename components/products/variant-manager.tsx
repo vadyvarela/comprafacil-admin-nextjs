@@ -143,6 +143,7 @@ export function VariantManager({
           offerItems: metaFields.offerItems,
           discount: metaFields.discount,
           originalPrice: metaFields.originalPrice,
+          metaCatalog: metaFields.metaCatalog,
         }
       })
 
@@ -273,6 +274,7 @@ export function VariantManager({
           sku: "",
           offerTitle: "Pack de proteção",
           offerItems: [],
+          metaCatalog: undefined,
         }
       )
     })
@@ -321,6 +323,7 @@ export function VariantManager({
       offerItems: combo.offerItems,
       discount: combo.discount,
       originalPrice: combo.originalPrice,
+      metaCatalog: combo.metaCatalog,
     }, imageOverride)
   }
 
