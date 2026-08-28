@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { useParams, useRouter } from "next/navigation"
 import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
@@ -14,6 +14,11 @@ import { ProductOptionCatalogPanel } from "@/components/products/product-option-
 import { ProductGalleryUpload } from "@/components/products/product-gallery-upload"
 import { StockModal } from "@/components/products/stock-modal"
 import { Button } from "@/components/ui/button"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +40,7 @@ import {
   BoxesIcon,
   Globe,
   EyeOff,
+  ChevronDown,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -42,6 +48,7 @@ import { showToast } from "@/lib/utils/toast"
 import { looksLikeIphoneProduct } from "@/lib/utils/iphone-seminovo-metadata"
 import { parseProductOffer } from "@/lib/products/product-offer"
 import { parseVariantMetadata } from "@/lib/products/variant-metadata"
+import { cn } from "@/lib/utils"
 import {
   isProductDraft,
   productVisibilityLabel,
@@ -50,6 +57,298 @@ import {
   productVisibilityUpdateInput,
 } from "@/lib/products/product-visibility"
 
+function parseMetadata(metadataJson?: string | null): Record<string, unknown> | null {
+  if (!metadataJson) return null
+  try {
+    return JSON.parse(metadataJson) as Record<string, unknown>
+  } catch {
+    return null
+  }
+}
+
+function metadataText(value: unknown): string | null {
+  if (value === undefined || value === null || value === "") return null
+  return String(value)
+}
+
+function stripHtml(value?: string | null): string {
+  return (value ?? "")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function compactText(value: string, limit = 220) {
+  if (value.length <= limit) return value
+  return `${value.slice(0, limit).trimEnd()}...`
+}
+
+function formatMoney(unitAmount: number, currency = "CVE") {
+  return `${(unitAmount / 100).toLocaleString("pt-PT", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} ${currency}`
+}
+
+function variantPriceLabel(variant: ProductVariant) {
+  if (!variant.price) return "Sem preço"
+  return formatMoney(variant.price.unitAmount, variant.price.currency)
+}
+
+function variantPriceSummary(variants: ProductVariant[]) {
+  const prices = variants
+    .map((variant) => variant.price)
+    .filter((price): price is NonNullable<ProductVariant["price"]> => !!price)
+
+  if (prices.length === 0) return "Sem preços"
+
+  const currency = prices[0]?.currency ?? "CVE"
+  const values = prices.map((price) => price.unitAmount)
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+
+  if (min === max) return formatMoney(min, currency)
+  return `${formatMoney(min, currency)} - ${formatMoney(max, currency)}`
+}
+
+function DetailItem({
+  label,
+  value,
+  mono,
+}: {
+  label: string
+  value: ReactNode
+  mono?: boolean
+}) {
+  return (
+    <div className="min-w-0 rounded-md border border-border/70 bg-muted/20 px-3 py-2">
+      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <div
+        className={cn(
+          "mt-0.5 min-w-0 break-words text-sm font-medium text-foreground",
+          mono && "font-mono text-xs",
+        )}
+      >
+        {value}
+      </div>
+    </div>
+  )
+}
+
+function ProductMetric({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  value: ReactNode
+  tone: string
+}) {
+  return (
+    <div className="flex min-h-16 min-w-0 items-center gap-3 rounded-md border border-border/75 bg-muted/20 px-3 py-2.5">
+      <div
+        className={cn(
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60",
+          tone,
+        )}
+      >
+        <Icon className="h-3.5 w-3.5" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[11px] text-muted-foreground">{label}</p>
+        <p className="truncate text-sm font-semibold tabular-nums">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function ProductInfoPanel({
+  product,
+  metadata,
+  showIphoneSeminovoRead,
+  variantCount,
+}: {
+  product: Product
+  metadata: Record<string, unknown> | null
+  showIphoneSeminovoRead: boolean
+  variantCount: number
+}) {
+  const productOffer = parseProductOffer(metadata?.productOffer)
+  const details = [
+    { label: "ID", value: product.id, mono: true },
+    { label: "SKU", value: metadataText(metadata?.sku), mono: true },
+    { label: "Modelo", value: metadataText(metadata?.model) },
+    { label: "Peso", value: metadataText(metadata?.weight) },
+    { label: "Cor", value: metadataText(metadata?.color) },
+    { label: "Garantia", value: metadataText(metadata?.warranty) },
+  ].filter((item) => item.value)
+
+  return (
+    <div className="rounded-lg border border-border/80 bg-card shadow-none">
+      <div className="flex items-center gap-2.5 border-b border-border/80 bg-muted/25 px-4 py-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-primary/10">
+          <Info className="h-4 w-4 text-primary" />
+        </div>
+        <h2 className="text-sm font-medium">Informações internas</h2>
+      </div>
+      <div className="grid gap-2 p-4 sm:grid-cols-2">
+        {details.map((item) => (
+          <DetailItem key={item.label} label={item.label} value={item.value} mono={item.mono} />
+        ))}
+
+        {product.discount !== undefined &&
+        product.discount !== null &&
+        product.discount > 0 &&
+        variantCount === 0 ? (
+          <DetailItem
+            label="Desconto"
+            value={
+              <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-800">
+                -{product.discount}%
+              </span>
+            }
+          />
+        ) : null}
+
+        {showIphoneSeminovoRead && variantCount === 0 && metadata?.semFaceId === true ? (
+          <DetailItem label="Face ID" value="Sem Face ID" />
+        ) : null}
+
+        {showIphoneSeminovoRead &&
+        variantCount === 0 &&
+        metadata?.batteryHealthPercent !== undefined &&
+        metadata?.batteryHealthPercent !== null ? (
+          <DetailItem label="Bateria" value={`${String(metadata.batteryHealthPercent)}%`} />
+        ) : null}
+
+        {productOffer?.enabled && variantCount === 0 ? (
+          <DetailItem
+            label="Oferta"
+            value={
+              <span>
+                {productOffer.title}
+                <span className="block text-[11px] font-normal text-muted-foreground">
+                  {productOffer.items.join(" / ")}
+                </span>
+              </span>
+            }
+          />
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function VariantRow({
+  variant,
+  showIphoneSeminovoRead,
+}: {
+  variant: ProductVariant
+  showIphoneSeminovoRead: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const parsed = parseVariantMetadata(variant.image, variant.metadata)
+  const attributes = Object.entries(parsed.attributes).filter(([, value]) => String(value).trim())
+  const galleryCount = parsed.images.length
+
+  return (
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <div className="px-4 py-3 transition-colors hover:bg-muted/20">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border/70 bg-muted/40">
+              {parsed.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={parsed.image} alt="" className="h-full w-full object-contain p-1" />
+              ) : (
+                <Package className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{variant.title}</p>
+              <div className="mt-1 flex flex-wrap gap-1.5">
+                {attributes.length > 0 ? (
+                  attributes.slice(0, 3).map(([key, value]) => (
+                    <Badge key={key} variant="secondary" className="text-[10px] font-normal">
+                      {key}: {String(value)}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-[11px] text-muted-foreground">Sem atributos</span>
+                )}
+                {attributes.length > 3 ? (
+                  <Badge variant="outline" className="text-[10px]">
+                    +{attributes.length - 3}
+                  </Badge>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid min-w-0 grid-cols-2 gap-2 sm:w-56 sm:shrink-0">
+            <div className="rounded-md bg-muted/25 px-2.5 py-1.5">
+              <p className="text-[10px] text-muted-foreground">Preço</p>
+              <p className="truncate text-xs font-semibold tabular-nums">
+                {variantPriceLabel(variant)}
+              </p>
+            </div>
+            <div className="rounded-md bg-muted/25 px-2.5 py-1.5">
+              <p className="text-[10px] text-muted-foreground">Stock</p>
+              <p className="text-xs font-semibold tabular-nums">{variant.quantity || 0} un.</p>
+            </div>
+          </div>
+
+          <CollapsibleTrigger asChild>
+            <Button type="button" variant="ghost" size="sm" className="h-8 self-start text-xs">
+              <ChevronDown
+                className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")}
+              />
+              Mais
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+
+        <CollapsibleContent>
+          <div className="mt-3 grid gap-2 rounded-md border border-border/70 bg-muted/20 p-3 sm:grid-cols-2 xl:grid-cols-4">
+            <DetailItem label="ID" value={variant.id} mono />
+            {parsed.sku ? <DetailItem label="SKU" value={parsed.sku} mono /> : null}
+            {galleryCount > 0 ? <DetailItem label="Fotos" value={galleryCount} /> : null}
+            {showIphoneSeminovoRead && parsed.semFaceId ? (
+              <DetailItem label="Face ID" value="Sem Face ID" />
+            ) : null}
+            {showIphoneSeminovoRead &&
+            parsed.batteryHealthPercent !== undefined &&
+            parsed.batteryHealthPercent !== null ? (
+              <DetailItem label="Bateria" value={`${parsed.batteryHealthPercent}%`} />
+            ) : null}
+            {parsed.discount !== undefined && parsed.discount !== null && parsed.discount > 0 ? (
+              <DetailItem label="Desconto" value={`-${parsed.discount}%`} />
+            ) : null}
+            {parsed.productOffer?.enabled ? (
+              <DetailItem
+                label="Pack"
+                value={
+                  <span>
+                    {parsed.productOffer.title}
+                    <span className="block text-[11px] font-normal text-muted-foreground">
+                      {parsed.productOffer.items.join(" / ")}
+                    </span>
+                  </span>
+                }
+              />
+            ) : null}
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
+  )
+}
+
 export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -57,6 +356,7 @@ export default function ProductDetailPage() {
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [variantManagerOpen, setVariantManagerOpen] = useState(false)
   const [stockModalOpen, setStockModalOpen] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
 
   const [deleteProduct, { loading: deletingProduct }] = useMutation(
     DELETE_PRODUCT,
@@ -102,19 +402,12 @@ export default function ProductDetailPage() {
         }
       : null
 
-  const metadata = product?.metadata
-    ? (() => {
-        try {
-          return JSON.parse(product.metadata)
-        } catch {
-          return null
-        }
-      })()
-    : null
-  const productOffer = parseProductOffer(metadata?.productOffer)
+  const metadata = parseMetadata(product?.metadata)
   const variantCount = product?.variants?.length ?? 0
+  const variants = product?.variants ?? []
   const totalVariantStock =
-    product?.variants?.reduce((total, variant) => total + (variant.quantity || 0), 0) ?? 0
+    variants.reduce((total, variant) => total + (variant.quantity || 0), 0) ?? 0
+  const productSummary = product ? compactText(stripHtml(product.summary || product.description)) : ""
 
   const showIphoneSeminovoRead = !!(
     product &&
@@ -174,7 +467,7 @@ export default function ProductDetailPage() {
   if (loading) {
     return (
       <>
-        <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "…" }]} />
+        <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "..." }]} />
         <div className="flex flex-col gap-4 p-6">
           <Skeleton className="h-10 w-72" />
           <div className="grid grid-cols-3 gap-4">
@@ -192,8 +485,8 @@ export default function ProductDetailPage() {
     return (
       <>
         <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: "Detalhe" }]} />
-        <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-          <div className="text-center space-y-4 max-w-md">
+        <div className="flex min-h-[400px] flex-col items-center justify-center p-4">
+          <div className="max-w-md space-y-4 text-center">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg border border-border/80 bg-muted/40">
               <Package className="h-8 w-8 text-muted-foreground/50" />
             </div>
@@ -202,11 +495,11 @@ export default function ProductDetailPage() {
                 {error ? "Erro ao carregar produto" : "Produto não encontrado"}
               </h2>
               {error && (
-                <p className="text-sm text-muted-foreground mt-1">{error.message}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{error.message}</p>
               )}
             </div>
             <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/products")}>
-              <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+              <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
               Voltar aos produtos
             </Button>
           </div>
@@ -220,23 +513,21 @@ export default function ProductDetailPage() {
       <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Produtos", href: "/dashboard/products" }, { label: product.title ?? "Produto" }]} />
       <div className="flex flex-1 flex-col bg-background">
         <div className="flex-1 overflow-auto">
-          <div className="mx-auto w-full max-w-7xl px-5 py-6 md:px-6 space-y-6">
-
-            {/* Hero section */}
-            <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-none">
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0 flex-1 space-y-3">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 -ml-2 text-xs text-muted-foreground hover:text-foreground"
-                    onClick={() => router.push("/dashboard/products")}
-                  >
-                    <ArrowLeft className="mr-1 h-3 w-3" />
-                    Produtos
-                  </Button>
+          <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-5 py-6 md:px-6">
+            <div className="animate-enter flex flex-col gap-4 rounded-lg border border-border/80 bg-card p-4 shadow-none md:flex-row md:items-start md:justify-between">
+              <div className="min-w-0 space-y-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="-ml-2 h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+                  onClick={() => router.push("/dashboard/products")}
+                >
+                  <ArrowLeft className="mr-1 h-3 w-3" />
+                  Produtos
+                </Button>
+                <div className="min-w-0 space-y-2">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <h1 className="truncate text-xl font-semibold md:text-2xl">
+                    <h1 className="min-w-0 text-xl font-semibold md:text-2xl">
                       {product.title}
                     </h1>
                     {isProductDraft(product.status?.code) ? (
@@ -248,373 +539,224 @@ export default function ProductDetailPage() {
                         {productVisibilityLabel(product.status?.code)}
                       </Badge>
                     )}
-                    {product.category && (
-                      <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
-                        {product.category.name}
-                      </Badge>
-                    )}
                   </div>
-                  {product.brand && (
-                    <p className="text-sm text-muted-foreground">
-                      por <span className="font-medium text-foreground">{product.brand.name}</span>
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    variant={isProductDraft(product.status?.code) ? "default" : "outline"}
-                    size="sm"
-                    onClick={handleToggleVisibility}
-                    disabled={updatingVisibility}
-                  >
-                    {updatingVisibility ? (
-                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                    ) : isProductDraft(product.status?.code) ? (
-                      <Globe className="mr-1.5 h-3.5 w-3.5" />
-                    ) : (
-                      <EyeOff className="mr-1.5 h-3.5 w-3.5" />
-                    )}
-                    {productVisibilityToggleLabel(product.status?.code)}
-                  </Button>
-                  <Button onClick={() => setEditModalOpen(true)} size="sm">
-                    <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                    Editar
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" disabled={deletingProduct}>
-                        <MoreVertical className="h-3.5 w-3.5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={handleDeleteProduct}
-                        disabled={deletingProduct}
-                      >
-                        {deletingProduct ? (
-                          <>
-                            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                            Excluindo...
-                          </>
-                        ) : (
-                          <>
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />
-                            Excluir Produto
-                          </>
-                        )}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                    {product.brand ? <span>{product.brand.name}</span> : null}
+                    {product.category ? <span>{product.category.name}</span> : null}
+                    {product.condition ? <span>{product.condition}</span> : null}
+                  </div>
                 </div>
               </div>
 
-              {/* Mini KPIs */}
-              <div className="relative mt-5 grid gap-3 sm:grid-cols-3">
-                <div className="group flex items-center gap-3 glass-card p-3.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/50 bg-blue-50">
-                    <Layers className="h-3.5 w-3.5 text-blue-700" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Variantes</p>
-                    <p className="text-xl font-bold tabular-nums leading-tight">{variantCount}</p>
-                  </div>
-                </div>
-                <div className="group flex items-center gap-3 glass-card p-3.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/50 bg-violet-50">
-                    <BoxesIcon className="h-3.5 w-3.5 text-violet-700" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Stock variantes</p>
-                    <p className="text-xl font-bold tabular-nums leading-tight">{totalVariantStock}</p>
-                  </div>
-                </div>
-                <div className="group flex items-center gap-3 glass-card p-3.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/50 bg-emerald-50">
-                    <Warehouse className="h-3.5 w-3.5 text-emerald-700" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] text-muted-foreground">Stock total</p>
-                    <p className="text-xl font-bold tabular-nums leading-tight">{product.stock?.quantity ?? 0}</p>
-                  </div>
-                </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <Button
+                  variant={isProductDraft(product.status?.code) ? "default" : "outline"}
+                  size="sm"
+                  onClick={handleToggleVisibility}
+                  disabled={updatingVisibility}
+                >
+                  {updatingVisibility ? (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  ) : isProductDraft(product.status?.code) ? (
+                    <Globe className="mr-1.5 h-3.5 w-3.5" />
+                  ) : (
+                    <EyeOff className="mr-1.5 h-3.5 w-3.5" />
+                  )}
+                  {productVisibilityToggleLabel(product.status?.code)}
+                </Button>
+                <Button onClick={() => setEditModalOpen(true)} size="sm">
+                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                  Editar
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm" disabled={deletingProduct}>
+                      <MoreVertical className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={handleDeleteProduct}
+                      disabled={deletingProduct}
+                    >
+                      {deletingProduct ? (
+                        <>
+                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                          Excluindo...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="mr-2 h-3.5 w-3.5" />
+                          Excluir Produto
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
-            {/* Content grid */}
-            <div className="grid gap-5 lg:grid-cols-3 animate-enter-delay-1">
-              {/* Left sidebar */}
-              <div className="space-y-5 lg:col-span-1">
-                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-                  <ProductGalleryUpload
-                    productId={productId}
-                    primaryImage={product.image}
-                    metadata={product.metadata}
-                    brandSlug={product.brand?.slug}
-                    onSaved={() => void refetch()}
-                  />
+            <div className="grid gap-5 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
+              <section className="animate-enter-delay-1 rounded-lg border border-border/80 bg-card shadow-none">
+                <div className="border-b border-border/80 bg-muted/25 px-4 py-3">
+                  <h2 className="text-sm font-medium">Produto</h2>
                 </div>
+                <ProductGalleryUpload
+                  productId={productId}
+                  primaryImage={product.image}
+                  metadata={product.metadata}
+                  brandSlug={product.brand?.slug}
+                  onSaved={() => void refetch()}
+                />
 
-                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-                  <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/80 bg-muted/25">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-emerald-50">
-                        <Warehouse className="h-3.5 w-3.5 text-emerald-800" />
+                <div className="space-y-4 px-4 pb-4">
+                  {productSummary ? (
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {productSummary}
+                    </p>
+                  ) : null}
+
+                  <div className="grid gap-2">
+                    <ProductMetric
+                      icon={Tag}
+                      label="Preço variantes"
+                      value={variantPriceSummary(variants)}
+                      tone="bg-blue-50 text-blue-800"
+                    />
+                    <ProductMetric
+                      icon={Layers}
+                      label="Variantes"
+                      value={variantCount}
+                      tone="bg-violet-50 text-violet-800"
+                    />
+                    <ProductMetric
+                      icon={BoxesIcon}
+                      label="Stock variantes"
+                      value={totalVariantStock}
+                      tone="bg-emerald-50 text-emerald-800"
+                    />
+                    <div className="flex min-h-16 min-w-0 items-center justify-between gap-3 rounded-md border border-border/75 bg-muted/20 px-3 py-2.5">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-amber-50 text-amber-800">
+                          <Warehouse className="h-3.5 w-3.5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[11px] text-muted-foreground">Stock produto</p>
+                          <p className="truncate text-sm font-semibold tabular-nums">
+                            {product.stock?.quantity ?? 0}
+                          </p>
+                        </div>
                       </div>
-                      <span className="text-xs font-medium">Estoque</span>
-                    </div>
-                    {product.stock && (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-7 w-7 p-0"
+                        className="h-8 w-8 p-0"
                         onClick={() => setStockModalOpen(true)}
                       >
-                        <Pencil className="h-3 w-3" />
+                        <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    {product.stock ? (
-                      <div>
-                        <p className="text-3xl font-bold tabular-nums">{product.stock.quantity}</p>
-                        {product.stock.name && (
-                          <p className="mt-1 text-xs text-muted-foreground">{product.stock.name}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <p className="text-xs text-muted-foreground">Estoque não configurado</p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 w-full text-xs"
-                          onClick={() => setStockModalOpen(true)}
-                        >
-                          Configurar Estoque
-                        </Button>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 </div>
+              </section>
 
-                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-                  <div className="flex items-center gap-2 px-3 py-2.5 border-b border-border/80 bg-muted/25">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-primary/10">
-                      <Info className="h-3.5 w-3.5 text-primary" />
+              <section className="animate-enter-delay-1 rounded-lg border border-border/80 bg-card shadow-none">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/25 px-4 py-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
+                      <Settings className="h-4 w-4 text-blue-800" />
                     </div>
-                    <span className="text-xs font-medium">Informações</span>
-                  </div>
-                  <div className="p-4 space-y-3 text-xs">
-                    <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/50">
-                      <span className="text-muted-foreground shrink-0">ID</span>
-                      <span className="break-all font-mono text-[10px] text-right">{product.id}</span>
+                    <div>
+                      <h2 className="text-sm font-medium">Variantes</h2>
+                      <p className="text-[11px] text-muted-foreground">
+                        {variantCount} registada{variantCount !== 1 ? "s" : ""}
+                      </p>
                     </div>
-                    {product.discount !== undefined && product.discount !== null && product.discount > 0 && variantCount === 0 && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
-                        <span className="text-muted-foreground">Desconto</span>
-                        <span className="inline-flex items-center rounded-full bg-rose-50 border border-rose-200 px-2 py-0.5 text-[11px] font-medium text-rose-800">
-                          -{product.discount}%
-                        </span>
-                      </div>
-                    )}
-                    {metadata?.sku && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
-                        <span className="text-muted-foreground flex items-center gap-1"><Tag className="h-3 w-3" />SKU</span>
-                        <span className="font-mono font-medium">{metadata.sku}</span>
-                      </div>
-                    )}
-                    {metadata?.model && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
-                        <span className="text-muted-foreground">Modelo</span>
-                        <span className="font-medium">{metadata.model}</span>
-                      </div>
-                    )}
-                    {metadata?.weight && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
-                        <span className="text-muted-foreground">Peso</span>
-                        <span className="font-medium">{metadata.weight}</span>
-                      </div>
-                    )}
-                    {metadata?.color && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
-                        <span className="text-muted-foreground">Cor</span>
-                        <span className="font-medium">{metadata.color}</span>
-                      </div>
-                    )}
-                    {metadata?.warranty && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
-                        <span className="text-muted-foreground">Garantia</span>
-                        <span className="font-medium">{metadata.warranty}</span>
-                      </div>
-                    )}
-                    {showIphoneSeminovoRead && variantCount === 0 && metadata?.semFaceId === true && (
-                      <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
-                        <span className="text-muted-foreground">Face ID</span>
-                        <span className="font-medium text-amber-800">Sem Face ID</span>
-                      </div>
-                    )}
-                    {showIphoneSeminovoRead &&
-                      variantCount === 0 &&
-                      metadata?.batteryHealthPercent !== undefined &&
-                      metadata?.batteryHealthPercent !== null && (
-                        <div className="flex items-center justify-between gap-3 pb-3 border-b border-border/50">
-                          <span className="text-muted-foreground">Bateria</span>
-                          <span className="font-medium">{String(metadata.batteryHealthPercent)}%</span>
-                        </div>
-                      )}
-                    {productOffer?.enabled && variantCount === 0 ? (
-                      <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/50">
-                        <span className="text-muted-foreground shrink-0">Oferta</span>
-                        <div className="text-right space-y-1">
-                          <span className="block font-medium text-orange-800">
-                            {productOffer.title}
-                          </span>
-                          <span className="block text-[11px] text-muted-foreground">
-                            {productOffer.items.join(" · ")}
-                          </span>
-                        </div>
-                      </div>
-                    ) : null}
                   </div>
+                  <Button onClick={() => setVariantManagerOpen(true)} size="sm">
+                    <Settings className="mr-1.5 h-3.5 w-3.5" />
+                    Gerir
+                  </Button>
                 </div>
-              </div>
 
-              {/* Variants */}
-              <div className="lg:col-span-2 space-y-5">
-                <ProductOptionCatalogPanel
-                  product={product}
-                  variants={product.variants ?? []}
-                  onSynced={() => void refetch()}
-                />
-
-                <MetaCatalogPreview product={product} />
-
-                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 bg-muted/25">
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
-                        <Settings className="h-4 w-4 text-blue-800" />
-                      </div>
-                      <div>
-                        <h2 className="text-sm font-medium">Variantes</h2>
-                        <p className="text-[11px] text-muted-foreground">
-                          {variantCount} variante{variantCount !== 1 ? "s" : ""} registada{variantCount !== 1 ? "s" : ""}
-                        </p>
-                      </div>
+                {variants.length > 0 ? (
+                  <div className="divide-y divide-border">
+                    {variants.map((variant) => (
+                      <VariantRow
+                        key={variant.id}
+                        variant={variant}
+                        showIphoneSeminovoRead={showIphoneSeminovoRead}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40">
+                      <Package className="h-7 w-7 text-muted-foreground/40" />
                     </div>
-                    <Button onClick={() => setVariantManagerOpen(true)} size="sm">
+                    <h3 className="mb-1 text-sm font-bold">Nenhuma variante</h3>
+                    <p className="mb-4 max-w-[260px] text-xs text-muted-foreground">
+                      Adicione variantes para definir preço, stock e atributos.
+                    </p>
+                    <Button size="sm" onClick={() => setVariantManagerOpen(true)}>
                       <Settings className="mr-1.5 h-3.5 w-3.5" />
-                      Gerenciar
+                      Gerir variantes
                     </Button>
                   </div>
-
-                  {product.variants && product.variants.length > 0 ? (
-                    <div className="divide-y divide-border">
-                      {product.variants.map((variant: ProductVariant) => {
-                        const parsed = parseVariantMetadata(variant.image, variant.metadata)
-                        const attributes = parsed.attributes
-
-                        return (
-                          <div
-                            key={variant.id}
-                            className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-muted/20"
-                          >
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted/50 overflow-hidden">
-                              {parsed.image ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={parsed.image}
-                                  alt=""
-                                  className="h-full w-full object-contain p-0.5"
-                                />
-                              ) : (
-                                <Package className="h-4 w-4 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold truncate">{variant.title}</p>
-                              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                {parsed.sku && (
-                                  <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-                                    SKU: {parsed.sku}
-                                  </span>
-                                )}
-                                {Object.entries(attributes).map(([key, value]) => (
-                                  <span key={key} className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                                    {key}: {String(value)}
-                                  </span>
-                                ))}
-                                {parsed.images.length > 1 && (
-                                  <span className="inline-flex items-center rounded-md bg-blue-50 border border-blue-100 px-1.5 py-0.5 text-[10px] text-blue-800">
-                                    {parsed.images.length} fotos
-                                  </span>
-                                )}
-                                {showIphoneSeminovoRead && parsed.semFaceId && (
-                                  <span className="inline-flex items-center rounded-md bg-amber-50 border border-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800">
-                                    Sem Face ID
-                                  </span>
-                                )}
-                                {showIphoneSeminovoRead &&
-                                  parsed.batteryHealthPercent !== undefined &&
-                                  parsed.batteryHealthPercent !== null && (
-                                    <span className="inline-flex items-center rounded-md bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-800">
-                                      Bateria {parsed.batteryHealthPercent}%
-                                    </span>
-                                  )}
-                                {parsed.discount !== undefined &&
-                                  parsed.discount !== null &&
-                                  parsed.discount > 0 && (
-                                    <span className="inline-flex items-center rounded-md bg-rose-50 border border-rose-100 px-1.5 py-0.5 text-[10px] text-rose-800">
-                                      -{parsed.discount}%
-                                    </span>
-                                  )}
-                                {parsed.productOffer?.enabled && (
-                                  <span className="inline-flex items-center rounded-md bg-orange-50 border border-orange-100 px-1.5 py-0.5 text-[10px] text-orange-800">
-                                    {parsed.productOffer.title}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <div className="text-right shrink-0 space-y-0.5">
-                              {variant.price ? (
-                                <p className="text-sm font-bold tabular-nums">
-                                  {(variant.price.unitAmount / 100).toLocaleString("pt-PT", {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                  })}{" "}
-                                  <span className="text-[10px] text-muted-foreground font-normal">{variant.price.currency}</span>
-                                </p>
-                              ) : (
-                                <p className="text-xs text-muted-foreground">Sem preço</p>
-                              )}
-                              <p className="text-[11px] text-muted-foreground tabular-nums flex items-center justify-end gap-1">
-                                <Warehouse className="h-3 w-3" />
-                                {variant.quantity || 0} un.
-                              </p>
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
-                        <Package className="h-7 w-7 text-muted-foreground/40" />
-                      </div>
-                      <h3 className="text-sm font-bold mb-1">Nenhuma variante</h3>
-                      <p className="text-xs text-muted-foreground max-w-[260px] mb-4">
-                        Adicione variantes para definir preços, estoque e atributos do produto.
-                      </p>
-                      <Button size="sm" onClick={() => setVariantManagerOpen(true)}>
-                        <Settings className="mr-1.5 h-3.5 w-3.5" />
-                        Gerenciar Variantes
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
+                )}
+              </section>
             </div>
+
+            <Collapsible
+              open={advancedOpen}
+              onOpenChange={setAdvancedOpen}
+              className="animate-enter-delay-2"
+            >
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-auto w-full justify-between gap-3 px-4 py-3 text-left"
+                >
+                  <span className="flex min-w-0 items-center gap-2.5">
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">Outros detalhes</span>
+                      <span className="block truncate text-[11px] font-normal text-muted-foreground">
+                        Dados internos, opções da loja e Meta Catalog
+                      </span>
+                    </span>
+                  </span>
+                  <ChevronDown
+                    className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")}
+                  />
+                </Button>
+              </CollapsibleTrigger>
+
+              <CollapsibleContent>
+                <div className="grid gap-5 pt-5 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
+                  <div className="space-y-5">
+                    <ProductInfoPanel
+                      product={product}
+                      metadata={metadata}
+                      showIphoneSeminovoRead={showIphoneSeminovoRead}
+                      variantCount={variantCount}
+                    />
+                  </div>
+
+                  <div className="space-y-5">
+                    <ProductOptionCatalogPanel
+                      product={product}
+                      variants={variants}
+                      onSynced={() => void refetch()}
+                    />
+
+                    <MetaCatalogPreview product={product} />
+                  </div>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         </div>
       </div>

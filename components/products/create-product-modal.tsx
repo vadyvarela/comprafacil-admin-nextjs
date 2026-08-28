@@ -21,13 +21,18 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, Package, FileText, Layers, Megaphone, Tag } from "lucide-react"
+import { ChevronDown, Loader2, Package, FileText, Layers, Megaphone, Tag } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { recordAuditLog } from "@/lib/actions/auditLogs"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
@@ -72,6 +77,8 @@ export function CreateProductModal({
     specifications: {} as ProductSpecifications,
     metaCatalog: { ...EMPTY_META_CATALOG_METADATA },
   })
+  const [descriptionOpen, setDescriptionOpen] = useState(false)
+  const [metaCatalogOpen, setMetaCatalogOpen] = useState(false)
 
   const { data: categoriesData, loading: categoriesLoading } = useQuery<{
     categoryList: {
@@ -114,6 +121,8 @@ export function CreateProductModal({
       specifications: {},
       metaCatalog: { ...EMPTY_META_CATALOG_METADATA },
     })
+    setDescriptionOpen(false)
+    setMetaCatalogOpen(false)
   }, [])
 
   const showIphoneSeminovoFields = useMemo(() => {
@@ -297,19 +306,41 @@ export function CreateProductModal({
               </Field>
             </FormSection>
 
-            <FormSection icon={FileText} title="Descrição" iconTone="bg-sky-50 text-sky-800">
-              <Field
-                label="Descrição completa"
-                hint="Use a barra de ferramentas para formatar o texto."
-              >
-                <RichTextEditor
-                  value={formData.summary}
-                  onChange={(value) => setFormData({ ...formData, summary: value })}
-                  placeholder="Características, conteúdo da caixa, condição…"
-                  disabled={isLoading}
-                />
-              </Field>
-            </FormSection>
+            <Collapsible
+              open={descriptionOpen}
+              onOpenChange={setDescriptionOpen}
+              className="rounded-lg border border-border/80 bg-card overflow-hidden"
+            >
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-sky-50 text-sky-800">
+                      <FileText className="h-3 w-3" />
+                    </span>
+                    <span className="text-xs font-medium">Descrição</span>
+                  </span>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform ${
+                      descriptionOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="border-t border-border/80 p-3.5">
+                <Field label="Descrição completa">
+                  <RichTextEditor
+                    value={formData.summary}
+                    onChange={(value) => setFormData({ ...formData, summary: value })}
+                    placeholder="Características, conteúdo da caixa, condição..."
+                    disabled={isLoading}
+                  />
+                </Field>
+              </CollapsibleContent>
+            </Collapsible>
 
             <FormSection icon={Layers} title="Classificação" iconTone="bg-violet-50 text-violet-800">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -461,15 +492,6 @@ export function CreateProductModal({
               )}
             </FormSection>
 
-            <FormSection icon={Megaphone} title="Meta Catalog" iconTone="bg-blue-50 text-blue-800">
-              <MetaCatalogFields
-                idPrefix="create-meta-catalog"
-                value={formData.metaCatalog}
-                onChange={(metaCatalog) => setFormData({ ...formData, metaCatalog })}
-                disabled={isLoading}
-              />
-            </FormSection>
-
             <ProductSpecsSection
               value={formData.specifications}
               onChange={(specifications) => setFormData({ ...formData, specifications })}
@@ -477,6 +499,40 @@ export function CreateProductModal({
               brandName={selectedBrandName}
               disabled={isLoading}
             />
+
+            <Collapsible
+              open={metaCatalogOpen}
+              onOpenChange={setMetaCatalogOpen}
+              className="rounded-lg border border-border/80 bg-card overflow-hidden"
+            >
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-blue-50 text-blue-800">
+                      <Megaphone className="h-3 w-3" />
+                    </span>
+                    <span className="text-xs font-medium">Meta Catalog</span>
+                  </span>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform ${
+                      metaCatalogOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="border-t border-border/80 p-3.5">
+                <MetaCatalogFields
+                  idPrefix="create-meta-catalog"
+                  value={formData.metaCatalog}
+                  onChange={(metaCatalog) => setFormData({ ...formData, metaCatalog })}
+                  disabled={isLoading}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
             <FormSection icon={Tag} title="Preço e stock" iconTone="bg-emerald-50 text-emerald-800">
               <label
