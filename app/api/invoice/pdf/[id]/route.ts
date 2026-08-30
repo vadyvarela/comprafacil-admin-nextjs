@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server"
-import { requireStoreSession } from "@/lib/auth/requireRole"
+import { requireModuleReadSession } from "@/lib/auth/requireRole"
 import { proxyGatewayPdf } from "@/lib/proxy-gateway-pdf"
 
 export const dynamic = "force-dynamic"
@@ -8,7 +8,7 @@ export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await requireStoreSession()
+  const { error } = await requireModuleReadSession("transactions")
   if (error) return error
 
   const { id } = await context.params

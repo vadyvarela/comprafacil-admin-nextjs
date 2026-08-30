@@ -10,6 +10,7 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { useModuleAccess } from "@/components/layout/module-access-context"
 import { DataPanel } from "@/components/admin/data-panel"
 import { EmptyState } from "@/components/admin/empty-state"
+import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
 import { EditProductModal } from "@/components/products/edit-product-modal"
 import { MetaCatalogPreview } from "@/components/products/meta-catalog-preview"
 import { VariantManager } from "@/components/products/variant-manager"
@@ -615,6 +616,8 @@ export default function ProductDetailPage() {
                 )}
               </div>
             </div>
+
+            {!canWrite ? <ReadOnlyNotice moduleLabel="Produto" /> : null}
 
             <div className="grid gap-5 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
               <DataPanel className="animate-enter-delay-1">

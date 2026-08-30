@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Search, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { ClearFiltersButton } from "@/components/admin/clear-filters-button"
 
 type CustomerListToolbarProps = {
   totalElements: number
@@ -44,6 +45,7 @@ export function CustomerListToolbar({ totalElements, error }: CustomerListToolba
             <Button type="submit" size="sm" className="h-8 text-xs">
               Buscar
             </Button>
+            {search ? <ClearFiltersButton href="/dashboard/customers" /> : null}
           </form>
         </div>
         {error && (

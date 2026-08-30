@@ -13,7 +13,7 @@ import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/admin/empty-state"
-import { FolderTree, Plus, Search } from "lucide-react"
+import { FolderTree, Plus, Search, X } from "lucide-react"
 import { Category } from "@/lib/graphql/categories/types"
 import { groupCategoriesByParent } from "@/lib/categories/format-category-label"
 import { showToast } from "@/lib/utils/toast"
@@ -100,9 +100,20 @@ export default function CategoriesPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Filtrar categorias…"
-              className="h-8 pl-8 text-xs"
+              className="h-8 pl-8 pr-8 text-xs"
               aria-label="Filtrar categorias"
             />
+            {searchQuery ? (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                aria-label="Limpar filtro de categorias"
+                title="Limpar filtro"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
           </div>
           <Button onClick={openCreate} size="sm" className="h-8 text-xs gap-1.5">
             <Plus className="h-3.5 w-3.5" />

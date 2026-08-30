@@ -15,6 +15,7 @@ import {
   Link2,
   CheckSquare,
   Square,
+  X,
 } from "lucide-react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { DataPanel, DataPanelContent } from "@/components/admin/data-panel"
@@ -114,28 +115,41 @@ function SelectionCheckbox({
   indeterminate,
   onChange,
   className,
+  interactive = true,
+  ariaLabel = "Alternar seleção",
 }: {
   checked: boolean
   indeterminate?: boolean
   onChange: () => void
   className?: string
+  interactive?: boolean
+  ariaLabel?: string
 }) {
-  return (
-    <span
-      role="checkbox"
-      aria-checked={indeterminate ? "mixed" : checked}
-      tabIndex={0}
-      onClick={(e) => {
-        e.stopPropagation()
-        onChange()
-      }}
-      onKeyDown={(e) => {
-        if (e.key === " " || e.key === "Enter") {
-          e.preventDefault()
+  const interactiveProps = interactive
+    ? {
+        role: "checkbox" as const,
+        "aria-checked": indeterminate ? ("mixed" as const) : checked,
+        "aria-label": ariaLabel,
+        tabIndex: 0,
+        onClick: (e: React.MouseEvent<HTMLSpanElement>) => {
           e.stopPropagation()
           onChange()
-        }
-      }}
+        },
+        onKeyDown: (e: React.KeyboardEvent<HTMLSpanElement>) => {
+          if (e.key === " " || e.key === "Enter") {
+            e.preventDefault()
+            e.stopPropagation()
+            onChange()
+          }
+        },
+      }
+    : {
+        "aria-hidden": true,
+      }
+
+  return (
+    <span
+      {...interactiveProps}
       className={cn(
         "flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md border transition-colors",
         checked || indeterminate
@@ -149,7 +163,7 @@ function SelectionCheckbox({
       ) : checked ? (
         <CheckSquare className="h-3.5 w-3.5" strokeWidth={2.5} />
       ) : (
-        <Square className="h-3.5 w-3.5 opacity-0 group-hover/check:opacity-30" />
+        <Square className="h-3.5 w-3.5 opacity-25 sm:opacity-0 sm:group-hover/check:opacity-30 sm:group-focus-within/check:opacity-30" />
       )}
     </span>
   )
@@ -413,6 +427,7 @@ export default function MediaLibraryPage() {
   const rangeStart = total === 0 ? 0 : page * PAGE_SIZE + 1
   const rangeEnd = Math.min((page + 1) * PAGE_SIZE, total)
   const deleteCount = deleteTargets.length
+  const hasGroupFilter = Boolean(groupFilter)
 
   const renderRowMeta = (row: MediaRow) => {
     const groupLabel = row.groupSlug ? labelFor(row.groupSlug) : null
@@ -501,96 +516,111 @@ export default function MediaLibraryPage() {
               <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div className="grid gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-end">
                   <FormField label="Pasta / marca" className="min-w-0 sm:min-w-[180px]">
-                <Select
-                  value={groupFilter || "all"}
-                  onValueChange={(v) => setGroupFilter(v === "all" ? "" : v)}
-                >
-                  <SelectTrigger size="sm" className="h-8 w-full text-xs lg:w-[220px]">
-                    <SelectValue placeholder="Todos" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all" className="text-xs">
-                      Todas
-                    </SelectItem>
-                    <SelectItem value={GROUP_FILTER_NONE} className="text-xs">
-                      Sem pasta
-                    </SelectItem>
-                    {filterGroupOptions.map((g) => (
-                      <SelectItem key={g} value={g} className="text-xs">
-                        {labelFor(g)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                    <Select
+                      value={groupFilter || "all"}
+                      onValueChange={(v) => setGroupFilter(v === "all" ? "" : v)}
+                    >
+                      <SelectTrigger size="sm" className="h-8 w-full text-xs lg:w-[220px]">
+                        <SelectValue placeholder="Todos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" className="text-xs">
+                          Todas
+                        </SelectItem>
+                        <SelectItem value={GROUP_FILTER_NONE} className="text-xs">
+                          Sem pasta
+                        </SelectItem>
+                        {filterGroupOptions.map((g) => (
+                          <SelectItem key={g} value={g} className="text-xs">
+                            {labelFor(g)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormField>
                   <FormField label="Pasta ao enviar" className="min-w-0 sm:min-w-[200px]">
-                <Select value={uploadGroup} onValueChange={setUploadGroup}>
-                  <SelectTrigger size="sm" className="h-8 w-full text-xs lg:w-[220px]">
-                    <SelectValue placeholder="Escolher pasta" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={MEDIA_GROUP_NO_BRAND} className="text-xs">
-                      Sem marca
-                    </SelectItem>
-                    {brands.map((b) => (
-                      <SelectItem key={b.id} value={b.slug.toLowerCase()} className="text-xs">
-                        {b.name}
-                      </SelectItem>
-                    ))}
-                    <SelectItem value={UPLOAD_CUSTOM} className="text-xs">
-                      Outra pasta…
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                {uploadGroup === UPLOAD_CUSTOM && (
-                  <Input
-                    value={uploadCustomGroup}
-                    onChange={(e) => setUploadCustomGroup(e.target.value)}
-                    placeholder="ex. campanhas-verao"
-                    className="mt-1.5 h-8 text-xs"
-                  />
-                )}
+                    <Select value={uploadGroup} onValueChange={setUploadGroup}>
+                      <SelectTrigger size="sm" className="h-8 w-full text-xs lg:w-[220px]">
+                        <SelectValue placeholder="Escolher pasta" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={MEDIA_GROUP_NO_BRAND} className="text-xs">
+                          Sem marca
+                        </SelectItem>
+                        {brands.map((b) => (
+                          <SelectItem key={b.id} value={b.slug.toLowerCase()} className="text-xs">
+                            {b.name}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value={UPLOAD_CUSTOM} className="text-xs">
+                          Outra pasta…
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {uploadGroup === UPLOAD_CUSTOM && (
+                      <Input
+                        value={uploadCustomGroup}
+                        onChange={(e) => setUploadCustomGroup(e.target.value)}
+                        placeholder="ex. campanhas-verao"
+                        className="mt-1.5 h-8 text-xs"
+                      />
+                    )}
                   </FormField>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-              {items.length > 0 && (
-                <button
-                  type="button"
-                  className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
-                  onClick={toggleSelectAllOnPage}
-                >
-                  <SelectionCheckbox
-                    checked={allOnPageSelected}
-                    indeterminate={someOnPageSelected}
-                    onChange={toggleSelectAllOnPage}
-                    className="h-5 w-5 pointer-events-none"
-                  />
-                  Seleccionar página
-                </button>
-              )}
-              <div className="flex rounded-md border border-border/70 bg-muted/30 p-0.5">
-                <Button
-                  type="button"
-                  variant={viewMode === "grid" ? "secondary" : "ghost"}
-                  size="sm"
-                  className="h-7 w-7 p-0"
-                  onClick={() => setView("grid")}
-                  aria-label="Vista em grelha"
-                >
-                  <LayoutGrid className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  type="button"
-                  variant={viewMode === "list" ? "secondary" : "ghost"}
-                  size="sm"
-                  className="h-7 w-7 p-0"
-                  onClick={() => setView("list")}
-                  aria-label="Vista em lista"
-                >
-                  <List className="h-3.5 w-3.5" />
-                </Button>
-              </div>
+                  {hasGroupFilter ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 gap-1.5 px-2.5 text-xs text-muted-foreground"
+                      onClick={() => setGroupFilter("")}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                      Limpar filtros
+                    </Button>
+                  ) : null}
+                  {items.length > 0 && (
+                    <button
+                      type="button"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground"
+                      onClick={toggleSelectAllOnPage}
+                    >
+                      <SelectionCheckbox
+                        checked={allOnPageSelected}
+                        indeterminate={someOnPageSelected}
+                        onChange={toggleSelectAllOnPage}
+                        className="h-5 w-5 pointer-events-none"
+                        interactive={false}
+                      />
+                      Seleccionar página
+                    </button>
+                  )}
+                  <div className="flex rounded-md border border-border/70 bg-muted/30 p-0.5">
+                    <Button
+                      type="button"
+                      variant={viewMode === "grid" ? "secondary" : "ghost"}
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => setView("grid")}
+                      aria-label="Vista em grelha"
+                      aria-pressed={viewMode === "grid"}
+                    >
+                      <LayoutGrid className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={viewMode === "list" ? "secondary" : "ghost"}
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={() => setView("list")}
+                      aria-label="Vista em lista"
+                      aria-pressed={viewMode === "list"}
+                    >
+                      <List className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </DataPanelContent>
@@ -699,8 +729,10 @@ export default function MediaLibraryPage() {
                           onChange={() => toggleSelect(row.id)}
                           className={cn(
                             "shadow-sm backdrop-blur-sm",
-                            !isSelected && "opacity-0 group-hover/check:opacity-100"
+                            !isSelected &&
+                              "opacity-100 sm:opacity-0 sm:group-hover/check:opacity-100 sm:group-focus-within/check:opacity-100"
                           )}
+                          ariaLabel={`Selecionar ${name}`}
                         />
                       </div>
                       <div className="relative aspect-square bg-muted/40">
@@ -753,11 +785,15 @@ export default function MediaLibraryPage() {
                     return (
                       <TableRow
                         key={row.id}
-                        className={cn("group", isSelected && "bg-primary/[0.04]")}
+                        className={cn("group cursor-pointer", isSelected && "bg-primary/[0.04]")}
                         onClick={() => toggleSelect(row.id)}
                       >
                         <TableCell className="pl-3 py-2">
-                          <SelectionCheckbox checked={isSelected} onChange={() => toggleSelect(row.id)} />
+                          <SelectionCheckbox
+                            checked={isSelected}
+                            onChange={() => toggleSelect(row.id)}
+                            ariaLabel={`Selecionar ${name}`}
+                          />
                         </TableCell>
                         <TableCell className="py-2">
                           <div className="h-10 w-10 rounded-md border border-border/60 bg-muted/40 overflow-hidden">

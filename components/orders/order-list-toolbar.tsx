@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Search, ShoppingCart, X, CalendarDays } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { ClearFiltersButton } from "@/components/admin/clear-filters-button"
 import { useState } from "react"
 import type { OrdersTab } from "@/lib/orders/types"
 
@@ -73,6 +74,7 @@ export function OrderListToolbar({
 
   const hasDateFilter = dateFrom || dateTo
   const hasFulfillmentFilter = currentTab !== "all"
+  const hasActiveFilters = Boolean(search || dateFrom || dateTo || hasFulfillmentFilter)
 
   return (
     <div className="sticky top-12 z-30 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
@@ -114,6 +116,8 @@ export function OrderListToolbar({
               {search && (
                 <button
                   type="button"
+                  aria-label="Limpar pesquisa"
+                  title="Limpar pesquisa"
                   onClick={() => {
                     const p = new URLSearchParams(searchParams.toString())
                     p.delete("search")
@@ -129,6 +133,7 @@ export function OrderListToolbar({
             <Button type="submit" size="sm" className="h-8 px-3 text-xs sm:w-auto">
               Buscar
             </Button>
+            {hasActiveFilters ? <ClearFiltersButton href="/dashboard/orders" /> : null}
           </form>
         </div>
 
@@ -171,7 +176,14 @@ export function OrderListToolbar({
             Aplicar
           </Button>
           {hasDateFilter && (
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={clearDates} title="Limpar datas">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={clearDates}
+              aria-label="Limpar datas"
+              title="Limpar datas"
+            >
               <X className="h-3.5 w-3.5" />
             </Button>
           )}

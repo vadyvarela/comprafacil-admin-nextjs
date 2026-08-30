@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { ReactNode } from "react"
 import {
   ShoppingCart,
   CreditCard,
@@ -27,20 +28,30 @@ import { ptBR } from "date-fns/locale"
 import type { OrderSummary } from "@/lib/graphql/orders/types"
 import type { CheckoutSessionDetailsResponse } from "@/lib/graphql/orders/types"
 
-async function getDashboardData() {
+async function getDashboardData({
+  includeStats,
+  includeCustomers,
+}: {
+  includeStats: boolean
+  includeCustomers: boolean
+}) {
   const [statsRes, customersRes, recentOrdersRes] = await Promise.all([
-    getDashboardStats({ days: 30 }),
-    getCustomers({ page: 0 }),
+    includeStats ? getDashboardStats({ days: 30 }) : Promise.resolve(null),
+    includeCustomers ? getCustomers({ page: 0 }) : Promise.resolve(null),
     getOrdersPageWithDetails({ page: 0 }),
   ])
 
   // API returns amounts in minor units (cents); convert before display — same as analytics.
-  const totalRevenue = statsRes.ok
+  const totalRevenue = statsRes?.ok
     ? minorToMajorCurrencyAmount(statsRes.data.salesSummary?.totalRevenue ?? 0)
     : 0
   // totalProductSold is the paid-order count for the filtered period (salesSummary).
-  const totalOrders = statsRes.ok ? (statsRes.data.salesSummary?.totalProductSold ?? 0) : 0
-  const totalCustomers = customersRes.ok ? customersRes.data.totalElements ?? 0 : 0
+  const totalOrders = statsRes?.ok
+    ? (statsRes.data.salesSummary?.totalProductSold ?? 0)
+    : recentOrdersRes.ok
+      ? (recentOrdersRes.data.totalElements ?? 0)
+      : 0
+  const totalCustomers = customersRes?.ok ? customersRes.data.totalElements ?? 0 : 0
   const avgTicket = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
   const recentOrders = recentOrdersRes.ok ? recentOrdersRes.data.data.slice(0, 6) : []
 
@@ -51,6 +62,23 @@ async function getDashboardData() {
     avgTicket,
     recentOrders,
   }
+}
+
+function MetricShell({
+  href,
+  children,
+  className,
+}: {
+  href?: string
+  children: ReactNode
+  className?: string
+}) {
+  if (!href) return <div className={className}>{children}</div>
+  return (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  )
 }
 
 function formatDate(iso: string | null | undefined) {
@@ -91,11 +119,14 @@ function FulfillmentBadge({ code }: { code: string | null | undefined }) {
 export default async function DashboardPage() {
   const session = await getValidSession()
   const canReadAnalytics = canReadModule(session?.user, "analytics")
-  const canReadTransactions = canReadModule(session?.user, "transactions")
+  const canReadCustomers = canReadModule(session?.user, "customers")
   const canWriteProducts = canWriteModule(session?.user, "products")
   const canReadCoupons = canReadModule(session?.user, "coupons")
   const { totalOrders, totalRevenue, totalCustomers, avgTicket, recentOrders } =
-    await getDashboardData()
+    await getDashboardData({
+      includeStats: canReadAnalytics,
+      includeCustomers: canReadCustomers,
+    })
 
   const quickActions = [
     canWriteProducts
@@ -153,15 +184,17 @@ export default async function DashboardPage() {
 
         {/* KPI cards */}
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <Link href={canReadTransactions ? "/dashboard/transactions" : "/dashboard"} className="block animate-enter">
-            <StatsCard
-              label="Receita (30 dias)"
-              value={formatCurrency(totalRevenue)}
-              icon={TrendingUp}
-              accentColor="emerald"
-              period="Últimos 30 dias"
-            />
-          </Link>
+          {canReadAnalytics ? (
+            <MetricShell href="/dashboard/analytics" className="block animate-enter">
+              <StatsCard
+                label="Receita (30 dias)"
+                value={formatCurrency(totalRevenue)}
+                icon={TrendingUp}
+                accentColor="emerald"
+                period="Últimos 30 dias"
+              />
+            </MetricShell>
+          ) : null}
           <Link href="/dashboard/orders" className="block animate-enter-delay-1">
             <StatsCard
               label="Pedidos totais"
@@ -171,24 +204,28 @@ export default async function DashboardPage() {
               period="Pedidos pagos"
             />
           </Link>
-          <Link href="/dashboard/customers" className="block animate-enter-delay-2">
-            <StatsCard
-              label="Clientes"
-              value={totalCustomers.toLocaleString("pt-PT")}
-              icon={Users}
-              accentColor="violet"
-              period="Clientes registados"
-            />
-          </Link>
-          <Link href={canReadAnalytics ? "/dashboard/analytics" : "/dashboard"} className="block animate-enter-delay-3">
-            <StatsCard
-              label="Ticket médio"
-              value={formatCurrency(avgTicket)}
-              icon={CreditCard}
-              accentColor="amber"
-              period="Valor médio por pedido"
-            />
-          </Link>
+          {canReadCustomers ? (
+            <MetricShell href="/dashboard/customers" className="block animate-enter-delay-2">
+              <StatsCard
+                label="Clientes"
+                value={totalCustomers.toLocaleString("pt-PT")}
+                icon={Users}
+                accentColor="violet"
+                period="Clientes registados"
+              />
+            </MetricShell>
+          ) : null}
+          {canReadAnalytics ? (
+            <MetricShell href="/dashboard/analytics" className="block animate-enter-delay-3">
+              <StatsCard
+                label="Ticket médio"
+                value={formatCurrency(avgTicket)}
+                icon={CreditCard}
+                accentColor="amber"
+                period="Valor médio por pedido"
+              />
+            </MetricShell>
+          ) : null}
         </div>
 
         {/* Recent orders */}

@@ -7,6 +7,9 @@ import { OrderPagination } from "@/components/orders/order-pagination"
 import { OrderListTabs } from "@/components/orders/order-list-tabs"
 import { CreditCard, Search } from "lucide-react"
 import { EmptyState } from "@/components/admin/empty-state"
+import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
+import { getValidSession } from "@/lib/auth0"
+import { canWriteModule } from "@/lib/auth/roles"
 
 type PageProps = {
   searchParams: Promise<{ search?: string; page?: string; tab?: string; from?: string; to?: string }>
@@ -44,6 +47,8 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const tab = parseOrdersTab(params.tab ?? null)
   const dateFrom = params.from ?? null
   const dateTo = params.to ?? null
+  const session = await getValidSession()
+  const canWriteOrders = canWriteModule(session?.user, "orders")
 
   const result = await getOrdersPageWithDetails({ search, page, tab, dateFrom, dateTo })
 
@@ -75,6 +80,9 @@ export default async function OrdersPage({ searchParams }: PageProps) {
           />
         </Suspense>
         <div className="flex-1 overflow-auto p-5 pt-4 space-y-3">
+          {!canWriteOrders ? (
+            <ReadOnlyNotice moduleLabel="Pedidos" />
+          ) : null}
           {/* Abas de status (Todos, Pago, Pendentes) */}
           <OrderListTabs currentTab={tab} />
           {result.ok ? (

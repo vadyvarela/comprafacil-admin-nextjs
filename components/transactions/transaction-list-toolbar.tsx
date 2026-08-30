@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Search, CreditCard, X, CalendarDays } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { ClearFiltersButton } from "@/components/admin/clear-filters-button"
 import { useRef } from "react"
 
 /** Códigos alinhados a `PaymentIntentStatusEnum` no payment-gateway (coluna `status`). */
@@ -79,6 +80,7 @@ export function TransactionListToolbar({
   }
 
   const hasDateFilter = dateFrom || dateTo
+  const hasActiveFilters = Boolean(search || status || dateFrom || dateTo)
 
   return (
     <div className="sticky top-12 z-30 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
@@ -106,6 +108,7 @@ export function TransactionListToolbar({
             <Input name="q" placeholder="Ref., cliente…" defaultValue={search} className="pl-8 h-8 text-xs" />
           </div>
           <Button type="submit" size="sm" className="h-8 text-xs">Buscar</Button>
+          {hasActiveFilters ? <ClearFiltersButton href={pathname} /> : null}
         </form>
       </div>
 
@@ -116,6 +119,8 @@ export function TransactionListToolbar({
           return (
             <button
               key={tab.value}
+              type="button"
+              aria-pressed={active}
               onClick={() => navigate({ status: tab.value, q: search })}
               className={`shrink-0 rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
                 active
@@ -159,7 +164,14 @@ export function TransactionListToolbar({
             Aplicar
           </Button>
           {hasDateFilter && (
-            <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-muted-foreground" onClick={clearDates}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 w-7 p-0 text-muted-foreground"
+              onClick={clearDates}
+              aria-label="Limpar datas"
+              title="Limpar datas"
+            >
               <X className="h-3.5 w-3.5" />
             </Button>
           )}

@@ -10,6 +10,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   GET_ISLANDS,
@@ -41,6 +48,8 @@ const EMPTY_TIER = {
   etaLabel: "",
   sortOrder: "0",
 }
+
+const NO_ISLAND_VALUE = "__no_island__"
 
 function parseOptionalNumber(value: string): number | null {
   if (!value.trim()) return null
@@ -266,33 +275,40 @@ export default function ShippingSettingsPage() {
               {islandsLoading ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
-                <select
-                  value={islandId}
-                  onChange={(e) => setSelectedIslandId(e.target.value)}
+                <Select
+                  value={islandId || NO_ISLAND_VALUE}
+                  onValueChange={(value) => {
+                    if (value !== NO_ISLAND_VALUE) setSelectedIslandId(value)
+                  }}
                   disabled={states.length === 0}
-                  className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs transition-colors hover:border-border focus:outline-none focus:ring-2 focus:ring-ring/35 disabled:opacity-50"
                 >
-                  {states.length === 0 ? (
-                    <option value="">Sem ilhas</option>
-                  ) : null}
-                  {states.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="h-9 w-full text-sm">
+                    <SelectValue placeholder="Escolher ilha" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {states.length === 0 ? (
+                      <SelectItem value={NO_ISLAND_VALUE}>Sem ilhas</SelectItem>
+                    ) : null}
+                    {states.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
             <div className="space-y-1.5">
               <Label>Modo</Label>
-              <select
-                value={method}
-                onChange={(e) => setMethod(e.target.value as DeliveryMethod)}
-                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm shadow-xs transition-colors hover:border-border focus:outline-none focus:ring-2 focus:ring-ring/35"
-              >
-                <option value="HOME">Ao domicílio</option>
-                <option value="PICKUP">Levantamento</option>
-              </select>
+              <Select value={method} onValueChange={(value) => setMethod(value as DeliveryMethod)}>
+                <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="HOME">Ao domicílio</SelectItem>
+                  <SelectItem value="PICKUP">Levantamento</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -332,6 +348,8 @@ export default function ShippingSettingsPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteTier(t)}
+                            aria-label="Remover faixa de envio"
+                            title="Remover faixa"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -409,6 +427,8 @@ export default function ShippingSettingsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeletePickup(p.id, p.name)}
+                      aria-label={`Remover ponto ${p.name}`}
+                      title="Remover ponto"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>

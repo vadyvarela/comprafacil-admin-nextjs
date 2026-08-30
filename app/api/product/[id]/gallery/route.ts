@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireModuleWriteSession } from "@/lib/auth/requireRole"
+import {
+  requireModuleReadSession,
+  requireModuleWriteSession,
+} from "@/lib/auth/requireRole"
 import {
   metadataWithGallery,
   parseHoverImageUrl,
@@ -120,7 +123,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { error } = await requireModuleWriteSession("products")
+    const { error } = await requireModuleReadSession("products")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL

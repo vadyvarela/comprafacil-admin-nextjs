@@ -260,7 +260,7 @@ export function ProductList({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-7 w-7 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100"
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()

@@ -24,7 +24,7 @@ export const ROLE_DESCRIPTIONS: Record<StoreRole, string> = {
   owner: "Acesso total, incluindo equipa e tokens de API",
   admin: "Acesso total, incluindo equipa e tokens de API",
   manager: "Catálogo, vendas, marketing, analytics e definições",
-  operator: "Pedidos e clientes (leitura/actualização)",
+  operator: "Pedidos (leitura/actualização) e clientes (consulta)",
   viewer: "Apenas visualização de dashboard, produtos e pedidos",
 };
 
@@ -63,7 +63,7 @@ const MODULE_ACCESS: Record<AccessModule, AccessRule> = {
   dashboard: { read: "viewer", write: "viewer" },
   analytics: { read: "manager", write: "manager" },
   orders: { read: "viewer", write: "operator" },
-  customers: { read: "viewer", write: "manager" },
+  customers: { read: "operator", write: "manager" },
   transactions: { read: "manager", write: "manager" },
   products: { read: "viewer", write: "manager" },
   categories: { read: "manager", write: "manager" },

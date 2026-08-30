@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Image as ImageIcon, X, Upload, Loader2, ImageOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/utils/toast"
@@ -21,6 +22,7 @@ type ProductImageUploadResponse = {
 }
 
 export function ProductImageUpload({ productId, currentImage }: ProductImageUploadProps) {
+  const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -108,8 +110,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
         fileInputRef.current.value = ""
       }
 
-      // Recarregar a página para reflectir os dados
-      window.location.reload()
+      router.refresh()
     } catch (error: unknown) {
       console.error("Error uploading image:", error)
       showToast.error("Erro ao actualizar imagem", getErrorMessage(error, "Ocorreu um erro ao actualizar a imagem"))
@@ -161,7 +162,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
               </div>
             )}
             {!selectedImage && (
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/25 opacity-100 transition-colors sm:bg-black/0 sm:opacity-0 sm:group-hover:bg-black/40 sm:group-hover:opacity-100 sm:group-focus-within:bg-black/40 sm:group-focus-within:opacity-100">
                 <Button
                   variant="secondary"
                   size="sm"

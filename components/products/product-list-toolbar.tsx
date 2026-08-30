@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { PageToolbar } from "@/components/admin/page-toolbar"
+import { ClearFiltersButton } from "@/components/admin/clear-filters-button"
 import { CreateProductModal } from "@/components/products/create-product-modal"
 import {
   formatCategoryLabel,
@@ -197,6 +198,7 @@ export function ProductListToolbar({
               </SelectItem>
             </SelectContent>
           </Select>
+          {hasActiveFilters ? <ClearFiltersButton href="/dashboard/products" /> : null}
         </div>
         {canWrite ? (
           <>

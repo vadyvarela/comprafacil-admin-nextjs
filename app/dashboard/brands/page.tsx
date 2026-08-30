@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
 import { GET_BRANDS } from "@/lib/graphql/brands/queries"
 import { DELETE_BRAND } from "@/lib/graphql/brands/mutations"
@@ -11,9 +11,10 @@ import { PageToolbar } from "@/components/admin/page-toolbar"
 import { CreateBrandModal } from "@/components/brands/create-brand-modal"
 import { Button } from "@/components/ui/button"
 import { useConfirmDialog } from "@/components/ui/confirm-dialog"
+import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { EmptyState } from "@/components/admin/empty-state"
-import { Tag, Plus, Pencil, Trash2, MoreVertical, Globe, Loader2 } from "lucide-react"
+import { Tag, Plus, Pencil, Trash2, MoreVertical, Globe, Loader2, Search, X } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +43,7 @@ function brandStatusLabel(code: string | undefined): string {
 export default function BrandsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
   const [deletingBrandId, setDeletingBrandId] = useState<string | null>(null)
   const { confirm, confirmDialog } = useConfirmDialog()
 
@@ -77,7 +79,18 @@ export default function BrandsPage() {
     }
   }
 
-  const brands = data?.brands?.data || []
+  const brands = useMemo(() => data?.brands?.data ?? [], [data?.brands?.data])
+  const filteredBrands = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return brands
+    return brands.filter((brand) => {
+      return (
+        brand.name.toLowerCase().includes(q) ||
+        brand.slug?.toLowerCase().includes(q) ||
+        brand.description?.toLowerCase().includes(q)
+      )
+    })
+  }, [brands, searchQuery])
 
   return (
     <>
@@ -90,6 +103,27 @@ export default function BrandsPage() {
           title="Marcas"
           subtitle={loading ? "A carregar…" : `${brands.length} marca${brands.length !== 1 ? "s" : ""}`}
         >
+          <div className="relative w-full sm:w-60">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Nome ou slug…"
+              className="h-8 pl-8 pr-8 text-xs"
+              aria-label="Pesquisar marcas"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                aria-label="Limpar pesquisa de marcas"
+                title="Limpar pesquisa"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
+          </div>
           <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
             <Plus className="h-3.5 w-3.5" />
             Nova marca
@@ -114,22 +148,32 @@ export default function BrandsPage() {
           )}
 
           {!loading && !error && (
-            brands.length === 0 ? (
+            filteredBrands.length === 0 ? (
               <EmptyState
-                icon={Tag}
-                title="Sem marcas"
-                description="Crie marcas para organizar os produtos."
-                tone="warning"
+                icon={searchQuery ? Search : Tag}
+                title={searchQuery ? "Nenhuma marca encontrada" : "Sem marcas"}
+                description={
+                  searchQuery
+                    ? "Tente outro nome, slug ou limpe a pesquisa."
+                    : "Crie marcas para organizar os produtos."
+                }
+                tone={searchQuery ? "info" : "warning"}
                 action={
+                  searchQuery ? (
+                    <Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+                      Limpar pesquisa
+                    </Button>
+                  ) : (
                   <Button size="sm" onClick={() => setCreateModalOpen(true)} className="gap-1.5">
                     <Plus className="h-3.5 w-3.5" />
                     Criar marca
                   </Button>
+                  )
                 }
               />
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {brands.map((brand: Brand) => (
+                {filteredBrands.map((brand: Brand) => (
                   <div
                     key={brand.id}
                     className="group relative flex min-h-36 flex-col rounded-lg border border-border/80 bg-card p-3.5 shadow-xs transition-colors hover:border-border hover:bg-muted/20"
@@ -147,7 +191,8 @@ export default function BrandsPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="h-7 w-7 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100"
+                            aria-label={`Ações de ${brand.name}`}
                           >
                             <MoreVertical className="h-3.5 w-3.5" />
                           </Button>

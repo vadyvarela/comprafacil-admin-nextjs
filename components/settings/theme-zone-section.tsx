@@ -2,6 +2,13 @@
 
 import { ThemeColorField } from "@/components/settings/theme-color-field"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { ThemeZoneOverrides, ZoneSurface } from "@/lib/theme-zones"
 
 type SurfaceZoneKey = "header" | "footer" | "navigation" | "checkout" | "productCard"
@@ -52,41 +59,44 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
             <Label htmlFor={`${zoneKey}-grid-cols`} className="text-[12px] font-semibold">
               Colunas da grelha (desktop)
             </Label>
-            <select
-              id={`${zoneKey}-grid-cols`}
-              value={zone.gridColumns ?? 4}
-              onChange={(e) => patch({ gridColumns: Number(e.target.value) })}
-              className="h-9 w-full max-w-[12rem] rounded-md border border-border bg-background px-2 text-sm"
+            <Select
+              value={String(zone.gridColumns ?? 4)}
+              onValueChange={(value) => patch({ gridColumns: Number(value) })}
             >
-              {[2, 3, 4, 5, 6].map((n) => (
-                <option key={n} value={n}>
-                  {n} colunas
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id={`${zoneKey}-grid-cols`} className="h-9 w-full max-w-[12rem] text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[2, 3, 4, 5, 6].map((n) => (
+                  <SelectItem key={n} value={String(n)}>
+                    {n} colunas
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-[10px] text-muted-foreground leading-snug">
               Aplica-se à home, categorias, busca e listagem de produtos. No telemóvel mantém 2 colunas.
             </p>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-md border border-primary/25 bg-primary/5 px-3 py-2.5">
-          <div className="min-w-0">
-            <p className="text-[12px] font-semibold text-foreground">Imagem alternativa no hover</p>
-            <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
-              Troca a imagem do card ao passar o rato. Define a imagem de hover na galeria de cada produto.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <input
-              id={`${zoneKey}-hover-swap`}
-              type="checkbox"
-              checked={zone.hoverImageSwap === true}
-              onChange={(e) => patch({ hoverImageSwap: e.target.checked })}
-              className="h-4 w-4 rounded border-border accent-primary"
-            />
-            <Label htmlFor={`${zoneKey}-hover-swap`} className="text-[11px] font-medium text-foreground">
-              Activar
-            </Label>
-          </div>
+            <div className="min-w-0">
+              <p className="text-[12px] font-semibold text-foreground">Imagem alternativa no hover</p>
+              <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                Troca a imagem do card ao passar o rato. Define a imagem de hover na galeria de cada produto.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <input
+                id={`${zoneKey}-hover-swap`}
+                type="checkbox"
+                checked={zone.hoverImageSwap === true}
+                onChange={(e) => patch({ hoverImageSwap: e.target.checked })}
+                className="h-4 w-4 rounded border-border accent-primary"
+              />
+              <Label htmlFor={`${zoneKey}-hover-swap`} className="text-[11px] font-medium text-foreground">
+                Activar
+              </Label>
+            </div>
           </div>
         </>
       ) : null}

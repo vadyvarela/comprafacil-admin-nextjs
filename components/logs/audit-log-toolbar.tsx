@@ -4,6 +4,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Search, ScrollText, X, CalendarDays } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { ClearFiltersButton } from "@/components/admin/clear-filters-button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useRef } from "react"
 
 const ENTITY_TABS = [
@@ -82,6 +90,7 @@ export function AuditLogToolbar({
   }
 
   const hasDateFilter = dateFrom || dateTo
+  const hasActiveFilters = Boolean(search || entityType || action || dateFrom || dateTo)
 
   return (
     <div className="sticky top-12 z-30 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
@@ -118,6 +127,7 @@ export function AuditLogToolbar({
           <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs">
             Filtrar
           </Button>
+          {hasActiveFilters ? <ClearFiltersButton href={pathname} /> : null}
         </form>
       </div>
 
@@ -127,6 +137,7 @@ export function AuditLogToolbar({
             <button
               key={tab.value || "all"}
               type="button"
+              aria-pressed={entityType === tab.value}
               onClick={() => navigate({ entity: tab.value })}
               className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
                 entityType === tab.value
@@ -139,17 +150,21 @@ export function AuditLogToolbar({
           ))}
         </div>
 
-        <select
-          value={action}
-          onChange={(e) => navigate({ action: e.target.value })}
-          className="h-7 rounded-md border border-border/80 bg-background px-2 text-[11px] text-foreground focus:outline-none focus:ring-2 focus:ring-ring/35"
+        <Select
+          value={action || "__all__"}
+          onValueChange={(value) => navigate({ action: value === "__all__" ? "" : value })}
         >
-          {ACTION_OPTIONS.map((opt) => (
-            <option key={opt.value || "all-actions"} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="h-7 w-full text-[11px] sm:w-[190px]" aria-label="Filtrar por ação">
+            <SelectValue placeholder="Ação" />
+          </SelectTrigger>
+          <SelectContent>
+            {ACTION_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value || "all-actions"} value={opt.value || "__all__"}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         <div className="flex flex-wrap items-center gap-1.5 lg:ml-auto">
           <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
@@ -185,6 +200,8 @@ export function AuditLogToolbar({
               variant="ghost"
               className="h-7 px-1.5"
               onClick={() => navigate({ from: "", to: "" })}
+              aria-label="Limpar datas"
+              title="Limpar datas"
             >
               <X className="h-3.5 w-3.5" />
             </Button>

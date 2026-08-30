@@ -17,6 +17,7 @@ import {
   Calendar,
   CheckCircle2,
   XCircle,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -66,8 +67,19 @@ export default function CouponsPage() {
               placeholder="Nome do cupão…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 text-xs"
+              className="h-8 pl-8 pr-8 text-xs"
             />
+            {searchQuery ? (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                aria-label="Limpar pesquisa de cupões"
+                title="Limpar pesquisa"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
           </div>
           <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
             <Plus className="h-3.5 w-3.5" />
@@ -103,12 +115,16 @@ export default function CouponsPage() {
                   description={searchQuery ? "Tente outro termo." : "Crie o primeiro cupão de desconto."}
                   tone={searchQuery ? "info" : "success"}
                   action={
-                    !searchQuery ? (
-                    <Button onClick={() => setCreateModalOpen(true)} size="sm" className="gap-1.5">
-                      <Plus className="h-3.5 w-3.5" />
-                      Criar cupão
-                    </Button>
-                    ) : null
+                    searchQuery ? (
+                      <Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+                        Limpar pesquisa
+                      </Button>
+                    ) : (
+                      <Button onClick={() => setCreateModalOpen(true)} size="sm" className="gap-1.5">
+                        <Plus className="h-3.5 w-3.5" />
+                        Criar cupão
+                      </Button>
+                    )
                   }
                 />
               ) : (

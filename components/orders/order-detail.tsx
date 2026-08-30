@@ -34,6 +34,7 @@ import { OrderFulfillmentStatus } from "./order-fulfillment-status"
 import { OrderAuditTimeline } from "./order-audit-timeline"
 import type { AuditLog } from "@/lib/graphql/audit/types"
 import { DataPanel } from "@/components/admin/data-panel"
+import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
 
 type OrderDetailProps = {
   order: CheckoutSessionDetailsResponse
@@ -234,6 +235,7 @@ export function OrderDetail({
 
           {/* Fulfillment */}
           <div className="animate-enter-delay-1 space-y-4">
+            {!canWrite ? <ReadOnlyNotice moduleLabel="Pedido" /> : null}
             <OrderFulfillmentStatus
               orderId={order.id}
               fulfillmentStatus={order.fulfillmentStatus}

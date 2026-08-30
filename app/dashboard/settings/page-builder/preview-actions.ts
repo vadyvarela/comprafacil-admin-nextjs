@@ -1,6 +1,7 @@
 "use server"
 
 import { homeLayoutDocumentSchema } from "@/lib/home-layout/schema"
+import { requireModuleWriteOrThrow } from "@/lib/auth/requireRole"
 
 function stripEnvQuotes(value: string): string {
   const t = value.trim()
@@ -51,6 +52,15 @@ export type BuildHomePreviewUrlResult =
  * Autenticação: header `x-home-preview-secret` = `TECHARENA_HOME_PREVIEW_SECRET` ou, em alternativa, `TECHARENA_REVALIDATE_SECRET`.
  */
 export async function buildHomePreviewUrl(payload: unknown): Promise<BuildHomePreviewUrlResult> {
+  try {
+    await requireModuleWriteOrThrow("settings")
+  } catch {
+    return {
+      ok: false,
+      message: "Sem permissão para pré-visualizar alterações da home.",
+    }
+  }
+
   const parsed = homeLayoutDocumentSchema.safeParse(payload)
   if (!parsed.success) {
     return {

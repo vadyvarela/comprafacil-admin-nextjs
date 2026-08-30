@@ -7,6 +7,7 @@ import { ProductListToolbar } from "@/components/products/product-list-toolbar"
 import { ProductList } from "@/components/products/product-list"
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/admin/empty-state"
+import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
 import Link from "next/link"
 import { getValidSession } from "@/lib/auth0"
 import { canWriteModule } from "@/lib/auth/roles"
@@ -64,6 +65,9 @@ export default async function ProductsPage({ searchParams }: PageProps) {
           />
         </Suspense>
         <div className="flex-1 overflow-auto p-5">
+          {!canWriteProducts ? (
+            <ReadOnlyNotice moduleLabel="Produtos" className="mb-4" />
+          ) : null}
           {result.ok ? (
             products.length === 0 ? (
               <EmptyState

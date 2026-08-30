@@ -128,7 +128,9 @@ export function VariantImageUpload({
             size="icon"
             onClick={handleRemove}
             disabled={uploading || disabled}
-            className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity p-0"
+            className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 p-0 text-white opacity-100 transition-opacity hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+            aria-label="Remover imagem da variante"
+            title="Remover imagem"
           >
             <X className="h-3 w-3" />
           </Button>
