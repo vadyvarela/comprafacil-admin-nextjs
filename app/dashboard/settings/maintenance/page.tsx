@@ -4,10 +4,11 @@ import { useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
+import { DataPanel, DataPanelContent } from "@/components/admin/data-panel"
+import { FormField } from "@/components/admin/form-field"
 import { PageHeader } from "@/components/admin/page-header"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { GET_STORE_MAINTENANCE } from "@/lib/graphql/store-maintenance/queries"
@@ -37,6 +38,7 @@ export default function MaintenanceSettingsPage() {
     })
 
   const [draft, setDraft] = useState<MaintenanceDraft | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const row = data?.storeMaintenance
   const serverEnabled = Boolean(row?.enabled)
@@ -46,6 +48,19 @@ export default function MaintenanceSettingsPage() {
   const dirty = draft !== null
 
   async function handleSave() {
+    if (enabled && !serverEnabled) {
+      const confirmed = await confirm({
+        title: "Activar manutenção?",
+        description: "Está prestes a colocar a loja pública em modo manutenção.",
+        impact: "Visitantes serão redireccionados para a página de manutenção até esta opção ser desactivada.",
+        confirmText: "Activar manutenção",
+        variant: "critical",
+        requireText: "MANUTENCAO",
+      })
+
+      if (!confirmed) return
+    }
+
     try {
       await updateMaintenance({
         variables: {
@@ -88,31 +103,29 @@ export default function MaintenanceSettingsPage() {
         />
 
         {error ? (
-          <Card className="border-destructive/40 bg-destructive/5">
-            <CardContent className="py-4 text-sm text-destructive">
+          <DataPanel className="border-destructive/40 bg-destructive/5">
+            <DataPanelContent className="p-4 text-sm text-destructive">
               Erro ao carregar: {error.message}
-            </CardContent>
-          </Card>
+            </DataPanelContent>
+          </DataPanel>
         ) : null}
 
         {loading ? (
-          <div className="space-y-3 max-w-xl">
+          <DataPanel className="max-w-xl space-y-3 p-4">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-28 w-full" />
-          </div>
+          </DataPanel>
         ) : (
-          <div className="grid gap-4 max-w-xl">
-            <Card>
-              <CardContent className="pt-5 space-y-5">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="maintenance-enabled" className="text-sm font-medium">
-                      Loja em manutenção
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
+          <div className="grid max-w-xl gap-4">
+            <DataPanel>
+              <DataPanelContent className="space-y-5 p-5">
+                <label className="flex cursor-pointer items-center justify-between gap-4 rounded-md border border-border/70 bg-muted/15 p-3 transition-colors hover:bg-muted/30">
+                  <span className="space-y-0.5">
+                    <span className="block text-sm font-medium text-foreground">Loja em manutenção</span>
+                    <span className="block text-xs leading-relaxed text-muted-foreground">
                       Visitantes são redireccionados para a página de manutenção.
-                    </p>
-                  </div>
+                    </span>
+                  </span>
                   <input
                     id="maintenance-enabled"
                     type="checkbox"
@@ -123,14 +136,26 @@ export default function MaintenanceSettingsPage() {
                         message,
                       })
                     }}
-                    className="h-4 w-4 rounded border-input accent-primary"
+                    className="sr-only"
                   />
-                </div>
+                  <span
+                    className={`relative h-5 w-9 shrink-0 rounded-full border transition-colors ${
+                      enabled ? "border-primary bg-primary" : "border-border/80 bg-muted"
+                    }`}
+                  >
+                    <span
+                      className={`absolute left-0.5 top-0.5 h-3.5 w-3.5 rounded-full bg-background shadow-xs transition-transform ${
+                        enabled ? "translate-x-4" : ""
+                      }`}
+                    />
+                  </span>
+                </label>
 
-                <div className="space-y-2">
-                  <Label htmlFor="maintenance-message" className="text-sm font-medium">
-                    Mensagem
-                  </Label>
+                <FormField
+                  label="Mensagem"
+                  htmlFor="maintenance-message"
+                  description="Deixa vazio para usar a mensagem por defeito na loja."
+                >
                   <Textarea
                     id="maintenance-message"
                     rows={4}
@@ -142,12 +167,9 @@ export default function MaintenanceSettingsPage() {
                         message: e.target.value,
                       })
                     }}
-                    className="text-sm resize-y min-h-[88px]"
+                    className="min-h-[88px] resize-y text-sm"
                   />
-                  <p className="text-[11px] text-muted-foreground">
-                    Deixa vazio para usar a mensagem por defeito na loja.
-                  </p>
-                </div>
+                </FormField>
 
                 <Button
                   type="button"
@@ -160,22 +182,22 @@ export default function MaintenanceSettingsPage() {
                   ) : null}
                   Guardar
                 </Button>
-              </CardContent>
-            </Card>
+              </DataPanelContent>
+            </DataPanel>
 
-            <Card className="border-amber-200/80 bg-amber-50/50">
-              <CardContent className="pt-5 space-y-3">
+            <DataPanel className="border-amber-200/80 bg-amber-50/50">
+              <DataPanelContent className="space-y-3 p-5">
                 <div className="flex gap-2">
                   <AlertTriangle className="h-4 w-4 text-amber-800 shrink-0 mt-0.5" aria-hidden />
                   <div className="space-y-2 text-sm">
                     <p className="font-medium text-amber-950">Validar antes de abrir</p>
                     <p className="text-xs text-amber-900/90 leading-relaxed">
                       Com a manutenção activa, acede a{" "}
-                      <code className="text-[11px] bg-amber-100/80 px-1 py-0.5 rounded">
+                      <code className="rounded bg-amber-100/80 px-1 py-0.5 text-[11px]">
                         /_preview
                       </code>{" "}
                       na loja com a credencial definida em{" "}
-                      <code className="text-[11px] bg-amber-100/80 px-1 py-0.5 rounded">
+                      <code className="rounded bg-amber-100/80 px-1 py-0.5 text-[11px]">
                         TECHARENA_MAINTENANCE_PREVIEW_SECRET
                       </code>{" "}
                       (env do servidor techarena).
@@ -193,14 +215,14 @@ export default function MaintenanceSettingsPage() {
                     ) : (
                       <p className="text-[11px] text-amber-900/80">
                         Define{" "}
-                        <code className="bg-amber-100/80 px-1 rounded">NEXT_PUBLIC_TECHARENA_URL</code>{" "}
+                        <code className="rounded bg-amber-100/80 px-1">NEXT_PUBLIC_TECHARENA_URL</code>{" "}
                         no backoffice para o link directo.
                       </p>
                     )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </DataPanelContent>
+            </DataPanel>
 
             {enabled ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -214,6 +236,7 @@ export default function MaintenanceSettingsPage() {
           </div>
         )}
       </div>
+      {confirmDialog}
     </>
   )
 }

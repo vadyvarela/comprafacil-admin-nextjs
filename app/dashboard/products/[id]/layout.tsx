@@ -5,6 +5,6 @@ export default async function Layout({
 }: {
   children: React.ReactNode
 }) {
-  await requirePageAccess("products", "write")
+  await requirePageAccess("products", "read")
   return children
 }

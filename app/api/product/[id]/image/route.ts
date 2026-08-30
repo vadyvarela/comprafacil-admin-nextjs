@@ -108,7 +108,7 @@ export async function PUT(
       return NextResponse.json({ error: validationError }, { status: 400 })
     }
 
-    // Criar objeto product com os dados atuais (preservando tudo exceto a imagem que será atualizada)
+    // Montar o objeto product com os dados actuais, preservando tudo excepto a imagem nova.
     // Se não conseguir buscar os dados via GraphQL, usar valores mínimos
     const productJson = JSON.stringify({
       title: currentProduct?.title || "Product",

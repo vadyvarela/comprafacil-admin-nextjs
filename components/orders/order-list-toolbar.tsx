@@ -5,25 +5,35 @@ import { Search, ShoppingCart, X, CalendarDays } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import type { OrdersTab } from "@/lib/orders/types"
 
 type OrderListToolbarProps = {
   totalElements: number
+  visibleCount: number
+  currentTab: OrdersTab
   error?: string | null
   dateFrom?: string
   dateTo?: string
 }
 
 const DATE_PRESETS = [
-  { label: "7d", days: 7 },
-  { label: "30d", days: 30 },
-  { label: "90d", days: 90 },
+  { label: "7 dias", days: 7 },
+  { label: "30 dias", days: 30 },
+  { label: "90 dias", days: 90 },
 ]
 
 function toDateInput(d: Date): string {
   return d.toISOString().slice(0, 10)
 }
 
-export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: OrderListToolbarProps) {
+export function OrderListToolbar({
+  totalElements,
+  visibleCount,
+  currentTab,
+  error,
+  dateFrom,
+  dateTo,
+}: OrderListToolbarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const search = searchParams.get("search") ?? ""
@@ -62,30 +72,38 @@ export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: Ord
   }
 
   const hasDateFilter = dateFrom || dateTo
+  const hasFulfillmentFilter = currentTab !== "all"
 
   return (
-    <div className="border-b border-border bg-muted/30 sticky top-12 z-30">
-      <div className="px-4 py-2.5 md:px-5 space-y-2.5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="sticky top-12 z-30 border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+      <div className="space-y-3 px-4 py-3 md:px-5">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
               <ShoppingCart className="h-4 w-4 text-blue-700" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold tracking-tight text-foreground">Pedidos</h1>
+              <h1 className="text-sm font-semibold text-foreground">Pedidos</h1>
               <p className="text-[11px] text-muted-foreground">
-                {totalElements.toLocaleString("pt-PT")} pedido{totalElements !== 1 ? "s" : ""} com pagamento efetuado
+                {hasFulfillmentFilter
+                  ? `${visibleCount.toLocaleString("pt-PT")} pedido${visibleCount !== 1 ? "s" : ""} nesta página`
+                  : `${totalElements.toLocaleString("pt-PT")} pedido${totalElements !== 1 ? "s" : ""} com pagamento efetuado`}
+                {hasFulfillmentFilter && (
+                  <span className="ml-1">
+                    · {totalElements.toLocaleString("pt-PT")} pago{totalElements !== 1 ? "s" : ""} no período
+                  </span>
+                )}
                 {hasDateFilter && <span className="ml-1 text-primary font-semibold">· filtrado</span>}
               </p>
             </div>
           </div>
 
           {/* Search */}
-          <form method="GET" className="flex gap-2" role="search">
+          <form method="GET" className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto" role="search">
             <input type="hidden" name="page" value="0" />
             {dateFrom && <input type="hidden" name="from" value={dateFrom} />}
             {dateTo && <input type="hidden" name="to" value={dateTo} />}
-            <div className="relative w-56 sm:w-72">
+            <div className="relative w-full sm:w-72">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 name="search"
@@ -108,7 +126,7 @@ export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: Ord
                 </button>
               )}
             </div>
-            <Button type="submit" size="sm" className="h-8 text-xs px-3">
+            <Button type="submit" size="sm" className="h-8 px-3 text-xs sm:w-auto">
               Buscar
             </Button>
           </form>
@@ -124,12 +142,12 @@ export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: Ord
             <button
               key={p.days}
               onClick={() => applyPreset(p.days)}
-              className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-border/80 bg-card hover:bg-muted hover:border-border transition-colors text-muted-foreground hover:text-foreground"
+              className="rounded-md border border-border/80 bg-card px-2.5 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-border hover:bg-muted hover:text-foreground"
             >
               {p.label}
             </button>
           ))}
-          <div className="flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5">
+          <div className="flex min-h-8 flex-wrap items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1 sm:flex-nowrap">
             <Input
               type="date"
               value={fromVal}
@@ -161,7 +179,7 @@ export function OrderListToolbar({ totalElements, error, dateFrom, dateTo }: Ord
       </div>
 
       {error && (
-        <div className="mx-5 mb-3 p-3 rounded-lg border border-destructive/30 bg-destructive/5 text-xs flex items-start gap-2">
+        <div className="mx-5 mb-3 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs">
           <div className="flex-1">
             <p className="font-semibold text-destructive">Erro ao carregar pedidos</p>
             <p className="text-muted-foreground mt-0.5">{error}</p>

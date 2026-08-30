@@ -336,7 +336,7 @@ export default function AppearanceSettingsPage() {
                   }}
                 >
                   <div
-                    className="border-b px-3 py-2 text-[11px] font-semibold uppercase tracking-wide"
+                    className="border-b px-3 py-2 text-[11px] font-semibold uppercase"
                     style={{ borderColor: header.border, background: header.background, color: header.foreground }}
                   >
                     Header

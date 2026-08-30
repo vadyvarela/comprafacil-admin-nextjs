@@ -24,7 +24,7 @@ export const ROLE_DESCRIPTIONS: Record<StoreRole, string> = {
   owner: "Acesso total, incluindo equipa e tokens de API",
   admin: "Acesso total, incluindo equipa e tokens de API",
   manager: "Catálogo, vendas, marketing, analytics e definições",
-  operator: "Pedidos e clientes (leitura/atualização)",
+  operator: "Pedidos e clientes (leitura/actualização)",
   viewer: "Apenas visualização de dashboard, produtos e pedidos",
 };
 

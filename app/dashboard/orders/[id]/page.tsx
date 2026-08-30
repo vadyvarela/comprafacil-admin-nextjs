@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
 import { getOrderById } from "@/lib/actions/orders"
 import { getOrderAuditLogs } from "@/lib/actions/auditLogs"
+import { getValidSession } from "@/lib/auth0"
+import { canWriteModule } from "@/lib/auth/roles"
 import {
   getCustomerDetails,
   getCustomerDetailsByExternalId,
@@ -17,6 +19,8 @@ type PageProps = {
 
 export default async function OrderDetailPage({ params }: PageProps) {
   const { id } = await params
+  const session = await getValidSession()
+  const canReconcilePayment = canWriteModule(session?.user, "transactions")
   const result = await getOrderById(id)
 
   if (!result.ok) {
@@ -79,6 +83,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
         customerDetails={customerDetails}
         auditLogs={auditResult.ok ? auditResult.data.data : []}
         auditError={auditResult.ok ? null : auditResult.error}
+        canReconcilePayment={canReconcilePayment}
       />
     </>
   )

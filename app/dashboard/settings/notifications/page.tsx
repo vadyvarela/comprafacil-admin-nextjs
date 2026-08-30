@@ -4,12 +4,13 @@ import { useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
+import { DataPanel, DataPanelContent } from "@/components/admin/data-panel"
+import { FormField } from "@/components/admin/form-field"
 import { PageHeader } from "@/components/admin/page-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Textarea } from "@/components/ui/textarea"
 import { GET_TELEGRAM_NOTIFICATION_SETTINGS } from "@/lib/graphql/telegram-notifications/queries"
@@ -58,6 +59,8 @@ export default function NotificationsSettingsPage() {
 
   const [draft, setDraft] = useState<TelegramDraft | null>(null)
   const [showToken, setShowToken] = useState(false)
+  const [tokenRemovalConfirmed, setTokenRemovalConfirmed] = useState(false)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const row = data?.telegramNotificationSettings
   const serverDraft = row ? rowToDraft(row) : null
@@ -69,6 +72,24 @@ export default function NotificationsSettingsPage() {
   async function handleSave() {
     const chatIds = textToChatIds(values.chatIdsText)
     const variables: { chatIds: string[]; botToken?: string | null } = { chatIds }
+    const removingToken =
+      tokenConfigured &&
+      values.botToken !== TOKEN_UNCHANGED &&
+      values.botToken.trim() === ""
+
+    if (removingToken && !tokenRemovalConfirmed) {
+      const confirmed = await confirm({
+        title: "Remover token Telegram?",
+        description: "Está prestes a remover o token do bot Telegram.",
+        impact: "Os alertas de compra deixam de ser enviados até configurar um novo token.",
+        confirmText: "Remover token",
+        variant: "critical",
+        requireText: "REMOVER",
+      })
+
+      if (!confirmed) return
+      setTokenRemovalConfirmed(true)
+    }
 
     if (values.botToken === TOKEN_UNCHANGED) {
       // não envia botToken — mantém o existente
@@ -82,6 +103,7 @@ export default function NotificationsSettingsPage() {
       await updateSettings({ variables })
       setDraft(null)
       setShowToken(false)
+      setTokenRemovalConfirmed(false)
       toast.success("Notificações Telegram guardadas", {
         description:
           chatIds.length > 0 && (tokenConfigured || variables.botToken)
@@ -123,26 +145,67 @@ export default function NotificationsSettingsPage() {
         </div>
 
         {error ? (
-          <Card className="border-destructive/40 bg-destructive/5">
-            <CardContent className="py-4 text-sm text-destructive">
+          <DataPanel className="border-destructive/40 bg-destructive/5">
+            <DataPanelContent className="p-4 text-sm text-destructive">
               Erro ao carregar: {error.message}
-            </CardContent>
-          </Card>
+            </DataPanelContent>
+          </DataPanel>
         ) : null}
 
         {loading ? (
-          <div className="space-y-3 max-w-xl">
+          <DataPanel className="max-w-xl space-y-3 p-4">
             <Skeleton className="h-10 w-full" />
             <Skeleton className="h-28 w-full" />
-          </div>
+          </DataPanel>
         ) : (
-          <div className="grid gap-4 max-w-xl">
-            <Card className="border-border/80">
-              <CardContent className="pt-5 space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="telegram-bot-token" className="text-sm font-medium">
-                    Token do bot
-                  </Label>
+          <div className="grid max-w-xl gap-4">
+            <DataPanel>
+              <DataPanelContent className="space-y-5 p-5">
+                <FormField
+                  label="Token do bot"
+                  htmlFor="telegram-bot-token"
+                  description={
+                    <>
+                      Obtém o token em{" "}
+                      <a
+                        href="https://t.me/BotFather"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        @BotFather
+                      </a>{" "}
+                      com <code className="rounded bg-muted px-1 text-[10px]">/newbot</code>.
+                      {tokenConfigured ? (
+                        <>
+                          {" "}
+                          <button
+                            type="button"
+                            className="text-primary hover:underline"
+                            onClick={async () => {
+                              const confirmed = await confirm({
+                                title: "Remover token Telegram?",
+                                description: "Está prestes a remover o token do bot Telegram.",
+                                impact: "Os alertas de compra deixam de ser enviados depois de guardar as alterações.",
+                                confirmText: "Remover token",
+                                variant: "critical",
+                                requireText: "REMOVER",
+                              })
+                              if (!confirmed) return
+                              setDraft({
+                                botToken: "",
+                                chatIdsText: values.chatIdsText,
+                              })
+                              setTokenRemovalConfirmed(true)
+                            }}
+                          >
+                            Remover token actual
+                          </button>
+                        </>
+                      ) : null}
+                    </>
+                  }
+                >
                   <div className="relative">
                     <Input
                       id="telegram-bot-token"
@@ -151,7 +214,7 @@ export default function NotificationsSettingsPage() {
                       spellCheck={false}
                       placeholder={
                         tokenConfigured
-                          ? `${row?.botTokenMasked ?? "••••"} — deixa em branco para remover`
+                          ? `${row?.botTokenMasked ?? "••••"} — token configurado`
                           : "123456789:AAH…"
                       }
                       value={values.botToken === TOKEN_UNCHANGED ? "" : values.botToken}
@@ -160,6 +223,7 @@ export default function NotificationsSettingsPage() {
                           botToken: e.target.value,
                           chatIdsText: values.chatIdsText,
                         })
+                        setTokenRemovalConfirmed(false)
                       }}
                       className="pr-10 font-mono text-xs"
                     />
@@ -176,41 +240,22 @@ export default function NotificationsSettingsPage() {
                       )}
                     </button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Obtém o token em{" "}
-                    <a
-                      href="https://t.me/BotFather"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      @BotFather
-                    </a>{" "}
-                    com <code className="text-[10px] bg-muted px-1 rounded">/newbot</code>.
-                    {tokenConfigured ? (
-                      <>
-                        {" "}
-                        <button
-                          type="button"
-                          className="text-primary hover:underline"
-                          onClick={() =>
-                            setDraft({
-                              botToken: "",
-                              chatIdsText: values.chatIdsText,
-                            })
-                          }
-                        >
-                          Remover token actual
-                        </button>
-                      </>
-                    ) : null}
-                  </p>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="telegram-chat-ids" className="text-sm font-medium">
-                    Chat IDs
-                  </Label>
+                <FormField
+                  label="Chat IDs"
+                  htmlFor="telegram-chat-ids"
+                  description={
+                    <>
+                      Um ID por linha (ou separados por vírgula). Grupos usam IDs negativos. Para descobrir o teu ID,
+                      envia qualquer mensagem ao bot e abre{" "}
+                      <code className="rounded bg-muted px-1 text-[10px]">
+                        api.telegram.org/bot&lt;TOKEN&gt;/getUpdates
+                      </code>
+                      .
+                    </>
+                  }
+                >
                   <Textarea
                     id="telegram-chat-ids"
                     rows={4}
@@ -222,17 +267,9 @@ export default function NotificationsSettingsPage() {
                         chatIdsText: e.target.value,
                       })
                     }}
-                    className="text-xs font-mono resize-y min-h-[96px]"
+                    className="min-h-[96px] resize-y font-mono text-xs"
                   />
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Um ID por linha (ou separados por vírgula). Grupos usam IDs negativos. Para
-                    descobrir o teu ID, envia qualquer mensagem ao bot e abre{" "}
-                    <code className="text-[10px] bg-muted px-1 rounded">
-                      api.telegram.org/bot&lt;TOKEN&gt;/getUpdates
-                    </code>
-                    .
-                  </p>
-                </div>
+                </FormField>
 
                 <Button
                   type="button"
@@ -245,11 +282,11 @@ export default function NotificationsSettingsPage() {
                   ) : null}
                   Guardar
                 </Button>
-              </CardContent>
-            </Card>
+              </DataPanelContent>
+            </DataPanel>
 
-            <Card className="border-sky-200/70 bg-sky-50/40">
-              <CardContent className="pt-5">
+            <DataPanel className="border-sky-200/70 bg-sky-50/40">
+              <DataPanelContent className="p-5">
                 <div className="flex gap-2">
                   <Info className="h-4 w-4 text-sky-800 shrink-0 mt-0.5" aria-hidden />
                   <div className="space-y-2 text-sm text-sky-950">
@@ -268,8 +305,8 @@ export default function NotificationsSettingsPage() {
                     </ul>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </DataPanelContent>
+            </DataPanel>
 
             {enabled ? (
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -283,6 +320,7 @@ export default function NotificationsSettingsPage() {
           </div>
         )}
       </div>
+      {confirmDialog}
     </>
   )
 }

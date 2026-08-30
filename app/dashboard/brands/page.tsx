@@ -10,7 +10,9 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { PageToolbar } from "@/components/admin/page-toolbar"
 import { CreateBrandModal } from "@/components/brands/create-brand-modal"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Skeleton } from "@/components/ui/skeleton"
+import { EmptyState } from "@/components/admin/empty-state"
 import { Tag, Plus, Pencil, Trash2, MoreVertical, Globe, Loader2 } from "lucide-react"
 import {
   DropdownMenu,
@@ -30,10 +32,18 @@ function brandStatusClass(code: string | undefined): string {
   return "badge-info"
 }
 
+function brandStatusLabel(code: string | undefined): string {
+  const c = code?.toUpperCase()
+  if (c === "ACTIVE") return "Activo"
+  if (c === "INACTIVE" || c === "DISABLED") return "Inactivo"
+  return code ?? "—"
+}
+
 export default function BrandsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null)
   const [deletingBrandId, setDeletingBrandId] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const { data, loading, error, refetch } = useQuery<{ brands: { data: Brand[] } }>(GET_BRANDS, {
     variables: { page: { page: 0, size: 100 } },
@@ -46,13 +56,22 @@ export default function BrandsPage() {
   const handleDelete = async (brand: Brand, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    if (!confirm(`Excluir a marca "${brand.name}"? Esta ação não pode ser desfeita.`)) return
+    const confirmed = await confirm({
+      title: "Eliminar marca?",
+      description: `Está prestes a eliminar "${brand.name}".`,
+      impact: "Produtos associados podem ficar sem marca visível no catálogo. Esta ação não pode ser desfeita.",
+      confirmText: "Eliminar marca",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
     setDeletingBrandId(brand.id)
     try {
       await deleteBrand({ variables: { id: brand.id } })
-      showToast.success("Marca excluída", `"${brand.name}" foi excluída`)
+      showToast.success("Marca eliminada", `"${brand.name}" foi eliminada`)
     } catch (err: unknown) {
-      showToast.error("Erro", getErrorMessage(err, "Erro ao excluir marca"))
+      showToast.error("Erro", getErrorMessage(err, "Erro ao eliminar marca"))
     } finally {
       setDeletingBrandId(null)
     }
@@ -96,23 +115,24 @@ export default function BrandsPage() {
 
           {!loading && !error && (
             brands.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
-                  <Tag className="h-7 w-7 text-muted-foreground/40" />
-                </div>
-                <h2 className="text-sm font-semibold mb-1">Sem marcas</h2>
-                <p className="text-xs text-muted-foreground mb-4">Crie marcas para organizar os produtos.</p>
-                <Button size="sm" onClick={() => setCreateModalOpen(true)} className="gap-1.5">
-                  <Plus className="h-3.5 w-3.5" />
-                  Criar marca
-                </Button>
-              </div>
+              <EmptyState
+                icon={Tag}
+                title="Sem marcas"
+                description="Crie marcas para organizar os produtos."
+                tone="warning"
+                action={
+                  <Button size="sm" onClick={() => setCreateModalOpen(true)} className="gap-1.5">
+                    <Plus className="h-3.5 w-3.5" />
+                    Criar marca
+                  </Button>
+                }
+              />
             ) : (
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {brands.map((brand: Brand) => (
                   <div
                     key={brand.id}
-                    className="group relative rounded-lg border border-border/80 bg-card p-3.5 shadow-none transition-colors hover:border-border hover:bg-muted/25"
+                    className="group relative flex min-h-36 flex-col rounded-lg border border-border/80 bg-card p-3.5 shadow-xs transition-colors hover:border-border hover:bg-muted/20"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-amber-50 overflow-hidden">
@@ -148,7 +168,7 @@ export default function BrandsPage() {
                             ) : (
                               <Trash2 className="h-3.5 w-3.5 mr-2" />
                             )}
-                            Excluir
+                            Eliminar
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -166,7 +186,7 @@ export default function BrandsPage() {
 
                     {brand.status && (
                       <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${brandStatusClass(brand.status.code)}`}>
-                        {brand.status.code}
+                        {brandStatusLabel(brand.status.code)}
                       </span>
                     )}
                   </div>
@@ -190,6 +210,7 @@ export default function BrandsPage() {
           setSelectedBrand(null)
         }}
       />
+      {confirmDialog}
     </>
   )
 }

@@ -17,6 +17,9 @@ import {
   Square,
 } from "lucide-react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
+import { DataPanel, DataPanelContent } from "@/components/admin/data-panel"
+import { EmptyState } from "@/components/admin/empty-state"
+import { FormField } from "@/components/admin/form-field"
 import { PageToolbar } from "@/components/admin/page-toolbar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -104,7 +107,7 @@ function readViewMode(): ViewMode {
 }
 
 const gridMedia =
-  "grid gap-1.5 sm:gap-2 grid-cols-3 sm:grid-cols-5 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12"
+  "grid grid-cols-3 gap-1.5 sm:grid-cols-5 sm:gap-2 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12"
 
 function SelectionCheckbox({
   checked,
@@ -316,7 +319,7 @@ export default function MediaLibraryPage() {
 
   const uploadFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      showToast.error("Formato", "Selecione uma imagem")
+      showToast.error("Formato", "Seleccione uma imagem")
       return
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -386,13 +389,13 @@ export default function MediaLibraryPage() {
     }
 
     if (fail > 0 && ok > 0) {
-      showToast.error("Apagar", `${ok} removido(s), ${fail} falharam`)
+      showToast.error("Eliminar", `${ok} removido(s), ${fail} falharam`)
     } else if (fail > 0) {
-      showToast.error("Apagar", "Não foi possível apagar os ficheiros")
+      showToast.error("Eliminar", "Não foi possível eliminar os ficheiros")
     } else {
       showToast.success(
         "Removido",
-        ids.length === 1 ? "Ficheiro apagado" : `${ids.length} ficheiros apagados`
+        ids.length === 1 ? "Ficheiro eliminado" : `${ids.length} ficheiros eliminados`
       )
     }
 
@@ -441,13 +444,13 @@ export default function MediaLibraryPage() {
           variant="outline"
           size="sm"
           className={cn(
-            "text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/5",
+            "border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive",
             compact ? "h-7 px-2 text-[10px]" : "h-6 px-1 w-full text-[9px] sm:text-[10px]"
           )}
           onClick={() => openDeleteDialog([row])}
         >
           <Trash2 className="h-3 w-3 shrink-0" />
-          Apagar
+          Eliminar
         </Button>
       </div>
     )
@@ -493,15 +496,16 @@ export default function MediaLibraryPage() {
         </PageToolbar>
 
         <div className="flex-1 overflow-auto p-4 md:p-5 bg-background">
-          <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
-              <div className="space-y-1 min-w-[140px]">
-                <p className="text-[10px] text-muted-foreground">Pasta / marca</p>
+          <DataPanel className="mb-3">
+            <DataPanelContent className="p-3">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                <div className="grid gap-3 sm:grid-cols-2 lg:flex lg:flex-wrap lg:items-end">
+                  <FormField label="Pasta / marca" className="min-w-0 sm:min-w-[180px]">
                 <Select
                   value={groupFilter || "all"}
                   onValueChange={(v) => setGroupFilter(v === "all" ? "" : v)}
                 >
-                  <SelectTrigger size="sm" className="h-8 w-[200px] max-w-full text-xs">
+                  <SelectTrigger size="sm" className="h-8 w-full text-xs lg:w-[220px]">
                     <SelectValue placeholder="Todos" />
                   </SelectTrigger>
                   <SelectContent>
@@ -518,11 +522,10 @@ export default function MediaLibraryPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-1 min-w-[160px] max-w-xs">
-                <p className="text-[10px] text-muted-foreground">Pasta ao enviar</p>
+                  </FormField>
+                  <FormField label="Pasta ao enviar" className="min-w-0 sm:min-w-[200px]">
                 <Select value={uploadGroup} onValueChange={setUploadGroup}>
-                  <SelectTrigger size="sm" className="h-8 w-[200px] max-w-full text-xs">
+                  <SelectTrigger size="sm" className="h-8 w-full text-xs lg:w-[220px]">
                     <SelectValue placeholder="Escolher pasta" />
                   </SelectTrigger>
                   <SelectContent>
@@ -544,13 +547,13 @@ export default function MediaLibraryPage() {
                     value={uploadCustomGroup}
                     onChange={(e) => setUploadCustomGroup(e.target.value)}
                     placeholder="ex. campanhas-verao"
-                    className="h-8 text-xs mt-1.5"
+                    className="mt-1.5 h-8 text-xs"
                   />
                 )}
-              </div>
-            </div>
+                  </FormField>
+                </div>
 
-            <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
               {items.length > 0 && (
                 <button
                   type="button"
@@ -563,10 +566,10 @@ export default function MediaLibraryPage() {
                     onChange={toggleSelectAllOnPage}
                     className="h-5 w-5 pointer-events-none"
                   />
-                  Selecionar página
+                  Seleccionar página
                 </button>
               )}
-              <div className="flex rounded-md border border-border/70 p-0.5 bg-muted/30">
+              <div className="flex rounded-md border border-border/70 bg-muted/30 p-0.5">
                 <Button
                   type="button"
                   variant={viewMode === "grid" ? "secondary" : "ghost"}
@@ -588,13 +591,15 @@ export default function MediaLibraryPage() {
                   <List className="h-3.5 w-3.5" />
                 </Button>
               </div>
-            </div>
-          </div>
+                </div>
+              </div>
+            </DataPanelContent>
+          </DataPanel>
 
           {selectedIds.size > 0 && (
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-destructive/20 bg-destructive/[0.04] px-3 py-2.5">
               <p className="text-xs font-medium text-foreground">
-                {selectedIds.size} selecionado{selectedIds.size !== 1 ? "s" : ""}
+                {selectedIds.size} seleccionado{selectedIds.size !== 1 ? "s" : ""}
               </p>
               <div className="flex items-center gap-2">
                 <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={clearSelection}>
@@ -604,11 +609,11 @@ export default function MediaLibraryPage() {
                   type="button"
                   variant="destructive"
                   size="sm"
-                  className="h-7 text-xs gap-1.5"
+                  className="h-7 gap-1.5 text-xs"
                   onClick={openDeleteSelected}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                  Apagar selecionados
+                  Eliminar seleccionados
                 </Button>
               </div>
             </div>
@@ -627,79 +632,107 @@ export default function MediaLibraryPage() {
           </div>
 
           {loading && viewMode === "grid" && (
-            <div className={gridMedia}>
-              {[...Array(24)].map((_, i) => (
-                <Skeleton key={i} className="aspect-square rounded-md" />
-              ))}
-            </div>
+            <DataPanel className="p-2">
+              <div className={gridMedia}>
+                {[...Array(24)].map((_, i) => (
+                  <Skeleton key={i} className="aspect-square rounded-md" />
+                ))}
+              </div>
+            </DataPanel>
           )}
 
           {loading && viewMode === "list" && (
-            <div className="space-y-2">
+            <DataPanel className="space-y-2 p-3">
               {[...Array(8)].map((_, i) => (
                 <Skeleton key={i} className="h-14 w-full rounded-md" />
               ))}
-            </div>
+            </DataPanel>
           )}
 
           {!loading && items.length === 0 && (
-            <p className="text-xs text-muted-foreground py-8 text-center">Sem ficheiros nesta página.</p>
+            <DataPanel className="border-dashed">
+              <EmptyState
+                icon={Images}
+                tone="info"
+                title="Sem ficheiros nesta página"
+                description="Envia uma imagem ou muda a pasta para encontrar ficheiros existentes."
+                action={
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-8 gap-1.5 text-xs"
+                    disabled={uploading}
+                    onClick={() => fileRef.current?.click()}
+                  >
+                    {uploading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Upload className="h-3.5 w-3.5" />
+                    )}
+                    Enviar imagem
+                  </Button>
+                }
+              />
+            </DataPanel>
           )}
 
           {!loading && items.length > 0 && viewMode === "grid" && (
-            <div className={gridMedia}>
-              {items.map((row) => {
-                const src = row.url || row.imageUrl || ""
-                const name = row.originalFilename || "imagem"
-                const meta = renderRowMeta(row)
-                const isSelected = selectedIds.has(row.id)
-                return (
-                  <div
-                    key={row.id}
-                    className={cn(
-                      "group/check relative flex flex-col rounded-md border bg-card overflow-hidden transition-colors",
-                      isSelected ? "border-primary ring-1 ring-primary/30" : "border-border/70"
-                    )}
-                  >
-                    <div className="absolute left-1.5 top-1.5 z-10">
-                      <SelectionCheckbox
-                        checked={isSelected}
-                        onChange={() => toggleSelect(row.id)}
-                        className={cn(
-                          "shadow-sm backdrop-blur-sm",
-                          !isSelected && "opacity-0 group-hover/check:opacity-100"
-                        )}
-                      />
-                    </div>
-                    <div className="aspect-square bg-muted/40 relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
-                    </div>
-                    <div className="p-1 sm:p-1.5 space-y-0.5 min-h-0">
-                      <p
-                        className="text-[9px] sm:text-[10px] leading-tight truncate font-medium text-foreground/90"
-                        title={name}
-                      >
-                        {name}
-                      </p>
-                      {meta ? (
-                        <p className="text-[8px] sm:text-[9px] text-muted-foreground truncate" title={meta}>
-                          {meta}
+            <DataPanel className="p-2">
+              <div className={gridMedia}>
+                {items.map((row) => {
+                  const src = row.url || row.imageUrl || ""
+                  const name = row.originalFilename || "imagem"
+                  const meta = renderRowMeta(row)
+                  const isSelected = selectedIds.has(row.id)
+                  return (
+                    <div
+                      key={row.id}
+                      className={cn(
+                        "group/check relative flex flex-col overflow-hidden rounded-md border bg-card shadow-xs transition-colors hover:border-primary/40",
+                        isSelected ? "border-primary ring-1 ring-primary/30" : "border-border/70"
+                      )}
+                    >
+                      <div className="absolute left-1.5 top-1.5 z-10">
+                        <SelectionCheckbox
+                          checked={isSelected}
+                          onChange={() => toggleSelect(row.id)}
+                          className={cn(
+                            "shadow-sm backdrop-blur-sm",
+                            !isSelected && "opacity-0 group-hover/check:opacity-100"
+                          )}
+                        />
+                      </div>
+                      <div className="relative aspect-square bg-muted/40">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+                      </div>
+                      <div className="min-h-0 space-y-0.5 p-1 sm:p-1.5">
+                        <p
+                          className="truncate text-[9px] font-medium leading-tight text-foreground/90 sm:text-[10px]"
+                          title={name}
+                        >
+                          {name}
                         </p>
-                      ) : null}
-                      <p className="text-[8px] text-muted-foreground/80 tabular-nums">
-                        {formatBytes(row.byteSize ?? null)}
-                      </p>
-                      {renderMediaActions(row)}
+                        {meta ? (
+                          <p className="truncate text-[8px] text-muted-foreground sm:text-[9px]" title={meta}>
+                            {meta}
+                          </p>
+                        ) : null}
+                        <p className="text-[8px] tabular-nums text-muted-foreground/80">
+                          {formatBytes(row.byteSize ?? null)}
+                        </p>
+                        {renderMediaActions(row)}
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            </DataPanel>
           )}
 
           {!loading && items.length > 0 && viewMode === "list" && (
-            <div className="rounded-lg border border-border/80 overflow-hidden">
+            <DataPanel>
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
@@ -753,7 +786,7 @@ export default function MediaLibraryPage() {
                   })}
                 </TableBody>
               </Table>
-            </div>
+            </DataPanel>
           )}
 
           {!loading && total > 0 && (
@@ -810,7 +843,7 @@ export default function MediaLibraryPage() {
               </div>
               <div className="space-y-1.5 text-left">
                 <DialogTitle className="text-base">
-                  {deleteCount === 1 ? "Apagar este ficheiro?" : `Apagar ${deleteCount} ficheiros?`}
+                  {deleteCount === 1 ? "Eliminar este ficheiro?" : `Eliminar ${deleteCount} ficheiros?`}
                 </DialogTitle>
                 <DialogDescription className="text-xs leading-relaxed">
                   Esta ação é permanente. Os ficheiros serão removidos da biblioteca e do armazenamento — não é
@@ -872,12 +905,12 @@ export default function MediaLibraryPage() {
               {deleting ? (
                 <>
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  A apagar…
+                  A eliminar…
                 </>
               ) : (
                 <>
                   <Trash2 className="h-3.5 w-3.5" />
-                  {deleteCount === 1 ? "Apagar" : `Apagar ${deleteCount}`}
+                  {deleteCount === 1 ? "Eliminar" : `Eliminar ${deleteCount}`}
                 </>
               )}
             </Button>

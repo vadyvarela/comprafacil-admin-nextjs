@@ -31,7 +31,7 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="rounded-lg border border-border/80 bg-popover px-3 py-2 shadow-none text-xs">
+    <div className="rounded-md border border-border/80 bg-popover px-3 py-2 text-xs shadow-lg">
       <p className="font-semibold text-foreground mb-1">{label}</p>
       <p className="tabular-nums text-muted-foreground">
         {formatCurrency(payload[0].value ?? 0)}

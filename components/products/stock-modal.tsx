@@ -119,11 +119,11 @@ export function StockModal({ stock, open, onOpenChange, productId }: StockModalP
     >
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Atualizar Estoque' : 'Criar Estoque'}</DialogTitle>
+          <DialogTitle>{isEditMode ? "Actualizar stock" : "Criar stock"}</DialogTitle>
           <DialogDescription>
             {isEditMode 
-              ? 'Atualize a quantidade de estoque disponível para este produto.'
-              : 'Configure o estoque inicial para este produto.'}
+              ? "Atualize a quantidade de stock disponível para este produto."
+              : "Configure o stock inicial para este produto."}
           </DialogDescription>
         </DialogHeader>
 
@@ -142,7 +142,7 @@ export function StockModal({ stock, open, onOpenChange, productId }: StockModalP
                 })
               }
               required
-              placeholder="Quantidade em estoque"
+              placeholder="Quantidade em stock"
             />
             <p className="text-sm text-muted-foreground">
               Esta quantidade será compartilhada entre todas as variantes do produto.
@@ -150,14 +150,14 @@ export function StockModal({ stock, open, onOpenChange, productId }: StockModalP
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="name">Nome do Estoque</Label>
+            <Label htmlFor="name">Nome do stock</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              placeholder="Nome do estoque (opcional)"
+              placeholder="Nome do stock (opcional)"
             />
           </div>
 
@@ -177,8 +177,8 @@ export function StockModal({ stock, open, onOpenChange, productId }: StockModalP
               {loading 
                 ? "Salvando..." 
                 : isEditMode 
-                  ? "Salvar Alterações" 
-                  : "Criar Estoque"}
+                  ? "Guardar alterações"
+                  : "Criar stock"}
             </Button>
           </DialogFooter>
         </form>

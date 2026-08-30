@@ -208,7 +208,7 @@ export default function StoreSettingsPage() {
             <Skeleton className="h-40 w-full" />
           </div>
         ) : (
-          <div className="grid gap-4 max-w-2xl">
+          <div className="grid max-w-5xl gap-4 lg:grid-cols-2">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold">Identidade</CardTitle>
@@ -374,7 +374,7 @@ export default function StoreSettingsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="lg:col-span-2">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
@@ -424,7 +424,7 @@ export default function StoreSettingsPage() {
                     </Button>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Usa esta URL como Data Feed no Commerce Manager e agenda atualização automática.
+                    Usa esta URL como Data Feed no Commerce Manager e agenda actualização automática.
                   </p>
                 </div>
 
@@ -441,7 +441,7 @@ export default function StoreSettingsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="lg:col-span-2">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold">Página de produto</CardTitle>
               </CardHeader>
@@ -457,7 +457,7 @@ export default function StoreSettingsPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="lg:col-span-2">
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold">Pesquisa</CardTitle>
               </CardHeader>
@@ -477,7 +477,7 @@ export default function StoreSettingsPage() {
               </CardContent>
             </Card>
 
-            <Button type="button" onClick={handleSave} disabled={saving || !dirty} className="w-full sm:w-auto">
+            <Button type="button" onClick={handleSave} disabled={saving || !dirty} className="w-full sm:w-auto lg:col-span-2 lg:justify-self-start">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden /> : null}
               Guardar alterações
             </Button>

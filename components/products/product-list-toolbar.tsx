@@ -32,6 +32,7 @@ type ProductListToolbarProps = {
   hasActiveFilters: boolean
   categories: ProductCategoryOption[]
   brands: ProductBrandOption[]
+  canWrite: boolean
 }
 
 export function ProductListToolbar({
@@ -40,6 +41,7 @@ export function ProductListToolbar({
   hasActiveFilters,
   categories,
   brands,
+  canWrite,
 }: ProductListToolbarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -53,12 +55,19 @@ export function ProductListToolbar({
   const category = searchParams.get("category") ?? FILTER_ALL
   const brand = searchParams.get("brand") ?? FILTER_ALL
   const status = searchParams.get("status") ?? FILTER_ALL
+  const createFromUrl = searchParams.get("create") === "1"
 
   const [searchQuery, setSearchQuery] = useState(searchFromUrl)
 
   useEffect(() => {
     setSearchQuery(searchFromUrl)
   }, [searchFromUrl])
+
+  useEffect(() => {
+    if (canWrite && createFromUrl) {
+      setCreateModalOpen(true)
+    }
+  }, [canWrite, createFromUrl])
 
   const navigate = useCallback(
     (overrides: Record<string, string | null>) => {
@@ -88,6 +97,16 @@ export function ProductListToolbar({
   const categoryFilterOptions = sortCategoriesForSelect(categories)
   const brandFilterOptions = [...brands].sort((a, b) => a.name.localeCompare(b.name, "pt"))
 
+  const handleCreateModalOpenChange = (open: boolean) => {
+    setCreateModalOpen(open)
+    if (!open && searchParamsRef.current.get("create")) {
+      const p = new URLSearchParams(searchParamsRef.current.toString())
+      p.delete("create")
+      const qs = p.toString()
+      router.replace(qs ? `?${qs}` : "/dashboard/products")
+    }
+  }
+
   const subtitle =
     error
       ? "Erro ao carregar"
@@ -104,10 +123,10 @@ export function ProductListToolbar({
         title="Produtos"
         subtitle={isPending ? "A pesquisar…" : subtitle}
       >
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto">
           <form
             method="GET"
-            className="contents"
+            className="w-full sm:w-auto"
             role="search"
             aria-label="Pesquisar produtos"
             onSubmit={(e) => {
@@ -115,7 +134,7 @@ export function ProductListToolbar({
               navigate({ search: searchQuery.trim() || null })
             }}
           >
-            <div className="relative w-44 sm:w-52">
+            <div className="relative w-full sm:w-56">
               <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
               <Input
                 name="search"
@@ -127,7 +146,7 @@ export function ProductListToolbar({
             </div>
           </form>
           <Select value={category} onValueChange={(value) => navigate({ category: value })}>
-            <SelectTrigger className="h-8 w-[140px] text-xs" aria-label="Filtrar por categoria">
+            <SelectTrigger className="h-8 w-full text-xs sm:w-[150px]" aria-label="Filtrar por categoria">
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
             <SelectContent>
@@ -145,7 +164,7 @@ export function ProductListToolbar({
             </SelectContent>
           </Select>
           <Select value={brand} onValueChange={(value) => navigate({ brand: value })}>
-            <SelectTrigger className="h-8 w-[130px] text-xs" aria-label="Filtrar por marca">
+            <SelectTrigger className="h-8 w-[calc(50%-0.25rem)] text-xs sm:w-[140px]" aria-label="Filtrar por marca">
               <SelectValue placeholder="Marca" />
             </SelectTrigger>
             <SelectContent>
@@ -163,7 +182,7 @@ export function ProductListToolbar({
             </SelectContent>
           </Select>
           <Select value={status} onValueChange={(value) => navigate({ status: value })}>
-            <SelectTrigger className="h-8 w-[120px] text-xs" aria-label="Filtrar por visibilidade">
+            <SelectTrigger className="h-8 w-[calc(50%-0.25rem)] text-xs sm:w-[130px]" aria-label="Filtrar por visibilidade">
               <SelectValue placeholder="Visibilidade" />
             </SelectTrigger>
             <SelectContent>
@@ -179,16 +198,24 @@ export function ProductListToolbar({
             </SelectContent>
           </Select>
         </div>
-        <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
-          <Link href="/dashboard/products/importar">
-            <FileJson className="h-3.5 w-3.5" />
-            Importar JSON
-          </Link>
-        </Button>
-        <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
-          <Plus className="h-3.5 w-3.5" />
-          Novo produto
-        </Button>
+        {canWrite ? (
+          <>
+            <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
+              <Link href="/dashboard/products/importar">
+                <FileJson className="h-3.5 w-3.5" />
+                Importar JSON
+              </Link>
+            </Button>
+            <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
+              <Plus className="h-3.5 w-3.5" />
+              Novo produto
+            </Button>
+          </>
+        ) : (
+          <span className="inline-flex h-8 items-center rounded-md border border-border/80 bg-muted/30 px-2.5 text-[11px] font-medium text-muted-foreground">
+            Modo leitura
+          </span>
+        )}
       </PageToolbar>
 
       {error && (
@@ -201,7 +228,9 @@ export function ProductListToolbar({
         </div>
       )}
 
-      <CreateProductModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
+      {canWrite ? (
+        <CreateProductModal open={createModalOpen} onOpenChange={handleCreateModalOpenChange} />
+      ) : null}
     </>
   )
 }

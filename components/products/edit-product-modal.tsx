@@ -127,7 +127,7 @@ export function EditProductModal({
       { query: GET_PRODUCT, variables: { id: product?.id } },
     ],
     onCompleted: () => {
-      showToast.success("Produto atualizado", "As alterações foram salvas com sucesso")
+      showToast.success("Produto actualizado", "As alterações foram guardadas com sucesso")
       onOpenChange(false)
     },
   })
@@ -305,8 +305,8 @@ export function EditProductModal({
     } catch (err: unknown) {
       console.error("Error updating product:", err)
       showToast.error(
-        "Erro ao atualizar produto",
-        err instanceof Error ? err.message : "Ocorreu um erro ao atualizar o produto"
+        "Erro ao actualizar produto",
+        err instanceof Error ? err.message : "Ocorreu um erro ao actualizar o produto"
       )
     }
   }
@@ -315,15 +315,15 @@ export function EditProductModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto p-0 gap-0">
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-border/80">
-          <DialogTitle className="text-lg font-semibold tracking-tight">Editar produto</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Editar produto</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground mt-1">
-            Atualize as informações visíveis na loja.
+            Actualize as informações visíveis na loja.
           </DialogDescription>
         </DialogHeader>
 
         {error && (
           <div className="mx-5 mt-4 bg-destructive/10 text-destructive px-3 py-2.5 rounded-md text-xs border border-destructive/20">
-            <p className="font-medium">Erro ao atualizar produto</p>
+            <p className="font-medium">Erro ao actualizar produto</p>
             <p className="mt-0.5 opacity-90">{error.message}</p>
           </div>
         )}
@@ -347,7 +347,7 @@ export function EditProductModal({
             <Collapsible
               open={descriptionOpen}
               onOpenChange={setDescriptionOpen}
-              className="rounded-lg border border-border/80 bg-card overflow-hidden"
+              className="rounded-lg border border-border/80 bg-card shadow-xs overflow-hidden"
             >
               <CollapsibleTrigger asChild>
                 <Button
@@ -549,7 +549,7 @@ export function EditProductModal({
             <Collapsible
               open={metaCatalogOpen}
               onOpenChange={setMetaCatalogOpen}
-              className="rounded-lg border border-border/80 bg-card overflow-hidden"
+              className="rounded-lg border border-border/80 bg-card shadow-xs overflow-hidden"
             >
               <CollapsibleTrigger asChild>
                 <Button

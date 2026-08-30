@@ -11,6 +11,7 @@ import {
   Phone,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useModuleAccess } from "@/components/layout/module-access-context"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency"
@@ -32,12 +33,14 @@ import { OrderDetailActions } from "./order-detail-actions"
 import { OrderFulfillmentStatus } from "./order-fulfillment-status"
 import { OrderAuditTimeline } from "./order-audit-timeline"
 import type { AuditLog } from "@/lib/graphql/audit/types"
+import { DataPanel } from "@/components/admin/data-panel"
 
 type OrderDetailProps = {
   order: CheckoutSessionDetailsResponse
   customerDetails?: CustomerDetailsResponse | null
   auditLogs?: AuditLog[]
   auditError?: string | null
+  canReconcilePayment?: boolean
 }
 
 function phoneFromAddressLegacy(metadata: string | null | undefined): string | null {
@@ -130,16 +133,16 @@ function SectionCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-border/80 bg-muted/25">
+    <DataPanel>
+      <div className="flex items-center gap-2 border-b border-border/80 bg-muted/35 px-3 py-2.5">
         <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/50 ${iconBg ?? "bg-muted/50"}`}>
           <Icon className={`h-3.5 w-3.5 ${iconColor ?? "text-muted-foreground"}`} />
         </div>
-        <span className="text-xs font-medium text-foreground">{title}</span>
+        <span className="text-xs font-semibold text-foreground">{title}</span>
         {badge && <span className="ml-auto">{badge}</span>}
       </div>
       {children}
-    </div>
+    </DataPanel>
   )
 }
 
@@ -148,7 +151,9 @@ export function OrderDetail({
   customerDetails,
   auditLogs = [],
   auditError = null,
+  canReconcilePayment = false,
 }: OrderDetailProps) {
+  const { canWrite } = useModuleAccess()
   const shippingFromMetadata = getShippingAddressFromMetadata(order.metadata)
   const displayShipping = resolveDisplayShipping(shippingFromMetadata, customerDetails)
   const accountPhone =
@@ -176,7 +181,7 @@ export function OrderDetail({
         <div className="mx-auto w-full max-w-6xl px-4 py-5 md:px-5 md:py-6 space-y-5">
 
           {/* Hero */}
-          <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-none">
+          <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-xs">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-blue-50">
@@ -184,7 +189,7 @@ export function OrderDetail({
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap mb-1">
-                    <h1 className="text-lg font-semibold font-mono tracking-tight">
+                    <h1 className="text-lg font-semibold font-mono">
                       #{order.id.slice(0, 8)}
                     </h1>
                     {order.status && (
@@ -216,7 +221,7 @@ export function OrderDetail({
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <OrderDetailActions />
+                {canReconcilePayment ? <OrderDetailActions /> : null}
                 <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
                   <Link href="/dashboard/orders">
                     <ArrowLeft className="h-3.5 w-3.5" />
@@ -232,6 +237,7 @@ export function OrderDetail({
             <OrderFulfillmentStatus
               orderId={order.id}
               fulfillmentStatus={order.fulfillmentStatus}
+              canManage={canWrite}
             />
             <OrderAuditTimeline logs={auditLogs} error={auditError} />
           </div>

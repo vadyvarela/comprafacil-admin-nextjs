@@ -17,6 +17,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
+import { DataPanel } from "@/components/admin/data-panel"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -55,6 +57,7 @@ type ProductListProps = {
   totalPages: number
   totalElements: number
   pageSize: number
+  canWrite: boolean
 }
 
 export function ProductList({
@@ -63,9 +66,11 @@ export function ProductList({
   totalPages,
   totalElements,
   pageSize,
+  canWrite,
 }: ProductListProps) {
   const router = useRouter()
   const [busyProductId, setBusyProductId] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
   const [deleteProduct] = useMutation(DELETE_PRODUCT)
   const [updateProduct] = useMutation(UPDATE_PRODUCT)
 
@@ -107,33 +112,36 @@ export function ProductList({
     e.preventDefault()
     e.stopPropagation()
 
-    if (
-      !confirm(
-        `Tem certeza que deseja excluir o produto "${productTitle}"?\n\nEsta ação irá excluir o produto e todas as suas variantes. Esta ação não pode ser desfeita.`
-      )
-    ) {
-      return
-    }
+    const confirmed = await confirm({
+      title: "Eliminar produto?",
+      description: `Está prestes a eliminar "${productTitle}".`,
+      impact: "O produto e todas as suas variantes serão removidos da loja. Esta ação não pode ser desfeita.",
+      confirmText: "Eliminar produto",
+      variant: "critical",
+      requireText: "ELIMINAR",
+    })
+
+    if (!confirmed) return
 
     setBusyProductId(productId)
     try {
       await deleteProduct({ variables: { id: productId } })
       router.refresh()
-      showToast.success("Produto excluído", `O produto "${productTitle}" foi excluído com sucesso`)
+      showToast.success("Produto eliminado", `O produto "${productTitle}" foi eliminado com sucesso`)
     } catch (err: unknown) {
       console.error("Error deleting product:", err)
-      const errorMessage = getErrorMessage(err, "Erro ao excluir produto. Tente novamente.")
-      showToast.error("Erro ao excluir produto", errorMessage)
+      const errorMessage = getErrorMessage(err, "Erro ao eliminar produto. Tente novamente.")
+      showToast.error("Erro ao eliminar produto", errorMessage)
     } finally {
       setBusyProductId(null)
     }
   }
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
+    <DataPanel>
       <Table>
         <TableHeader>
-          <TableRow className="border-b border-border/60 bg-background hover:bg-background">
+          <TableRow className="hover:bg-muted/45">
             <TableHead className="w-14 text-xs">Img</TableHead>
             <TableHead className="text-xs">Produto</TableHead>
             <TableHead className="text-xs hidden sm:table-cell">Visibilidade</TableHead>
@@ -276,26 +284,30 @@ export function ProductList({
                           Ver produto
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => handleToggleVisibility(product, e)}
-                        disabled={isBusy}
-                      >
-                        {draft ? (
-                          <Globe className="h-3.5 w-3.5 mr-2" />
-                        ) : (
-                          <EyeOff className="h-3.5 w-3.5 mr-2" />
-                        )}
-                        {productVisibilityToggleLabel(product.status?.code)}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={(e) => handleDeleteProduct(product.id, product.title, e)}
-                        disabled={isBusy}
-                      >
-                        <Trash2 className="h-3.5 w-3.5 mr-2" />
-                        Excluir
-                      </DropdownMenuItem>
+                      {canWrite ? (
+                        <>
+                          <DropdownMenuItem
+                            onClick={(e) => handleToggleVisibility(product, e)}
+                            disabled={isBusy}
+                          >
+                            {draft ? (
+                              <Globe className="h-3.5 w-3.5 mr-2" />
+                            ) : (
+                              <EyeOff className="h-3.5 w-3.5 mr-2" />
+                            )}
+                            {productVisibilityToggleLabel(product.status?.code)}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive focus:text-destructive"
+                            onClick={(e) => handleDeleteProduct(product.id, product.title, e)}
+                            disabled={isBusy}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-2" />
+                            Eliminar
+                          </DropdownMenuItem>
+                        </>
+                      ) : null}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -310,6 +322,7 @@ export function ProductList({
         totalElements={totalElements}
         pageSize={pageSize}
       />
-    </div>
+      {confirmDialog}
+    </DataPanel>
   )
 }

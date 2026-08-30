@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
+import { PageHeader } from "@/components/admin/page-header"
 import { ChangeRoleDialog } from "@/components/team/change-role-dialog"
 import { InviteMemberDialog } from "@/components/team/invite-member-dialog"
 import { TeamMemberList } from "@/components/team/team-member-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import type { TeamMember } from "@/lib/auth0/management"
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, STORE_ROLES } from "@/lib/auth/roles"
 import { getErrorMessage } from "@/lib/utils/errors"
@@ -23,6 +25,7 @@ export function TeamSettingsClient({ currentUserId }: TeamSettingsClientProps) {
   const [loading, setLoading] = useState(true)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [changeMember, setChangeMember] = useState<TeamMember | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   async function loadMembers() {
     try {
@@ -48,7 +51,16 @@ export function TeamSettingsClient({ currentUserId }: TeamSettingsClientProps) {
   }, [])
 
   async function handleRemove(member: TeamMember) {
-    if (!confirm(`Remover acesso de ${member.email}?`)) return
+    const confirmed = await confirm({
+      title: "Remover acesso?",
+      description: `Está prestes a remover o acesso de ${member.email}.`,
+      impact: "Este membro deixa de conseguir entrar no backoffice. A ação pode ser revertida com um novo convite.",
+      confirmText: "Remover acesso",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
     try {
       const res = await fetch(`/api/team/members/${encodeURIComponent(member.id)}`, {
         method: "DELETE",
@@ -79,18 +91,15 @@ export function TeamSettingsClient({ currentUserId }: TeamSettingsClientProps) {
       <SettingsSubnav />
 
       <div className="flex flex-1 flex-col gap-5 p-4 md:p-5 bg-background">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Equipa</h1>
-            <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
-              Convide membros e defina funções de acesso ao backoffice.
-            </p>
-          </div>
+        <PageHeader
+          title="Equipa"
+          description="Convide membros e defina funções de acesso ao backoffice."
+        >
           <Button onClick={() => setInviteOpen(true)} size="sm">
             <Plus className="h-3.5 w-3.5 mr-1.5" />
             Convidar membro
           </Button>
-        </div>
+        </PageHeader>
 
         <TeamMemberList
           members={members}
@@ -101,7 +110,7 @@ export function TeamSettingsClient({ currentUserId }: TeamSettingsClientProps) {
           onRemove={handleRemove}
         />
 
-        <Card className="border-border/80 shadow-none">
+        <Card className="border-border/80">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <UserCog className="h-4 w-4 text-muted-foreground" />
@@ -136,6 +145,7 @@ export function TeamSettingsClient({ currentUserId }: TeamSettingsClientProps) {
         onOpenChange={(open) => !open && setChangeMember(null)}
         onUpdated={loadMembers}
       />
+      {confirmDialog}
     </>
   )
 }

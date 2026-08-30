@@ -182,7 +182,7 @@ export function VariantGalleryUpload({
       </div>
 
       {localImages.length > 0 ? (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {localImages.map((url, index) => (
             <div
               key={`${url}-${index}`}
@@ -286,7 +286,7 @@ export function VariantGalleryUpload({
       />
 
       {canAdd && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"

@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils"
 import { formatCurrency } from "@/lib/utils/currency"
 import Image from "next/image"
+import { DataPanel } from "@/components/admin/data-panel"
 
 type EnrichedOrder = OrderSummary & {
   fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
@@ -103,19 +104,19 @@ function OrderProductPreview({ order }: { order: OrderSummary }) {
 
 export function OrderList({ orders }: OrderListProps) {
   return (
-    <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden">
+    <DataPanel>
       {/* Desktop header */}
-      <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,1.25fr)_minmax(0,1fr)_128px_104px_40px] border-b border-border/60 bg-background px-4 py-2.5 gap-3">
-        <span className="text-[11px] font-medium text-muted-foreground">Pedido</span>
-        <span className="text-[11px] font-medium text-muted-foreground">Produto</span>
-        <span className="text-[11px] font-medium text-muted-foreground">Cliente</span>
-        <span className="text-[11px] font-medium text-muted-foreground">Estado envio</span>
-        <span className="text-[11px] font-medium text-muted-foreground text-right">Valor</span>
+      <div className="hidden border-b border-border/60 bg-muted/45 px-4 py-2.5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,1.25fr)_minmax(0,1fr)_128px_104px_40px] gap-3">
+        <span className="text-[11px] font-semibold uppercase text-muted-foreground">Pedido</span>
+        <span className="text-[11px] font-semibold uppercase text-muted-foreground">Produto</span>
+        <span className="text-[11px] font-semibold uppercase text-muted-foreground">Cliente</span>
+        <span className="text-[11px] font-semibold uppercase text-muted-foreground">Estado envio</span>
+        <span className="text-right text-[11px] font-semibold uppercase text-muted-foreground">Valor</span>
         <span />
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-border/70">
         {orders.map((order) => {
           const fulfillment = order.fulfillmentStatus
           const fulfillLabel = getFulfillmentStatusLabel(fulfillment?.code)
@@ -124,7 +125,7 @@ export function OrderList({ orders }: OrderListProps) {
             <Link
               key={order.id}
               href={`/dashboard/orders/${order.id}`}
-              className="group flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,1.25fr)_minmax(0,1fr)_128px_104px_40px] lg:items-center gap-3 lg:gap-3 px-4 py-3.5 hover:bg-muted/30 transition-colors"
+              className="group flex flex-col gap-3 px-4 py-3.5 transition-colors hover:bg-muted/30 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,1.25fr)_minmax(0,1fr)_128px_104px_40px] lg:items-center lg:gap-3"
             >
               {/* Order ref + date */}
               <div className="flex items-center gap-3 min-w-0">
@@ -195,6 +196,6 @@ export function OrderList({ orders }: OrderListProps) {
           )
         })}
       </div>
-    </div>
+    </DataPanel>
   )
 }

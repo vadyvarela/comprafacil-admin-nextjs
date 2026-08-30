@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import type { Category } from "@/lib/graphql/categories/types"
 import { cn } from "@/lib/utils"
+import { DataPanel } from "@/components/admin/data-panel"
+import { EmptyState } from "@/components/admin/empty-state"
 
 type CategoryGroup = {
   root: Category
@@ -84,7 +86,7 @@ function StatusDot({ code }: { code?: string }) {
         )}
         aria-hidden
       />
-      {active ? "Ativo" : "Inativo"}
+      {active ? "Activo" : "Inactivo"}
     </span>
   )
 }
@@ -221,7 +223,7 @@ function CategoryRow({
               disabled={deleting}
             >
               <Trash2 className="h-3.5 w-3.5 mr-2" />
-              Excluir
+              Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -253,19 +255,22 @@ export function CategoryTree({
 
   if (visible.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-border bg-card py-16 px-4 text-center">
-        <FolderTree className="mb-3 h-7 w-7 text-muted-foreground/40" />
-        <p className="text-sm font-semibold text-foreground">Nenhum resultado</p>
-        <p className="mt-1 text-xs text-muted-foreground">Ajuste o termo de pesquisa.</p>
-      </div>
+      <DataPanel>
+        <EmptyState
+          icon={FolderTree}
+          title="Nenhum resultado"
+          description="Ajuste o termo de pesquisa."
+          tone="info"
+        />
+      </DataPanel>
     )
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-      <div className="hidden sm:grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-border/70 bg-muted/25 px-3 py-1.5">
-        <p className="pl-8 text-[11px] font-medium text-muted-foreground">Categoria</p>
-        <div className="flex items-center gap-2 text-[11px] font-medium text-muted-foreground">
+    <DataPanel>
+      <div className="hidden grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-border/70 bg-muted/45 px-3 py-2 sm:grid">
+        <p className="pl-8 text-[11px] font-semibold uppercase text-muted-foreground">Categoria</p>
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase text-muted-foreground">
           <span className="inline-flex h-6 w-6 items-center justify-center" title="Home">
             <House className="h-3.5 w-3.5" />
           </span>
@@ -316,6 +321,6 @@ export function CategoryTree({
           </section>
         )
       })}
-    </div>
+    </DataPanel>
   )
 }

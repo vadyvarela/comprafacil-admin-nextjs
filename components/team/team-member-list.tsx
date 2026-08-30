@@ -4,7 +4,8 @@
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { DataPanel } from "@/components/admin/data-panel"
+import { EmptyState } from "@/components/admin/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
@@ -80,26 +81,27 @@ export function TeamMemberList({
 
   if (members.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <Users className="h-10 w-10 text-muted-foreground/30 mb-3" />
-          <p className="text-sm font-semibold text-foreground mb-1">Nenhum membro na equipa</p>
-          <p className="text-xs text-muted-foreground mb-4">
-            Convide colegas para ajudar a gerir a loja.
-          </p>
+      <DataPanel className="border-dashed">
+        <EmptyState
+          icon={Users}
+          title="Nenhum membro na equipa"
+          description="Convide colegas para ajudar a gerir a loja."
+          tone="info"
+          action={
           <Button size="sm" onClick={onInvite}>
             Convidar primeiro membro
           </Button>
-        </CardContent>
-      </Card>
+          }
+        />
+      </DataPanel>
     )
   }
 
   return (
-    <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden">
+    <DataPanel>
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
+          <TableRow className="hover:bg-muted/45">
             <TableHead className="text-xs">Membro</TableHead>
             <TableHead className="text-xs">Função</TableHead>
             <TableHead className="text-xs">Estado</TableHead>
@@ -137,7 +139,7 @@ export function TeamMemberList({
                   variant={member.status === "active" ? "default" : "secondary"}
                   className="text-xs"
                 >
-                  {member.status === "active" ? "Ativo" : "Convite pendente"}
+                  {member.status === "active" ? "Activo" : "Convite pendente"}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
@@ -165,6 +167,6 @@ export function TeamMemberList({
           ))}
         </TableBody>
       </Table>
-    </div>
+    </DataPanel>
   )
 }

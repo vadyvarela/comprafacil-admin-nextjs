@@ -72,13 +72,13 @@ export function StoreBrandMark({
     <div className={cn("flex items-center gap-2.5", className)}>
       <StoreBrandLogo brand={brand} size={size} />
       <div className="min-w-0">
-        <p className={cn("truncate font-semibold leading-none tracking-tight text-foreground", text.title)}>
+        <p className={cn("truncate font-semibold leading-none text-foreground", text.title)}>
           {brand.siteName}
         </p>
         {showSubtitle && (
           <p
             className={cn(
-              "mt-0.5 truncate font-medium uppercase tracking-wide text-muted-foreground",
+              "mt-0.5 truncate font-medium uppercase text-muted-foreground",
               text.subtitle
             )}
           >

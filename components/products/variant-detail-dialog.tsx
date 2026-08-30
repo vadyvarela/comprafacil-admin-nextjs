@@ -155,7 +155,7 @@ export function VariantDetailDialog({
 
           <div className="rounded-md border border-border/70 p-3 space-y-3">
             <p className="text-xs font-medium">Desconto / oferta de preço</p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Desconto (%)" htmlFor="variant-discount">
                 <Input
                   id="variant-discount"

@@ -5,6 +5,7 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { CustomerList } from "@/components/customers/customer-list"
 import { CustomerListToolbar } from "@/components/customers/customer-list-toolbar"
 import { CustomerPagination } from "@/components/customers/customer-pagination"
+import { EmptyState } from "@/components/admin/empty-state"
 
 type PageProps = {
   searchParams: Promise<{ search?: string; page?: string }>
@@ -58,19 +59,12 @@ export default async function CustomersPage({ searchParams }: PageProps) {
           {result.ok ? (
             <>
               {customers.length === 0 ? (
-                <div
-                  className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-sm mx-auto"
-                  role="status"
-                  aria-label={empty.title}
-                >
-                  <empty.icon className="h-10 w-10 text-muted-foreground mb-4" />
-                  <h2 className="text-sm font-semibold text-foreground mb-1">
-                    {empty.title}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {empty.description}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={empty.icon}
+                  title={empty.title}
+                  description={empty.description}
+                  tone={search ? "info" : "neutral"}
+                />
               ) : (
                 <>
                   <CustomerList customers={customers} />

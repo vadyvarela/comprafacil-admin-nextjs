@@ -46,7 +46,7 @@ function SectionTitle({ icon: Icon, title }: { icon: React.ElementType; title: s
   return (
     <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-muted/30">
       <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-      <span className="text-xs font-bold text-foreground uppercase tracking-wide">{title}</span>
+      <span className="text-xs font-bold text-foreground uppercase">{title}</span>
     </div>
   )
 }
@@ -138,7 +138,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
             <SectionTitle icon={Calendar} title="Datas" />
             <div className="px-4 py-1">
               <Row label="Criado em" value={formatDate(tx.createdAt)} />
-              <Row label="Atualizado em" value={formatDate(tx.updatedAt)} />
+              <Row label="Actualizado em" value={formatDate(tx.updatedAt)} />
               {tx.authorizedAt && <Row label="Autorizado em" value={formatDate(tx.authorizedAt)} />}
               {tx.capturedAt && <Row label="Capturado em" value={formatDate(tx.capturedAt)} />}
               {tx.canceledAt && <Row label="Cancelado em" value={formatDate(tx.canceledAt)} />}

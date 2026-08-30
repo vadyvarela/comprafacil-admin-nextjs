@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { DataPanel } from "@/components/admin/data-panel"
 
 type Props = {
   logs: AuditLog[]
@@ -52,10 +53,10 @@ function shortId(id: string): string {
 
 export function AuditLogList({ logs }: Props) {
   return (
-    <div className="rounded-lg border border-border/80 overflow-hidden bg-card">
+    <DataPanel>
       <Table>
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
+          <TableRow className="hover:bg-muted/45">
             <TableHead className="text-[11px] h-9">Data</TableHead>
             <TableHead className="text-[11px] h-9">Ação</TableHead>
             <TableHead className="text-[11px] h-9">Entidade</TableHead>
@@ -98,6 +99,6 @@ export function AuditLogList({ logs }: Props) {
           })}
         </TableBody>
       </Table>
-    </div>
+    </DataPanel>
   )
 }

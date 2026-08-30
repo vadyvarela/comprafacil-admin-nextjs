@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { EmptyState } from "@/components/admin/empty-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { showToast } from "@/lib/utils/toast"
 import { cn } from "@/lib/utils"
@@ -230,16 +231,17 @@ export function MediaPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl gap-3 p-4">
-        <DialogHeader className="space-y-1">
-          <DialogTitle className="text-base flex items-center gap-2">
+      <DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-3xl">
+        <DialogHeader className="border-b border-border/70 px-4 py-3 sm:px-5">
+          <DialogTitle className="flex items-center gap-2 text-base">
             <Images className="h-4 w-4 text-muted-foreground" />
             {title}
           </DialogTitle>
           <DialogDescription className="text-xs">{description}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center gap-2">
+        <div className="flex min-h-0 flex-col gap-3 px-4 py-3 sm:px-5">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Select
             value={groupFilter || GROUP_ALL}
             onValueChange={(v) => {
@@ -247,7 +249,7 @@ export function MediaPickerDialog({
               setPage(0)
             }}
           >
-            <SelectTrigger className="h-8 w-[200px] text-xs">
+            <SelectTrigger className="h-8 w-full text-xs sm:w-[220px]">
               <SelectValue placeholder="Pasta" />
             </SelectTrigger>
             <SelectContent>
@@ -259,32 +261,29 @@ export function MediaPickerDialog({
               ))}
             </SelectContent>
           </Select>
-          <span className="text-[11px] text-muted-foreground ml-auto">
+          <span className="text-xs text-muted-foreground sm:ml-auto">
             {selected.length > 0
               ? `${selected.length} seleccionada${selected.length > 1 ? "s" : ""}`
               : `${total} imagem${total === 1 ? "" : "ns"}`}
           </span>
         </div>
 
-        <div className="min-h-[280px] max-h-[420px] overflow-y-auto rounded-md border border-border/60 bg-muted/20 p-2">
+        <div className="min-h-[280px] overflow-y-auto rounded-md border border-border/70 bg-muted/15 p-2 sm:max-h-[420px]">
           {loading ? (
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6">
               {Array.from({ length: 12 }).map((_, i) => (
                 <Skeleton key={i} className="aspect-square rounded-md" />
               ))}
             </div>
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-[260px] text-center px-4">
-              <Images className="h-8 w-8 text-muted-foreground/50 mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Nenhuma imagem nesta pasta
-              </p>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Faz upload no PC ou em Biblioteca → Media
-              </p>
-            </div>
+            <EmptyState
+              icon={Images}
+              title="Nenhuma imagem nesta pasta"
+              description="Faz upload no PC ou em Biblioteca de media."
+              className="min-h-[260px] py-8"
+            />
           ) : (
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6">
               {items.map((row) => {
                 const url = mediaUrl(row)
                 if (!url) return null
@@ -302,7 +301,7 @@ export function MediaPickerDialog({
                         : row.originalFilename || url
                     }
                     className={cn(
-                      "relative aspect-square rounded-md border overflow-hidden bg-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      "relative aspect-square overflow-hidden rounded-md border bg-background shadow-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40",
                       alreadyUsed && "opacity-40 cursor-not-allowed",
                       isSelected
                         ? "border-primary ring-2 ring-primary/40"
@@ -360,8 +359,9 @@ export function MediaPickerDialog({
             </Button>
           </div>
         )}
+        </div>
 
-        <DialogFooter className="gap-2 sm:gap-2">
+        <DialogFooter className="border-t border-border/70 bg-muted/20 px-4 py-3 sm:gap-2 sm:px-5">
           <Button
             type="button"
             variant="outline"

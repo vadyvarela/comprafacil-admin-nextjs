@@ -9,8 +9,10 @@ import { PageToolbar } from "@/components/admin/page-toolbar"
 import { CreateCategoryModal } from "@/components/categories/create-category-modal"
 import { CategoryTree } from "@/components/categories/category-tree"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { EmptyState } from "@/components/admin/empty-state"
 import { FolderTree, Plus, Search } from "lucide-react"
 import { Category } from "@/lib/graphql/categories/types"
 import { groupCategoriesByParent } from "@/lib/categories/format-category-label"
@@ -22,6 +24,7 @@ export default function CategoriesPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const { data, loading, error, refetch } = useQuery<{
     categories: { data: Category[] }
@@ -31,7 +34,7 @@ export default function CategoriesPage() {
 
   const [deleteCategory] = useMutation(DELETE_CATEGORY)
 
-  const categories = data?.categories?.data || []
+  const categories = useMemo(() => data?.categories?.data ?? [], [data?.categories?.data])
   const groups = useMemo(() => groupCategoriesByParent(categories), [categories])
   const rootCount = groups.length
   const subCount = Math.max(0, categories.length - rootCount)
@@ -47,25 +50,26 @@ export default function CategoriesPage() {
   }
 
   const handleDelete = async (category: Category, childCount: number) => {
-    const extra =
-      childCount > 0
-        ? `\n\nTem ${childCount} subcategoria${childCount !== 1 ? "s" : ""}.`
-        : ""
-    if (
-      !confirm(
-        `Excluir a categoria "${category.name}"?${extra}\nEsta ação não pode ser desfeita.`,
-      )
-    ) {
-      return
-    }
+    const confirmed = await confirm({
+      title: "Eliminar categoria?",
+      description: `Está prestes a eliminar "${category.name}".`,
+      impact:
+        childCount > 0
+          ? `Esta categoria tem ${childCount} subcategoria${childCount !== 1 ? "s" : ""}. A ação não pode ser desfeita.`
+          : "A categoria será removida do catálogo. Esta ação não pode ser desfeita.",
+      confirmText: "Eliminar categoria",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
 
     setDeletingId(category.id)
     try {
       await deleteCategory({ variables: { id: category.id } })
       await refetch()
-      showToast.success("Categoria excluída", `"${category.name}" foi excluída`)
+      showToast.success("Categoria eliminada", `"${category.name}" foi eliminada`)
     } catch (err: unknown) {
-      showToast.error("Erro ao excluir", getErrorMessage(err, "Não foi possível excluir a categoria."))
+      showToast.error("Erro ao eliminar", getErrorMessage(err, "Não foi possível eliminar a categoria."))
     } finally {
       setDeletingId(null)
     }
@@ -90,7 +94,7 @@ export default function CategoriesPage() {
           title="Categorias"
           subtitle={subtitle}
         >
-          <div className="relative w-44 sm:w-56">
+          <div className="relative w-full sm:w-56">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchQuery}
@@ -108,7 +112,7 @@ export default function CategoriesPage() {
 
         <div className="flex-1 overflow-auto p-4 md:p-5 bg-background">
           {loading && (
-            <div className="overflow-hidden rounded-xl border border-border bg-card">
+            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-xs">
               {[...Array(6)].map((_, i) => (
                 <div
                   key={i}
@@ -136,19 +140,18 @@ export default function CategoriesPage() {
 
           {!loading && !error && (
             categories.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40">
-                  <FolderTree className="h-7 w-7 text-muted-foreground/40" />
-                </div>
-                <h2 className="mb-1 text-sm font-semibold">Sem categorias</h2>
-                <p className="mb-4 text-xs text-muted-foreground">
-                  Organize o catálogo em grupos principais e subcategorias.
-                </p>
-                <Button size="sm" onClick={openCreate} className="gap-1.5">
-                  <Plus className="h-3.5 w-3.5" />
-                  Criar categoria
-                </Button>
-              </div>
+              <EmptyState
+                icon={FolderTree}
+                title="Sem categorias"
+                description="Organize o catálogo em grupos principais e subcategorias."
+                tone="info"
+                action={
+                  <Button size="sm" onClick={openCreate} className="gap-1.5">
+                    <Plus className="h-3.5 w-3.5" />
+                    Criar categoria
+                  </Button>
+                }
+              />
             ) : (
               <CategoryTree
                 groups={groups}
@@ -175,6 +178,7 @@ export default function CategoriesPage() {
           setSelectedCategory(null)
         }}
       />
+      {confirmDialog}
     </>
   )
 }

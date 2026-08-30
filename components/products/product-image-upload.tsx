@@ -89,30 +89,30 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
 
       if (!imageResponse.ok) {
         const errorData = await imageResponse.json().catch(() => ({})) as ProductImageUploadResponse
-        throw new Error(errorData.error || "Erro ao atualizar imagem")
+        throw new Error(errorData.error || "Erro ao actualizar imagem")
       }
 
       const data = await imageResponse.json() as ProductImageUploadResponse
       
-      // Atualizar preview com a nova URL da imagem
+      // Sincronizar preview com a nova URL da imagem
       if (data.data?.image) {
         setImagePreview(data.data.image)
         setImageError(false)
       }
 
       setSelectedImage(null)
-      showToast.success("Imagem atualizada", "A imagem do produto foi atualizada com sucesso")
+      showToast.success("Imagem actualizada", "A imagem do produto foi actualizada com sucesso")
       
-      // Resetar input
+      // Limpar input
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
       }
 
-      // Recarregar a página para atualizar os dados
+      // Recarregar a página para reflectir os dados
       window.location.reload()
     } catch (error: unknown) {
       console.error("Error uploading image:", error)
-      showToast.error("Erro ao atualizar imagem", getErrorMessage(error, "Ocorreu um erro ao atualizar a imagem"))
+      showToast.error("Erro ao actualizar imagem", getErrorMessage(error, "Ocorreu um erro ao actualizar a imagem"))
     } finally {
       setUploading(false)
     }
@@ -215,7 +215,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
           ) : (
             <>
               <Upload className="mr-2 h-3.5 w-3.5" />
-              Atualizar Imagem
+              Actualizar imagem
             </>
           )}
         </Button>

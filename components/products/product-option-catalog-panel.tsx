@@ -7,6 +7,7 @@ import { GET_PRODUCT } from "@/lib/graphql/products/queries"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { DataPanel } from "@/components/admin/data-panel"
 import { showToast } from "@/lib/utils/toast"
 import { getErrorMessage } from "@/lib/utils/errors"
 import {
@@ -35,7 +36,7 @@ function CatalogBlock({
 }) {
   return (
     <div className="rounded-md border border-border/70 bg-muted/15 p-3 space-y-2">
-      <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+      <p className="text-[11px] font-medium text-muted-foreground uppercase">
         {title}
       </p>
       {catalog.length === 0 ? (
@@ -127,14 +128,14 @@ export function ProductOptionCatalogPanel({
   }
 
   return (
-    <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-      <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-border/80 bg-muted/25">
+    <DataPanel>
+      <div className="flex items-start justify-between gap-3 border-b border-border/80 bg-muted/35 px-4 py-3">
         <div className="flex items-start gap-2.5 min-w-0">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-amber-50">
             <Store className="h-4 w-4 text-amber-800" />
           </div>
           <div className="min-w-0">
-            <h2 className="text-sm font-medium">Opções na loja</h2>
+            <h2 className="text-sm font-semibold">Opções na loja</h2>
             <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
               A página de detalhe usa <code className="text-[10px]">metadata.attributes</code> do
               produto. Deve coincidir com as opções das variantes.
@@ -197,6 +198,6 @@ export function ProductOptionCatalogPanel({
           </div>
         )}
       </div>
-    </div>
+    </DataPanel>
   )
 }

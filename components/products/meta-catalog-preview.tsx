@@ -3,6 +3,7 @@
 import { AlertCircle, CheckCircle2, Copy, ExternalLink, Megaphone } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { DataPanel } from "@/components/admin/data-panel"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import {
   parseMetaCatalogMetadata,
@@ -271,14 +272,14 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
   }
 
   return (
-    <div className="rounded-lg border border-border/80 bg-card shadow-none">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/25 px-4 py-3">
+    <DataPanel>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/35 px-4 py-3">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
             <Megaphone className="h-4 w-4 text-blue-800" aria-hidden />
           </div>
           <div>
-            <h2 className="text-sm font-medium">Meta Catalog</h2>
+            <h2 className="text-sm font-semibold">Meta Catalog</h2>
             <p className="text-[11px] text-muted-foreground">
               {includedCount}/{rows.length} linha{rows.length !== 1 ? "s" : ""} pronta
             </p>
@@ -299,7 +300,7 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
                 <th className="px-3 py-2 font-medium">ID</th>
                 <th className="px-3 py-2 font-medium">Título</th>
                 <th className="px-3 py-2 font-medium">Preço</th>
-                <th className="px-3 py-2 font-medium">Sale</th>
+                <th className="px-3 py-2 font-medium">Preço promo</th>
                 <th className="px-3 py-2 font-medium">Link</th>
               </tr>
             </thead>
@@ -310,7 +311,7 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
                     {row.included ? (
                       <Badge variant="secondary" className="gap-1 text-[10px]">
                         <CheckCircle2 className="h-3 w-3" aria-hidden />
-                        No feed
+                        Incluído
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="gap-1 text-[10px] text-amber-800">
@@ -355,6 +356,6 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
           {csvPreview}
         </pre>
       </div>
-    </div>
+    </DataPanel>
   )
 }
