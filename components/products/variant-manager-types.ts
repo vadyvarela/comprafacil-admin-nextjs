@@ -15,6 +15,5 @@ export interface ProductVariantCombination {
   offerTitle?: string
   offerItems?: string[]
   discount?: string
-  originalPrice?: string
   metaCatalog?: MetaCatalogMetadataInput
 }

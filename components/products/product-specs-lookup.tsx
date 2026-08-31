@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
-import { Loader2, Plus, Search, Trash2, X } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Cpu, Loader2, Plus, Search, Trash2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -15,7 +15,6 @@ import {
 import { showToast } from "@/lib/utils/toast"
 import type { ProductSpecifications } from "@/lib/product-specs/types"
 import { FormSection } from "@/components/products/product-form-layout"
-import { Cpu } from "lucide-react"
 
 type SpecRow = { id: string; key: string; value: string }
 
@@ -68,8 +67,13 @@ export function ProductSpecsSection({
   disabled = false,
 }: ProductSpecsSectionProps) {
   const [rows, setRows] = useState<SpecRow[]>(() => specsToRows(value))
+  const localSyncPendingRef = useRef(false)
 
   useEffect(() => {
+    if (localSyncPendingRef.current) {
+      localSyncPendingRef.current = false
+      return
+    }
     setRows(specsToRows(value))
   }, [value])
   const [lookupOpen, setLookupOpen] = useState(false)
@@ -83,6 +87,7 @@ export function ProductSpecsSection({
 
   const syncRows = useCallback(
     (nextRows: SpecRow[]) => {
+      localSyncPendingRef.current = true
       setRows(nextRows)
       onChange(rowsToSpecs(nextRows))
     },
@@ -155,7 +160,7 @@ export function ProductSpecsSection({
   }
 
   const addRow = () => {
-    syncRows([...rows, { id: `row-new-${Date.now()}`, key: "", value: "" }])
+    setRows([...rows, { id: `row-new-${Date.now()}`, key: "", value: "" }])
   }
 
   const updateRow = (id: string, field: "key" | "value", text: string) => {

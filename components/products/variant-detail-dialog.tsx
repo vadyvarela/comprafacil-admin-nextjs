@@ -14,8 +14,6 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Field } from "@/components/products/product-form-layout"
-import { MetaCatalogFields } from "@/components/products/meta-catalog-fields"
-import { EMPTY_META_CATALOG_METADATA } from "@/lib/products/meta-catalog-metadata"
 import { VariantGalleryUpload } from "./variant-gallery-upload"
 import type { ProductVariantCombination } from "./variant-manager-types"
 
@@ -154,8 +152,8 @@ export function VariantDetailDialog({
           )}
 
           <div className="rounded-md border border-border/70 p-3 space-y-3">
-            <p className="text-xs font-medium">Desconto / oferta de preço</p>
-            <div className="grid grid-cols-2 gap-3">
+            <p className="text-xs font-medium">Desconto</p>
+            <div className="max-w-[180px]">
               <Field label="Desconto (%)" htmlFor="variant-discount">
                 <Input
                   id="variant-discount"
@@ -169,35 +167,7 @@ export function VariantDetailDialog({
                   className="h-9"
                 />
               </Field>
-              <Field label="Preço original (CVE)" htmlFor="variant-originalPrice">
-                <Input
-                  id="variant-originalPrice"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={draft.originalPrice ?? ""}
-                  onChange={(e) => update("originalPrice", e.target.value)}
-                  placeholder="0.00"
-                  disabled={disabled}
-                  className="h-9"
-                />
-              </Field>
             </div>
-          </div>
-
-          <div className="rounded-md border border-border/70 p-3 space-y-3">
-            <div>
-              <p className="text-xs font-medium">Meta Catalog</p>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
-                Campos opcionais usados no feed de catálogo Facebook/Instagram.
-              </p>
-            </div>
-            <MetaCatalogFields
-              idPrefix="variant-meta-catalog"
-              value={draft.metaCatalog ?? EMPTY_META_CATALOG_METADATA}
-              onChange={(metaCatalog) => update("metaCatalog", metaCatalog)}
-              disabled={disabled}
-            />
           </div>
 
           <div className="rounded-md border border-orange-200/80 bg-orange-50/30 p-3 space-y-3">

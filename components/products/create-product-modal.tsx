@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
 import {
   Collapsible,
@@ -32,19 +31,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ChevronDown, Loader2, Package, FileText, Layers, Megaphone, Tag } from "lucide-react"
+import { ChevronDown, Loader2, Package, FileText, Layers, Tag } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { recordAuditLog } from "@/lib/actions/auditLogs"
-import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { Field, FormSection } from "@/components/products/product-form-layout"
-import { MetaCatalogFields } from "@/components/products/meta-catalog-fields"
 import { ProductSpecsSection } from "@/components/products/product-specs-lookup"
 import { specificationsToMetadataField } from "@/lib/product-specs/map-mobileapi-to-specifications"
 import type { ProductSpecifications } from "@/lib/product-specs/types"
-import {
-  applyMetaCatalogMetadata,
-  EMPTY_META_CATALOG_METADATA,
-} from "@/lib/products/meta-catalog-metadata"
 import {
   formatCategoryLabel,
   sortCategoriesForSelect,
@@ -63,22 +56,15 @@ export function CreateProductModal({
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
-    sku: "",
     categoryId: "none",
     brandId: "none",
     condition: "novo",
     status: "INACTIVE",
-    discount: "",
     price: "",
     quantity: "",
-    createDefaultVariant: true, // Por padrão, criar variante padrão
-    semFaceId: false,
-    batteryHealthPercent: "",
     specifications: {} as ProductSpecifications,
-    metaCatalog: { ...EMPTY_META_CATALOG_METADATA },
   })
   const [descriptionOpen, setDescriptionOpen] = useState(false)
-  const [metaCatalogOpen, setMetaCatalogOpen] = useState(false)
 
   const { data: categoriesData, loading: categoriesLoading } = useQuery<{
     categoryList: {
@@ -107,37 +93,16 @@ export function CreateProductModal({
     setFormData({
       title: "",
       summary: "",
-      sku: "",
       categoryId: "none",
       brandId: "none",
       condition: "novo",
       status: "INACTIVE",
-      discount: "",
       price: "",
       quantity: "",
-      createDefaultVariant: true,
-      semFaceId: false,
-      batteryHealthPercent: "",
       specifications: {},
-      metaCatalog: { ...EMPTY_META_CATALOG_METADATA },
     })
     setDescriptionOpen(false)
-    setMetaCatalogOpen(false)
   }, [])
-
-  const showIphoneSeminovoFields = useMemo(() => {
-    const cat = categories.find((c) => c.id === formData.categoryId)
-    const br = brands.find((b) => b.id === formData.brandId)
-    return (
-      (formData.condition === "seminovo" || formData.condition === "usado") &&
-      looksLikeIphoneProduct({
-        title: formData.title,
-        categoryName: cat?.name,
-        categorySlug: cat?.slug,
-        brandName: br?.name,
-      })
-    )
-  }, [formData.title, formData.condition, formData.categoryId, formData.brandId, categories, brands])
 
   const [createProduct, { loading, error }] = useMutation<{
     createProduct: { id: string }
@@ -164,19 +129,17 @@ export function CreateProductModal({
       return
     }
 
-    const metadata: Record<string, unknown> = {}
-    if (formData.sku?.trim()) metadata.sku = formData.sku.trim()
-
-    if (showIphoneSeminovoFields) {
-      if (formData.semFaceId) metadata.semFaceId = true
-      const pct = normalizeBatteryHealthPercent(formData.batteryHealthPercent)
-      if (pct !== null) metadata.batteryHealthPercent = pct
+    const priceAmount = Number.parseFloat(formData.price)
+    if (!Number.isFinite(priceAmount) || priceAmount <= 0) {
+      showToast.error("Preço obrigatório", "Indica um preço maior que zero para criar o produto.")
+      return
     }
+
+    const quantity = Number.parseInt(formData.quantity, 10) || 0
+    const metadata: Record<string, unknown> = {}
 
     const specsField = specificationsToMetadataField(formData.specifications)
     if (specsField) metadata.specifications = specsField
-
-    const productMetadata = applyMetaCatalogMetadata(metadata, formData.metaCatalog)
 
     const categoryId =
       formData.categoryId && formData.categoryId !== "none"
@@ -188,22 +151,19 @@ export function CreateProductModal({
         ? formData.brandId
         : null
 
-    const discount = formData.discount ? parseInt(formData.discount) : null
-
     try {
       const { data: productData } = await createProduct({
         variables: {
           input: {
             title: formData.title.trim(),
             summary: formData.summary?.trim() || null,
-            discount,
             type: {
               code: "TICKET",
             },
             status: {
               code: formData.status,
             },
-            metadata: Object.keys(productMetadata).length > 0 ? JSON.stringify(productMetadata) : null,
+            metadata: Object.keys(metadata).length > 0 ? JSON.stringify(metadata) : null,
             condition: formData.condition,
             categoryId,
             brandId,
@@ -228,35 +188,21 @@ export function CreateProductModal({
         metadata: { title: formData.title.trim() },
       })
 
-      // Se preço foi fornecido e createDefaultVariant está ativo, criar variante padrão
-      if (formData.createDefaultVariant && formData.price) {
-        const priceAmount = parseFloat(formData.price)
-        const quantity = parseInt(formData.quantity) || 0
-
-        if (priceAmount > 0) {
-          // Criar variante padrão
-          const variantMetadata: Record<string, unknown> = {}
-          if (formData.sku) {
-            variantMetadata.sku = formData.sku.trim()
-          }
-
-          await createVariant({
-            variables: {
-              input: {
-                productId,
-                title: formData.title.trim(), // Usar título do produto como título da variante padrão
-                quantity,
-                metadata: JSON.stringify(variantMetadata),
-                priceData: {
-                  nickname: "Preço padrão",
-                  unitAmount: Math.round(priceAmount * 100), // Converter para centavos
-                  currency: "CVE",
-                },
-              },
+      await createVariant({
+        variables: {
+          input: {
+            productId,
+            title: formData.title.trim(),
+            quantity,
+            metadata: null,
+            priceData: {
+              nickname: "Preço padrão",
+              unitAmount: Math.round(priceAmount * 100),
+              currency: "CVE",
             },
-          })
-        }
-      }
+          },
+        },
+      })
 
       showToast.success("Produto criado", `O produto "${formData.title.trim()}" foi criado com sucesso`)
       onOpenChange(false)
@@ -306,44 +252,8 @@ export function CreateProductModal({
               </Field>
             </FormSection>
 
-            <Collapsible
-              open={descriptionOpen}
-              onOpenChange={setDescriptionOpen}
-              className="rounded-lg border border-border/80 bg-card overflow-hidden"
-            >
-              <CollapsibleTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
-                >
-                  <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-sky-50 text-sky-800">
-                      <FileText className="h-3 w-3" />
-                    </span>
-                    <span className="text-xs font-medium">Descrição</span>
-                  </span>
-                  <ChevronDown
-                    className={`h-3.5 w-3.5 transition-transform ${
-                      descriptionOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </Button>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="border-t border-border/80 p-3.5">
-                <Field label="Descrição completa">
-                  <RichTextEditor
-                    value={formData.summary}
-                    onChange={(value) => setFormData({ ...formData, summary: value })}
-                    placeholder="Características, conteúdo da caixa, condição..."
-                    disabled={isLoading}
-                  />
-                </Field>
-              </CollapsibleContent>
-            </Collapsible>
-
             <FormSection icon={Layers} title="Classificação" iconTone="bg-violet-50 text-violet-800">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Categoria" htmlFor="categoryId">
                   <Select
                     value={formData.categoryId}
@@ -400,9 +310,7 @@ export function CreateProductModal({
                     </SelectContent>
                   </Select>
                 </Field>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field
                   label="Visibilidade"
                   htmlFor="status"
@@ -422,74 +330,38 @@ export function CreateProductModal({
                     </SelectContent>
                   </Select>
                 </Field>
+              </div>
+            </FormSection>
 
-                <Field label="SKU" htmlFor="sku">
+            <FormSection icon={Tag} title="Preço e stock" iconTone="bg-emerald-50 text-emerald-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Preço (CVE)" htmlFor="price" required>
                   <Input
-                    id="sku"
-                    value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                    placeholder="Ex: IPH-15PM-256"
+                    id="price"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    placeholder="1000.00"
+                    required
                     disabled={isLoading}
                     className="h-9"
                   />
                 </Field>
-
-                <Field label="Desconto (%)" htmlFor="discount">
+                <Field label="Quantidade em stock" htmlFor="quantity">
                   <Input
-                    id="discount"
+                    id="quantity"
                     type="number"
                     min="0"
-                    max="100"
-                    value={formData.discount}
-                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-                    placeholder="0"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    placeholder="10"
                     disabled={isLoading}
                     className="h-9"
                   />
                 </Field>
               </div>
-
-              {showIphoneSeminovoFields && (
-                <div className="rounded-md border border-border/70 bg-muted/20 p-3 space-y-2.5">
-                  <div>
-                    <p className="text-xs font-medium text-foreground">iPhone seminovo</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      Campos informativos na ficha da loja. Opcional.
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:items-end">
-                    <div className="flex items-center gap-2 min-h-9">
-                      <input
-                        type="checkbox"
-                        id="create-semFaceId"
-                        checked={formData.semFaceId}
-                        onChange={(e) => setFormData({ ...formData, semFaceId: e.target.checked })}
-                        className="h-4 w-4 rounded border-input accent-primary"
-                        disabled={isLoading}
-                      />
-                      <Label htmlFor="create-semFaceId" className="text-xs font-normal cursor-pointer">
-                        Sem Face ID
-                      </Label>
-                    </div>
-                    <Field label="Saúde da bateria (%)" htmlFor="create-batteryHealthPercent">
-                      <Input
-                        id="create-batteryHealthPercent"
-                        type="number"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={formData.batteryHealthPercent}
-                        onChange={(e) =>
-                          setFormData({ ...formData, batteryHealthPercent: e.target.value })
-                        }
-                        placeholder="Ex: 87"
-                        disabled={isLoading}
-                        className="h-9"
-                      />
-                    </Field>
-                  </div>
-                </div>
-              )}
             </FormSection>
 
             <ProductSpecsSection
@@ -501,8 +373,8 @@ export function CreateProductModal({
             />
 
             <Collapsible
-              open={metaCatalogOpen}
-              onOpenChange={setMetaCatalogOpen}
+              open={descriptionOpen}
+              onOpenChange={setDescriptionOpen}
               className="rounded-lg border border-border/80 bg-card overflow-hidden"
             >
               <CollapsibleTrigger asChild>
@@ -512,88 +384,29 @@ export function CreateProductModal({
                   className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-blue-50 text-blue-800">
-                      <Megaphone className="h-3 w-3" />
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-sky-50 text-sky-800">
+                      <FileText className="h-3 w-3" />
                     </span>
-                    <span className="text-xs font-medium">Meta Catalog</span>
+                    <span className="text-xs font-medium">Descrição</span>
                   </span>
                   <ChevronDown
                     className={`h-3.5 w-3.5 transition-transform ${
-                      metaCatalogOpen ? "rotate-180" : ""
+                      descriptionOpen ? "rotate-180" : ""
                     }`}
                   />
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="border-t border-border/80 p-3.5">
-                <MetaCatalogFields
-                  idPrefix="create-meta-catalog"
-                  value={formData.metaCatalog}
-                  onChange={(metaCatalog) => setFormData({ ...formData, metaCatalog })}
-                  disabled={isLoading}
-                />
+                <Field label="Descrição completa">
+                  <RichTextEditor
+                    value={formData.summary}
+                    onChange={(value) => setFormData({ ...formData, summary: value })}
+                    placeholder="Características, conteúdo da caixa, condição..."
+                    disabled={isLoading}
+                  />
+                </Field>
               </CollapsibleContent>
             </Collapsible>
-
-            <FormSection icon={Tag} title="Preço e stock" iconTone="bg-emerald-50 text-emerald-800">
-              <label
-                htmlFor="createDefaultVariant"
-                className="flex items-start gap-2.5 rounded-md border border-border/70 bg-muted/15 px-3 py-2.5 cursor-pointer hover:bg-muted/25 transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  id="createDefaultVariant"
-                  checked={formData.createDefaultVariant}
-                  onChange={(e) =>
-                    setFormData({ ...formData, createDefaultVariant: e.target.checked })
-                  }
-                  className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
-                  disabled={isLoading}
-                />
-                <span className="space-y-0.5">
-                  <span className="block text-xs font-medium text-foreground">
-                    Criar variante padrão com preço
-                  </span>
-                  <span className="block text-[11px] text-muted-foreground leading-snug">
-                    Define preço e quantidade inicial numa única variante.
-                  </span>
-                </span>
-              </label>
-
-              {formData.createDefaultVariant ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field label="Preço (CVE)" htmlFor="price" required>
-                    <Input
-                      id="price"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      placeholder="1000.00"
-                      required={formData.createDefaultVariant}
-                      disabled={isLoading}
-                      className="h-9"
-                    />
-                  </Field>
-                  <Field label="Quantidade em stock" htmlFor="quantity">
-                    <Input
-                      id="quantity"
-                      type="number"
-                      min="0"
-                      value={formData.quantity}
-                      onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                      placeholder="10"
-                      disabled={isLoading}
-                      className="h-9"
-                    />
-                  </Field>
-                </div>
-              ) : (
-                <p className="text-[11px] text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2 leading-relaxed">
-                  O produto será criado sem variantes. Pode adicioná-las depois na página de detalhes.
-                </p>
-              )}
-            </FormSection>
           </div>
 
           <DialogFooter className="gap-2 px-5 py-3.5 border-t border-border/80 bg-muted/15 sm:justify-end">
@@ -611,7 +424,7 @@ export function CreateProductModal({
               type="submit"
               size="sm"
               className="h-8 min-w-[108px]"
-              disabled={isLoading || !formData.title.trim()}
+              disabled={isLoading || !formData.title.trim() || !formData.price.trim()}
             >
               {loading ? (
                 <>
