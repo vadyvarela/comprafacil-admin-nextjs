@@ -7,7 +7,8 @@ import { TransactionPagination } from "@/components/transactions/transaction-pag
 import { TransactionDetail } from "@/components/transactions/transaction-detail"
 import { getValidSession } from "@/lib/auth0"
 import { hasMinimumRole } from "@/lib/auth/roles"
-import { CreditCard } from "lucide-react"
+import { CreditCard, Search } from "lucide-react"
+import { EmptyState } from "@/components/admin/empty-state"
 
 export const dynamic = "force-dynamic"
 
@@ -63,15 +64,13 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
             canDelete={canDeleteTransactions}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
-            <div className="text-center space-y-3 max-w-md">
-              <CreditCard className="h-10 w-10 mx-auto text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Transação não encontrada</h2>
-              <p className="text-sm text-muted-foreground">
-                Esta transação pode estar numa página diferente. Use a busca para localizá-la.
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={CreditCard}
+            title="Transação não encontrada"
+            description="Esta transação pode estar numa página diferente. Use a busca para localizá-la."
+            className="min-h-[400px]"
+            tone="warning"
+          />
         )}
       </>
     )
@@ -100,21 +99,16 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           {result.ok ? (
             <>
               {transactions.length === 0 ? (
-                <div
-                  className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-sm mx-auto"
-                  role="status"
-                  aria-label="Nenhuma transação"
-                >
-                  <CreditCard className="h-10 w-10 text-muted-foreground mb-4" />
-                  <h2 className="text-sm font-semibold text-foreground mb-1">
-                    {search || status || dateFrom ? "Nenhum resultado" : "Nenhuma transação"}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {search || status || dateFrom
+                <EmptyState
+                  icon={search || status || dateFrom ? Search : CreditCard}
+                  title={search || status || dateFrom ? "Nenhum resultado" : "Nenhuma transação"}
+                  description={
+                    search || status || dateFrom
                       ? "Tente outros filtros ou remova os existentes."
-                      : "As transações de pagamento aparecerão aqui."}
-                  </p>
-                </div>
+                      : "As transações de pagamento aparecerão aqui."
+                  }
+                  tone={search || status || dateFrom ? "info" : "neutral"}
+                />
               ) : (
                 <>
                   <TransactionList

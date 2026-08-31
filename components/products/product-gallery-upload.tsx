@@ -15,6 +15,7 @@ import {
   Upload,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { MediaPickerDialog } from "@/components/media/media-picker-dialog"
 import { showToast } from "@/lib/utils/toast"
 import {
@@ -30,6 +31,7 @@ interface ProductGalleryUploadProps {
   /** Slug da marca do produto — pasta na biblioteca. Sem marca → `sem-marca`. */
   brandSlug?: string | null
   onSaved?: () => void
+  readOnly?: boolean
 }
 
 const MAX_IMAGES = 12
@@ -41,6 +43,7 @@ export function ProductGalleryUpload({
   metadata,
   brandSlug,
   onSaved,
+  readOnly = false,
 }: ProductGalleryUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [images, setImages] = useState<string[]>([])
@@ -48,6 +51,7 @@ export function ProductGalleryUpload({
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [pickerOpen, setPickerOpen] = useState(false)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   useEffect(() => {
     setImages(parseProductGalleryUrls(primaryImage, metadata))
@@ -116,7 +120,7 @@ export function ProductGalleryUpload({
   }
 
   const handleFiles = async (files: FileList | null) => {
-    if (!files?.length) return
+    if (!files?.length || readOnly) return
     if (images.length >= MAX_IMAGES) {
       showToast.error("Limite atingido", `Máximo de ${MAX_IMAGES} imagens`)
       return
@@ -135,7 +139,7 @@ export function ProductGalleryUpload({
       setImages(added)
       await persistGallery(added)
       showToast.success(
-        "Galeria atualizada",
+        "Galeria actualizada",
         added.length === 1
           ? "1 imagem na galeria"
           : `${added.length} imagens na galeria`,
@@ -152,11 +156,22 @@ export function ProductGalleryUpload({
   }
 
   const removeAt = async (index: number) => {
+    if (readOnly) return
+    const confirmed = await confirm({
+      title: "Remover imagem?",
+      description: "Está prestes a remover esta imagem da galeria do produto.",
+      impact: "A alteração é guardada no produto e pode afetar a imagem apresentada na loja.",
+      confirmText: "Remover imagem",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
     const next = images.filter((_, i) => i !== index)
     setImages(next)
     try {
       await persistGallery(next)
-      showToast.success("Imagem removida", "Galeria atualizada")
+      showToast.success("Imagem removida", "Galeria actualizada")
     } catch (e: unknown) {
       setImages(images)
       showToast.error(
@@ -233,7 +248,7 @@ export function ProductGalleryUpload({
     try {
       await persistGallery(added)
       showToast.success(
-        "Galeria atualizada",
+        "Galeria actualizada",
         `${added.length - images.length} imagem(ns) da biblioteca`,
       )
     } catch (e: unknown) {
@@ -246,7 +261,7 @@ export function ProductGalleryUpload({
   }
 
   const busy = uploading || saving
-  const canAdd = images.length < MAX_IMAGES
+  const canAdd = !readOnly && images.length < MAX_IMAGES
 
   return (
     <div className="p-4 space-y-3">
@@ -266,7 +281,7 @@ export function ProductGalleryUpload({
       </div>
 
       {images.length > 0 ? (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {images.map((url, index) => (
             <div
               key={`${url}-${index}`}
@@ -291,7 +306,8 @@ export function ProductGalleryUpload({
                   Hover
                 </span>
               )}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
+              {!readOnly ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40 p-1 opacity-100 transition-opacity sm:bg-black/50 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                 {index !== 0 && (
                   <Button
                     type="button"
@@ -324,6 +340,8 @@ export function ProductGalleryUpload({
                     className="h-6 w-6 shrink-0"
                     disabled={busy || index === 0}
                     onClick={() => void move(index, -1)}
+                    aria-label={`Mover imagem ${index + 1} para a esquerda`}
+                    title="Mover para a esquerda"
                   >
                     <ChevronLeft className="h-3 w-3" />
                   </Button>
@@ -334,6 +352,8 @@ export function ProductGalleryUpload({
                     className="h-6 w-6 shrink-0"
                     disabled={busy || index === images.length - 1}
                     onClick={() => void move(index, 1)}
+                    aria-label={`Mover imagem ${index + 1} para a direita`}
+                    title="Mover para a direita"
                   >
                     <ChevronRight className="h-3 w-3" />
                   </Button>
@@ -344,12 +364,17 @@ export function ProductGalleryUpload({
                     className="h-6 w-6 shrink-0 ml-auto"
                     disabled={busy}
                     onClick={() => void removeAt(index)}
+                    aria-label={`Eliminar imagem ${index + 1}`}
+                    title="Eliminar imagem"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
               </div>
-              <GripVertical className="absolute bottom-1 right-1 h-3 w-3 text-white/60 opacity-0 group-hover:opacity-100" />
+              ) : null}
+              {!readOnly ? (
+                <GripVertical className="absolute bottom-1 right-1 h-3 w-3 text-white/70 opacity-70 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100" />
+              ) : null}
             </div>
           ))}
         </div>
@@ -357,11 +382,13 @@ export function ProductGalleryUpload({
         <div className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-input rounded-md px-3">
           <ImageIcon className="h-5 w-5 text-muted-foreground mb-1.5" />
           <p className="text-xs text-muted-foreground text-center">
-            Adicionar imagens à galeria
+            {readOnly ? "Sem imagens na galeria" : "Adicionar imagens à galeria"}
           </p>
-          <p className="text-[10px] text-muted-foreground mt-0.5 text-center">
-            Upload do PC ou escolher da biblioteca
-          </p>
+          {!readOnly ? (
+            <p className="text-[10px] text-muted-foreground mt-0.5 text-center">
+              Upload do PC ou escolher da biblioteca
+            </p>
+          ) : null}
         </div>
       )}
 
@@ -371,12 +398,12 @@ export function ProductGalleryUpload({
         accept="image/jpeg,image/png,image/webp,image/gif"
         multiple
         className="hidden"
-        disabled={busy}
+        disabled={busy || readOnly}
         onChange={(e) => void handleFiles(e.target.files)}
       />
 
       {canAdd && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"
@@ -411,22 +438,27 @@ export function ProductGalleryUpload({
         </div>
       )}
 
-      <MediaPickerDialog
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        multiple
-        maxSelectable={MAX_IMAGES}
-        brandSlug={brandSlug}
-        excludeUrls={images}
-        onSelect={(urls) => void addFromLibrary(urls)}
-        title="Escolher imagens da biblioteca"
-        description="Selecciona uma ou mais imagens já existentes para a galeria do produto."
-      />
+      {!readOnly ? (
+        <MediaPickerDialog
+          open={pickerOpen}
+          onOpenChange={setPickerOpen}
+          multiple
+          maxSelectable={MAX_IMAGES}
+          brandSlug={brandSlug}
+          excludeUrls={images}
+          onSelect={(urls) => void addFromLibrary(urls)}
+          title="Escolher imagens da biblioteca"
+          description="Selecciona uma ou mais imagens já existentes para a galeria do produto."
+        />
+      ) : null}
 
-      <p className="text-[10px] text-muted-foreground leading-snug">
-        A primeira imagem é a capa na loja. Marca outra imagem como &quot;Hover&quot; para trocar no card
-        (requer activação em Aparência → Cartão de produto).
-      </p>
+      {!readOnly ? (
+        <p className="text-[10px] text-muted-foreground leading-snug">
+          A primeira imagem é a capa na loja. Marca outra imagem como &quot;Hover&quot; para trocar no card
+          (requer activação em Aparência → Cartão de produto).
+        </p>
+      ) : null}
+      {confirmDialog}
     </div>
   )
 }

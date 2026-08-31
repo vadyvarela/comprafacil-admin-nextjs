@@ -198,7 +198,7 @@ export function ProductSpecsSection({
 
         {rows.length > 0 ? (
           <div className="rounded-md border border-border/70 overflow-hidden">
-            <div className="grid grid-cols-[1fr_1.2fr_32px] gap-2 px-2.5 py-1.5 bg-muted/30 border-b border-border/60 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="grid grid-cols-[1fr_1.2fr_32px] gap-2 px-2.5 py-1.5 bg-muted/30 border-b border-border/60 text-[10px] font-medium uppercase text-muted-foreground">
               <span>Campo</span>
               <span>Valor</span>
               <span />

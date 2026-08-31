@@ -4,7 +4,8 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { AuditLogList } from "@/components/logs/audit-log-list"
 import { AuditLogToolbar } from "@/components/logs/audit-log-toolbar"
 import { AuditLogPagination } from "@/components/logs/audit-log-pagination"
-import { ScrollText } from "lucide-react"
+import { ScrollText, Search } from "lucide-react"
+import { EmptyState } from "@/components/admin/empty-state"
 
 export const dynamic = "force-dynamic"
 
@@ -70,23 +71,16 @@ export default async function LogsPage({ searchParams }: PageProps) {
           {result.ok ? (
             <>
               {logs.length === 0 ? (
-                <div
-                  className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-sm mx-auto"
-                  role="status"
-                  aria-label="Nenhum log"
-                >
-                  <ScrollText className="h-10 w-10 text-muted-foreground mb-4" />
-                  <h2 className="text-sm font-semibold text-foreground mb-1">
-                    {search || entityType || action || dateFrom
-                      ? "Nenhum resultado"
-                      : "Nenhum evento"}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {search || entityType || action || dateFrom
+                <EmptyState
+                  icon={search || entityType || action || dateFrom ? Search : ScrollText}
+                  title={search || entityType || action || dateFrom ? "Nenhum resultado" : "Nenhum evento"}
+                  description={
+                    search || entityType || action || dateFrom
                       ? "Tente outros filtros ou remova os existentes."
-                      : "As ações do backoffice aparecerão aqui."}
-                  </p>
-                </div>
+                      : "As ações do backoffice aparecerão aqui."
+                  }
+                  tone={search || entityType || action || dateFrom ? "info" : "neutral"}
+                />
               ) : (
                 <>
                   <AuditLogList logs={logs} />

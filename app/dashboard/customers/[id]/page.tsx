@@ -2,6 +2,8 @@ import { notFound } from "next/navigation"
 import Link from "next/link"
 import { getCustomerDetails } from "@/lib/actions/customers"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
+import { DataPanel } from "@/components/admin/data-panel"
+import { EmptyState } from "@/components/admin/empty-state"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, User, MapPin, Mail, Phone, Hash, Globe } from "lucide-react"
 import type { AddressResponse } from "@/lib/graphql/customers/types"
@@ -43,18 +45,18 @@ export default async function CustomerDetailPage({ params }: PageProps) {
             { label: "Detalhe" },
           ]}
         />
-        <div className="flex flex-1 flex-col items-center justify-center min-h-[300px] p-4">
-          <div className="text-center space-y-4 max-w-md">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mx-auto">
-              <User className="h-8 w-8 text-muted-foreground/40" />
-            </div>
-            <h2 className="text-lg font-bold">Erro ao carregar cliente</h2>
-            <p className="text-sm text-muted-foreground">{result.error}</p>
+        <EmptyState
+          icon={User}
+          title="Erro ao carregar cliente"
+          description={result.error}
+          tone="danger"
+          className="min-h-[300px]"
+          action={
             <Button variant="outline" size="sm" asChild>
               <Link href="/dashboard/customers">Voltar aos clientes</Link>
             </Button>
-          </div>
-        </div>
+          }
+        />
       </>
     )
   }
@@ -77,14 +79,14 @@ export default async function CustomerDetailPage({ params }: PageProps) {
           <div className="mx-auto w-full max-w-4xl px-4 py-5 md:px-5 md:py-6 space-y-5">
 
             {/* Hero */}
-            <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-none">
+            <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-xs">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-violet-50 text-sm font-semibold text-violet-800">
                     {initials}
                   </div>
                   <div>
-                    <h1 className="text-lg font-semibold tracking-tight">{displayName}</h1>
+                    <h1 className="text-lg font-semibold">{displayName}</h1>
                     {customer.email && (
                       <p className="text-sm text-muted-foreground flex items-center gap-1.5 mt-0.5">
                         <Mail className="h-3 w-3" />
@@ -105,12 +107,12 @@ export default async function CustomerDetailPage({ params }: PageProps) {
             {/* Content */}
             <div className="grid gap-5 lg:grid-cols-2 animate-enter-delay-1">
               {/* Data card */}
-              <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-                <div className="flex items-center gap-2 px-3 py-2 border-b border-border/80 bg-muted/25">
+              <DataPanel>
+                <div className="flex items-center gap-2 border-b border-border/80 bg-muted/35 px-3 py-2.5">
                   <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/50 bg-violet-50">
                     <User className="h-3.5 w-3.5 text-violet-700" />
                   </div>
-                  <span className="text-xs font-medium">Dados pessoais</span>
+                  <span className="text-xs font-semibold">Dados pessoais</span>
                 </div>
                 <div className="p-4 space-y-0">
                   {customer.name && (
@@ -144,16 +146,16 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                     </div>
                   )}
                 </div>
-              </div>
+              </DataPanel>
 
               {/* Addresses */}
               {customer.addresses && customer.addresses.length > 0 ? (
-                <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-none">
-                  <div className="flex items-center gap-2 px-3 py-2 border-b border-border/80 bg-muted/25">
+                <DataPanel>
+                  <div className="flex items-center gap-2 border-b border-border/80 bg-muted/35 px-3 py-2.5">
                     <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/50 bg-amber-50">
                       <MapPin className="h-3.5 w-3.5 text-amber-800" />
                     </div>
-                    <span className="text-xs font-medium">Endereços</span>
+                    <span className="text-xs font-semibold">Endereços</span>
                     <span className="ml-auto text-[11px] text-muted-foreground">
                       {customer.addresses.length} endereço{customer.addresses.length !== 1 ? "s" : ""}
                     </span>
@@ -183,14 +185,15 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                         )
                       })}
                   </div>
-                </div>
+                </DataPanel>
               ) : (
-                <div className="rounded-lg border border-dashed border-border/80 bg-muted/15 flex flex-col items-center justify-center py-12 text-center">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-3">
-                    <MapPin className="h-6 w-6 text-muted-foreground/30" />
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">Nenhum endereço registado</p>
-                </div>
+                <DataPanel className="border-dashed bg-muted/15">
+                  <EmptyState
+                    icon={MapPin}
+                    title="Nenhum endereço registado"
+                    className="py-12"
+                  />
+                </DataPanel>
               )}
             </div>
           </div>

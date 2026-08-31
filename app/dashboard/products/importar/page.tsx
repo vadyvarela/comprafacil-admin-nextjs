@@ -359,7 +359,7 @@ export default function ImportCatalogPage() {
         />
 
         {parsed && (
-          <div className="rounded-lg border border-border/80 bg-card px-3 py-2 text-xs space-y-1">
+          <div className="rounded-lg border border-border/80 bg-card px-3 py-2 text-xs space-y-1 shadow-xs">
             {listsLoading ? (
               <p className="text-muted-foreground flex items-center gap-1.5">
                 <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />

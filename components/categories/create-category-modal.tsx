@@ -167,7 +167,7 @@ export function CreateCategoryModal({
     try {
       if (isEditMode && category) {
         await updateCategory({ variables: { id: category.id, input } })
-        showToast.success("Categoria atualizada", `"${formData.name}" foi guardada`)
+        showToast.success("Categoria actualizada", `"${formData.name}" foi guardada`)
       } else {
         await createCategory({ variables: { input } })
         showToast.success("Categoria criada", `"${formData.name}" está pronta a usar`)
@@ -202,13 +202,13 @@ export function CreateCategoryModal({
             <DialogTitle>{isEditMode ? "Editar categoria" : "Nova categoria"}</DialogTitle>
             <DialogDescription>
               {isEditMode
-                ? "Atualize o nome, imagem e visibilidade na loja."
+                ? "Actualize o nome, imagem e visibilidade na loja."
                 : "Crie um grupo principal ou uma subcategoria do catálogo."}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Nome" htmlFor="name" required>
                 <Input
                   id="name"
@@ -244,7 +244,7 @@ export function CreateCategoryModal({
 
             <div className="space-y-1.5">
               <p className="text-xs font-medium">Imagem</p>
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border bg-muted/40">
                   {imageUrl ? (
                     <img src={imageUrl} alt="" className="h-full w-full object-cover" />
@@ -253,7 +253,7 @@ export function CreateCategoryModal({
                   )}
                 </div>
                 <div className="min-w-0 flex-1 space-y-2">
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Input
                       id="image"
                       value={formData.image}
@@ -285,7 +285,7 @@ export function CreateCategoryModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Categoria pai" htmlFor="parentCategoryId">
                 <Select
                   value={formData.parentCategoryId || "none"}
@@ -316,17 +316,17 @@ export function CreateCategoryModal({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ACTIVE" className="text-xs">
-                      Ativo
+                      Activo
                     </SelectItem>
                     <SelectItem value="INACTIVE" className="text-xs">
-                      Inativo
+                      Inactivo
                     </SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <Field label="Ordem" htmlFor="orderIndex">
                 <Input
                   id="orderIndex"
@@ -356,7 +356,7 @@ export function CreateCategoryModal({
               </Field>
             </div>
 
-            <label className="flex items-center gap-2 rounded-md border border-border/80 bg-muted/20 px-3 py-2 text-xs cursor-pointer">
+            <label className="flex cursor-pointer flex-wrap items-center gap-2 rounded-md border border-border/80 bg-muted/20 px-3 py-2 text-xs transition-colors hover:bg-muted/35">
               <input
                 type="checkbox"
                 checked={formData.showOnHome}

@@ -108,7 +108,7 @@ function bannerToForm(banner: Banner): FormState {
 function statusPayload(code: string) {
   return {
     code,
-    description: code === "ACTIVE" ? "Ativo" : "Inativo",
+    description: code === "ACTIVE" ? "Activo" : "Inactivo",
   }
 }
 
@@ -150,8 +150,8 @@ export function BannerFormModal({
     refetchQueries: [{ query: GET_BANNERS }],
     onCompleted: (data) => {
       showToast.success(
-        "Banner atualizado",
-        `“${data.updateBanner.title}” foi atualizado`,
+        "Banner actualizado",
+        `“${data.updateBanner.title}” foi actualizado`,
       )
       onOpenChange(false)
     },
@@ -254,7 +254,7 @@ export function BannerFormModal({
         if (selectedImage) {
           await updateBannerWithImage(banner.id, payload, selectedImage)
           await refetchBanners()
-          showToast.success("Banner atualizado", `“${payload.title}” foi atualizado`)
+          showToast.success("Banner actualizado", `“${payload.title}” foi actualizado`)
           onOpenChange(false)
         } else {
           await updateBanner({
@@ -282,11 +282,11 @@ export function BannerFormModal({
       }
     } catch (err: unknown) {
       showToast.error(
-        isEdit ? "Erro ao atualizar banner" : "Erro ao criar banner",
+        isEdit ? "Erro ao actualizar banner" : "Erro ao criar banner",
         getErrorMessage(
           err,
           isEdit
-            ? "Ocorreu um erro ao atualizar o banner"
+            ? "Ocorreu um erro ao actualizar o banner"
             : "Ocorreu um erro ao criar o banner",
         ),
       )
@@ -329,7 +329,7 @@ export function BannerFormModal({
           {error && (
             <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs text-destructive">
               <p className="font-medium">
-                {isEdit ? "Erro ao atualizar" : "Erro ao criar"}
+                {isEdit ? "Erro ao actualizar" : "Erro ao criar"}
               </p>
               <p className="mt-0.5 opacity-90">{error.message}</p>
             </div>
@@ -377,7 +377,7 @@ export function BannerFormModal({
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-black/10" />
                         <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/70">
+                          <p className="text-[10px] font-medium uppercase text-white/70">
                             {POSITION_LABEL[formData.position] || formData.position}
                           </p>
                           <p className="mt-0.5 text-sm font-semibold leading-tight line-clamp-2">
@@ -506,7 +506,7 @@ export function BannerFormModal({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label htmlFor="banner-link" className="text-xs">
                       Link
@@ -538,7 +538,7 @@ export function BannerFormModal({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2.5">
+                <div className="grid gap-2.5 sm:grid-cols-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs">Posição</Label>
                     <Select
@@ -588,14 +588,14 @@ export function BannerFormModal({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ACTIVE">Ativo</SelectItem>
-                        <SelectItem value="INACTIVE">Inativo</SelectItem>
+                        <SelectItem value="ACTIVE">Activo</SelectItem>
+                        <SelectItem value="INACTIVE">Inactivo</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label className="text-xs">Início</Label>
                     <DatePicker

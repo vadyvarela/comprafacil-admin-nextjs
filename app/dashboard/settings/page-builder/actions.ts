@@ -1,5 +1,7 @@
 "use server"
 
+import { requireModuleWriteOrThrow } from "@/lib/auth/requireRole"
+
 export type RevalidateTecharenaHomeResult =
   | { ok: true; skipped: true }
   | { ok: true }
@@ -37,6 +39,16 @@ function normalizeRevalidateUrl(raw: string): string {
  * usa o hostname/IP onde a techarena está acessível a partir do backoffice.
  */
 export async function revalidateTecharenaHome(): Promise<RevalidateTecharenaHomeResult> {
+  try {
+    await requireModuleWriteOrThrow("settings")
+  } catch {
+    return {
+      ok: false,
+      status: 403,
+      message: "Sem permissão para revalidar a home.",
+    }
+  }
+
   const rawUrl = process.env.TECHARENA_REVALIDATE_URL?.trim()
   const rawSecret = process.env.TECHARENA_REVALIDATE_SECRET
   const secret = rawSecret != null ? stripEnvQuotes(rawSecret) : ""

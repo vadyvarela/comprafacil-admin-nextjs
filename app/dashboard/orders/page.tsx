@@ -6,19 +6,31 @@ import { OrderListToolbar } from "@/components/orders/order-list-toolbar"
 import { OrderPagination } from "@/components/orders/order-pagination"
 import { OrderListTabs } from "@/components/orders/order-list-tabs"
 import { CreditCard, Search } from "lucide-react"
+import { EmptyState } from "@/components/admin/empty-state"
+import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
+import { getValidSession } from "@/lib/auth0"
+import { canWriteModule } from "@/lib/auth/roles"
 
 type PageProps = {
   searchParams: Promise<{ search?: string; page?: string; tab?: string; from?: string; to?: string }>
 }
 
 function emptyStateConfig(
-  search: string | null
+  search: string | null,
+  tab: ReturnType<typeof parseOrdersTab>
 ): { title: string; description: string; icon: typeof CreditCard } {
   if (search?.trim()) {
     return {
       title: "Nenhum resultado",
       description: "Tente outro termo ou remova o filtro de busca.",
       icon: Search,
+    }
+  }
+  if (tab !== "all") {
+    return {
+      title: "Nenhum pedido nesta aba",
+      description: "Esta aba filtra os pedidos pagos carregados para a página atual.",
+      icon: CreditCard,
     }
   }
   return {
@@ -35,6 +47,8 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const tab = parseOrdersTab(params.tab ?? null)
   const dateFrom = params.from ?? null
   const dateTo = params.to ?? null
+  const session = await getValidSession()
+  const canWriteOrders = canWriteModule(session?.user, "orders")
 
   const result = await getOrdersPageWithDetails({ search, page, tab, dateFrom, dateTo })
 
@@ -44,7 +58,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const error = result.ok ? null : result.error
   const pageSize = ORDER_PAGE_SIZE
 
-  const empty = emptyStateConfig(search)
+  const empty = emptyStateConfig(search, tab)
 
   return (
     <>
@@ -58,32 +72,29 @@ export default async function OrdersPage({ searchParams }: PageProps) {
         <Suspense fallback={null}>
           <OrderListToolbar
             totalElements={totalElements}
+            visibleCount={orders.length}
+            currentTab={tab}
             error={error}
             dateFrom={dateFrom ?? undefined}
             dateTo={dateTo ?? undefined}
           />
         </Suspense>
         <div className="flex-1 overflow-auto p-5 pt-4 space-y-3">
+          {!canWriteOrders ? (
+            <ReadOnlyNotice moduleLabel="Pedidos" />
+          ) : null}
           {/* Abas de status (Todos, Pago, Pendentes) */}
           <OrderListTabs currentTab={tab} />
           {result.ok ? (
             <>
               {orders.length === 0 ? (
-                <div
-                  className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-sm mx-auto"
-                  role="status"
-                  aria-label={empty.title}
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
-                    <empty.icon className="h-7 w-7 text-muted-foreground/50" />
-                  </div>
-                  <h2 className="text-sm font-bold text-foreground mb-1">
-                    {empty.title}
-                  </h2>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    {empty.description}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={empty.icon}
+                  title={empty.title}
+                  description={empty.description}
+                  tone={search ? "info" : "neutral"}
+                  className="py-20"
+                />
               ) : (
                 <>
                   <OrderList orders={orders} />

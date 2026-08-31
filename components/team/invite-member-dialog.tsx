@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Check, Copy, Loader2, UserPlus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog,
   DialogContent,
@@ -13,7 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { FormField } from "@/components/admin/form-field"
 import {
   Select,
   SelectContent,
@@ -47,14 +48,15 @@ export function InviteMemberDialog({
   onInvited,
 }: InviteMemberDialogProps) {
   const [email, setEmail] = useState("")
-  const [role, setRole] = useState<StoreRole>("manager")
+  const [role, setRole] = useState<StoreRole>("operator")
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState<InviteSuccess | null>(null)
   const [copied, setCopied] = useState(false)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   function resetForm() {
     setEmail("")
-    setRole("manager")
+    setRole("operator")
     setSuccess(null)
     setCopied(false)
   }
@@ -65,6 +67,19 @@ export function InviteMemberDialog({
   }
 
   async function handleInvite() {
+    if (role === "owner" || role === "admin") {
+      const confirmed = await confirm({
+        title: "Convidar com acesso total?",
+        description: `${email} será convidado como ${ROLE_LABELS[role]}.`,
+        impact: "Este perfil pode gerir equipa, segurança e tokens de API.",
+        confirmText: "Enviar convite",
+        variant: "critical",
+        requireText: "ACESSO",
+      })
+
+      if (!confirmed) return
+    }
+
     try {
       setSubmitting(true)
       const res = await fetch("/api/team/invite", {
@@ -115,8 +130,9 @@ export function InviteMemberDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent>
         {success ? (
           <>
             <DialogHeader>
@@ -128,7 +144,7 @@ export function InviteMemberDialog({
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-2 py-2">
-              <Label>Link de convite</Label>
+              <p className="text-xs font-semibold text-foreground">Link de convite</p>
               <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 p-2">
                 <p className="flex-1 text-xs font-mono break-all text-foreground">
                   {success.inviteUrl}
@@ -163,8 +179,7 @@ export function InviteMemberDialog({
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3 py-2">
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="invite-email">Email</Label>
+              <FormField label="Email" htmlFor="invite-email">
                 <Input
                   id="invite-email"
                   type="email"
@@ -172,9 +187,8 @@ export function InviteMemberDialog({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <Label htmlFor="invite-role">Função</Label>
+              </FormField>
+              <FormField label="Função" htmlFor="invite-role" description={ROLE_DESCRIPTIONS[role]}>
                 <Select value={role} onValueChange={(v) => setRole(v as StoreRole)}>
                   <SelectTrigger id="invite-role">
                     <SelectValue />
@@ -187,8 +201,7 @@ export function InviteMemberDialog({
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</p>
-              </div>
+              </FormField>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => handleOpenChange(false)}>
@@ -210,7 +223,9 @@ export function InviteMemberDialog({
             </DialogFooter>
           </>
         )}
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      {confirmDialog}
+    </>
   )
 }

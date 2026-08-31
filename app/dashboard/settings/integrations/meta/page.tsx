@@ -94,7 +94,7 @@ function CatalogHealthPanel({
         <Badge variant="outline">{validPercent}% válido</Badge>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 text-sm">
+      <div className="grid gap-3 text-sm sm:grid-cols-3">
         <div>
           <p className="text-muted-foreground">Linhas</p>
           <p className="font-medium">{health.totalRows}</p>
@@ -150,7 +150,7 @@ function EventRow({
           {event.productId
             ? `produto ${event.productId}`
             : event.orderId
-              ? `encomenda ${event.orderId}`
+              ? `pedido ${event.orderId}`
               : event.page || "—"}
         </p>
       </div>
@@ -216,7 +216,7 @@ export default async function MetaIntegrationsPage() {
                     <p className="font-medium text-foreground">Commerce Manager</p>
                     <p className="mt-1">
                       Criar catálogo, escolher Data Feed por URL, colar a URL do
-                      catálogo e agendar atualização automática.
+                      catálogo e agendar actualização automática.
                     </p>
                   </div>
                 </CardContent>
@@ -269,8 +269,8 @@ export default async function MetaIntegrationsPage() {
                     ok={!result.data.configuration.testMode}
                     label={
                       result.data.configuration.testMode
-                        ? "Test mode ativo"
-                        : "Test mode inativo"
+                        ? "Test mode activo"
+                        : "Test mode inactivo"
                     }
                   />
                 </CardContent>
@@ -280,7 +280,7 @@ export default async function MetaIntegrationsPage() {
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Catálogo</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-2 gap-3 text-sm">
+                <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
                   <div>
                     <p className="text-muted-foreground">Produtos</p>
                     <p className="font-medium">{result.data.catalog.totalProducts}</p>
@@ -366,7 +366,7 @@ export default async function MetaIntegrationsPage() {
                       <p className="text-xs text-muted-foreground">
                         {result.data.tracking.lastCapiError.eventName || "Purchase"}
                         {result.data.tracking.lastCapiError.orderId
-                          ? ` · encomenda ${result.data.tracking.lastCapiError.orderId}`
+                          ? ` · pedido ${result.data.tracking.lastCapiError.orderId}`
                           : ""}
                         {" · "}
                         {new Date(

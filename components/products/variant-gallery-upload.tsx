@@ -182,7 +182,7 @@ export function VariantGalleryUpload({
       </div>
 
       {localImages.length > 0 ? (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {localImages.map((url, index) => (
             <div
               key={`${url}-${index}`}
@@ -207,7 +207,7 @@ export function VariantGalleryUpload({
                   Hover
                 </span>
               )}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/40 p-1 opacity-100 transition-opacity sm:bg-black/50 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
                 {index !== 0 && (
                   <Button
                     type="button"
@@ -240,6 +240,8 @@ export function VariantGalleryUpload({
                     className="h-6 w-6 shrink-0"
                     disabled={busy || index === 0}
                     onClick={() => move(index, -1)}
+                    aria-label={`Mover imagem ${index + 1} para a esquerda`}
+                    title="Mover para a esquerda"
                   >
                     <ChevronLeft className="h-3 w-3" />
                   </Button>
@@ -250,6 +252,8 @@ export function VariantGalleryUpload({
                     className="h-6 w-6 shrink-0"
                     disabled={busy || index === localImages.length - 1}
                     onClick={() => move(index, 1)}
+                    aria-label={`Mover imagem ${index + 1} para a direita`}
+                    title="Mover para a direita"
                   >
                     <ChevronRight className="h-3 w-3" />
                   </Button>
@@ -260,6 +264,8 @@ export function VariantGalleryUpload({
                     className="h-6 w-6 shrink-0 ml-auto"
                     disabled={busy}
                     onClick={() => removeAt(index)}
+                    aria-label={`Eliminar imagem ${index + 1}`}
+                    title="Eliminar imagem"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -286,7 +292,7 @@ export function VariantGalleryUpload({
       />
 
       {canAdd && (
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           <Button
             type="button"
             variant="outline"

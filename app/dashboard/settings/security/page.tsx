@@ -3,9 +3,14 @@
 import { useEffect, useState } from "react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
+import { PageHeader } from "@/components/admin/page-header"
+import { DataPanel, DataPanelHeader } from "@/components/admin/data-panel"
+import { EmptyState } from "@/components/admin/empty-state"
+import { FormField } from "@/components/admin/form-field"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Dialog,
   DialogContent,
@@ -15,7 +20,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Check,
@@ -53,6 +57,7 @@ export default function SecurityPage() {
   // Modal de geração
   const [generateOpen, setGenerateOpen] = useState(false)
   const [tokenName, setTokenName] = useState("STORE_API_TOKEN")
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   async function loadTokens() {
     try {
@@ -100,7 +105,17 @@ export default function SecurityPage() {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Remover o token "${name}"?`)) return
+    const confirmed = await confirm({
+      title: "Remover token?",
+      description: `Está prestes a remover o token "${name}".`,
+      impact: "Integrações que usam este token deixam de autenticar na API. Esta ação não pode ser desfeita.",
+      confirmText: "Remover token",
+      variant: "critical",
+      requireText: "REMOVER",
+    })
+
+    if (!confirmed) return
+
     try {
       const res = await fetch(`/api/security/tokens/${id}`, { method: "DELETE" })
       if (!res.ok && res.status !== 204) throw new Error()
@@ -112,6 +127,18 @@ export default function SecurityPage() {
   }
 
   async function handleToggle(id: string, active: boolean) {
+    if (active) {
+      const confirmed = await confirm({
+        title: "Desactivar token?",
+        description: "Está prestes a desactivar este token de API.",
+        impact: "Integrações que usam este token deixam de autenticar enquanto ele estiver inactivo.",
+        confirmText: "Desactivar token",
+        variant: "destructive",
+      })
+
+      if (!confirmed) return
+    }
+
     try {
       const action = active ? "deactivate" : "activate"
       const res = await fetch(`/api/security/tokens/${id}`, {
@@ -120,10 +147,10 @@ export default function SecurityPage() {
         body: JSON.stringify({ action }),
       })
       if (!res.ok) throw new Error()
-      toast.success(active ? "Token desativado" : "Token ativado")
+      toast.success(active ? "Token desactivado" : "Token activado")
       await loadTokens()
     } catch {
-      toast.error("Erro ao atualizar token")
+      toast.error("Erro ao actualizar token")
     }
   }
 
@@ -145,18 +172,15 @@ export default function SecurityPage() {
       <SettingsSubnav />
 
       <div className="flex flex-1 flex-col gap-5 p-4 md:p-5 bg-background">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">Tokens de API</h1>
-            <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
-              Crie e revogue tokens de autenticação para o frontend e integrações externas.
-            </p>
-          </div>
+        <PageHeader
+          title="Tokens de API"
+          description="Crie e revogue tokens de autenticação para o frontend e integrações externas."
+        >
           <Button onClick={() => setGenerateOpen(true)} size="sm">
             <Plus className="h-3.5 w-3.5 mr-1.5" />
             Gerar token
           </Button>
-        </div>
+        </PageHeader>
 
         {/* Lista de tokens */}
         <div className="flex flex-col gap-3">
@@ -165,23 +189,24 @@ export default function SecurityPage() {
               <Skeleton key={i} className="h-20 rounded-lg" />
             ))
           ) : tokens.length === 0 ? (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <Shield className="h-10 w-10 text-muted-foreground/30 mb-3" />
-                <p className="text-sm font-semibold text-foreground mb-1">Nenhum token criado</p>
-                <p className="text-xs text-muted-foreground mb-4">
-                  Gera um token para o frontend autenticar na API.
-                </p>
+            <DataPanel className="border-dashed">
+              <EmptyState
+                icon={Shield}
+                title="Nenhum token criado"
+                description="Gera um token para o frontend autenticar na API."
+                tone="info"
+                action={
                 <Button size="sm" onClick={() => setGenerateOpen(true)}>
                   <Plus className="h-3.5 w-3.5 mr-1.5" />
                   Gerar primeiro token
                 </Button>
-              </CardContent>
-            </Card>
+                }
+              />
+            </DataPanel>
           ) : (
             tokens.map((token) => (
-              <Card key={token.id} className="border-border/80 shadow-none">
-                <CardContent className="flex items-center gap-4 p-4">
+              <Card key={token.id} className="border-border/80">
+                <CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-primary/10">
                     <Key className="h-4 w-4 text-primary" />
                   </div>
@@ -192,7 +217,7 @@ export default function SecurityPage() {
                         variant={token.active ? "default" : "secondary"}
                         className="text-xs shrink-0"
                       >
-                        {token.active ? "Ativo" : "Inativo"}
+                        {token.active ? "Activo" : "Inactivo"}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate">
@@ -204,7 +229,7 @@ export default function SecurityPage() {
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex shrink-0 items-center gap-2 sm:ml-auto">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -212,9 +237,9 @@ export default function SecurityPage() {
                       className="text-xs"
                     >
                       {token.active ? (
-                        <><EyeOff className="h-3.5 w-3.5 mr-1" /> Desativar</>
+                        <><EyeOff className="h-3.5 w-3.5 mr-1" /> Desactivar</>
                       ) : (
-                        <><Eye className="h-3.5 w-3.5 mr-1" /> Ativar</>
+                        <><Eye className="h-3.5 w-3.5 mr-1" /> Activar</>
                       )}
                     </Button>
                     <Button
@@ -232,19 +257,21 @@ export default function SecurityPage() {
           )}
         </div>
 
-        <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-border/80 bg-muted/25">
+        <DataPanel>
+          <DataPanelHeader>
+            <div>
             <h3 className="text-sm font-medium text-foreground">Como usar o token</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
               Adiciona o header em todas as chamadas ao backend.
             </p>
-          </div>
+            </div>
+          </DataPanelHeader>
           <div className="p-4">
-            <code className="block text-xs font-mono bg-muted/50 rounded-lg px-3 py-2.5 text-foreground">
+            <code className="block overflow-x-auto rounded-md bg-muted/50 px-3 py-2.5 font-mono text-xs text-foreground">
               Authorization: Bearer &lt;token&gt;
             </code>
           </div>
-        </div>
+        </DataPanel>
       </div>
 
       {/* Modal — Gerar token */}
@@ -257,15 +284,14 @@ export default function SecurityPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 py-2">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="token-name">Nome do token</Label>
+            <FormField label="Nome do token" htmlFor="token-name">
               <Input
                 id="token-name"
                 placeholder="Ex: STORE_API_TOKEN"
                 value={tokenName}
                 onChange={(e) => setTokenName(e.target.value)}
               />
-            </div>
+            </FormField>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setGenerateOpen(false)}>
@@ -329,6 +355,7 @@ export default function SecurityPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {confirmDialog}
     </>
   )
 }

@@ -7,11 +7,13 @@ import {
   SheetContent,
   SheetFooter,
   SheetHeader,
+  SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { FormField } from "@/components/admin/form-field"
 import {
   Select,
   SelectContent,
@@ -51,6 +53,7 @@ export function ReconcilePaymentSheet({
   const [cardType, setCardType] = useState(initial?.cardType ?? "")
   const [card, setCard] = useState(initial?.card ?? "")
   const [saving, setSaving] = useState(false)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   useEffect(() => {
     if (open) {
@@ -70,6 +73,16 @@ export function ReconcilePaymentSheet({
         toast.error("Referência do pagamento é obrigatória.")
         return
       }
+      const confirmed = await confirm({
+        title: "Enviar reconciliação?",
+        description: `Vai enviar o estado "${status === "Completed" ? "Pagamento confirmado" : "Erro no pagamento"}" para esta referência.`,
+        impact: "Esta ação comunica com o gateway de pagamento. Confirme os dados antes de continuar.",
+        confirmText: "Enviar reconciliação",
+        variant: status === "Error" ? "destructive" : "default",
+      })
+
+      if (!confirmed) return
+
       setSaving(true)
       try {
         const result = await purchaseReconciliation({
@@ -90,46 +103,45 @@ export function ReconcilePaymentSheet({
         setSaving(false)
       }
     },
-    [referenceId, status, statusReason, cardType, card, onOpenChange, router]
+    [referenceId, status, statusReason, cardType, card, onOpenChange, router, confirm]
   )
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="flex h-full w-full flex-col overflow-hidden p-0 sm:max-w-xl"
-      >
-        <div className="border-b">
-          <SheetHeader className="px-4 py-3">
-            <SheetTitle className="text-lg">
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent
+          side="right"
+          className="flex h-full w-full flex-col overflow-hidden p-0 sm:max-w-xl"
+        >
+          <SheetHeader className="px-4 py-3 pr-12">
+            <SheetTitle>
               Reconciliação de pagamento
             </SheetTitle>
+            <SheetDescription>
+              Use apenas quando for preciso alinhar manualmente o estado no gateway.
+            </SheetDescription>
           </SheetHeader>
-        </div>
 
         <form
           id="reconcile-payment-form"
           onSubmit={handleSubmit}
           className="flex flex-1 flex-col overflow-hidden"
         >
-          <div className="flex-1 overflow-auto p-4 space-y-4">
-            <p className="text-xs text-muted-foreground">
-              Envia o estado do pagamento ao gateway (purchaseReconciliation).
-              A referência é o <strong>merchantReference</strong> do payment intent.
+          <div className="flex-1 space-y-4 overflow-auto p-4">
+            <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+              A referência corresponde ao <strong>merchantReference</strong> da transação. Confirme os dados antes de enviar.
             </p>
-            <div className="space-y-2">
-              <Label htmlFor="referenceId">Referência do pagamento *</Label>
+            <FormField label="Referência do pagamento *" htmlFor="referenceId">
               <Input
                 id="referenceId"
                 value={referenceId}
                 onChange={(e) => setReferenceId(e.target.value)}
-                placeholder="merchantReference do payment intent"
+                placeholder="Referência da transação"
                 required
                 className="font-mono text-sm"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="status">Estado</Label>
+            </FormField>
+            <FormField label="Estado" htmlFor="status">
               <Select
                 value={status}
                 onValueChange={(v) => setStatus(v as "Completed" | "Error")}
@@ -138,41 +150,38 @@ export function ReconcilePaymentSheet({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Error">Error</SelectItem>
+                  <SelectItem value="Completed">Pagamento confirmado</SelectItem>
+                  <SelectItem value="Error">Erro no pagamento</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cardType">Tipo de cartão</Label>
+            </FormField>
+            <FormField label="Tipo de cartão" htmlFor="cardType">
               <Input
                 id="cardType"
                 value={cardType}
                 onChange={(e) => setCardType(e.target.value)}
                 placeholder="ex: Visa, Vinti4…"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="card">Cartão (últimos dígitos)</Label>
+            </FormField>
+            <FormField label="Cartão (últimos dígitos)" htmlFor="card">
               <Input
                 id="card"
                 value={card}
                 onChange={(e) => setCard(e.target.value)}
                 placeholder="ex: **** 1234"
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="statusReason">Motivo / Observação</Label>
+            </FormField>
+            <FormField label="Motivo / Observação" htmlFor="statusReason">
               <Input
                 id="statusReason"
                 value={statusReason}
                 onChange={(e) => setStatusReason(e.target.value)}
                 placeholder="ex: Captura manual, reversão…"
               />
-            </div>
+            </FormField>
           </div>
 
-          <SheetFooter className="sticky bottom-0 z-10 border-t bg-background p-4">
+          <SheetFooter className="sticky bottom-0 z-10">
             <div className="ml-auto flex gap-2">
               <Button
                 type="button"
@@ -195,7 +204,9 @@ export function ReconcilePaymentSheet({
             </div>
           </SheetFooter>
         </form>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+      {confirmDialog}
+    </>
   )
 }

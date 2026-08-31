@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState } from "react"
 import { useMutation } from "@apollo/client/react"
 import { CREATE_BRAND, UPDATE_BRAND } from "@/lib/graphql/brands/mutations"
@@ -14,7 +16,6 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -23,6 +24,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { FormField } from "@/components/admin/form-field"
+import { MediaPickerDialog } from "@/components/media/media-picker-dialog"
+import { FolderOpen, X } from "lucide-react"
+import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 interface CreateBrandModalProps {
   open: boolean
@@ -77,6 +83,7 @@ export function CreateBrandModal({
   const baseFormData = brandToForm(brand)
 
   const [formDraft, setFormDraft] = useState<{ key: string; data: BrandFormData } | null>(null)
+  const [pickerTarget, setPickerTarget] = useState<"image" | "logo" | null>(null)
   const formData = formDraft?.key === formKey ? formDraft.data : baseFormData
 
   function setFormData(value: React.SetStateAction<BrandFormData>) {
@@ -141,46 +148,57 @@ export function CreateBrandModal({
       },
     }
 
-    if (isEditMode && brand) {
-      await updateBrand({
-        variables: {
-          id: brand.id,
-          input,
-        },
-      })
-    } else {
-      await createBrand({
-        variables: {
-          input,
-        },
-      })
+    try {
+      if (isEditMode && brand) {
+        await updateBrand({
+          variables: {
+            id: brand.id,
+            input,
+          },
+        })
+      } else {
+        await createBrand({
+          variables: {
+            input,
+          },
+        })
+      }
+    } catch (error: unknown) {
+      showToast.error("Erro ao guardar marca", getErrorMessage(error, "Não foi possível guardar a marca."))
     }
   }
 
+  const pickAsset = (target: "image" | "logo", urls: string[]) => {
+    const url = urls[0]
+    if (!url) return
+    setFormData((prev) => ({ ...prev, [target]: url }))
+    setPickerTarget(null)
+  }
+
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(nextOpen) => {
-        onOpenChange(nextOpen)
-        if (!nextOpen) resetForm()
-      }}
-    >
-      <DialogContent className="sm:max-w-[600px]">
+    <>
+      <Dialog
+        open={open}
+        onOpenChange={(nextOpen) => {
+          onOpenChange(nextOpen)
+          if (!nextOpen) resetForm()
+        }}
+      >
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? "Editar Marca" : "Criar Marca"}
+            {isEditMode ? "Editar marca" : "Criar marca"}
           </DialogTitle>
           <DialogDescription>
             {isEditMode
-              ? "Atualize as informações da marca."
-              : "Adicione uma nova marca para organizar seus produtos."}
+              ? "Actualize as informações da marca."
+              : "Adicione uma nova marca para organizar os produtos."}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome *</Label>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormField label="Nome *" htmlFor="name">
               <Input
                 id="name"
                 value={formData.name}
@@ -188,10 +206,13 @@ export function CreateBrandModal({
                 required
                 placeholder="Ex: Apple"
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="slug">Slug *</Label>
+            <FormField
+              label="Slug *"
+              htmlFor="slug"
+              description="URL amigável gerada automaticamente."
+            >
               <Input
                 id="slug"
                 value={formData.slug}
@@ -200,15 +221,12 @@ export function CreateBrandModal({
                 }
                 required
                 placeholder="ex: apple"
+                className="font-mono"
               />
-              <p className="text-xs text-muted-foreground">
-                URL amigável (gerado automaticamente)
-              </p>
-            </div>
+            </FormField>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Descrição</Label>
+          <FormField label="Descrição" htmlFor="description">
             <Textarea
               id="description"
               value={formData.description}
@@ -218,37 +236,84 @@ export function CreateBrandModal({
               placeholder="Descrição da marca"
               rows={3}
             />
+          </FormField>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormField label="Imagem da marca" htmlFor="image">
+              {formData.image ? (
+                <div className="relative h-24 overflow-hidden rounded-md border border-border/80 bg-muted/30">
+                  <img src={formData.image} alt="" className="h-full w-full object-cover" />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon-sm"
+                    className="absolute right-1.5 top-1.5 h-7 w-7"
+                    onClick={() => setFormData((prev) => ({ ...prev, image: "" }))}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : null}
+              <div className="flex gap-2">
+                <Input
+                  id="image"
+                  value={formData.image}
+                  onChange={(e) =>
+                    setFormData({ ...formData, image: e.target.value })
+                  }
+                  placeholder="URL da imagem"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setPickerTarget("image")}
+                  aria-label="Escolher imagem da biblioteca"
+                >
+                  <FolderOpen className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </FormField>
+
+            <FormField label="Logótipo" htmlFor="logo">
+              {formData.logo ? (
+                <div className="relative flex h-24 items-center justify-center overflow-hidden rounded-md border border-border/80 bg-muted/30 p-3">
+                  <img src={formData.logo} alt="" className="max-h-full max-w-full object-contain" />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon-sm"
+                    className="absolute right-1.5 top-1.5 h-7 w-7"
+                    onClick={() => setFormData((prev) => ({ ...prev, logo: "" }))}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : null}
+              <div className="flex gap-2">
+                <Input
+                  id="logo"
+                  value={formData.logo}
+                  onChange={(e) =>
+                    setFormData({ ...formData, logo: e.target.value })
+                  }
+                  placeholder="URL do logótipo"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setPickerTarget("logo")}
+                  aria-label="Escolher logótipo da biblioteca"
+                >
+                  <FolderOpen className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </FormField>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="image">URL da Imagem</Label>
-              <Input
-                id="image"
-                value={formData.image}
-                onChange={(e) =>
-                  setFormData({ ...formData, image: e.target.value })
-                }
-                placeholder="https://exemplo.com/imagem.jpg"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="logo">URL do Logo</Label>
-              <Input
-                id="logo"
-                value={formData.logo}
-                onChange={(e) =>
-                  setFormData({ ...formData, logo: e.target.value })
-                }
-                placeholder="https://exemplo.com/logo.png"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="orderIndex">Ordem</Label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <FormField label="Ordem" htmlFor="orderIndex">
               <Input
                 id="orderIndex"
                 type="number"
@@ -262,10 +327,9 @@ export function CreateBrandModal({
                 }
                 placeholder="0"
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+            <FormField label="Estado" htmlFor="status">
               <Select
                 value={formData.status}
                 onValueChange={(value) =>
@@ -276,11 +340,11 @@ export function CreateBrandModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ACTIVE">Ativo</SelectItem>
-                  <SelectItem value="INACTIVE">Inativo</SelectItem>
+                  <SelectItem value="ACTIVE">Activo</SelectItem>
+                  <SelectItem value="INACTIVE">Inactivo</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </FormField>
           </div>
 
           <DialogFooter>
@@ -298,16 +362,30 @@ export function CreateBrandModal({
             <Button type="submit" disabled={loading}>
               {loading
                 ? isEditMode
-                  ? "Salvando..."
-                  : "Criando..."
+                  ? "A guardar..."
+                  : "A criar..."
                 : isEditMode
-                ? "Salvar Alterações"
-                : "Criar Marca"}
+                ? "Guardar alterações"
+                : "Criar marca"}
             </Button>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+      <MediaPickerDialog
+        open={pickerTarget !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setPickerTarget(null)
+        }}
+        multiple={false}
+        maxSelectable={1}
+        onSelect={(urls) => {
+          if (pickerTarget) pickAsset(pickerTarget, urls)
+        }}
+        title={pickerTarget === "logo" ? "Escolher logótipo" : "Escolher imagem"}
+        description="Selecciona uma imagem já existente na biblioteca."
+      />
+    </>
   )
 }
 

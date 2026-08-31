@@ -223,7 +223,7 @@ export function CreateProductModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto p-0 gap-0">
         <DialogHeader className="px-5 pt-5 pb-4 border-b border-border/80">
-          <DialogTitle className="text-lg font-semibold tracking-tight">Novo produto</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">Novo produto</DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground mt-1">
             Informações essenciais para publicar o produto na loja.
           </DialogDescription>
@@ -375,7 +375,7 @@ export function CreateProductModal({
             <Collapsible
               open={descriptionOpen}
               onOpenChange={setDescriptionOpen}
-              className="rounded-lg border border-border/80 bg-card overflow-hidden"
+              className="rounded-lg border border-border/80 bg-card shadow-xs overflow-hidden"
             >
               <CollapsibleTrigger asChild>
                 <Button

@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState, useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Image as ImageIcon, X, Upload, Loader2, ImageOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { showToast } from "@/lib/utils/toast"
@@ -21,6 +22,7 @@ type ProductImageUploadResponse = {
 }
 
 export function ProductImageUpload({ productId, currentImage }: ProductImageUploadProps) {
+  const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -89,30 +91,29 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
 
       if (!imageResponse.ok) {
         const errorData = await imageResponse.json().catch(() => ({})) as ProductImageUploadResponse
-        throw new Error(errorData.error || "Erro ao atualizar imagem")
+        throw new Error(errorData.error || "Erro ao actualizar imagem")
       }
 
       const data = await imageResponse.json() as ProductImageUploadResponse
       
-      // Atualizar preview com a nova URL da imagem
+      // Sincronizar preview com a nova URL da imagem
       if (data.data?.image) {
         setImagePreview(data.data.image)
         setImageError(false)
       }
 
       setSelectedImage(null)
-      showToast.success("Imagem atualizada", "A imagem do produto foi atualizada com sucesso")
+      showToast.success("Imagem actualizada", "A imagem do produto foi actualizada com sucesso")
       
-      // Resetar input
+      // Limpar input
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
       }
 
-      // Recarregar a página para atualizar os dados
-      window.location.reload()
+      router.refresh()
     } catch (error: unknown) {
       console.error("Error uploading image:", error)
-      showToast.error("Erro ao atualizar imagem", getErrorMessage(error, "Ocorreu um erro ao atualizar a imagem"))
+      showToast.error("Erro ao actualizar imagem", getErrorMessage(error, "Ocorreu um erro ao actualizar a imagem"))
     } finally {
       setUploading(false)
     }
@@ -161,7 +162,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
               </div>
             )}
             {!selectedImage && (
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/25 opacity-100 transition-colors sm:bg-black/0 sm:opacity-0 sm:group-hover:bg-black/40 sm:group-hover:opacity-100 sm:group-focus-within:bg-black/40 sm:group-focus-within:opacity-100">
                 <Button
                   variant="secondary"
                   size="sm"
@@ -215,7 +216,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
           ) : (
             <>
               <Upload className="mr-2 h-3.5 w-3.5" />
-              Atualizar Imagem
+              Actualizar imagem
             </>
           )}
         </Button>

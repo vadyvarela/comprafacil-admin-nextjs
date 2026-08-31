@@ -49,7 +49,7 @@ export function TransactionSispStatus({ merchantReference }: TransactionSispStat
   return (
     <div className="space-y-2 border-t border-border/60 px-4 py-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+        <p className="text-[11px] font-medium text-muted-foreground uppercase">
           Estado SISP
         </p>
         <Button

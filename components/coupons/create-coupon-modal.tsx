@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select"
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react"
 import { recordAuditLog } from "@/lib/actions/auditLogs"
+import { showToast } from "@/lib/utils/toast"
+import { getErrorMessage } from "@/lib/utils/errors"
 
 interface CreateCouponModalProps {
   coupon?: Coupon | null
@@ -206,6 +208,7 @@ export function CreateCouponModal({
       }
     } catch (err) {
       console.error("Error saving coupon:", err)
+      showToast.error("Erro ao guardar cupão", getErrorMessage(err, "Não foi possível guardar o cupão."))
     }
   }
 
@@ -222,19 +225,19 @@ export function CreateCouponModal({
         }
       }}
     >
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-4">
-          <DialogTitle className="text-xl font-semibold">
-            {isEditMode ? "Editar cupom" : "Novo cupom"}
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
+        <DialogHeader>
+          <DialogTitle>
+            {isEditMode ? "Editar cupão" : "Novo cupão"}
           </DialogTitle>
-          <DialogDescription className="text-sm mt-1">
+          <DialogDescription>
             {isEditMode
-              ? "Atualize as informações do cupom"
-              : "Crie um novo cupom de desconto"}
+              ? "Actualize as informações do cupão"
+              : "Crie um novo cupão de desconto"}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Nome */}
           <div className="space-y-2">
             <Label htmlFor="name">
@@ -266,8 +269,8 @@ export function CreateCouponModal({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="percent">Percentual (%)</SelectItem>
-                <SelectItem value="amount">Valor Fixo</SelectItem>
+                <SelectItem value="percent">Percentagem (%)</SelectItem>
+                <SelectItem value="amount">Valor fixo</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -276,7 +279,7 @@ export function CreateCouponModal({
           {formData.discountType === "percent" ? (
             <div className="space-y-2">
               <Label htmlFor="percentOff">
-                Percentual de Desconto <span className="text-destructive">*</span>
+                Percentagem de desconto <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="percentOff"
@@ -294,10 +297,10 @@ export function CreateCouponModal({
               />
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="amountOff">
-                  Valor do Desconto <span className="text-destructive">*</span>
+                  Valor do desconto <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="amountOff"
@@ -360,7 +363,7 @@ export function CreateCouponModal({
 
           {formData.duration === "REPEATING" && (
             <div className="space-y-2">
-              <Label htmlFor="durationInMonths">Duração em Meses</Label>
+              <Label htmlFor="durationInMonths">Duração em meses</Label>
               <Input
                 id="durationInMonths"
                 type="number"
@@ -375,15 +378,15 @@ export function CreateCouponModal({
             </div>
           )}
 
-          {/* Opções Avançadas */}
+          {/* Opções avançadas */}
           <div className="space-y-3">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               onClick={() => setShowAdvanced(!showAdvanced)}
-              className="w-full justify-between"
+              className="h-9 w-full justify-between bg-muted/20 px-3"
             >
-              <span className="text-sm font-medium">Opções Avançadas</span>
+              <span className="text-sm font-semibold">Opções avançadas</span>
               {showAdvanced ? (
                 <ChevronUp className="h-4 w-4" />
               ) : (
@@ -392,9 +395,9 @@ export function CreateCouponModal({
             </Button>
 
             {showAdvanced && (
-              <div className="space-y-4 pt-2 border-t">
+              <div className="space-y-4 rounded-lg border border-border/70 bg-muted/20 p-3">
                 <div className="space-y-2">
-                  <Label htmlFor="maxRedemptions">Máximo de Resgates</Label>
+                  <Label htmlFor="maxRedemptions">Máximo de utilizações</Label>
                   <Input
                     id="maxRedemptions"
                     type="number"
@@ -409,7 +412,7 @@ export function CreateCouponModal({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="redeemBy">Válido Até</Label>
+                  <Label htmlFor="redeemBy">Válido até</Label>
                   <Input
                     id="redeemBy"
                     type="date"
@@ -422,7 +425,7 @@ export function CreateCouponModal({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="appliesToProductId">Aplicar a Produto</Label>
+                  <Label htmlFor="appliesToProductId">Aplicar a produto</Label>
                   <Select
                     value={formData.appliesToProductId}
                     onValueChange={(value) =>
@@ -444,7 +447,7 @@ export function CreateCouponModal({
                   </Select>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-md border border-border/70 bg-background px-3 py-2">
                   <input
                     type="checkbox"
                     id="defaultCoupon"
@@ -453,17 +456,17 @@ export function CreateCouponModal({
                       setFormData({ ...formData, defaultCoupon: e.target.checked })
                     }
                     disabled={loading}
-                    className="h-4 w-4 rounded border"
+                    className="h-4 w-4 rounded border border-input"
                   />
                   <Label htmlFor="defaultCoupon" className="text-sm cursor-pointer">
-                    Cupom padrão
+                    Cupão padrão
                   </Label>
                 </div>
               </div>
             )}
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
@@ -476,10 +479,10 @@ export function CreateCouponModal({
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isEditMode ? "Salvando..." : "Criando..."}
+                  {isEditMode ? "A guardar..." : "A criar..."}
                 </>
               ) : (
-                isEditMode ? "Salvar" : "Criar Cupom"
+                isEditMode ? "Guardar" : "Criar cupão"
               )}
             </Button>
           </DialogFooter>

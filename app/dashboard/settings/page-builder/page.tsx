@@ -49,6 +49,7 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { PageToolbar } from "@/components/admin/page-toolbar"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { Separator } from "@/components/ui/separator"
@@ -159,7 +160,7 @@ function StoreHomeBlocksSkeleton() {
   return (
     <div className="space-y-3" aria-hidden>
       {[0, 1, 2].map((i) => (
-        <Card key={i} className="gap-0 overflow-hidden rounded-xl border-border/50 py-0 shadow-sm">
+        <Card key={i} className="gap-0 overflow-hidden rounded-lg border-border/50 py-0 shadow-sm">
           <div className="flex gap-2 border-b border-border/40 bg-muted/20 px-4 py-3">
             <Skeleton className="h-7 w-7 shrink-0 rounded-md" />
             <Skeleton className="h-7 w-7 shrink-0 rounded-md" />
@@ -188,7 +189,7 @@ function StoreHomeEmptyBlocks({
 }) {
   const label = HOME_BLOCK_REGISTRY[addType].label
   return (
-    <Card className="rounded-xl border-dashed border-border/80 bg-muted/10 py-0 text-center shadow-none">
+    <Card className="rounded-lg border-dashed border-border/80 bg-muted/10 py-0 text-center shadow-none">
       <CardContent className="flex flex-col items-center gap-4 px-6 py-10">
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
           <Layers className="h-6 w-6" />
@@ -273,6 +274,7 @@ export default function StoreHomePage() {
   const [blockBodyOpen, setBlockBodyOpen] = useState<Record<string, boolean>>({})
   const [historyTick, setHistoryTick] = useState(0)
   const [lastAutosaveAt, setLastAutosaveAt] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const pastRef = useRef<HomeLayoutDocument[]>([])
   const futureRef = useRef<HomeLayoutDocument[]>([])
@@ -527,7 +529,20 @@ export default function StoreHomePage() {
     }))
   }
 
-  const removeBlock = (index: number) => {
+  const removeBlock = async (index: number) => {
+    const block = docRef.current.blocks[index]
+    if (!block) return
+    const reg = HOME_BLOCK_REGISTRY[block.type]
+    const confirmed = await confirm({
+      title: "Remover secção?",
+      description: `Está prestes a remover "${reg?.label ?? block.type}" da home.`,
+      impact: "A secção sai do layout local. Só afeta a loja pública depois de guardar/publicar.",
+      confirmText: "Remover secção",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
     mutateDoc((d) => ({ ...d, blocks: d.blocks.filter((_, i) => i !== index) }), { forceHistory: true })
   }
 
@@ -554,7 +569,16 @@ export default function StoreHomePage() {
 
   const handleDiscard = async () => {
     if (!dirty) return
-    if (!confirm("Descartar alterações locais e voltar ao que está no servidor?")) return
+    const confirmed = await confirm({
+      title: "Descartar alterações?",
+      description: "Está prestes a voltar ao layout guardado no servidor.",
+      impact: "As alterações locais que ainda não foram guardadas serão perdidas.",
+      confirmText: "Descartar alterações",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
     setDirty(false)
     await refetch()
   }
@@ -958,7 +982,7 @@ export default function StoreHomePage() {
           >
             <div className="mx-auto max-w-4xl space-y-4 px-4 py-5 md:px-6 md:py-6">
             {error ? (
-              <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-xs shadow-sm">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-xs shadow-sm">
                 <p className="mb-1 font-semibold text-destructive">Erro ao carregar</p>
                 <p className="mb-3 text-muted-foreground">{error.message}</p>
                 <Button variant="outline" size="sm" onClick={() => refetch()}>
@@ -972,7 +996,7 @@ export default function StoreHomePage() {
             ) : (
               <>
                 {editorIssues.documentMessages.length > 0 ? (
-                  <div className="rounded-xl border border-destructive/35 bg-destructive/5 px-4 py-3 text-[11px] text-destructive shadow-sm">
+                  <div className="rounded-lg border border-destructive/35 bg-destructive/5 px-4 py-3 text-[11px] text-destructive shadow-sm">
                     <p className="mb-1 flex items-center gap-1.5 font-semibold">
                       <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                       Erros ao nível do documento
@@ -1039,7 +1063,7 @@ export default function StoreHomePage() {
                                 >
                                   <Card
                                     className={cn(
-                                      "overflow-hidden rounded-xl border-border/60 py-0 shadow-sm transition-shadow duration-200 hover:border-primary/15 hover:shadow-md gap-0",
+                                      "overflow-hidden rounded-lg border-border/60 py-0 shadow-sm transition-shadow duration-200 hover:border-primary/15 hover:shadow-md gap-0",
                                       blockProblems?.length
                                         ? "border-destructive/55 ring-1 ring-destructive/15"
                                         : ""
@@ -1163,7 +1187,7 @@ export default function StoreHomePage() {
                                             size="icon"
                                             className="h-7 w-7 text-destructive hover:text-destructive"
                                             label="Remover esta secção do layout"
-                                            onClick={() => removeBlock(index)}
+                                            onClick={() => void removeBlock(index)}
                                           >
                                             <Trash2 className="h-3.5 w-3.5" />
                                           </TippedButton>
@@ -1252,7 +1276,8 @@ export default function StoreHomePage() {
           </aside>
         ) : null}
       </div>
-      </div>
+      {confirmDialog}
+    </div>
     </>
     </TooltipProvider>
   )

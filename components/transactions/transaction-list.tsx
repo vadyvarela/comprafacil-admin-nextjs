@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { CreditCard, User, Calendar } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { DataPanel } from "@/components/admin/data-panel"
 import { TransactionDeleteButton } from "@/components/transactions/transaction-delete-button"
 
 type TransactionListProps = {
@@ -150,10 +151,10 @@ export function TransactionList({ transactions, canDelete = false }: Transaction
     <>
       <div>
         {/* Desktop */}
-        <div className="hidden lg:block rounded-lg border border-border/80 overflow-hidden bg-card shadow-none">
+        <DataPanel className="hidden lg:block">
           <Table role="grid" aria-label="Lista de transações">
             <TableHeader>
-              <TableRow className="border-b border-border/60 bg-background hover:bg-background">
+              <TableRow className="hover:bg-muted/45">
                 {columns.map((col) => (
                   <TableHead key={col.id} className={cn(col.headerClassName, "text-xs font-semibold text-muted-foreground")}>
                     {col.header}
@@ -191,14 +192,14 @@ export function TransactionList({ transactions, canDelete = false }: Transaction
               ))}
             </TableBody>
           </Table>
-        </div>
+        </DataPanel>
 
         {/* Mobile */}
         <div className="lg:hidden space-y-2">
           {transactions.map((tx) => (
             <div
               key={tx.id}
-              className="rounded-lg border border-border/80 bg-card p-3.5 shadow-none cursor-pointer hover:bg-muted/25 transition-colors"
+              className="cursor-pointer rounded-lg border border-border/80 bg-card p-3.5 shadow-xs transition-colors hover:border-border hover:bg-muted/25"
               onClick={() => openDetail(tx)}
             >
               <div className="flex items-start gap-3">

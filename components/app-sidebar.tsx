@@ -69,7 +69,7 @@ const NAV = [
   {
     section: "Marketing",
     items: [
-      { title: "Cupons", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
+      { title: "Cupões", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
     ],
   },
   {
@@ -130,10 +130,10 @@ export function AppSidebar({
         <Link href="/dashboard" className="flex items-center gap-2.5 px-2 py-3">
           <StoreBrandLogo brand={storeBrand} size="sm" />
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="truncate text-sm font-semibold text-sidebar-foreground leading-none tracking-tight">
+            <p className="truncate text-sm font-semibold text-sidebar-foreground leading-none">
               {storeBrand.siteName}
             </p>
-            <p className="truncate text-[10px] text-sidebar-foreground/55 mt-0.5 font-medium tracking-wide uppercase">
+            <p className="truncate text-[10px] text-sidebar-foreground/55 mt-0.5 font-medium uppercase">
               Admin
             </p>
           </div>
@@ -150,7 +150,7 @@ export function AppSidebar({
           return (
             <SidebarGroup key={group.section ?? gi} className={gi > 0 ? "mt-0.5" : ""}>
               {group.section ? (
-                <SidebarGroupLabel className="px-3 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45 mb-0.5">
+                <SidebarGroupLabel className="px-3 text-[10px] font-semibold uppercase text-sidebar-foreground/45 mb-0.5">
                   {group.section}
                 </SidebarGroupLabel>
               ) : null}

@@ -18,7 +18,7 @@ export default async function HomePage({
   if (!session?.user) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-        <main className="flex w-full max-w-md flex-col items-center gap-6 rounded-lg border border-border/80 bg-card p-8 shadow-none mx-4">
+        <main className="mx-4 flex w-full max-w-md flex-col items-center gap-6 rounded-lg border border-border/80 bg-card p-8 shadow-xs">
           <StoreBrandLogo brand={storeBrand} size="md" />
           <div className="text-center space-y-1">
             <h1 className="text-xl font-bold text-foreground">{adminTitle(storeBrand.siteName)}</h1>
@@ -27,13 +27,13 @@ export default async function HomePage({
             </p>
           </div>
           {authError && (
-            <div className="w-full rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-2.5 text-center text-xs text-destructive font-medium">
+            <div className="w-full rounded-md border border-destructive/20 bg-destructive/10 px-4 py-2.5 text-center text-xs font-medium text-destructive">
               Erro de autenticação: {authError}. Tente novamente.
             </div>
           )}
           <a
             href="/auth/login?returnTo=/dashboard"
-            className="flex h-10 w-full items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            className="flex h-10 w-full items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
           >
             Entrar
           </a>

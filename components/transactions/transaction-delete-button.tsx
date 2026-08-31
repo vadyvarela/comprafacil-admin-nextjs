@@ -5,6 +5,7 @@ import { useMutation } from "@apollo/client/react"
 import { useRouter } from "next/navigation"
 import { Loader2, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { DELETE_PAYMENT_INTENT } from "@/lib/graphql/transactions/mutations"
 import { showToast } from "@/lib/utils/toast"
 import { getErrorMessage } from "@/lib/utils/errors"
@@ -39,6 +40,7 @@ export function TransactionDeleteButton({
   onDeleted,
 }: TransactionDeleteButtonProps) {
   const router = useRouter()
+  const { confirm, confirmDialog } = useConfirmDialog()
   const [deletePaymentIntent, { loading }] = useMutation<
     { deletePaymentIntent?: { id: string } | null },
     { id: string }
@@ -53,9 +55,15 @@ export function TransactionDeleteButton({
 
     if (loading) return
 
-    const confirmed = window.confirm(
-      `Apagar a transação ${label}? Esta ação não pode ser desfeita.`
-    )
+    const confirmed = await confirm({
+      title: "Apagar transação?",
+      description: `Está prestes a apagar a transação ${label}.`,
+      impact: "Esta ação remove o registo da transação no backoffice e não pode ser desfeita.",
+      confirmText: "Apagar transação",
+      variant: "critical",
+      requireText: "APAGAR",
+    })
+
     if (!confirmed) return
 
     try {
@@ -76,22 +84,25 @@ export function TransactionDeleteButton({
   }
 
   return (
-    <Button
-      type="button"
-      variant={variant}
-      size={size}
-      className={className}
-      disabled={loading}
-      onClick={handleDelete}
-      aria-label={`Apagar transação ${label}`}
-      title={`Apagar transação ${label}`}
-    >
-      {loading ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-      ) : (
-        <Trash2 className="h-3.5 w-3.5" />
-      )}
-      {showLabel && <span>{buttonText}</span>}
-    </Button>
+    <>
+      <Button
+        type="button"
+        variant={variant}
+        size={size}
+        className={className}
+        disabled={loading}
+        onClick={handleDelete}
+        aria-label={`Apagar transação ${label}`}
+        title={`Apagar transação ${label}`}
+      >
+        {loading ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Trash2 className="h-3.5 w-3.5" />
+        )}
+        {showLabel && <span>{buttonText}</span>}
+      </Button>
+      {confirmDialog}
+    </>
   )
 }

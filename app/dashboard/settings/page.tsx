@@ -151,7 +151,7 @@ export default async function SettingsPage() {
               <Link
                 key={section.title}
                 href={section.href}
-                className="group flex items-center gap-3 rounded-lg border border-border/80 bg-card p-3.5 text-left shadow-none transition-colors hover:border-border hover:bg-muted/25"
+                className="group flex min-h-24 items-center gap-3 rounded-lg border border-border/80 bg-card p-3.5 text-left shadow-xs transition-colors outline-none hover:border-border hover:bg-muted/25 focus-visible:ring-2 focus-visible:ring-ring/35 active:translate-y-px"
               >
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${section.bg}`}
@@ -160,14 +160,14 @@ export default async function SettingsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">{section.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{section.description}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{section.description}</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 group-hover:text-primary transition-colors" />
               </Link>
             ) : (
               <button
                 key={section.title}
-                className="group flex items-center gap-3 rounded-lg border border-dashed border-border/80 bg-muted/20 p-3.5 text-left cursor-not-allowed opacity-[0.65]"
+                className="group flex min-h-24 cursor-not-allowed items-center gap-3 rounded-lg border border-dashed border-border/80 bg-muted/20 p-3.5 text-left opacity-[0.65]"
                 disabled
                 title="Em breve"
               >
@@ -178,7 +178,7 @@ export default async function SettingsPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">{section.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">{section.description}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{section.description}</p>
                 </div>
                 <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
                   Em breve
@@ -187,8 +187,6 @@ export default async function SettingsPage() {
             )
           )}
         </div>
-
-        
       </div>
     </>
   )

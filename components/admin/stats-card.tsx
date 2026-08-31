@@ -17,37 +17,37 @@ interface StatsCardProps {
 
 const accentMap: Record<AccentColor, { icon: string; bg: string; dot: string }> = {
   emerald: {
-    icon: "text-emerald-700",
+    icon: "text-emerald-700 dark:text-emerald-300",
     bg: "bg-emerald-50",
     dot: "bg-emerald-500",
   },
   blue: {
-    icon: "text-blue-700",
+    icon: "text-blue-700 dark:text-blue-300",
     bg: "bg-blue-50",
     dot: "bg-blue-500",
   },
   violet: {
-    icon: "text-violet-700",
+    icon: "text-violet-700 dark:text-violet-300",
     bg: "bg-violet-50",
     dot: "bg-violet-500",
   },
   amber: {
-    icon: "text-amber-800",
+    icon: "text-amber-800 dark:text-amber-300",
     bg: "bg-amber-50",
     dot: "bg-amber-500",
   },
   rose: {
-    icon: "text-rose-700",
+    icon: "text-rose-700 dark:text-rose-300",
     bg: "bg-rose-50",
     dot: "bg-rose-500",
   },
   indigo: {
-    icon: "text-indigo-700",
+    icon: "text-indigo-700 dark:text-indigo-300",
     bg: "bg-indigo-50",
     dot: "bg-indigo-500",
   },
   cyan: {
-    icon: "text-cyan-800",
+    icon: "text-cyan-800 dark:text-cyan-300",
     bg: "bg-cyan-50",
     dot: "bg-cyan-500",
   },
@@ -68,8 +68,8 @@ export function StatsCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border/80 bg-card p-4 shadow-none transition-colors",
-        "hover:border-border hover:bg-muted/25",
+        "group rounded-lg border border-border/80 bg-card p-4 shadow-xs transition-colors",
+        "hover:border-border hover:bg-muted/20",
         className
       )}
     >
@@ -77,11 +77,11 @@ export function StatsCard({
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-center gap-2">
             <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", accent.dot)} aria-hidden />
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="text-[10px] font-semibold uppercase text-muted-foreground">
               {label}
             </span>
           </div>
-          <p className="text-xl font-semibold tabular-nums tracking-tight text-foreground leading-none">
+          <p className="text-xl font-semibold tabular-nums text-foreground leading-none">
             {value}
           </p>
           {delta && (
@@ -109,7 +109,8 @@ export function StatsCard({
         <div
           className={cn(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/60",
-            accent.bg
+            accent.bg,
+            "dark:bg-muted/60"
           )}
         >
           <Icon className={cn("h-4 w-4", accent.icon)} />

@@ -1,6 +1,7 @@
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { PageHeader } from "@/components/admin/page-header"
 import { StatsCard } from "@/components/admin/stats-card"
+import { DataPanel, DataPanelHeader } from "@/components/admin/data-panel"
 import { getAnalyticsReport } from "@/lib/actions/analytics"
 import { calcDelta } from "@/lib/analytics/period"
 import { formatCurrency } from "@/lib/utils/currency"
@@ -131,8 +132,9 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
           </Link>
         </div>
 
-        <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
-          <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
+        <DataPanel className="animate-enter">
+          <DataPanelHeader className="px-5 py-4">
+            <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
               <BarChart3 className="h-4 w-4 text-primary" />
             </div>
@@ -142,14 +144,15 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
               </span>
               <p className="text-[11px] text-muted-foreground">{chartSubtitle}</p>
             </div>
-          </div>
+            </div>
+          </DataPanelHeader>
           <div className="px-5 pb-5 pt-4">
             <RevenueAreaChart
               data={data.chartData}
               granularity={data.chartGranularity}
             />
           </div>
-        </div>
+        </DataPanel>
 
         <div className="grid gap-4 md:grid-cols-2">
           <TopProductsCard products={data.topProducts} />
@@ -157,8 +160,9 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
+          <DataPanel className="animate-enter">
+            <DataPanelHeader className="px-5 py-4">
+              <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                 <CreditCard className="h-4 w-4 text-primary" />
               </div>
@@ -168,14 +172,16 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
                 </span>
                 <p className="text-[11px] text-muted-foreground">Todos os tempos</p>
               </div>
-            </div>
+              </div>
+            </DataPanelHeader>
             <div className="px-5 pb-4 pt-2">
               <PaymentStatusChart data={data.paymentStatus} />
             </div>
-          </div>
+          </DataPanel>
 
-          <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b border-border">
+          <DataPanel className="animate-enter">
+            <DataPanelHeader className="px-5 py-4">
+              <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                 <Globe className="h-4 w-4 text-primary" />
               </div>
@@ -183,11 +189,12 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
                 <span className="text-sm font-semibold text-foreground">Vendas por país</span>
                 <p className="text-[11px] text-muted-foreground">{data.period.label}</p>
               </div>
-            </div>
+              </div>
+            </DataPanelHeader>
             <div className="px-5 pb-4 pt-2">
               <CountrySalesChart data={data.countries} />
             </div>
-          </div>
+          </DataPanel>
         </div>
 
         <RecentPaymentsCard payments={data.recentPayments} />

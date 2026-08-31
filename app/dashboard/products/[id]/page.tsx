@@ -7,6 +7,10 @@ import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
 import { DELETE_PRODUCT, UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
+import { useModuleAccess } from "@/components/layout/module-access-context"
+import { DataPanel } from "@/components/admin/data-panel"
+import { EmptyState } from "@/components/admin/empty-state"
+import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
 import { EditProductModal } from "@/components/products/edit-product-modal"
 import { MetaCatalogPreview } from "@/components/products/meta-catalog-preview"
 import { VariantManager } from "@/components/products/variant-manager"
@@ -14,6 +18,7 @@ import { ProductOptionCatalogPanel } from "@/components/products/product-option-
 import { ProductGalleryUpload } from "@/components/products/product-gallery-upload"
 import { StockModal } from "@/components/products/stock-modal"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import {
   Collapsible,
   CollapsibleContent,
@@ -189,12 +194,12 @@ function ProductInfoPanel({
   ].filter((item) => item.value)
 
   return (
-    <div className="rounded-lg border border-border/80 bg-card shadow-none">
-      <div className="flex items-center gap-2.5 border-b border-border/80 bg-muted/25 px-4 py-3">
+    <DataPanel>
+      <div className="flex items-center gap-2.5 border-b border-border/80 bg-muted/35 px-4 py-3">
         <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-primary/10">
           <Info className="h-4 w-4 text-primary" />
         </div>
-        <h2 className="text-sm font-medium">Informações internas</h2>
+        <h2 className="text-sm font-semibold">Informações internas</h2>
       </div>
       <div className="grid gap-2 p-4 sm:grid-cols-2">
         {details.map((item) => (
@@ -240,7 +245,7 @@ function ProductInfoPanel({
           />
         ) : null}
       </div>
-    </div>
+    </DataPanel>
   )
 }
 
@@ -357,6 +362,8 @@ export default function ProductDetailPage() {
   const [variantManagerOpen, setVariantManagerOpen] = useState(false)
   const [stockModalOpen, setStockModalOpen] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
+  const { confirm, confirmDialog } = useConfirmDialog()
+  const { canWrite } = useModuleAccess()
 
   const [deleteProduct, { loading: deletingProduct }] = useMutation(
     DELETE_PRODUCT,
@@ -421,26 +428,31 @@ export default function ProductDetailPage() {
   )
 
   const handleDeleteProduct = async () => {
-    if (
-      !confirm(
-        `Tem certeza que deseja excluir o produto "${product?.title}"?\n\nEsta ação irá excluir o produto e todas as suas variantes. Esta ação não pode ser desfeita.`
-      )
-    ) {
-      return
-    }
+    if (!canWrite) return
+    const productTitle = product?.title ?? "este produto"
+    const confirmed = await confirm({
+      title: "Eliminar produto?",
+      description: `Está prestes a eliminar "${productTitle}".`,
+      impact: "O produto e todas as suas variantes serão removidos da loja. Esta ação não pode ser desfeita.",
+      confirmText: "Eliminar produto",
+      variant: "critical",
+      requireText: "ELIMINAR",
+    })
+
+    if (!confirmed) return
 
     try {
       await deleteProduct({ variables: { id: productId } })
-      showToast.success("Produto excluído", `O produto "${product?.title}" foi excluído com sucesso`)
+      showToast.success("Produto eliminado", `O produto "${productTitle}" foi eliminado com sucesso`)
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Erro ao excluir produto. Tente novamente."
+      const errorMessage = err instanceof Error ? err.message : "Erro ao eliminar produto. Tente novamente."
       console.error("Error deleting product:", err)
-      showToast.error("Erro ao excluir produto", errorMessage)
+      showToast.error("Erro ao eliminar produto", errorMessage)
     }
   }
 
   const handleToggleVisibility = async () => {
-    if (!product) return
+    if (!product || !canWrite) return
     const nextCode = productVisibilityToggleCode(product.status?.code)
     const actionLabel = productVisibilityToggleLabel(product.status?.code)
     try {
@@ -514,7 +526,7 @@ export default function ProductDetailPage() {
       <div className="flex flex-1 flex-col bg-background">
         <div className="flex-1 overflow-auto">
           <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-5 py-6 md:px-6">
-            <div className="animate-enter flex flex-col gap-4 rounded-lg border border-border/80 bg-card p-4 shadow-none md:flex-row md:items-start md:justify-between">
+            <div className="animate-enter flex flex-col gap-4 rounded-lg border border-border/80 bg-card p-4 shadow-xs md:flex-row md:items-start md:justify-between">
               <div className="min-w-0 space-y-3">
                 <Button
                   variant="ghost"
@@ -549,58 +561,68 @@ export default function ProductDetailPage() {
               </div>
 
               <div className="flex shrink-0 flex-wrap items-center gap-2">
-                <Button
-                  variant={isProductDraft(product.status?.code) ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleToggleVisibility}
-                  disabled={updatingVisibility}
-                >
-                  {updatingVisibility ? (
-                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  ) : isProductDraft(product.status?.code) ? (
-                    <Globe className="mr-1.5 h-3.5 w-3.5" />
-                  ) : (
-                    <EyeOff className="mr-1.5 h-3.5 w-3.5" />
-                  )}
-                  {productVisibilityToggleLabel(product.status?.code)}
-                </Button>
-                <Button onClick={() => setEditModalOpen(true)} size="sm">
-                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                  Editar
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" disabled={deletingProduct}>
-                      <MoreVertical className="h-3.5 w-3.5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive"
-                      onClick={handleDeleteProduct}
-                      disabled={deletingProduct}
+                {canWrite ? (
+                  <>
+                    <Button
+                      variant={isProductDraft(product.status?.code) ? "default" : "outline"}
+                      size="sm"
+                      onClick={handleToggleVisibility}
+                      disabled={updatingVisibility}
                     >
-                      {deletingProduct ? (
-                        <>
-                          <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                          Excluindo...
-                        </>
+                      {updatingVisibility ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : isProductDraft(product.status?.code) ? (
+                        <Globe className="mr-1.5 h-3.5 w-3.5" />
                       ) : (
-                        <>
-                          <Trash2 className="mr-2 h-3.5 w-3.5" />
-                          Excluir Produto
-                        </>
+                        <EyeOff className="mr-1.5 h-3.5 w-3.5" />
                       )}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      {productVisibilityToggleLabel(product.status?.code)}
+                    </Button>
+                    <Button onClick={() => setEditModalOpen(true)} size="sm">
+                      <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                      Editar
+                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" disabled={deletingProduct}>
+                          <MoreVertical className="h-3.5 w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={handleDeleteProduct}
+                          disabled={deletingProduct}
+                        >
+                          {deletingProduct ? (
+                            <>
+                              <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                              A eliminar...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="mr-2 h-3.5 w-3.5" />
+                              Eliminar produto
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </>
+                ) : (
+                  <Badge variant="outline" className="h-8 rounded-md px-2.5 text-[11px] text-muted-foreground">
+                    Modo leitura
+                  </Badge>
+                )}
               </div>
             </div>
 
+            {!canWrite ? <ReadOnlyNotice moduleLabel="Produto" /> : null}
+
             <div className="grid gap-5 lg:grid-cols-[minmax(280px,380px)_minmax(0,1fr)]">
-              <section className="animate-enter-delay-1 rounded-lg border border-border/80 bg-card shadow-none">
-                <div className="border-b border-border/80 bg-muted/25 px-4 py-3">
-                  <h2 className="text-sm font-medium">Produto</h2>
+              <DataPanel className="animate-enter-delay-1">
+                <div className="border-b border-border/80 bg-muted/35 px-4 py-3">
+                  <h2 className="text-sm font-semibold">Produto</h2>
                 </div>
                 <ProductGalleryUpload
                   productId={productId}
@@ -608,6 +630,7 @@ export default function ProductDetailPage() {
                   metadata={product.metadata}
                   brandSlug={product.brand?.slug}
                   onSaved={() => void refetch()}
+                  readOnly={!canWrite}
                 />
 
                 <div className="space-y-4 px-4 pb-4">
@@ -648,40 +671,44 @@ export default function ProductDetailPage() {
                           </p>
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => setStockModalOpen(true)}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
+                      {canWrite ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => setStockModalOpen(true)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                      ) : null}
                     </div>
                   </div>
                 </div>
-              </section>
+              </DataPanel>
 
-              <section className="animate-enter-delay-1 rounded-lg border border-border/80 bg-card shadow-none">
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/25 px-4 py-3">
+              <DataPanel className="animate-enter-delay-1">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/35 px-4 py-3">
                   <div className="flex items-center gap-2.5">
                     <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
                       <Settings className="h-4 w-4 text-blue-800" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-medium">Variantes</h2>
+                      <h2 className="text-sm font-semibold">Variantes</h2>
                       <p className="text-[11px] text-muted-foreground">
                         {variantCount} registada{variantCount !== 1 ? "s" : ""}
                       </p>
                     </div>
                   </div>
-                  <Button onClick={() => setVariantManagerOpen(true)} size="sm">
-                    <Settings className="mr-1.5 h-3.5 w-3.5" />
-                    Gerir
-                  </Button>
+                  {canWrite ? (
+                    <Button onClick={() => setVariantManagerOpen(true)} size="sm">
+                      <Settings className="mr-1.5 h-3.5 w-3.5" />
+                      Gerir
+                    </Button>
+                  ) : null}
                 </div>
 
                 {variants.length > 0 ? (
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-border/70">
                     {variants.map((variant) => (
                       <VariantRow
                         key={variant.id}
@@ -691,21 +718,26 @@ export default function ProductDetailPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
-                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40">
-                      <Package className="h-7 w-7 text-muted-foreground/40" />
-                    </div>
-                    <h3 className="mb-1 text-sm font-bold">Nenhuma variante</h3>
-                    <p className="mb-4 max-w-[260px] text-xs text-muted-foreground">
-                      Adicione variantes para definir preço, stock e atributos.
-                    </p>
-                    <Button size="sm" onClick={() => setVariantManagerOpen(true)}>
-                      <Settings className="mr-1.5 h-3.5 w-3.5" />
-                      Gerir variantes
-                    </Button>
-                  </div>
+                  <EmptyState
+                    icon={Package}
+                    title="Nenhuma variante"
+                    description={
+                      canWrite
+                        ? "Adicione variantes para definir preço, stock e atributos."
+                        : "Este produto ainda não tem variantes registadas."
+                    }
+                    className="py-14"
+                    action={
+                      canWrite ? (
+                      <Button size="sm" onClick={() => setVariantManagerOpen(true)}>
+                        <Settings className="mr-1.5 h-3.5 w-3.5" />
+                        Gerir variantes
+                      </Button>
+                      ) : null
+                    }
+                  />
                 )}
-              </section>
+              </DataPanel>
             </div>
 
             <Collapsible
@@ -746,11 +778,13 @@ export default function ProductDetailPage() {
                   </div>
 
                   <div className="space-y-5">
-                    <ProductOptionCatalogPanel
-                      product={product}
-                      variants={variants}
-                      onSynced={() => void refetch()}
-                    />
+                    {canWrite ? (
+                      <ProductOptionCatalogPanel
+                        product={product}
+                        variants={variants}
+                        onSynced={() => void refetch()}
+                      />
+                    ) : null}
 
                     <MetaCatalogPreview product={product} />
                   </div>
@@ -761,29 +795,34 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      <EditProductModal
-        product={productForEditing}
-        open={editModalOpen}
-        onOpenChange={setEditModalOpen}
-      />
+      {canWrite ? (
+        <>
+          <EditProductModal
+            product={productForEditing}
+            open={editModalOpen}
+            onOpenChange={setEditModalOpen}
+          />
 
-      <VariantManager
-        productId={productId}
-        open={variantManagerOpen}
-        onOpenChange={setVariantManagerOpen}
-      />
+          <VariantManager
+            productId={productId}
+            open={variantManagerOpen}
+            onOpenChange={setVariantManagerOpen}
+          />
 
-      <StockModal
-        stock={product.stock ? {
-          id: product.stock.id,
-          quantity: product.stock.quantity,
-          name: product.stock.name || "",
-          productId: product.id,
-        } : null}
-        open={stockModalOpen}
-        onOpenChange={setStockModalOpen}
-        productId={productId}
-      />
+          <StockModal
+            stock={product.stock ? {
+              id: product.stock.id,
+              quantity: product.stock.quantity,
+              name: product.stock.name || "",
+              productId: product.id,
+            } : null}
+            open={stockModalOpen}
+            onOpenChange={setStockModalOpen}
+            productId={productId}
+          />
+        </>
+      ) : null}
+      {confirmDialog}
     </>
   )
 }

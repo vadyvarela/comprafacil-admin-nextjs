@@ -17,10 +17,12 @@ import {
   Calendar,
   CheckCircle2,
   XCircle,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { EmptyState } from "@/components/admin/empty-state"
 
 export default function CouponsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
@@ -50,27 +52,38 @@ export default function CouponsPage() {
 
   return (
     <>
-      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupons" }]} />
+      <DashboardHeader items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Cupões" }]} />
       <div className="flex flex-1 flex-col min-h-0">
         <PageToolbar
           icon={TicketPercent}
           iconBg="bg-emerald-50"
           iconColor="text-emerald-700"
-          title="Cupons"
-          subtitle={loading ? "A carregar…" : `${total} cupom${total !== 1 ? "s" : ""}`}
+          title="Cupões"
+          subtitle={loading ? "A carregar…" : `${total} cupão${total !== 1 ? "ões" : ""}`}
         >
-          <div className="relative w-56 sm:w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <Input
-              placeholder="Nome do cupom…"
+              placeholder="Nome do cupão…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-8 text-xs"
+              className="h-8 pl-8 pr-8 text-xs"
             />
+            {searchQuery ? (
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground hover:text-foreground"
+                onClick={() => setSearchQuery("")}
+                aria-label="Limpar pesquisa de cupões"
+                title="Limpar pesquisa"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
           </div>
           <Button onClick={() => setCreateModalOpen(true)} size="sm" className="h-8 text-xs gap-1.5">
             <Plus className="h-3.5 w-3.5" />
-            Novo cupom
+            Novo cupão
           </Button>
         </PageToolbar>
 
@@ -96,23 +109,24 @@ export default function CouponsPage() {
           {!loading && !error && (
             <>
               {filteredCoupons.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 text-center max-w-sm mx-auto">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
-                    <TicketPercent className="h-7 w-7 text-muted-foreground/40" />
-                  </div>
-                  <h2 className="text-sm font-semibold mb-1">
-                    {searchQuery ? "Nenhum resultado" : "Sem cupons"}
-                  </h2>
-                  <p className="text-xs text-muted-foreground mb-4">
-                    {searchQuery ? "Tente outro termo." : "Crie o primeiro cupom de desconto."}
-                  </p>
-                  {!searchQuery && (
-                    <Button onClick={() => setCreateModalOpen(true)} size="sm" className="gap-1.5">
-                      <Plus className="h-3.5 w-3.5" />
-                      Criar cupom
-                    </Button>
-                  )}
-                </div>
+                <EmptyState
+                  icon={searchQuery ? Search : TicketPercent}
+                  title={searchQuery ? "Nenhum resultado" : "Sem cupões"}
+                  description={searchQuery ? "Tente outro termo." : "Crie o primeiro cupão de desconto."}
+                  tone={searchQuery ? "info" : "success"}
+                  action={
+                    searchQuery ? (
+                      <Button variant="outline" size="sm" onClick={() => setSearchQuery("")}>
+                        Limpar pesquisa
+                      </Button>
+                    ) : (
+                      <Button onClick={() => setCreateModalOpen(true)} size="sm" className="gap-1.5">
+                        <Plus className="h-3.5 w-3.5" />
+                        Criar cupão
+                      </Button>
+                    )
+                  }
+                />
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {filteredCoupons.map((coupon) => {
@@ -126,7 +140,7 @@ export default function CouponsPage() {
                         href={`/dashboard/coupons/${coupon.id}`}
                         className="group block"
                       >
-                        <div className="rounded-lg border border-border/80 bg-card p-3.5 shadow-none transition-colors hover:border-border hover:bg-muted/25">
+                        <div className="flex min-h-40 flex-col rounded-lg border border-border/80 bg-card p-3.5 shadow-xs transition-colors hover:border-border hover:bg-muted/20">
                           <div className="flex items-start justify-between mb-3">
                             <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-emerald-50">
                               <TicketPercent className="h-4 w-4 text-emerald-800" />
@@ -140,7 +154,7 @@ export default function CouponsPage() {
                               {active ? (
                                 <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-success">
                                   <CheckCircle2 className="h-3 w-3" />
-                                  Ativo
+                                  Activo
                                 </span>
                               ) : expired ? (
                                 <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-danger">
@@ -149,7 +163,7 @@ export default function CouponsPage() {
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium badge-neutral">
-                                  Inativo
+                                  Inactivo
                                 </span>
                               )}
                             </div>

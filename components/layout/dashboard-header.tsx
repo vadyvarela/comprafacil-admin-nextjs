@@ -1,6 +1,5 @@
 "use client"
 
-import { Bell, Search } from "lucide-react"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,7 +10,6 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
 
 export type BreadcrumbItemType = {
   label: string
@@ -58,26 +56,7 @@ export function DashboardHeader({ items, actions }: DashboardHeaderProps) {
         </Breadcrumb>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        {/* Search trigger */}
-        <div className="hidden md:flex items-center gap-2 bg-muted/40 border border-border/80 rounded-md px-2.5 py-1 text-muted-foreground hover:bg-muted/55 transition-colors cursor-pointer max-w-[220px]">
-          <Search className="h-3.5 w-3.5 shrink-0" />
-          <span className="text-xs truncate">Buscar...</span>
-          <kbd className="ml-auto text-[10px] bg-background/80 px-1.5 py-0.5 rounded text-muted-foreground/60 border border-border font-mono shrink-0">
-            ⌘K
-          </kbd>
-        </div>
-        {actions}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 relative text-muted-foreground hover:text-foreground"
-          aria-label="Notificações"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
-        </Button>
-      </div>
+      {actions ? <div className="flex items-center gap-2 shrink-0">{actions}</div> : null}
     </header>
   )
 }

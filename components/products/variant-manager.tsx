@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Label } from "@/components/ui/label"
 import { showToast } from "@/lib/utils/toast"
 import { getErrorMessage } from "@/lib/utils/errors"
@@ -69,6 +70,7 @@ export function VariantManager({
   const [activeVariants, setActiveVariants] = useState(true)
   const [savingVariants, setSavingVariants] = useState(false)
   const [detailIndex, setDetailIndex] = useState<number | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const showIphoneSeminovoFields = useMemo(() => {
     if (product?.condition !== "seminovo" && product?.condition !== "usado") return false
@@ -185,7 +187,7 @@ export function VariantManager({
   const [deleteVariant] = useMutation(DELETE_PRODUCT_VARIANT, {
     refetchQueries: [{ query: GET_PRODUCT, variables: { id: productId } }],
     onCompleted: () => {
-      showToast.success("Variante excluída", "A variante foi removida")
+      showToast.success("Variante eliminada", "A variante foi removida")
     },
   })
 
@@ -453,28 +455,48 @@ export function VariantManager({
 
       const parts: string[] = []
       if (createdCount > 0) parts.push(`${createdCount} criada${createdCount > 1 ? "s" : ""}`)
-      if (updatedCount > 0) parts.push(`${updatedCount} atualizada${updatedCount > 1 ? "s" : ""}`)
+      if (updatedCount > 0) parts.push(`${updatedCount} actualizada${updatedCount > 1 ? "s" : ""}`)
 
       try {
         await syncProductOptionCatalog(variantCombinations)
-        parts.push("catálogo da loja atualizado")
+        parts.push("catálogo da loja actualizado")
       } catch {
         parts.push("catálogo da loja não sincronizado")
       }
 
       const description = parts.length > 0 ? parts.join(" • ") : "Nenhuma alteração detectada"
-      showToast.success("Variantes salvas", description)
+      showToast.success("Variantes guardadas", description)
     } catch (error: unknown) {
-      showToast.error("Erro", getErrorMessage(error, "Erro ao salvar variantes"))
+      showToast.error("Erro", getErrorMessage(error, "Erro ao guardar variantes"))
     } finally {
       setSavingVariants(false)
     }
   }
 
-  const deleteCombination = (index: number) => {
+  const deleteCombination = async (index: number) => {
     const combo = variantCombinations[index]
+    if (!combo) return
+
+    const label = getCombinationLabel(combo.optionValues) || "esta variante"
+    const confirmed = await confirm({
+      title: combo.id ? "Eliminar variante?" : "Remover variante?",
+      description: `Está prestes a remover "${label}".`,
+      impact: combo.id
+        ? "A variante deixa de estar disponível para venda. Esta ação não pode ser desfeita."
+        : "Esta variante ainda não foi guardada e será removida da lista.",
+      confirmText: combo.id ? "Eliminar variante" : "Remover variante",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
     if (combo.id) {
-      deleteVariant({ variables: { id: combo.id } })
+      try {
+        await deleteVariant({ variables: { id: combo.id } })
+      } catch (error: unknown) {
+        showToast.error("Erro", getErrorMessage(error, "Erro ao eliminar variante"))
+        return
+      }
     }
     setVariantCombinations(variantCombinations.filter((_, i) => i !== index))
   }
@@ -510,7 +532,7 @@ export function VariantManager({
 
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-sm text-muted-foreground">Carregando...</p>
+              <p className="text-sm text-muted-foreground">A carregar...</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -613,15 +635,13 @@ export function VariantManager({
                   {options.length > 0 && generatedCombinations.length > 0 && (
                     <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
                       <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={variantCombinations.length > 0}
-                          onChange={generateVariants}
-                          className="h-4 w-4"
-                        />
-                        <Label className="text-sm">
-                          Criar variantes com os valores acima (Preço, Stock, Detalhes por variante)
-                        </Label>
+                        <Button type="button" size="sm" onClick={generateVariants}>
+                          <Plus className="h-3.5 w-3.5" />
+                          Gerar variantes
+                        </Button>
+                        <p className="text-xs text-muted-foreground">
+                          Cria combinações com os valores acima para preencher preço, stock e detalhes.
+                        </p>
                       </div>
                       <Badge variant="secondary">
                         Total de variantes: {generatedCombinations.length}
@@ -634,7 +654,7 @@ export function VariantManager({
                       <div className="flex items-center justify-between">
                         <Label className="text-base font-medium">Variantes do Produto</Label>
                         <Button onClick={saveAllVariants} size="sm" disabled={savingVariants}>
-                          {savingVariants ? "A guardar..." : "Salvar Todas as Variantes"}
+                          {savingVariants ? "A guardar..." : "Guardar variantes"}
                         </Button>
                       </div>
 
@@ -740,7 +760,7 @@ export function VariantManager({
                                         size="sm"
                                         variant="ghost"
                                         className="h-7 w-7 p-0 text-destructive"
-                                        onClick={() => deleteCombination(index)}
+                                        onClick={() => void deleteCombination(index)}
                                       >
                                         <Trash2 className="h-3.5 w-3.5" />
                                       </Button>
@@ -779,6 +799,7 @@ export function VariantManager({
         disabled={savingVariants}
         onSave={handleDetailSave}
       />
+      {confirmDialog}
     </>
   )
 }

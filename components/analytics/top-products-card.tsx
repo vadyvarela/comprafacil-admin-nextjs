@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { Package, ArrowRight } from "lucide-react"
 import { formatCurrency } from "@/lib/utils/currency"
+import { DataPanel, DataPanelHeader } from "@/components/admin/data-panel"
+import { EmptyState } from "@/components/admin/empty-state"
 
 interface TopProduct {
   name: string
@@ -16,8 +18,8 @@ export function TopProductsCard({ products }: TopProductsCardProps) {
   const maxRevenue = products[0]?.revenue ?? 1
 
   return (
-    <div className="rounded-lg border border-border/80 bg-card shadow-none overflow-hidden animate-enter">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+    <DataPanel className="animate-enter">
+      <DataPanelHeader className="px-5 py-4">
         <div className="flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
             <Package className="h-4 w-4 text-primary" />
@@ -30,13 +32,10 @@ export function TopProductsCard({ products }: TopProductsCardProps) {
         >
           Ver todos <ArrowRight className="h-3 w-3" />
         </Link>
-      </div>
+      </DataPanelHeader>
       <div className="px-5 py-3">
         {products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center">
-            <Package className="h-8 w-8 text-muted-foreground/30 mb-2" />
-            <p className="text-xs text-muted-foreground">Sem dados de vendas</p>
-          </div>
+          <EmptyState icon={Package} title="Sem dados de vendas" className="py-8" />
         ) : (
           <div className="divide-y divide-border">
             {products.map((p, i) => {
@@ -67,6 +66,6 @@ export function TopProductsCard({ products }: TopProductsCardProps) {
           </div>
         )}
       </div>
-    </div>
+    </DataPanel>
   )
 }

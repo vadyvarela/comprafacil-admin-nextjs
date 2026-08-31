@@ -7,8 +7,16 @@ import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { PageHeader } from "@/components/admin/page-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   GET_ISLANDS,
@@ -41,11 +49,20 @@ const EMPTY_TIER = {
   sortOrder: "0",
 }
 
+const NO_ISLAND_VALUE = "__no_island__"
+
+function parseOptionalNumber(value: string): number | null {
+  if (!value.trim()) return null
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 export default function ShippingSettingsPage() {
   const [selectedIslandId, setSelectedIslandId] = useState<string | null>(null)
   const [method, setMethod] = useState<DeliveryMethod>("HOME")
   const [tierForm, setTierForm] = useState(EMPTY_TIER)
   const [editingTierId, setEditingTierId] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirmDialog()
 
   const {
     data: islandsData,
@@ -86,10 +103,41 @@ export default function ShippingSettingsPage() {
 
   const [pickupName, setPickupName] = useState("")
 
-  const tiers = tiersData?.shippingTiers ?? []
+  const tiers = useMemo(() => tiersData?.shippingTiers ?? [], [tiersData?.shippingTiers])
+
+  const tierValidationError = useMemo(() => {
+    const minSubtotal = parseOptionalNumber(tierForm.minSubtotal)
+    const maxSubtotal = parseOptionalNumber(tierForm.maxSubtotal)
+    const shippingPrice = parseOptionalNumber(tierForm.shippingPrice)
+    const minDays = parseOptionalNumber(tierForm.minDays)
+    const maxDays = parseOptionalNumber(tierForm.maxDays)
+
+    if (minSubtotal === null || minSubtotal < 0) return "Informe um subtotal mínimo válido."
+    if (maxSubtotal !== null && maxSubtotal < minSubtotal) {
+      return "O subtotal máximo não pode ser menor que o subtotal mínimo."
+    }
+    if (shippingPrice === null || shippingPrice < 0) return "Informe um preço de envio válido."
+    if (minDays !== null && minDays < 0) return "O prazo mínimo não pode ser negativo."
+    if (maxDays !== null && minDays !== null && maxDays < minDays) {
+      return "O prazo máximo não pode ser menor que o prazo mínimo."
+    }
+
+    const draftMax = maxSubtotal ?? Number.POSITIVE_INFINITY
+    const overlap = tiers.find((tier) => {
+      if (tier.id === editingTierId) return false
+      const tierMax = tier.maxSubtotal ?? Number.POSITIVE_INFINITY
+      return minSubtotal <= tierMax && tier.minSubtotal <= draftMax
+    })
+
+    if (overlap) {
+      return `Esta faixa sobrepõe ${overlap.minSubtotal}${overlap.maxSubtotal != null ? ` - ${overlap.maxSubtotal}` : "+"} ECV.`
+    }
+
+    return null
+  }, [editingTierId, tierForm, tiers])
 
   async function handleSaveTier() {
-    if (!islandId) return
+    if (!islandId || tierValidationError) return
     try {
       await upsertTier({
         variables: {
@@ -133,11 +181,43 @@ export default function ShippingSettingsPage() {
     })
   }
 
-  async function handleDeleteTier(id: string) {
+  async function handleDeleteTier(tier: ShippingTierGql) {
+    const confirmed = await confirm({
+      title: "Remover faixa de envio?",
+      description: `Está prestes a remover a faixa ${tier.minSubtotal}${tier.maxSubtotal != null ? ` - ${tier.maxSubtotal}` : "+"} ECV.`,
+      impact: "Clientes desta ilha/método podem ficar sem a regra de envio esperada no checkout. Esta ação não pode ser desfeita.",
+      confirmText: "Remover faixa",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
     try {
-      await deleteTier({ variables: { id } })
+      await deleteTier({ variables: { id: tier.id } })
       toast.success("Faixa removida")
       await refetchTiers()
+    } catch (e) {
+      toast.error("Erro ao remover", {
+        description: e instanceof Error ? e.message : undefined,
+      })
+    }
+  }
+
+  async function handleDeletePickup(id: string, name: string) {
+    const confirmed = await confirm({
+      title: "Remover ponto de levantamento?",
+      description: `Está prestes a remover "${name}".`,
+      impact: "Este ponto deixa de estar disponível para clientes no checkout. Esta ação não pode ser desfeita.",
+      confirmText: "Remover ponto",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
+    try {
+      await deletePickup({ variables: { id } })
+      toast.success("Ponto de levantamento removido")
+      await refetchPickup()
     } catch (e) {
       toast.error("Erro ao remover", {
         description: e instanceof Error ? e.message : undefined,
@@ -189,39 +269,46 @@ export default function ShippingSettingsPage() {
         ) : null}
 
         <Card>
-          <CardContent className="pt-5 flex flex-wrap gap-4 items-end">
-            <div className="space-y-1.5 min-w-[200px]">
-              <Label className="text-xs">Ilha</Label>
+          <CardContent className="grid gap-3 pt-5 sm:grid-cols-[minmax(220px,1fr)_200px]">
+            <div className="space-y-1.5">
+              <Label>Ilha</Label>
               {islandsLoading ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
-                <select
-                  value={islandId}
-                  onChange={(e) => setSelectedIslandId(e.target.value)}
+                <Select
+                  value={islandId || NO_ISLAND_VALUE}
+                  onValueChange={(value) => {
+                    if (value !== NO_ISLAND_VALUE) setSelectedIslandId(value)
+                  }}
                   disabled={states.length === 0}
-                  className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm disabled:opacity-50"
                 >
-                  {states.length === 0 ? (
-                    <option value="">Sem ilhas</option>
-                  ) : null}
-                  {states.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="h-9 w-full text-sm">
+                    <SelectValue placeholder="Escolher ilha" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {states.length === 0 ? (
+                      <SelectItem value={NO_ISLAND_VALUE}>Sem ilhas</SelectItem>
+                    ) : null}
+                    {states.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               )}
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Modo</Label>
-              <select
-                value={method}
-                onChange={(e) => setMethod(e.target.value as DeliveryMethod)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="HOME">Ao domicílio</option>
-                <option value="PICKUP">Levantamento</option>
-              </select>
+              <Label>Modo</Label>
+              <Select value={method} onValueChange={(value) => setMethod(value as DeliveryMethod)}>
+                <SelectTrigger className="h-9 w-full text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="HOME">Ao domicílio</SelectItem>
+                  <SelectItem value="PICKUP">Levantamento</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
@@ -244,7 +331,7 @@ export default function ShippingSettingsPage() {
                     tiers.map((t) => (
                       <div
                         key={t.id}
-                        className="flex items-center justify-between gap-2 rounded-md border border-border/80 px-3 py-2 text-xs"
+                        className="flex flex-col gap-2 rounded-md border border-border/80 bg-muted/15 px-3 py-2 text-xs sm:flex-row sm:items-center sm:justify-between"
                       >
                         <span>
                           {t.minSubtotal}
@@ -253,14 +340,16 @@ export default function ShippingSettingsPage() {
                           {t.etaLabel ? ` · ${t.etaLabel}` : ""}
                         </span>
                         <div className="flex gap-1 shrink-0">
-                          <Button type="button" variant="ghost" size="sm" onClick={() => startEditTier(t)}>
+                          <Button type="button" variant="outline" size="sm" onClick={() => startEditTier(t)}>
                             Editar
                           </Button>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeleteTier(t.id)}
+                            onClick={() => handleDeleteTier(t)}
+                            aria-label="Remover faixa de envio"
+                            title="Remover faixa"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -272,32 +361,32 @@ export default function ShippingSettingsPage() {
               )}
 
               <div className="grid gap-2 sm:grid-cols-2 border-t border-border/60 pt-4">
-                <div>
-                  <Label className="text-xs">Subtotal mín. (ECV)</Label>
+                <div className="space-y-1.5">
+                  <Label>Subtotal mín. (ECV)</Label>
                   <Input
                     value={tierForm.minSubtotal}
                     onChange={(e) => setTierForm((f) => ({ ...f, minSubtotal: e.target.value }))}
                     className="h-8 text-sm"
                   />
                 </div>
-                <div>
-                  <Label className="text-xs">Subtotal máx. (vazio = ∞)</Label>
+                <div className="space-y-1.5">
+                  <Label>Subtotal máx. (vazio = ∞)</Label>
                   <Input
                     value={tierForm.maxSubtotal}
                     onChange={(e) => setTierForm((f) => ({ ...f, maxSubtotal: e.target.value }))}
                     className="h-8 text-sm"
                   />
                 </div>
-                <div>
-                  <Label className="text-xs">Preço envio (ECV)</Label>
+                <div className="space-y-1.5">
+                  <Label>Preço envio (ECV)</Label>
                   <Input
                     value={tierForm.shippingPrice}
                     onChange={(e) => setTierForm((f) => ({ ...f, shippingPrice: e.target.value }))}
                     className="h-8 text-sm"
                   />
                 </div>
-                <div>
-                  <Label className="text-xs">Prazo (texto)</Label>
+                <div className="space-y-1.5">
+                  <Label>Prazo (texto)</Label>
                   <Input
                     value={tierForm.etaLabel}
                     onChange={(e) => setTierForm((f) => ({ ...f, etaLabel: e.target.value }))}
@@ -306,11 +395,16 @@ export default function ShippingSettingsPage() {
                   />
                 </div>
               </div>
+              {tierValidationError ? (
+                <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
+                  {tierValidationError}
+                </p>
+              ) : null}
               <Button
                 type="button"
                 size="sm"
                 onClick={handleSaveTier}
-                disabled={savingTier || !islandId}
+                disabled={savingTier || !islandId || Boolean(tierValidationError)}
               >
                 {savingTier ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                 {editingTierId ? "Actualizar faixa" : "Adicionar faixa"}
@@ -325,17 +419,16 @@ export default function ShippingSettingsPage() {
                 {(pickupData?.pickupPoints ?? []).map((p) => (
                   <li
                     key={p.id}
-                    className="flex justify-between items-center rounded-md border border-border/80 px-3 py-2"
+                    className="flex items-center justify-between rounded-md border border-border/80 bg-muted/15 px-3 py-2"
                   >
                     <span>{p.name}</span>
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={async () => {
-                        await deletePickup({ variables: { id: p.id } })
-                        await refetchPickup()
-                      }}
+                      onClick={() => handleDeletePickup(p.id, p.name)}
+                      aria-label={`Remover ponto ${p.name}`}
+                      title="Remover ponto"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -362,6 +455,7 @@ export default function ShippingSettingsPage() {
           </Card>
         </div>
       </div>
+      {confirmDialog}
     </>
   )
 }

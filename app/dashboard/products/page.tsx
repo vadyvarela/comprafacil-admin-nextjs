@@ -6,7 +6,11 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { ProductListToolbar } from "@/components/products/product-list-toolbar"
 import { ProductList } from "@/components/products/product-list"
 import { Button } from "@/components/ui/button"
+import { EmptyState } from "@/components/admin/empty-state"
+import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
 import Link from "next/link"
+import { getValidSession } from "@/lib/auth0"
+import { canWriteModule } from "@/lib/auth/roles"
 
 export const dynamic = "force-dynamic"
 
@@ -27,6 +31,8 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   const category = params.category?.trim() || FILTER_ALL
   const brand = params.brand?.trim() || FILTER_ALL
   const status = params.status?.trim() || FILTER_ALL
+  const session = await getValidSession()
+  const canWriteProducts = canWriteModule(session?.user, "products")
 
   const [result, options] = await Promise.all([
     getProducts({ search, page, category, brand, status }),
@@ -55,36 +61,37 @@ export default async function ProductsPage({ searchParams }: PageProps) {
             hasActiveFilters={hasActiveFilters}
             categories={options.categories}
             brands={options.brands}
+            canWrite={canWriteProducts}
           />
         </Suspense>
         <div className="flex-1 overflow-auto p-5">
+          {!canWriteProducts ? (
+            <ReadOnlyNotice moduleLabel="Produtos" className="mb-4" />
+          ) : null}
           {result.ok ? (
             products.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 px-4 text-center max-w-sm mx-auto">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border/80 bg-muted/40 mb-4">
-                  {hasActiveFilters ? (
-                    <Search className="h-7 w-7 text-muted-foreground/40" />
-                  ) : (
-                    <Package className="h-7 w-7 text-muted-foreground/40" />
-                  )}
-                </div>
-                <h2 className="text-sm font-semibold text-foreground mb-1">
-                  {hasActiveFilters ? "Nenhum resultado" : "Sem produtos"}
-                </h2>
-                <p className="text-xs text-muted-foreground mb-4">
-                  {hasActiveFilters
+              <EmptyState
+                icon={hasActiveFilters ? Search : Package}
+                title={hasActiveFilters ? "Nenhum resultado" : "Sem produtos"}
+                description={
+                  hasActiveFilters
                     ? "Ajuste a pesquisa ou os filtros de categoria e marca."
-                    : "Crie o primeiro produto para começar."}
-                </p>
-                {!hasActiveFilters && (
+                    : canWriteProducts
+                      ? "Crie o primeiro produto para começar."
+                      : "Ainda não existem produtos registados no catálogo."
+                }
+                action={
+                  !hasActiveFilters && canWriteProducts ? (
                   <Button size="sm" className="gap-1.5" asChild>
-                    <Link href="/dashboard/products/new">
+                    <Link href="/dashboard/products?create=1">
                       <Plus className="h-3.5 w-3.5" />
                       Criar produto
                     </Link>
                   </Button>
-                )}
-              </div>
+                  ) : null
+                }
+                tone={hasActiveFilters ? "info" : "neutral"}
+              />
             ) : (
               <Suspense fallback={null}>
                 <ProductList
@@ -93,6 +100,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                   totalPages={totalPages}
                   totalElements={totalElements}
                   pageSize={PRODUCT_PAGE_SIZE}
+                  canWrite={canWriteProducts}
                 />
               </Suspense>
             )
