@@ -105,6 +105,9 @@ const ROOT_FIELD_ACCESS: Record<string, OperationAccess> = {
   deleteCoupon: { module: "coupons", mode: "write" },
   createPromotionCode: { module: "coupons", mode: "write" },
 
+  commercialRecoveryLeads: { module: "marketingLeads", mode: "read" },
+  upsertCommercialLeadFollowUp: { module: "marketingLeads", mode: "write" },
+
   banners: { module: "banners", mode: "read" },
   banner: { module: "banners", mode: "read" },
   bannerDetails: { module: "banners", mode: "read" },

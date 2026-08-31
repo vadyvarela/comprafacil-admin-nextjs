@@ -22,6 +22,13 @@ export type {
 } from "./orders"
 export { getTransactions } from "./transactions"
 export type { GetTransactionsParams, GetTransactionsResult } from "./transactions"
+export { getCommercialRecoveryLeads } from "./commercial-leads"
+export type {
+  GetCommercialRecoveryLeadsParams,
+  GetCommercialRecoveryLeadsResult,
+} from "./commercial-leads"
+export { upsertCommercialLeadFollowUp } from "./commercial-lead-follow-up"
+export type { UpsertCommercialLeadFollowUpResult } from "./commercial-lead-follow-up"
 export {
   getCustomers,
   getCustomerDetails,

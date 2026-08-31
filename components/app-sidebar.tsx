@@ -18,6 +18,7 @@ import {
   Settings,
   ScrollText,
   LayoutTemplate,
+  PhoneCall,
 } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
@@ -69,6 +70,7 @@ const NAV = [
   {
     section: "Marketing",
     items: [
+      { title: "Leads", url: "/dashboard/marketing/leads", icon: PhoneCall, exact: false },
       { title: "Cupões", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
     ],
   },
