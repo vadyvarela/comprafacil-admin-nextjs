@@ -62,6 +62,7 @@ export function CreateProductModal({
     status: "INACTIVE",
     price: "",
     quantity: "",
+    createDefaultVariant: true,
     specifications: {} as ProductSpecifications,
   })
   const [descriptionOpen, setDescriptionOpen] = useState(false)
@@ -99,6 +100,7 @@ export function CreateProductModal({
       status: "INACTIVE",
       price: "",
       quantity: "",
+      createDefaultVariant: true,
       specifications: {},
     })
     setDescriptionOpen(false)
@@ -130,8 +132,8 @@ export function CreateProductModal({
     }
 
     const priceAmount = Number.parseFloat(formData.price)
-    if (!Number.isFinite(priceAmount) || priceAmount <= 0) {
-      showToast.error("Preço obrigatório", "Indica um preço maior que zero para criar o produto.")
+    if (formData.createDefaultVariant && (!Number.isFinite(priceAmount) || priceAmount <= 0)) {
+      showToast.error("Preço obrigatório", "Indica um preço maior que zero para criar a variante.")
       return
     }
 
@@ -188,21 +190,23 @@ export function CreateProductModal({
         metadata: { title: formData.title.trim() },
       })
 
-      await createVariant({
-        variables: {
-          input: {
-            productId,
-            title: formData.title.trim(),
-            quantity,
-            metadata: null,
-            priceData: {
-              nickname: "Preço padrão",
-              unitAmount: Math.round(priceAmount * 100),
-              currency: "CVE",
+      if (formData.createDefaultVariant) {
+        await createVariant({
+          variables: {
+            input: {
+              productId,
+              title: formData.title.trim(),
+              quantity,
+              metadata: null,
+              priceData: {
+                nickname: "Preço padrão",
+                unitAmount: Math.round(priceAmount * 100),
+                currency: "CVE",
+              },
             },
           },
-        },
-      })
+        })
+      }
 
       showToast.success("Produto criado", `O produto "${formData.title.trim()}" foi criado com sucesso`)
       onOpenChange(false)
@@ -334,34 +338,64 @@ export function CreateProductModal({
             </FormSection>
 
             <FormSection icon={Tag} title="Preço e stock" iconTone="bg-emerald-50 text-emerald-800">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="Preço (CVE)" htmlFor="price" required>
-                  <Input
-                    id="price"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    placeholder="1000.00"
-                    required
-                    disabled={isLoading}
-                    className="h-9"
-                  />
-                </Field>
-                <Field label="Quantidade em stock" htmlFor="quantity">
-                  <Input
-                    id="quantity"
-                    type="number"
-                    min="0"
-                    value={formData.quantity}
-                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                    placeholder="10"
-                    disabled={isLoading}
-                    className="h-9"
-                  />
-                </Field>
-              </div>
+              <label
+                htmlFor="createDefaultVariant"
+                className="flex items-start gap-2.5 rounded-md border border-border/70 bg-muted/15 px-3 py-2.5 cursor-pointer hover:bg-muted/25 transition-colors"
+              >
+                <input
+                  type="checkbox"
+                  id="createDefaultVariant"
+                  checked={formData.createDefaultVariant}
+                  onChange={(e) =>
+                    setFormData({ ...formData, createDefaultVariant: e.target.checked })
+                  }
+                  className="mt-0.5 h-4 w-4 rounded border-input accent-primary"
+                  disabled={isLoading}
+                />
+                <span className="space-y-0.5">
+                  <span className="block text-xs font-medium text-foreground">
+                    Activar variante com preço
+                  </span>
+                  <span className="block text-[11px] text-muted-foreground leading-snug">
+                    Cria uma variante inicial para definir preço e quantidade.
+                  </span>
+                </span>
+              </label>
+
+              {formData.createDefaultVariant ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Preço (CVE)" htmlFor="price" required>
+                    <Input
+                      id="price"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      placeholder="1000.00"
+                      required={formData.createDefaultVariant}
+                      disabled={isLoading}
+                      className="h-9"
+                    />
+                  </Field>
+                  <Field label="Quantidade em stock" htmlFor="quantity">
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min="0"
+                      value={formData.quantity}
+                      onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                      placeholder="10"
+                      disabled={isLoading}
+                      className="h-9"
+                    />
+                  </Field>
+                </div>
+              ) : (
+                <p className="text-[11px] text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2 leading-relaxed">
+                  O produto será criado sem variante. Pode adicionar opções e variantes depois na página de detalhes.
+                </p>
+              )}
             </FormSection>
 
             <ProductSpecsSection
@@ -424,7 +458,11 @@ export function CreateProductModal({
               type="submit"
               size="sm"
               className="h-8 min-w-[108px]"
-              disabled={isLoading || !formData.title.trim() || !formData.price.trim()}
+              disabled={
+                isLoading ||
+                !formData.title.trim() ||
+                (formData.createDefaultVariant && !formData.price.trim())
+              }
             >
               {loading ? (
                 <>
