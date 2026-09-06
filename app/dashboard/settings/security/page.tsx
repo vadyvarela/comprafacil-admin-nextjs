@@ -40,6 +40,8 @@ interface ApiToken {
   id: string
   name: string
   token: string
+  /** "API" (loja) ou "ADMIN" (acesso total). Ausente em gateways antigos. */
+  role?: string
   active: boolean
   createdAt: string
   expiresAt?: string
@@ -219,6 +221,19 @@ export default function SecurityPage() {
                       >
                         {token.active ? "Activo" : "Inactivo"}
                       </Badge>
+                      {token.role && (
+                        <Badge
+                          variant={token.role === "ADMIN" ? "destructive" : "outline"}
+                          className="text-xs shrink-0"
+                          title={
+                            token.role === "ADMIN"
+                              ? "Acesso total à API"
+                              : "Só a superfície da loja"
+                          }
+                        >
+                          {token.role === "ADMIN" ? "Acesso total" : "Loja"}
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate">
                       {token.token}
