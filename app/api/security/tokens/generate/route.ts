@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { requireOwnerSession } from "@/lib/auth/requireRole"
 import { rateLimit } from "@/lib/security/rate-limit"
+import { requestIp } from "@/lib/security/request-ip"
 import { getErrorMessage } from "@/lib/utils/errors"
 
 const STRICT_LIMIT = { maxRequests: 5, windowMs: 60_000 }
@@ -21,7 +22,7 @@ function getGatewayConfig() {
 
 export async function POST(request: NextRequest) {
   try {
-    const rateLimited = rateLimit(request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null, STRICT_LIMIT)
+    const rateLimited = rateLimit(requestIp(request), STRICT_LIMIT)
     if (rateLimited) return rateLimited
 
     const { error } = await requireOwnerSession()

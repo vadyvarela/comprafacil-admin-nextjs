@@ -8,6 +8,7 @@ import {
   type StoreRole,
 } from "@/lib/auth/roles"
 import { rateLimit } from "@/lib/security/rate-limit"
+import { requestIp } from "@/lib/security/request-ip"
 import { getErrorMessage } from "@/lib/utils/errors"
 import {
   getOperationAST,
@@ -222,10 +223,7 @@ export async function POST(request: NextRequest) {
     const { session, error } = await requireStoreSession()
     if (error) return error
 
-    const rateLimited = rateLimit(
-      request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? null,
-      ADMIN_GRAPHQL_BURST
-    )
+    const rateLimited = rateLimit(requestIp(request), ADMIN_GRAPHQL_BURST)
     if (rateLimited) return rateLimited
 
     const body = (await request.json().catch(() => null)) as GraphQLBody | null
