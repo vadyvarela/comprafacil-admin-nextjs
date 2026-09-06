@@ -3,20 +3,19 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import {
+  sentryDataCollection,
+  sentryTracesSampleRate,
+} from "@/lib/observability/sentry-options"
 
 Sentry.init({
   dsn: "https://ffd6372cc78f69c8dea4d65c5aa79616@o4511927721066496.ingest.de.sentry.io/4511927896506448",
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+  tracesSampleRate: sentryTracesSampleRate(),
 
   // Enable logs to be sent to Sentry
   enableLogs: true,
 
-  dataCollection: {
-    // To disable sending user data and HTTP bodies, uncomment the lines below. For more info visit:
-    // https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/options/#dataCollection
-    // userInfo: false,
-    // httpBodies: [],
-  },
+  dataCollection: sentryDataCollection,
 });
