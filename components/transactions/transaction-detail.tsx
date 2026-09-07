@@ -25,14 +25,12 @@ import { ptBR } from "date-fns/locale"
 import { formatCurrency } from "@/lib/utils/currency"
 import type { PaymentIntent } from "@/lib/graphql/transactions/types"
 import { invoicePdfHref, receiptPdfHref, toProxiedDocumentUrl } from "@/lib/gateway-origin"
-import { TransactionDeleteButton } from "@/components/transactions/transaction-delete-button"
 import { TransactionSispStatus } from "@/components/transactions/transaction-sisp-status"
 import { DataPanel } from "@/components/admin/data-panel"
 
 type TransactionDetailProps = {
   tx: PaymentIntent
   backHref?: string
-  canDelete?: boolean
 }
 
 function formatDate(iso: string | null | undefined): string {
@@ -230,7 +228,6 @@ function ReceiptStatusBadge({ status }: { status: string }) {
 export function TransactionDetail({
   tx,
   backHref = "/dashboard/transactions",
-  canDelete = false,
 }: TransactionDetailProps) {
   const invoicePdfLink =
     toProxiedDocumentUrl(tx.invoice?.url) ||
@@ -293,17 +290,6 @@ export function TransactionDetail({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {canDelete && (
-                  <TransactionDeleteButton
-                    transactionId={tx.id}
-                    transactionLabel={`#${tx.id.slice(0, 8)}...`}
-                    redirectHref={backHref}
-                    showLabel
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs text-destructive hover:text-destructive"
-                  />
-                )}
                 <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" asChild>
                   <Link href={backHref}>
                     <ArrowLeft className="h-3.5 w-3.5" />

@@ -68,7 +68,6 @@ const ROOT_FIELD_ACCESS: Record<string, OperationAccess> = {
   paymentIntent: { module: "transactions", mode: "read" },
   paymentsSearch: { module: "transactions", mode: "read" },
   checkTransactionStatus: { module: "transactions", mode: "read" },
-  deletePaymentIntent: { module: "transactions", mode: "write", minimumRole: "admin" },
 
   products: { module: "products", mode: "read" },
   productDetails: { module: "products", mode: "read" },

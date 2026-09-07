@@ -5,8 +5,6 @@ import { TransactionList } from "@/components/transactions/transaction-list"
 import { TransactionListToolbar } from "@/components/transactions/transaction-list-toolbar"
 import { TransactionPagination } from "@/components/transactions/transaction-pagination"
 import { TransactionDetail } from "@/components/transactions/transaction-detail"
-import { getValidSession } from "@/lib/auth0"
-import { hasMinimumRole } from "@/lib/auth/roles"
 import { CreditCard, Search } from "lucide-react"
 import { EmptyState } from "@/components/admin/empty-state"
 
@@ -26,8 +24,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
   const dateFrom = params.from?.trim() || null
   const dateTo = params.to?.trim() || null
   const detailId = params.id?.trim() || null
-  const session = await getValidSession()
-  const canDeleteTransactions = hasMinimumRole(session?.user, "admin")
 
   const result = await getTransactions({
     page: { page, size: PAGE_SIZE, sortBy: "createdAt", sortDirection: "DESC" },
@@ -61,7 +57,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
           <TransactionDetail
             tx={tx}
             backHref="/dashboard/transactions"
-            canDelete={canDeleteTransactions}
           />
         ) : (
           <EmptyState
@@ -113,7 +108,6 @@ export default async function TransactionsPage({ searchParams }: PageProps) {
                 <>
                   <TransactionList
                     transactions={transactions}
-                    canDelete={canDeleteTransactions}
                   />
                   <Suspense fallback={null}>
                     <TransactionPagination
