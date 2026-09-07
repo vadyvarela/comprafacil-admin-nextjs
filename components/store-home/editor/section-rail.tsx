@@ -33,6 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
 /**
@@ -46,6 +47,7 @@ import { cn } from "@/lib/utils"
 
 type SectionRailProps = {
   blocks: HomeBlock[]
+  loading: boolean
   headerNavCount: number
   selectedId: string | null
   availableTypes: HomeBlockType[]
@@ -59,6 +61,7 @@ type SectionRailProps = {
 
 export function SectionRail({
   blocks,
+  loading,
   headerNavCount,
   selectedId,
   availableTypes,
@@ -117,7 +120,19 @@ export function SectionRail({
 
         <div className="my-1 h-px bg-border/70" />
 
-        {blocks.length === 0 ? (
+        {loading ? (
+          <ul className="space-y-1 px-2 pt-1" aria-label="A carregar secções">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <li key={i} className="flex items-center gap-2 py-1.5">
+                <Skeleton className="size-4 shrink-0 rounded" />
+                <span className="min-w-0 flex-1 space-y-1.5">
+                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-3 w-1/3" />
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : blocks.length === 0 ? (
           <p className="px-2 py-8 text-center text-[13px] leading-relaxed text-muted-foreground">
             A home está vazia.
             <br />

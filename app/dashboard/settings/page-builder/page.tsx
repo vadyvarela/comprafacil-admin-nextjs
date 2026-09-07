@@ -17,6 +17,10 @@ import {
 } from "@/lib/home-layout/registry"
 import type { HomeBlock } from "@/lib/home-layout/schema"
 import { showToast } from "@/lib/utils/toast"
+import {
+  describeLayoutDiff,
+  diffHomeLayout,
+} from "@/lib/home-layout/layout-diff"
 import { DocumentBar } from "@/components/store-home/editor/document-bar"
 import { EditorCanvas } from "@/components/store-home/editor/editor-canvas"
 import { Inspector } from "@/components/store-home/editor/inspector"
@@ -115,10 +119,16 @@ export default function PageBuilderPage() {
   }, [confirm, doc])
 
   const handlePublish = useCallback(async () => {
+    const changes = describeLayoutDiff(
+      diffHomeLayout(document, doc.publishedDoc),
+    )
     const confirmed = await confirm({
       title: "Publicar na loja?",
-      description: `${doc.meta.active} de ${doc.meta.total} secções ficam visíveis na loja pública.`,
-      impact: "Os visitantes passam a ver este layout.",
+      description:
+        changes.length > 0
+          ? `O que muda para os visitantes — ${changes.join("; ")}.`
+          : "Nada mudou desde a última publicação.",
+      impact: `Ficam visíveis ${doc.meta.active} de ${doc.meta.total} secções.`,
       confirmText: "Publicar",
     })
     if (!confirmed) return
@@ -140,7 +150,7 @@ export default function PageBuilderPage() {
         "message" in rev ? rev.message : "Confirma as variáveis de revalidação.",
       )
     }
-  }, [confirm, doc])
+  }, [confirm, doc, document])
 
   const handleFieldChange = useCallback(
     (next: HomeBlock) => {
@@ -219,6 +229,7 @@ export default function PageBuilderPage() {
           <aside className="hidden min-h-0 border-r border-border/70 lg:block">
             <SectionRail
               blocks={blocks}
+              loading={doc.loading && !doc.hasServerRow}
               headerNavCount={document.headerNavItems.length}
               selectedId={selectedId}
               availableTypes={availableTypes}

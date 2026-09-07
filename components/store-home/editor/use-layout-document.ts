@@ -297,6 +297,14 @@ export function useLayoutDocument() {
     [mutateDoc],
   )
 
+  /** Layout que está neste momento na loja, para comparar antes de publicar. */
+  const publishedDoc = useMemo(() => {
+    const raw = serverRow?.publishedPayload
+    if (!raw) return null
+    const parsed = parseHomeLayoutDocument(raw)
+    return parsed.success ? parsed.data : null
+  }, [serverRow?.publishedPayload])
+
   const issues = useMemo(() => analyzeHomeLayoutEditor(doc), [doc])
 
   const meta = useMemo(
@@ -328,6 +336,7 @@ export function useLayoutDocument() {
     publishing,
     issues,
     meta,
+    publishedDoc,
     canUndo: pastRef.current.length > 0,
     canRedo: futureRef.current.length > 0,
     historyTick,
