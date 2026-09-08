@@ -1,7 +1,7 @@
-import { getValidSession } from "@/lib/auth0"
 import { TeamSettingsClient } from "./team-settings-client"
 
-export default async function TeamSettingsPage() {
-  const session = await getValidSession()
-  return <TeamSettingsClient currentUserId={session?.user?.sub ?? null} />
+export default function TeamSettingsPage() {
+  // Quem é o próprio já vem marcado em cada membro pela API (`isSelf`), por
+  // isso a página não precisa de passar o id para baixo.
+  return <TeamSettingsClient />
 }

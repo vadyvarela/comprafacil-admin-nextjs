@@ -1,48 +1,26 @@
-import { NextResponse } from "next/server"
-import { requireOwnerSession } from "@/lib/auth/requireRole"
-import { getErrorMessage } from "@/lib/utils/errors"
+import { NextResponse } from "next/server";
+import { apiFetch, ApiError } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/utils/errors";
 
-function getGatewayConfig() {
-  const gtwUrl = process.env.GTW_URL
-  const token = process.env.CMS_ACCESS_TOKEN
-  if (!gtwUrl || !token) return null
-
-  return {
-    url: `${gtwUrl}/api/security/tokens`,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+/**
+ * Tokens de API da loja.
+ *
+ * Passa a ir com a identidade de quem pede, em vez do token de serviço: a API
+ * exige `security.tokens.read` e é ela que decide. Antes bastava chegar aqui
+ * com sessão de owner e o pedido seguia com poderes totais.
+ */
+export async function GET() {
+  try {
+    return NextResponse.json(await apiFetch("/api/security/tokens"));
+  } catch (error) {
+    return falhaToken(error, "GET");
   }
 }
 
-export async function GET() {
-  try {
-    const { error } = await requireOwnerSession()
-    if (error) return error
-
-    const cfg = getGatewayConfig()
-    if (!cfg) {
-      return NextResponse.json({ error: "Gateway configuration missing" }, { status: 500 })
-    }
-
-    const res = await fetch(cfg.url, {
-      headers: cfg.headers,
-      signal: AbortSignal.timeout(15000),
-    })
-
-    const text = await res.text()
-
-    let data
-    try {
-      data = JSON.parse(text)
-    } catch {
-      return NextResponse.json({ error: "Invalid gateway response" }, { status: 502 })
-    }
-
-    return NextResponse.json(data, { status: res.status })
-  } catch (error: unknown) {
-    console.error("[security/tokens] fetch error:", error)
-    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 })
+export function falhaToken(error: unknown, metodo: string) {
+  if (error instanceof ApiError) {
+    return NextResponse.json({ error: error.message }, { status: error.status });
   }
+  console.error(`[security/tokens] ${metodo}:`, error);
+  return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
 }

@@ -1,7 +1,6 @@
 "use server"
 
-import { canReadModule } from "@/lib/auth/roles"
-import { requireStoreSessionOrThrow } from "@/lib/auth/requireRole"
+import { can, getPrincipal } from "@/lib/auth/principal"
 
 export type MetaDiagnosticsLastEvent = {
   eventName: string
@@ -126,8 +125,7 @@ async function fetchCatalogHealth(
  */
 export async function fetchMetaDiagnostics(): Promise<MetaDiagnosticsResult> {
   try {
-    const session = await requireStoreSessionOrThrow()
-    if (!canReadModule(session.user, "settings")) {
+    if (!can(await getPrincipal(), "marketing.analytics.read")) {
       throw new Error("Insufficient permissions")
     }
   } catch {

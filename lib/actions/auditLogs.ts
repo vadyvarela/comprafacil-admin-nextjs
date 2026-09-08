@@ -1,10 +1,6 @@
 "use server"
 
-import { getValidSession } from "@/lib/auth0"
-import {
-  canReadModule,
-  canWriteModule,
-} from "@/lib/auth/roles"
+import { can, getPrincipal } from "@/lib/auth/principal"
 import { runGraphQL } from "./graphql"
 import { AUDIT_LOGS } from "@/lib/graphql/audit/queries"
 import { CREATE_AUDIT_LOG } from "@/lib/graphql/audit/mutations"
@@ -15,30 +11,6 @@ import type {
   PageInput,
 } from "@/lib/graphql/audit/types"
 
-function actorFromSession(session: NonNullable<Awaited<ReturnType<typeof getValidSession>>>) {
-  const user = session.user as {
-    sub?: string | null
-    email?: string | null
-    name?: string | null
-  }
-  return {
-    id: user.sub ?? null,
-    email: user.email ?? null,
-    name: user.name ?? null,
-  }
-}
-
-function canRecordAudit(
-  user: NonNullable<Awaited<ReturnType<typeof getValidSession>>>["user"]
-): boolean {
-  return (
-    canWriteModule(user, "logs") ||
-    canWriteModule(user, "products") ||
-    canWriteModule(user, "coupons") ||
-    canWriteModule(user, "orders")
-  )
-}
-
 export type GetAuditLogsResult =
   | { ok: true; data: AuditLogPage }
   | { ok: false; error: string }
@@ -47,8 +19,7 @@ export async function getAuditLogs(params: {
   filter?: AuditLogFilter
   page?: PageInput
 }): Promise<GetAuditLogsResult> {
-  const session = await getValidSession()
-  if (!session || !canReadModule(session.user, "logs")) {
+  if (!can(await getPrincipal(), "audit.read")) {
     return { ok: false, error: "Sem permissão para ver logs." }
   }
 
@@ -74,8 +45,7 @@ export async function getAuditLogs(params: {
 export async function getOrderAuditLogs(
   orderId: string
 ): Promise<GetAuditLogsResult> {
-  const session = await getValidSession()
-  if (!session || !canReadModule(session.user, "orders")) {
+  if (!can(await getPrincipal(), "orders.read")) {
     return { ok: false, error: "Sem permissão." }
   }
 
@@ -114,12 +84,12 @@ export type RecordAuditLogResult =
 export async function recordAuditLog(
   input: RecordAuditLogInput
 ): Promise<RecordAuditLogResult> {
-  const session = await getValidSession()
-  if (!session || !canRecordAudit(session.user)) {
+  // Era um OU de quatro módulos escrito à mão — a única regra de permissão do
+  // repositório que não derivava da matriz. Agora é a permissão que existe
+  // precisamente para isto.
+  if (!can(await getPrincipal(), "audit.write")) {
     return { ok: false, error: "Sem permissão." }
   }
-
-  const actor = actorFromSession(session)
 
   const result = await runGraphQL<{
     createAuditLog: Pick<AuditLog, "id" | "createdAt" | "action" | "entityType" | "entityId">
@@ -128,7 +98,8 @@ export async function recordAuditLog(
       action: input.action,
       entityType: input.entityType,
       entityId: input.entityId,
-      actor,
+      // Sem `actor`: quem o determina é a API, a partir do token. Enviá-lo
+      // daqui era o que tornava o histórico forjável.
       metadata: input.metadata ?? null,
     },
   })

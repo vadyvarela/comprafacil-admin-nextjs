@@ -13,7 +13,7 @@ import {
   Phone,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useModuleAccess } from "@/components/layout/module-access-context"
+import { useCan } from "@/components/providers/permissions-provider"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency"
@@ -156,7 +156,7 @@ export function OrderDetail({
   auditError = null,
   canReconcilePayment = false,
 }: OrderDetailProps) {
-  const { canWrite } = useModuleAccess()
+  const canWrite = useCan()("orders.fulfill")
   const shippingFromMetadata = getShippingAddressFromMetadata(order.metadata)
   const displayShipping = resolveDisplayShipping(shippingFromMetadata, customerDetails)
   const accountPhone =

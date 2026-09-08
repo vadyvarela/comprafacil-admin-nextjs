@@ -1,5 +1,10 @@
 # Arquitetura Next.js – Kumpra Fácil Admin
 
+> **Nota:** a secção de autenticação e permissões deste documento está
+> desactualizada. Descrevia um modelo binário (`admin` ou nada) que já não
+> existe, e um `middleware.ts` que hoje é `proxy.ts`. O modelo actual está em
+> [docs/AUTHZ.md](./docs/AUTHZ.md).
+
 Estrutura do projeto com foco em **Server Components**, **Server Actions**, **Auth0** e organização clara de componentes, actions e hooks.
 
 ## Princípios

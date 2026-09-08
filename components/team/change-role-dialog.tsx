@@ -24,11 +24,11 @@ import {
 import {
   ROLE_DESCRIPTIONS,
   ROLE_LABELS,
-  ROLE_RANK,
   STORE_ROLES,
   type StoreRole,
 } from "@/lib/auth/roles"
-import type { TeamMember } from "@/lib/auth0/management"
+import type { TeamMember } from "@/lib/team/types"
+import { isPromotion } from "@/lib/team/types"
 import { getErrorMessage } from "@/lib/utils/errors"
 
 type ChangeRoleDialogProps = {
@@ -55,7 +55,7 @@ export function ChangeRoleDialog({
   async function handleSave() {
     if (!member) return
     const currentRole = member.role ?? "viewer"
-    if (ROLE_RANK[role] > ROLE_RANK[currentRole]) {
+    if (isPromotion(member.role, role)) {
       const confirmed = await confirm({
         title: "Aumentar permissões?",
         description: `Está prestes a alterar ${member.email} de ${ROLE_LABELS[currentRole]} para ${ROLE_LABELS[role]}.`,
@@ -70,7 +70,7 @@ export function ChangeRoleDialog({
 
     try {
       setSubmitting(true)
-      const res = await fetch(`/api/team/members/${encodeURIComponent(member.id)}`, {
+      const res = await fetch(`/api/team/members/${encodeURIComponent(member.userId)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role }),

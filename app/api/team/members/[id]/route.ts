@@ -1,80 +1,47 @@
-import { NextResponse } from "next/server"
-import { requireOwnerSession } from "@/lib/auth/requireRole"
-import { isPrivilegedRole, isStoreRole } from "@/lib/auth/roles"
-import {
-  listTeamMembers,
-  removeTeamMember,
-  updateMemberRole,
-} from "@/lib/auth0/management"
-import { getErrorMessage } from "@/lib/utils/errors"
+import { NextResponse } from "next/server";
+import { apiFetch, ApiError } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/utils/errors";
 
-type RouteContext = { params: Promise<{ id: string }> }
+type RouteContext = { params: Promise<{ id: string }> };
 
-function countPrivileged(members: Awaited<ReturnType<typeof listTeamMembers>>, excludeUserId?: string) {
-  return members.filter(
-    (m) => m.role && isPrivilegedRole(m.role) && m.id !== excludeUserId
-  ).length
-}
-
+/**
+ * Mudar o cargo de alguém, ou removê-lo.
+ *
+ * As protecções contra ficar sem quem administre a loja — não despromover o
+ * proprietário, não se remover a si próprio, não atribuir acima do próprio
+ * nível — estão na API, do lado que tem os dados para as verificar sem uma
+ * segunda ida à rede.
+ */
 export async function PATCH(request: Request, context: RouteContext) {
+  const { id } = await context.params;
   try {
-    const { session, error } = await requireOwnerSession()
-    if (error) return error
-
-    const { id } = await context.params
-    const body = (await request.json()) as { role?: string }
-    const role = body.role ?? ""
-
-    if (!isStoreRole(role)) {
-      return NextResponse.json({ error: "Role inválida" }, { status: 400 })
-    }
-
-    if (session.user.sub === id && !isPrivilegedRole(role)) {
-      const members = await listTeamMembers()
-      if (countPrivileged(members, id) === 0) {
-        return NextResponse.json(
-          { error: "Não é possível alterar a sua função — é o único administrador" },
-          { status: 400 }
-        )
-      }
-    }
-
-    const member = await updateMemberRole(id, role)
-    return NextResponse.json(member)
-  } catch (err: unknown) {
-    console.error("[team/members] PATCH error:", err)
-    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 })
+    const body: unknown = await request.json();
+    await apiFetch(`/api/team/members/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    });
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    return falha(error, "PATCH");
   }
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
+  const { id } = await context.params;
   try {
-    const { session, error } = await requireOwnerSession()
-    if (error) return error
-
-    const { id } = await context.params
-    const members = await listTeamMembers()
-    const target = members.find((m) => m.id === id)
-    const privilegedCount = countPrivileged(members)
-
-    if (session.user.sub === id && countPrivileged(members, id) === 0) {
-      return NextResponse.json(
-        { error: "Não é possível remover-se — é o único administrador" },
-        { status: 400 }
-      )
-    }
-
-    if (target?.role && isPrivilegedRole(target.role) && privilegedCount <= 1) {
-      return NextResponse.json(
-        { error: "Não é possível remover o último administrador" },
-        { status: 400 }
-      )
-    }
-
-    await removeTeamMember(id)
-    return new NextResponse(null, { status: 204 })
-  } catch (err: unknown) {
-    console.error("[team/members] DELETE error:", err)
-    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 })
+    await apiFetch(`/api/team/members/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    return falha(error, "DELETE");
   }
+}
+
+function falha(error: unknown, metodo: string) {
+  if (error instanceof ApiError) {
+    return NextResponse.json({ error: error.message }, { status: error.status });
+  }
+  console.error(`[team/members] ${metodo}:`, error);
+  return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
 }

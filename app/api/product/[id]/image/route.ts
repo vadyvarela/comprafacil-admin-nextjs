@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 import { validateImageFormData } from "@/lib/security/upload-validation"
 import {
   metadataWithGallery,
   parseProductGalleryUrls,
 } from "@/lib/products/product-gallery-metadata"
 import { getErrorMessage } from "@/lib/utils/errors"
+import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
 type ProductSnapshot = {
   title?: string | null
@@ -37,7 +37,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await requireModuleWriteSession("products")
+    const { error } = await requirePermissionApi("products.write")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL

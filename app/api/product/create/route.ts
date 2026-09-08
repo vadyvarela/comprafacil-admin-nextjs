@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 import { validateImageFormData } from "@/lib/security/upload-validation"
+import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await requireModuleWriteSession("products")
+    const { error } = await requirePermissionApi("products.write")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL

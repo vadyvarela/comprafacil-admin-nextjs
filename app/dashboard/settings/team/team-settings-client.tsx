@@ -10,17 +10,13 @@ import { TeamMemberList } from "@/components/team/team-member-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useConfirmDialog } from "@/components/ui/confirm-dialog"
-import type { TeamMember } from "@/lib/auth0/management"
+import type { TeamMember } from "@/lib/team/types"
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, STORE_ROLES } from "@/lib/auth/roles"
 import { getErrorMessage } from "@/lib/utils/errors"
 import { Plus, UserCog } from "lucide-react"
 import { toast } from "sonner"
 
-type TeamSettingsClientProps = {
-  currentUserId: string | null
-}
-
-export function TeamSettingsClient({ currentUserId }: TeamSettingsClientProps) {
+export function TeamSettingsClient() {
   const [members, setMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
   const [inviteOpen, setInviteOpen] = useState(false)
@@ -62,7 +58,7 @@ export function TeamSettingsClient({ currentUserId }: TeamSettingsClientProps) {
     if (!confirmed) return
 
     try {
-      const res = await fetch(`/api/team/members/${encodeURIComponent(member.id)}`, {
+      const res = await fetch(`/api/team/members/${encodeURIComponent(member.userId)}`, {
         method: "DELETE",
       })
       if (!res.ok && res.status !== 204) {
@@ -104,7 +100,6 @@ export function TeamSettingsClient({ currentUserId }: TeamSettingsClientProps) {
         <TeamMemberList
           members={members}
           loading={loading}
-          currentUserId={currentUserId}
           onInvite={() => setInviteOpen(true)}
           onChangeRole={setChangeMember}
           onRemove={handleRemove}

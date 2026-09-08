@@ -1,10 +1,10 @@
-import { requireOwnerPageAccess } from "@/lib/auth/requirePageAccess"
+import { requirePermissionPage } from "@/lib/auth/requirePermission"
 
 export default async function TeamSettingsLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  await requireOwnerPageAccess()
+  await requirePermissionPage("team.read")
   return children
 }

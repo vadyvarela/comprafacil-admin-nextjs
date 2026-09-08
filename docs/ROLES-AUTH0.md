@@ -1,131 +1,36 @@
-# Roles no Auth0 – equipa e regras de acesso
+# Cargos no Auth0 — documento superado
 
-O backoffice usa **Auth0** para autenticação humana e **roles predefinidas** para controlar o que cada membro da equipa pode fazer.
+O modelo que este documento descrevia — cargos guardados no claim
+`https://Kumprafacil.com/roles`, uma Post-Login Action a injectá-los, e a matriz
+`MODULE_ACCESS` no Next.js a decidir a partir deles — **já não é o que o código
+faz**.
 
----
+Ver **[AUTHZ.md](./AUTHZ.md)**.
 
-## Roles da equipa
+O que mudou, em resumo: o Auth0 continua a autenticar, mas quem é membro de que
+loja com que cargo passou a ser uma tabela da API (`memberships`), e é a API que
+autoriza cada pedido. O backoffice recebe as permissões resolvidas em `/api/me`.
 
-| Role | Nome na UI | Acesso |
-|------|------------|--------|
-| `owner` | Proprietário | Tudo, incluindo equipa e tokens de API |
-| `admin` | Administrador | Tudo, incluindo equipa e tokens de API |
-| `manager` | Gestor | Catálogo, vendas, marketing, analytics e definições |
-| `operator` | Operador | Pedidos (ver/atualizar), clientes (leitura), dashboard |
-| `viewer` | Visualizador | Dashboard, produtos e pedidos (só leitura) |
+## O que continua a ser preciso no Auth0
 
-`owner` e `admin` têm o mesmo nível de acesso. Utilizadores existentes com role `admin` continuam a funcionar sem alterações.
+Só a parte de autenticação:
 
----
+1. **Uma API registada** no Auth0 (Applications → APIs), com um identificador —
+   é o `audience`. A API valida os access tokens contra ele
+   (`AUTH0_API_AUDIENCE`), e o backoffice pede tokens para ele
+   (`AUTH0_AUDIENCE`).
+2. **Um claim de email no access token.** O Auth0 não o inclui por omissão; é
+   preciso uma Action que o acrescente com namespace
+   (`AUTH0_EMAIL_CLAIM`, por omissão `https://Kumprafacil.com/email`). Sem ele a
+   API não consegue ligar quem entra a um convite.
+3. **Uma aplicação M2M** com `read:roles` e `read:role_members` — mas só para
+   correr uma vez o `authz:import-members`, que traz a equipa actual para a base
+   de dados. Depois disso deixa de ser usada e pode ser desactivada.
 
-## Configuração no Auth0 Dashboard
+## O que deixou de ser preciso
 
-### 1. API com RBAC (login)
-
-1. **Applications → APIs → Create API**
-   - Identifier: `https://Kumprafacil.com/api`
-2. Na API → **Settings** → ativar **Enable RBAC**
-3. **User Management → Roles** → criar: `owner`, `admin`, `manager`, `operator`, `viewer`
-4. Autorizar a aplicação Next.js em **Application Access**
-
-### 2. Machine-to-Machine (convites e gestão de equipa)
-
-1. **Applications → Create Application → Machine to Machine**
-2. Authorize **Auth0 Management API** com permissões:
-   - `read:users`, `create:users`, `update:users`, `delete:users`
-   - `read:roles`, `create:role_members`, `delete:role_members`
-   - `create:user_tickets`
-3. Guardar **Client ID** e **Client Secret**
-
-### 3. Post-Login Action
-
-**Actions → Library → Post Login**. Código:
-
-```javascript
-exports.onExecutePostLogin = async (event, api) => {
-  const namespace = "https://Kumprafacil.com";
-  const claimName = `${namespace}/roles`;
-
-  if (event.authorization && Array.isArray(event.authorization.roles) && event.authorization.roles.length > 0) {
-    api.idToken.setCustomClaim(claimName, event.authorization.roles);
-  }
-};
-```
-
-Deploy e adicionar ao **Login** flow.
-
----
-
-## Variáveis de ambiente
-
-No `.env.local` do backoffice:
-
-```env
-# Auth0 (login)
-AUTH0_SECRET=
-AUTH0_DOMAIN=
-AUTH0_CLIENT_ID=
-AUTH0_CLIENT_SECRET=
-APP_BASE_URL=
-AUTH0_AUDIENCE=https://Kumprafacil.com/api
-AUTH0_ROLE_CLAIM=https://Kumprafacil.com/roles
-
-# Auth0 Management API (convites / equipa)
-AUTH0_M2M_DOMAIN=
-AUTH0_M2M_CLIENT_ID=
-AUTH0_M2M_CLIENT_SECRET=
-AUTH0_DB_CONNECTION=Username-Password-Authentication
-```
-
----
-
-## Fluxo de convite
-
-1. Owner acede a **Definições → Equipa** e convida por email com uma função
-2. O backoffice cria o utilizador no Auth0 (ou reutiliza existente)
-3. Atribui a role escolhida
-4. Cria um ticket de password (`/api/v2/tickets/password-change`) e devolve o link na UI
-5. Envia o email Auth0 via `/dbconnections/change_password` (template "Change Password")
-6. No primeiro login, a Post-Login Action injeta as roles no ID token
-
-Se o email não chegar: copia o link mostrado no diálogo após o convite. Confirma também em Auth0 **Branding → Email Provider** que o envio de emails está ativo.
-
----
-
-## Matriz de acesso (resumo)
-
-| Módulo | Visualizador | Operador | Gestor | Proprietário/Admin |
-|--------|:---:|:---:|:---:|:---:|
-| Dashboard | ✓ | ✓ | ✓ | ✓ |
-| Analytics | | | ✓ | ✓ |
-| Pedidos (leitura) | ✓ | ✓ | ✓ | ✓ |
-| Pedidos (editar) | | ✓ | ✓ | ✓ |
-| Clientes (leitura) | ✓ | ✓ | ✓ | ✓ |
-| Clientes (editar) | | | ✓ | ✓ |
-| Transações | | | ✓ | ✓ |
-| Logs / auditoria | | | ✓ | ✓ |
-| Catálogo / Marketing | | | ✓ | ✓ |
-| Definições | | | ✓ | ✓ |
-| Equipa / Tokens API | | | | ✓ |
-
----
-
-## O que a app espera
-
-- **Claim no ID token:** `https://Kumprafacil.com/roles` (array de strings)
-- **Acesso ao dashboard:** qualquer role de loja ou `admin` legado
-- **Gestão de equipa:** `owner` ou `admin`
-- O `beforeSessionSaved` em `lib/auth0.ts` garante que o claim fica em `session.user`
-
-Código relevante:
-
-- `lib/auth/roles.ts` — hierarquia e matriz de módulos
-- `lib/auth/requireRole.ts` — guards para API routes e server actions
-- `lib/auth0/management.ts` — cliente Management API
-- `app/dashboard/settings/team/` — UI de equipa
-
----
-
-## Opção alternativa: Management API na Action
-
-Se `event.authorization.roles` não vier preenchido no login, ver `docs/auth0-action-add-roles-to-token.js` para obter roles via Management API na Post-Login Action.
+- A Post-Login Action que injecta `https://Kumprafacil.com/roles`. Pode sair
+  **depois** de a equipa estar importada.
+- Os cargos criados no Auth0 (Roles). Passam a viver em `memberships`.
+- `create:users`, `create:role_members`, `create:user_tickets` na aplicação M2M:
+  os convites passaram a ser nossos, com email pelo Resend.

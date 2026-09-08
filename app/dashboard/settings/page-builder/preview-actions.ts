@@ -1,7 +1,7 @@
 "use server"
 
 import { homeLayoutDocumentSchema } from "@/lib/home-layout/schema"
-import { requireModuleWriteOrThrow } from "@/lib/auth/requireRole"
+import { requirePermissionOrThrow } from "@/lib/auth/requirePermission"
 
 function stripEnvQuotes(value: string): string {
   const t = value.trim()
@@ -53,7 +53,7 @@ export type BuildHomePreviewUrlResult =
  */
 export async function buildHomePreviewUrl(payload: unknown): Promise<BuildHomePreviewUrlResult> {
   try {
-    await requireModuleWriteOrThrow("settings")
+    await requirePermissionOrThrow("settings.write")
   } catch {
     return {
       ok: false,

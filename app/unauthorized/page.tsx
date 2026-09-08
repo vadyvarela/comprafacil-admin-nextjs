@@ -3,8 +3,7 @@ import { ShieldAlert } from "lucide-react";
 import type { Metadata } from "next";
 import { adminTitle } from "@/lib/store-brand";
 import { getStoreBrand } from "@/lib/services/get-store-brand";
-import { getValidSession } from "@/lib/auth0";
-import { hasStoreAccess } from "@/lib/auth/config";
+import { getPrincipal } from "@/lib/auth/principal";
 
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getStoreBrand();
@@ -15,8 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function UnauthorizedPage() {
-  const session = await getValidSession();
-  const canGoDashboard = hasStoreAccess(session?.user);
+  const canGoDashboard = Boolean(await getPrincipal());
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">

@@ -6,7 +6,10 @@
     "dev": "node ./node_modules/next/dist/bin/next dev",
     "build": "node ./node_modules/next/dist/bin/next build",
     "start": "node ./node_modules/next/dist/bin/next start",
-    "lint": "node ./node_modules/eslint/bin/eslint.js"
+    "lint": "node ./node_modules/eslint/bin/eslint.js",
+    "typecheck": "tsc --noEmit",
+    "permissions:sync": "node scripts/sync-permissions.mjs",
+    "permissions:check": "node scripts/sync-permissions.mjs --check"
   },
   "dependencies": {
     "@apollo/client": "^4.2.7",

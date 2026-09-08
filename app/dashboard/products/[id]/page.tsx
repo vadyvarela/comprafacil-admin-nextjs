@@ -7,7 +7,7 @@ import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
 import { DELETE_PRODUCT, UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
-import { useModuleAccess } from "@/components/layout/module-access-context"
+import { useCan } from "@/components/providers/permissions-provider"
 import { DataPanel } from "@/components/admin/data-panel"
 import { EmptyState } from "@/components/admin/empty-state"
 import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
@@ -363,7 +363,7 @@ export default function ProductDetailPage() {
   const [stockModalOpen, setStockModalOpen] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
   const { confirm, confirmDialog } = useConfirmDialog()
-  const { canWrite } = useModuleAccess()
+  const canWrite = useCan()("products.write")
 
   const [deleteProduct, { loading: deletingProduct }] = useMutation(
     DELETE_PRODUCT,

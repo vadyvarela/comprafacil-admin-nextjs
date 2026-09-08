@@ -1,10 +1,10 @@
-import { requirePageAccess } from "@/lib/auth/requirePageAccess"
+import { requirePermissionPage } from "@/lib/auth/requirePermission"
 
 export default async function Layout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  await requirePageAccess("settings", "read")
+  await requirePermissionPage("settings.read")
   return children
 }
