@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import {
-  requireModuleReadSession,
-  requireModuleWriteSession,
-} from "@/lib/auth/requireRole"
-import {
   metadataWithGallery,
   parseHoverImageUrl,
   parseProductGalleryUrls,
 } from "@/lib/products/product-gallery-metadata"
+import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
 type ProductDetails = {
   id: string
@@ -123,7 +120,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { error } = await requireModuleReadSession("products")
+    const { error } = await requirePermissionApi("products.read")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL
@@ -157,7 +154,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { error } = await requireModuleWriteSession("products")
+    const { error } = await requirePermissionApi("products.write")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL

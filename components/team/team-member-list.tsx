@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ROLE_LABELS, type StoreRole } from "@/lib/auth/roles"
-import type { TeamMember } from "@/lib/auth0/management"
+import type { TeamMember } from "@/lib/team/types"
 import { Pencil, Trash2, Users } from "lucide-react"
 
 const ROLE_BADGE_VARIANT: Record<StoreRole, "default" | "secondary" | "outline"> = {
@@ -55,7 +55,6 @@ function MemberAvatar({ member }: { member: TeamMember }) {
 type TeamMemberListProps = {
   members: TeamMember[]
   loading: boolean
-  currentUserId?: string | null
   onInvite: () => void
   onChangeRole: (member: TeamMember) => void
   onRemove: (member: TeamMember) => void
@@ -64,7 +63,6 @@ type TeamMemberListProps = {
 export function TeamMemberList({
   members,
   loading,
-  currentUserId,
   onInvite,
   onChangeRole,
   onRemove,
@@ -110,14 +108,14 @@ export function TeamMemberList({
         </TableHeader>
         <TableBody>
           {members.map((member) => (
-            <TableRow key={member.id}>
+            <TableRow key={member.userId}>
               <TableCell>
                 <div className="flex items-center gap-3">
                   <MemberAvatar member={member} />
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">
                       {member.name ?? member.email}
-                      {member.id === currentUserId && (
+                      {member.isSelf && (
                         <span className="text-muted-foreground font-normal"> (tu)</span>
                       )}
                     </p>
@@ -136,10 +134,10 @@ export function TeamMemberList({
               </TableCell>
               <TableCell>
                 <Badge
-                  variant={member.status === "active" ? "default" : "secondary"}
+                  variant={member.status === "ACTIVE" ? "default" : "secondary"}
                   className="text-xs"
                 >
-                  {member.status === "active" ? "Activo" : "Convite pendente"}
+                  {member.status === "ACTIVE" ? "Activo" : "Convite pendente"}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">

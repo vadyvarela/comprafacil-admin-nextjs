@@ -19,8 +19,7 @@ import { EmptyState } from "@/components/admin/empty-state"
 import { getOrdersPageWithDetails } from "@/lib/actions/orders"
 import { getCustomers } from "@/lib/actions/customers"
 import { getDashboardStats } from "@/lib/actions/stats"
-import { getValidSession } from "@/lib/auth0"
-import { canReadModule, canWriteModule } from "@/lib/auth/roles"
+import { can, getPrincipal } from "@/lib/auth/principal"
 import { getFulfillmentStatusLabel, getFulfillmentStatusVariant } from "@/lib/orders/status"
 import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency"
 import { format } from "date-fns"
@@ -117,11 +116,11 @@ function FulfillmentBadge({ code }: { code: string | null | undefined }) {
 }
 
 export default async function DashboardPage() {
-  const session = await getValidSession()
-  const canReadAnalytics = canReadModule(session?.user, "analytics")
-  const canReadCustomers = canReadModule(session?.user, "customers")
-  const canWriteProducts = canWriteModule(session?.user, "products")
-  const canReadCoupons = canReadModule(session?.user, "coupons")
+  const principal = await getPrincipal()
+  const canReadAnalytics = can(principal, "analytics.read")
+  const canReadCustomers = can(principal, "customers.read")
+  const canWriteProducts = can(principal, "products.write")
+  const canReadCoupons = can(principal, "coupons.read")
   const { totalOrders, totalRevenue, totalCustomers, avgTicket, recentOrders } =
     await getDashboardData({
       includeStats: canReadAnalytics,

@@ -1,6 +1,5 @@
 "use server"
 
-import { requireModuleWriteOrThrow } from "@/lib/auth/requireRole"
 import { UPSERT_COMMERCIAL_LEAD_FOLLOW_UP } from "@/lib/graphql/commercial-leads/mutations"
 import type {
   CommercialLeadFollowUp,
@@ -8,6 +7,7 @@ import type {
   UpsertCommercialLeadFollowUpResponse,
 } from "@/lib/graphql/commercial-leads/types"
 import { runGraphQL } from "./graphql"
+import { requirePermissionOrThrow } from "@/lib/auth/requirePermission"
 
 export type UpsertCommercialLeadFollowUpResult =
   | { ok: true; data: CommercialLeadFollowUp }
@@ -17,7 +17,7 @@ export async function upsertCommercialLeadFollowUp(
   input: UpsertCommercialLeadFollowUpInput
 ): Promise<UpsertCommercialLeadFollowUpResult> {
   try {
-    await requireModuleWriteOrThrow("marketingLeads")
+    await requirePermissionOrThrow("marketing.leads.write")
   } catch {
     return { ok: false, error: "Permissão de gestor necessária." }
   }

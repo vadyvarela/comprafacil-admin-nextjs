@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 import {
   getMobileDeviceSpecifications,
   MobileApiError,
 } from "@/lib/product-specs/mobileapi-client"
+import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
 export async function GET(request: NextRequest) {
-  const { error } = await requireModuleWriteSession("products")
+  const { error } = await requirePermissionApi("products.write")
   if (error) return error
 
   const idRaw = request.nextUrl.searchParams.get("id")?.trim()

@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation"
 import { getOrderById } from "@/lib/actions/orders"
 import { getOrderAuditLogs } from "@/lib/actions/auditLogs"
-import { getValidSession } from "@/lib/auth0"
-import { canWriteModule } from "@/lib/auth/roles"
+import { can, getPrincipal } from "@/lib/auth/principal"
 import {
   getCustomerDetails,
   getCustomerDetailsByExternalId,
@@ -19,8 +18,7 @@ type PageProps = {
 
 export default async function OrderDetailPage({ params }: PageProps) {
   const { id } = await params
-  const session = await getValidSession()
-  const canReconcilePayment = canWriteModule(session?.user, "transactions")
+  const canReconcilePayment = can(await getPrincipal(), "orders.reconcile")
   const result = await getOrderById(id)
 
   if (!result.ok) {
@@ -53,8 +51,13 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const order = result.data
   const shortId = order.id.slice(0, 8)
 
+  // A ficha do cliente traz morada, telefone e email. Ver o pedido não é o
+  // mesmo que ver a pessoa: um viewer chega aqui, e não deve levar isto.
+  // O padrão já existia em app/dashboard/page.tsx — faltava aqui.
+  const canReadCustomerPii = can(await getPrincipal(), "customers.pii.read")
+
   let customerDetails = null
-  if (order.customer) {
+  if (order.customer && canReadCustomerPii) {
     if (order.customer.id) {
       const byId = await getCustomerDetails(order.customer.id)
       if (byId.ok) customerDetails = byId.data

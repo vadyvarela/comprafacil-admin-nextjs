@@ -1,9 +1,9 @@
 "use server"
 
-import { requireModuleWriteOrThrow } from "@/lib/auth/requireRole"
 import { runGraphQL } from "./graphql"
 import { UPDATE_ORDER_FULFILLMENT_STATUS } from "@/lib/graphql/orders/mutations"
 import type { CheckoutSessionDetailsResponse } from "@/lib/graphql/orders/types"
+import { requirePermissionOrThrow } from "@/lib/auth/requirePermission"
 
 export type UpdateOrderFulfillmentResult =
   | { ok: true; data: CheckoutSessionDetailsResponse }
@@ -15,7 +15,7 @@ export async function updateOrderFulfillmentStatus(
 ): Promise<UpdateOrderFulfillmentResult> {
   let session
   try {
-    session = await requireModuleWriteOrThrow("orders")
+    session = await requirePermissionOrThrow("orders.write")
   } catch {
     return { ok: false, error: "Autenticação admin necessária." }
   }

@@ -1,34 +1,27 @@
-import { NextResponse } from "next/server"
-import { requireOwnerSession } from "@/lib/auth/requireRole"
-import { isStoreRole } from "@/lib/auth/roles"
-import { inviteTeamMember } from "@/lib/auth0/management"
-import { getErrorMessage } from "@/lib/utils/errors"
+import { NextResponse } from "next/server";
+import { apiFetch, ApiError } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/utils/errors";
 
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-}
-
+/**
+ * Convidar alguém.
+ *
+ * A validação de email e de cargo, e a regra de não se poder atribuir um cargo
+ * acima do próprio, vivem na API. Duplicá-las aqui só criaria duas versões da
+ * mesma regra para divergirem com o tempo.
+ */
 export async function POST(request: Request) {
   try {
-    const { error } = await requireOwnerSession()
-    if (error) return error
-
-    const body = (await request.json()) as { email?: string; role?: string }
-    const email = body.email?.trim().toLowerCase() ?? ""
-    const role = body.role ?? ""
-
-    if (!isValidEmail(email)) {
-      return NextResponse.json({ error: "Email inválido" }, { status: 400 })
+    const body: unknown = await request.json();
+    const result = await apiFetch("/api/team/invitations", {
+      method: "POST",
+      body: JSON.stringify(body),
+    });
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
     }
-
-    if (!isStoreRole(role)) {
-      return NextResponse.json({ error: "Role inválida" }, { status: 400 })
-    }
-
-    const result = await inviteTeamMember(email, role)
-    return NextResponse.json(result, { status: 201 })
-  } catch (err: unknown) {
-    console.error("[team/invite] POST error:", err)
-    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 })
+    console.error("[team/invite] POST:", error);
+    return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
   }
 }

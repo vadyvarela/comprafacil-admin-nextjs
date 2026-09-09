@@ -1,6 +1,7 @@
 "use server"
 
-import { requireModuleWriteOrThrow } from "@/lib/auth/requireRole"
+import { requirePermissionOrThrow } from "@/lib/auth/requirePermission"
+
 
 /**
  * Payload para o endpoint purchaseReconciliation do payment-gateway.
@@ -26,7 +27,7 @@ export async function purchaseReconciliation(
   payload: PurchaseReconciliationPayload
 ): Promise<PurchaseReconciliationResult> {
   try {
-    await requireModuleWriteOrThrow("transactions")
+    await requirePermissionOrThrow("orders.reconcile")
   } catch {
     return { ok: false, message: "Autenticação admin necessária." }
   }

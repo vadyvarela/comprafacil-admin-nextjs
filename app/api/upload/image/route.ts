@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireModuleWriteSession } from "@/lib/auth/requireRole"
 import { validateImageBlob } from "@/lib/security/upload-validation"
+import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
 function extractApiError(data: Record<string, unknown>): string {
   const d = data?.data as Record<string, unknown> | undefined
@@ -13,7 +13,7 @@ function extractApiError(data: Record<string, unknown>): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await requireModuleWriteSession("media")
+    const { error } = await requirePermissionApi("media.write")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL

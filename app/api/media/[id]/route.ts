@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireModuleWriteSession } from "@/lib/auth/requireRole"
+import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
 export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { error } = await requireModuleWriteSession("media")
+    const { error } = await requirePermissionApi("media.write")
     if (error) return error
 
     const gtwUrl = process.env.GTW_URL

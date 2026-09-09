@@ -4,9 +4,18 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { RefreshCw } from "lucide-react"
 import { ReconcilePaymentSheet } from "./reconcile-payment-sheet"
+import { useCan } from "@/components/providers/permissions-provider"
 
 export function OrderDetailActions() {
   const [reconcileOpen, setReconcileOpen] = useState(false)
+  // O componente protege-se a si próprio em vez de depender de quem o
+  // renderiza se lembrar. A server action valida na mesma — isto é só para o
+  // botão não aparecer onde não faz nada.
+  const canReconcile = useCan()("orders.reconcile")
+
+  if (!canReconcile) {
+    return null
+  }
 
   return (
     <>

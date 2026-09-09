@@ -8,8 +8,7 @@ import { OrderListTabs } from "@/components/orders/order-list-tabs"
 import { CreditCard, Search } from "lucide-react"
 import { EmptyState } from "@/components/admin/empty-state"
 import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
-import { getValidSession } from "@/lib/auth0"
-import { canWriteModule } from "@/lib/auth/roles"
+import { can, getPrincipal } from "@/lib/auth/principal"
 
 type PageProps = {
   searchParams: Promise<{ search?: string; page?: string; tab?: string; from?: string; to?: string }>
@@ -47,8 +46,7 @@ export default async function OrdersPage({ searchParams }: PageProps) {
   const tab = parseOrdersTab(params.tab ?? null)
   const dateFrom = params.from ?? null
   const dateTo = params.to ?? null
-  const session = await getValidSession()
-  const canWriteOrders = canWriteModule(session?.user, "orders")
+  const canWriteOrders = can(await getPrincipal(), "orders.write")
 
   const result = await getOrdersPageWithDetails({ search, page, tab, dateFrom, dateTo })
 

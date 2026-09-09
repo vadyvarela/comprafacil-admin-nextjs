@@ -3,8 +3,7 @@ import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { PageHeader } from "@/components/admin/page-header"
 import { getStoreBrand } from "@/lib/services/get-store-brand"
-import { getValidSession } from "@/lib/auth0"
-import { isOwner } from "@/lib/auth/config"
+import { can, getPrincipal } from "@/lib/auth/principal"
 import {
   Store,
   Globe,
@@ -124,8 +123,7 @@ const SETTINGS_SECTIONS = [
 
 export default async function SettingsPage() {
   const storeBrand = await getStoreBrand()
-  const session = await getValidSession()
-  const owner = isOwner(session?.user)
+  const owner = can(await getPrincipal(), "team.read")
   const sections = SETTINGS_SECTIONS.filter((s) => !s.ownerOnly || owner)
 
   return (

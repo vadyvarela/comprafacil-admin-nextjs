@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { requireModuleReadSession, requireModuleWriteSession } from "@/lib/auth/requireRole"
 import { validateImageBlob } from "@/lib/security/upload-validation"
+import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
 function requireGtw() {
   const gtwUrl = process.env.GTW_URL
@@ -13,7 +13,7 @@ function requireGtw() {
 
 export async function GET(request: NextRequest) {
   try {
-    const { error } = await requireModuleReadSession("media")
+    const { error } = await requirePermissionApi("media.read")
     if (error) return error
 
     const cfg = requireGtw()
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { error } = await requireModuleWriteSession("media")
+    const { error } = await requirePermissionApi("media.write")
     if (error) return error
 
     const cfg = requireGtw()

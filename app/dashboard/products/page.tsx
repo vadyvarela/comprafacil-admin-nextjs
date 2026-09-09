@@ -9,8 +9,7 @@ import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/admin/empty-state"
 import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
 import Link from "next/link"
-import { getValidSession } from "@/lib/auth0"
-import { canWriteModule } from "@/lib/auth/roles"
+import { can, getPrincipal } from "@/lib/auth/principal"
 
 export const dynamic = "force-dynamic"
 
@@ -31,8 +30,7 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   const category = params.category?.trim() || FILTER_ALL
   const brand = params.brand?.trim() || FILTER_ALL
   const status = params.status?.trim() || FILTER_ALL
-  const session = await getValidSession()
-  const canWriteProducts = canWriteModule(session?.user, "products")
+  const canWriteProducts = can(await getPrincipal(), "products.write")
 
   const [result, options] = await Promise.all([
     getProducts({ search, page, category, brand, status }),

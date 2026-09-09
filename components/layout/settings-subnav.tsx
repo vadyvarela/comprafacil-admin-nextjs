@@ -3,77 +3,14 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { useSettingsAccess } from "@/components/layout/settings-access-context"
-
-/** Ordem: loja → aparência/home → operação → equipa/segurança. */
-const TABS = [
-  {
-    href: "/dashboard/settings",
-    label: "Geral",
-    isActive: (p: string) => p === "/dashboard/settings",
-    ownerOnly: false,
-  },
-  {
-    href: "/dashboard/settings/store",
-    label: "Loja",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/store"),
-    ownerOnly: false,
-  },
-  {
-    href: "/dashboard/settings/integrations/meta",
-    label: "Meta",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/integrations"),
-    ownerOnly: false,
-  },
-  {
-    href: "/dashboard/settings/appearance",
-    label: "Aparência",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/appearance"),
-    ownerOnly: false,
-  },
-  {
-    href: "/dashboard/settings/page-builder",
-    label: "Page Builder",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/page-builder"),
-    ownerOnly: false,
-  },
-  {
-    href: "/dashboard/settings/shipping",
-    label: "Envios",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/shipping"),
-    ownerOnly: false,
-  },
-  {
-    href: "/dashboard/settings/notifications",
-    label: "Notificações",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/notifications"),
-    ownerOnly: false,
-  },
-  {
-    href: "/dashboard/settings/maintenance",
-    label: "Manutenção",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/maintenance"),
-    ownerOnly: false,
-  },
-  {
-    href: "/dashboard/settings/team",
-    label: "Equipa",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/team"),
-    ownerOnly: true,
-  },
-  {
-    href: "/dashboard/settings/security",
-    label: "Segurança",
-    isActive: (p: string) => p.startsWith("/dashboard/settings/security"),
-    ownerOnly: true,
-  },
-] as const
+import { SETTINGS_TABS } from "@/lib/nav"
+import { useCan } from "@/components/providers/permissions-provider"
 
 export function SettingsSubnav() {
   const pathname = usePathname() ?? ""
-  const { isOwner } = useSettingsAccess()
+  const can = useCan()
 
-  const visibleTabs = TABS.filter((tab) => !tab.ownerOnly || isOwner)
+  const visibleTabs = SETTINGS_TABS.filter((tab) => can(tab.permission))
 
   return (
     <nav
@@ -82,7 +19,9 @@ export function SettingsSubnav() {
     >
       <div className="flex gap-6 overflow-x-auto px-4 md:px-5">
         {visibleTabs.map((tab) => {
-          const active = tab.isActive(pathname)
+          const active = tab.prefix
+            ? pathname.startsWith(tab.prefix)
+            : pathname === tab.href
           return (
             <Link
               key={tab.href}

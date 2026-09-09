@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { requireModuleWriteSession } from "@/lib/auth/requireRole"
+import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
 function requireGtw() {
   const gtwUrl = process.env.GTW_URL
@@ -12,7 +12,7 @@ function requireGtw() {
 
 export async function GET() {
   try {
-    const { error } = await requireModuleWriteSession("media")
+    const { error } = await requirePermissionApi("media.write")
     if (error) return error
 
     const cfg = requireGtw()

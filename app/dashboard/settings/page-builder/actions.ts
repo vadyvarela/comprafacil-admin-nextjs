@@ -1,6 +1,7 @@
 "use server"
 
-import { requireModuleWriteOrThrow } from "@/lib/auth/requireRole"
+import { requirePermissionOrThrow } from "@/lib/auth/requirePermission"
+
 
 export type RevalidateTecharenaHomeResult =
   | { ok: true; skipped: true }
@@ -40,7 +41,7 @@ function normalizeRevalidateUrl(raw: string): string {
  */
 export async function revalidateTecharenaHome(): Promise<RevalidateTecharenaHomeResult> {
   try {
-    await requireModuleWriteOrThrow("settings")
+    await requirePermissionOrThrow("settings.write")
   } catch {
     return {
       ok: false,

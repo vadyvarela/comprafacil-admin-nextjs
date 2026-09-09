@@ -3,29 +3,14 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  Package,
-  FolderTree,
-  TicketPercent,
-  Image as ImageIcon,
-  Images,
-  Tag,
-  ShoppingCart,
-  CreditCard,
-  LayoutDashboard,
-  Users,
-  BarChart3,
-  Settings,
-  ScrollText,
-  LayoutTemplate,
-  PhoneCall,
-} from "lucide-react"
+import { Settings } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
 import { StoreBrandLogo } from "@/components/store-brand-mark"
 import type { StoreBrandSummary } from "@/lib/store-brand"
-import { canAccessNavItem, type StoreRole } from "@/lib/auth/roles"
-import { ROLE_CLAIM } from "@/lib/auth/config"
+import { NAV_SECTIONS } from "@/lib/nav"
+import { useCan } from "@/components/providers/permissions-provider"
+import type { StoreRole } from "@/lib/auth/roles"
 import {
   Sidebar,
   SidebarContent,
@@ -40,77 +25,20 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-/**
- * Ordem do menu: operação diária → catálogo → aquisição → conteúdo da loja → sistema.
- */
-const NAV = [
-  {
-    section: "Visão geral",
-    items: [
-      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, exact: true },
-      { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3, exact: false },
-    ],
-  },
-  {
-    section: "Vendas",
-    items: [
-      { title: "Pedidos", url: "/dashboard/orders", icon: ShoppingCart, exact: false },
-      { title: "Clientes", url: "/dashboard/customers", icon: Users, exact: false },
-      { title: "Transações", url: "/dashboard/transactions", icon: CreditCard, exact: false },
-    ],
-  },
-  {
-    section: "Catálogo",
-    items: [
-      { title: "Produtos", url: "/dashboard/products", icon: Package, exact: false },
-      { title: "Categorias", url: "/dashboard/categories", icon: FolderTree, exact: false },
-      { title: "Marcas", url: "/dashboard/brands", icon: Tag, exact: false },
-    ],
-  },
-  {
-    section: "Marketing",
-    items: [
-      { title: "Leads", url: "/dashboard/marketing/leads", icon: PhoneCall, exact: false },
-      { title: "Cupões", url: "/dashboard/coupons", icon: TicketPercent, exact: false },
-    ],
-  },
-  {
-    section: "Conteúdo",
-    items: [
-      { title: "Banners", url: "/dashboard/banners", icon: ImageIcon, exact: false },
-      { title: "Biblioteca", url: "/dashboard/media", icon: Images, exact: false },
-      {
-        title: "Page Builder",
-        url: "/dashboard/settings/page-builder",
-        icon: LayoutTemplate,
-        exact: false,
-      },
-    ],
-  },
-  {
-    section: "Sistema",
-    items: [
-      { title: "Logs", url: "/dashboard/logs", icon: ScrollText, exact: false },
-    ],
-  },
-]
-
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   storeBrand: StoreBrandSummary
   primaryRole: StoreRole | null
-  roles: StoreRole[]
   user?: { name?: string | null; email?: string | null; picture?: string | null }
 }
 
 export function AppSidebar({
   storeBrand,
   primaryRole,
-  roles,
   user: sessionUser,
   ...props
 }: AppSidebarProps) {
   const pathname = usePathname()
-  const userLike = { sub: null, [ROLE_CLAIM]: roles }
+  const can = useCan()
   const user = sessionUser
     ? {
         name: sessionUser.name ?? "Utilizador",
@@ -124,7 +52,7 @@ export function AppSidebar({
     return pathname?.startsWith(url)
   }
 
-  const showSettings = canAccessNavItem(userLike, "/dashboard/settings")
+  const showSettings = can("settings.read")
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -143,9 +71,9 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="py-2">
-        {NAV.map((group, gi) => {
+        {NAV_SECTIONS.map((group, gi) => {
           const visibleItems = group.items.filter((item) =>
-            canAccessNavItem(userLike, item.url)
+            can(item.permission)
           )
           if (visibleItems.length === 0) return null
 
@@ -159,7 +87,7 @@ export function AppSidebar({
               <SidebarGroupContent>
                 <SidebarMenu>
                   {visibleItems.map((item) => {
-                    const active = isActive(item.url, item.exact)
+                    const active = isActive(item.url, item.exact ?? false)
                     return (
                       <SidebarMenuItem key={item.url}>
                         <SidebarMenuButton
