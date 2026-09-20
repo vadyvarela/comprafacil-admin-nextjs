@@ -13,17 +13,10 @@ export async function updateOrderFulfillmentStatus(
   checkoutSessionId: string,
   fulfillmentStatus: string
 ): Promise<UpdateOrderFulfillmentResult> {
-  let session
   try {
-    session = await requirePermissionOrThrow("orders.write")
+    await requirePermissionOrThrow("orders.write")
   } catch {
     return { ok: false, error: "Autenticação admin necessária." }
-  }
-
-  const user = session.user as {
-    sub?: string | null
-    email?: string | null
-    name?: string | null
   }
 
   const result = await runGraphQL<{
@@ -31,11 +24,8 @@ export async function updateOrderFulfillmentStatus(
   }>(UPDATE_ORDER_FULFILLMENT_STATUS, {
     checkoutSessionId,
     fulfillmentStatus,
-    actor: {
-      id: user.sub ?? null,
-      email: user.email ?? null,
-      name: user.name ?? null,
-    },
+    // Sem `actor`: quem o determina é a API, a partir do token. Enviá-lo
+    // daqui era o que tornava o histórico forjável.
   })
 
   if (result.errors?.length) {
