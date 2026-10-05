@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { adminTitle } from "@/lib/store-brand";
 import { getStoreBrand } from "@/lib/services/get-store-brand";
 import { getPrincipal } from "@/lib/auth/principal";
+import { getValidSession } from "@/lib/auth0";
 
 export async function generateMetadata(): Promise<Metadata> {
   const brand = await getStoreBrand();
@@ -14,7 +15,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function UnauthorizedPage() {
-  const canGoDashboard = Boolean(await getPrincipal());
+  const [principal, session] = await Promise.all([getPrincipal(), getValidSession()]);
+  const canGoDashboard = Boolean(principal);
+  // Dizer com que conta se entrou resolve metade dos casos: quem aceitou um
+  // convite com outra conta, ou entrou por Google em vez de password.
+  const email = session?.user?.email ?? null;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
@@ -27,6 +32,14 @@ export default async function UnauthorizedPage() {
           <p className="text-sm text-muted-foreground">
             Não tem permissão para aceder a esta página.
           </p>
+          {email && (
+            <p className="pt-2 text-xs text-muted-foreground">
+              Sessão iniciada como{" "}
+              <span className="font-medium text-foreground">{email}</span>
+              {!canGoDashboard &&
+                ". Esta conta ainda não pertence a nenhuma loja: abra o link do convite com ela e carregue em Aceitar."}
+            </p>
+          )}
         </div>
         <div className="flex w-full flex-col gap-2.5">
           {canGoDashboard ? (
