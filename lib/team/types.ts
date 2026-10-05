@@ -21,6 +21,15 @@ export interface TeamMember {
   isSelf: boolean;
 }
 
+/** Um convite por aceitar. O link não volta: a API só guarda o hash. */
+export interface PendingInvitation {
+  id: string;
+  email: string;
+  role: StoreRole | null;
+  createdAt: string;
+  expiresAt: string;
+}
+
 /** Ordem de privilégio, só para ordenar e para avisar em promoções. */
 const ORDEM: StoreRole[] = ["viewer", "operator", "manager", "admin", "owner"];
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Check, Copy, Loader2, UserPlus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -52,6 +52,37 @@ export function InviteMemberDialog({
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState<InviteSuccess | null>(null)
   const [copied, setCopied] = useState(false)
+  // Só os cargos que a API deixa este utilizador atribuir. Mostrar os cinco
+  // era oferecer opções que a API recusava com 403.
+  const [roles, setRoles] = useState<StoreRole[] | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    let cancelled = false
+    fetch("/api/team/roles")
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data?.error ?? `HTTP ${res.status}`)
+        const keys = (Array.isArray(data) ? data : [])
+          .map((item: { key?: string }) => item?.key)
+          .filter((key: unknown): key is StoreRole =>
+            STORE_ROLES.includes(key as StoreRole),
+          )
+        if (cancelled) return
+        setRoles(keys)
+        setRole((current) =>
+          keys.includes(current) ? current : (keys.includes("operator") ? "operator" : keys[0] ?? current),
+        )
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setRoles([])
+        toast.error("Erro ao carregar funções", { description: getErrorMessage(err) })
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open])
   const { confirm, confirmDialog } = useConfirmDialog()
 
   function resetForm() {
@@ -111,7 +142,7 @@ export function InviteMemberDialog({
         })
       } else {
         toast.success("Convite criado", {
-          description: "Copia o link e envia ao membro (o email Auth0 pode não ter sido enviado).",
+          description: "Copia o link e envia ao membro (o email pode não ter sido enviado).",
         })
       }
     } catch (err: unknown) {
@@ -140,7 +171,7 @@ export function InviteMemberDialog({
               <DialogDescription>
                 {success.emailSent
                   ? `Enviámos um email para ${success.email}. Se não chegar, partilha o link abaixo.`
-                  : `O email pode não ter sido enviado. Partilha este link com ${success.email} para definir a password.`}
+                  : `O email pode não ter sido enviado. Partilha este link com ${success.email}: tem de entrar com esse email para aceitar.`}
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-2 py-2">
@@ -175,7 +206,7 @@ export function InviteMemberDialog({
             <DialogHeader>
               <DialogTitle>Convidar membro</DialogTitle>
               <DialogDescription>
-                O utilizador receberá um email (ou link) para definir a password e aceder ao backoffice.
+                A pessoa recebe um email com um link. Entra com o mesmo email e aceita o convite.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-3 py-2">
@@ -189,12 +220,16 @@ export function InviteMemberDialog({
                 />
               </FormField>
               <FormField label="Função" htmlFor="invite-role" description={ROLE_DESCRIPTIONS[role]}>
-                <Select value={role} onValueChange={(v) => setRole(v as StoreRole)}>
+                <Select
+                  value={role}
+                  onValueChange={(v) => setRole(v as StoreRole)}
+                  disabled={!roles?.length}
+                >
                   <SelectTrigger id="invite-role">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {STORE_ROLES.map((r) => (
+                    {(roles ?? []).map((r) => (
                       <SelectItem key={r} value={r}>
                         {ROLE_LABELS[r]}
                       </SelectItem>
@@ -207,7 +242,7 @@ export function InviteMemberDialog({
               <Button variant="outline" onClick={() => handleOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleInvite} disabled={submitting || !email.trim()}>
+              <Button onClick={handleInvite} disabled={submitting || !email.trim() || !roles?.includes(role)}>
                 {submitting ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
