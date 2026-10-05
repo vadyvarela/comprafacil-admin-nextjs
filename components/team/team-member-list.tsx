@@ -16,8 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ROLE_LABELS, type StoreRole } from "@/lib/auth/roles"
-import type { TeamMember } from "@/lib/team/types"
-import { Pencil, Trash2, Users } from "lucide-react"
+import type { PendingInvitation, TeamMember } from "@/lib/team/types"
+import { Mail, Pencil, Trash2, Users, X } from "lucide-react"
 
 const ROLE_BADGE_VARIANT: Record<StoreRole, "default" | "secondary" | "outline"> = {
   owner: "default",
@@ -52,20 +52,31 @@ function MemberAvatar({ member }: { member: TeamMember }) {
   )
 }
 
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("pt-PT", {
+    day: "numeric",
+    month: "short",
+  })
+}
+
 type TeamMemberListProps = {
   members: TeamMember[]
+  invitations: PendingInvitation[]
   loading: boolean
   onInvite: () => void
   onChangeRole: (member: TeamMember) => void
   onRemove: (member: TeamMember) => void
+  onRevoke: (invitation: PendingInvitation) => void
 }
 
 export function TeamMemberList({
   members,
+  invitations,
   loading,
   onInvite,
   onChangeRole,
   onRemove,
+  onRevoke,
 }: TeamMemberListProps) {
   if (loading) {
     return (
@@ -77,7 +88,7 @@ export function TeamMemberList({
     )
   }
 
-  if (members.length === 0) {
+  if (members.length === 0 && invitations.length === 0) {
     return (
       <DataPanel className="border-dashed">
         <EmptyState
@@ -137,7 +148,7 @@ export function TeamMemberList({
                   variant={member.status === "ACTIVE" ? "default" : "secondary"}
                   className="text-xs"
                 >
-                  {member.status === "ACTIVE" ? "Activo" : "Convite pendente"}
+                  {member.status === "ACTIVE" ? "Activo" : "Suspenso"}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
@@ -160,6 +171,49 @@ export function TeamMemberList({
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
+              </TableCell>
+            </TableRow>
+          ))}
+          {invitations.map((invitation) => (
+            <TableRow key={`convite-${invitation.id}`}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full border border-dashed border-border bg-muted/40">
+                    <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{invitation.email}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      Convidado a {formatDate(invitation.createdAt)} · expira a{" "}
+                      {formatDate(invitation.expiresAt)}
+                    </p>
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                {invitation.role ? (
+                  <Badge variant={ROLE_BADGE_VARIANT[invitation.role]} className="text-xs">
+                    {ROLE_LABELS[invitation.role]}
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              <TableCell>
+                <Badge variant="secondary" className="text-xs">
+                  Convite pendente
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 text-xs text-destructive hover:text-destructive"
+                  onClick={() => onRevoke(invitation)}
+                >
+                  <X className="h-3.5 w-3.5 mr-1" />
+                  Revogar
+                </Button>
               </TableCell>
             </TableRow>
           ))}

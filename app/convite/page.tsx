@@ -24,6 +24,9 @@ const ERROS: Record<string, string> = {
   invalido:
     "Convite inválido ou expirado, ou a conta com que entrou não é a do email convidado.",
   sessao: "A sessão expirou. Entre de novo para aceitar o convite.",
+  conta:
+    "Este email já entrou antes por outro método (Google ou email e password). Termine a sessão e entre da mesma forma que da primeira vez.",
+  falha: "Não foi possível aceitar o convite agora. Tente de novo dentro de momentos.",
 };
 
 const primario =

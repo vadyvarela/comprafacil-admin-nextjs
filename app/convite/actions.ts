@@ -25,9 +25,22 @@ export async function acceptInvitation(formData: FormData): Promise<void> {
     if (!(error instanceof ApiError)) {
       throw error;
     }
-    const erro = error.status === 401 ? "sessao" : "invalido";
-    redirect(`/convite?token=${encodeURIComponent(token)}&erro=${erro}`);
+    console.error("[convite] aceitar falhou:", error.status, error.message);
+    redirect(
+      `/convite?token=${encodeURIComponent(token)}&erro=${motivo(error.status)}`,
+    );
   }
 
   redirect("/dashboard");
+}
+
+/**
+ * O código vai no URL, a mensagem não: o texto que se mostra é o da página,
+ * não algo que qualquer link pudesse escrever.
+ */
+function motivo(status: number): string {
+  if (status === 401) return "sessao";
+  if (status === 404) return "invalido";
+  if (status === 409) return "conta";
+  return "falha";
 }

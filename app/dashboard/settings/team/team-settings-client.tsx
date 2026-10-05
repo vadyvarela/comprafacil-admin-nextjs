@@ -10,7 +10,7 @@ import { TeamMemberList } from "@/components/team/team-member-list"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useConfirmDialog } from "@/components/ui/confirm-dialog"
-import type { TeamMember } from "@/lib/team/types"
+import type { PendingInvitation, TeamMember } from "@/lib/team/types"
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, STORE_ROLES } from "@/lib/auth/roles"
 import { getErrorMessage } from "@/lib/utils/errors"
 import { Plus, UserCog } from "lucide-react"
@@ -18,6 +18,7 @@ import { toast } from "sonner"
 
 export function TeamSettingsClient() {
   const [members, setMembers] = useState<TeamMember[]>([])
+  const [invitations, setInvitations] = useState<PendingInvitation[]>([])
   const [loading, setLoading] = useState(true)
   const [inviteOpen, setInviteOpen] = useState(false)
   const [changeMember, setChangeMember] = useState<TeamMember | null>(null)
@@ -26,15 +27,30 @@ export function TeamSettingsClient() {
   async function loadMembers() {
     try {
       setLoading(true)
-      const res = await fetch("/api/team/members")
-      const data = await res.json()
-      if (!res.ok) {
+      // Membros e convites pendentes numa só lista: quem convidou quer ver
+      // que o convite existe, não só quem já aceitou.
+      const [membersRes, invitationsRes] = await Promise.all([
+        fetch("/api/team/members"),
+        fetch("/api/team/invitations"),
+      ])
+      const [membersData, invitationsData] = await Promise.all([
+        membersRes.json(),
+        invitationsRes.json(),
+      ])
+      if (!membersRes.ok) {
         toast.error("Erro ao carregar equipa", {
-          description: data?.error ?? `HTTP ${res.status}`,
+          description: membersData?.error ?? `HTTP ${membersRes.status}`,
         })
         return
       }
-      setMembers(Array.isArray(data) ? data : [])
+      setMembers(Array.isArray(membersData) ? membersData : [])
+      if (invitationsRes.ok) {
+        setInvitations(Array.isArray(invitationsData) ? invitationsData : [])
+      } else {
+        toast.error("Erro ao carregar convites", {
+          description: invitationsData?.error ?? `HTTP ${invitationsRes.status}`,
+        })
+      }
     } catch (err: unknown) {
       toast.error("Erro ao carregar equipa", { description: getErrorMessage(err) })
     } finally {
@@ -75,6 +91,35 @@ export function TeamSettingsClient() {
     }
   }
 
+  async function handleRevoke(invitation: PendingInvitation) {
+    const confirmed = await confirm({
+      title: "Revogar convite?",
+      description: `O convite para ${invitation.email} deixa de funcionar.`,
+      impact: "O link enviado deixa de dar acesso. Pode sempre convidar de novo.",
+      confirmText: "Revogar convite",
+      variant: "destructive",
+    })
+
+    if (!confirmed) return
+
+    try {
+      const res = await fetch(`/api/team/invitations/${encodeURIComponent(invitation.id)}`, {
+        method: "DELETE",
+      })
+      if (!res.ok && res.status !== 204) {
+        const data = await res.json()
+        toast.error("Erro ao revogar convite", {
+          description: data?.error ?? `HTTP ${res.status}`,
+        })
+        return
+      }
+      toast.success("Convite revogado")
+      await loadMembers()
+    } catch (err: unknown) {
+      toast.error("Erro ao revogar convite", { description: getErrorMessage(err) })
+    }
+  }
+
   return (
     <>
       <DashboardHeader
@@ -99,10 +144,12 @@ export function TeamSettingsClient() {
 
         <TeamMemberList
           members={members}
+          invitations={invitations}
           loading={loading}
           onInvite={() => setInviteOpen(true)}
           onChangeRole={setChangeMember}
           onRemove={handleRemove}
+          onRevoke={handleRevoke}
         />
 
         <Card className="border-border/80">
