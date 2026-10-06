@@ -2,8 +2,9 @@
 
 import { useState, type ReactNode } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
+import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
+import { GET_PRODUCT } from "@/lib/graphql/products/queries"
 import { DELETE_PRODUCT, UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
@@ -11,7 +12,6 @@ import { useCan } from "@/components/providers/permissions-provider"
 import { DataPanel } from "@/components/admin/data-panel"
 import { EmptyState } from "@/components/admin/empty-state"
 import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
-import { EditProductModal } from "@/components/products/edit-product-modal"
 import { MetaCatalogPreview } from "@/components/products/meta-catalog-preview"
 import { VariantManager } from "@/components/products/variant-manager"
 import { ProductOptionCatalogPanel } from "@/components/products/product-option-catalog-panel"
@@ -358,7 +358,6 @@ export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
   const productId = params.id as string
-  const [editModalOpen, setEditModalOpen] = useState(false)
   const [variantManagerOpen, setVariantManagerOpen] = useState(false)
   const [stockModalOpen, setStockModalOpen] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
@@ -384,30 +383,7 @@ export default function ProductDetailPage() {
     },
   )
 
-  const { data: productsData } = useQuery<{
-    products?: { data?: Array<{ id: string; brand?: Product["brand"] }> }
-  }>(GET_PRODUCTS, {
-    variables: {
-      filter: { includeInactive: true },
-      page: {
-        page: 0,
-        size: 1000,
-        sortBy: "createdAt",
-        sortDirection: "DESC",
-      },
-    },
-    skip: !productId,
-  })
-
   const product = data?.productDetails
-  const fallbackBrand = productsData?.products?.data?.find((item) => item.id === product?.id)?.brand
-  const productForEditing =
-    product
-      ? {
-          ...product,
-          brand: product.brand ?? fallbackBrand ?? null,
-        }
-      : null
 
   const metadata = parseMetadata(product?.metadata)
   const variantCount = product?.variants?.length ?? 0
@@ -578,9 +554,11 @@ export default function ProductDetailPage() {
                       )}
                       {productVisibilityToggleLabel(product.status?.code)}
                     </Button>
-                    <Button onClick={() => setEditModalOpen(true)} size="sm">
-                      <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                      Editar
+                    <Button size="sm" asChild>
+                      <Link href={`/dashboard/products/${productId}/edit`}>
+                        <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                        Editar
+                      </Link>
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -797,12 +775,6 @@ export default function ProductDetailPage() {
 
       {canWrite ? (
         <>
-          <EditProductModal
-            product={productForEditing}
-            open={editModalOpen}
-            onOpenChange={setEditModalOpen}
-          />
-
           <VariantManager
             productId={productId}
             open={variantManagerOpen}
