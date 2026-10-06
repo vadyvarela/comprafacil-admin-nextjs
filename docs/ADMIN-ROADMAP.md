@@ -1,145 +1,117 @@
-# Roadmap Admin – Layout Estilo Shopify
+# Roadmap do Admin
 
-Plano para evoluir o admin para um layout profissional estilo Shopify, com todas as funcionalidades necessárias para gerir uma loja online.
+Estado das funcionalidades do backoffice, comparado com um admin de loja online completo (referência: Shopify). Revisto a 2026-10-06 contra o código; o que não foi possível confirmar fica com **?**.
 
----
-
-## Funcionalidades de um Admin de Loja Online (Tipo Shopify)
-
-### 1. **Catálogo (Produtos)**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Listar produtos (tabela, filtros) | ✅ Página existe | - |
-| Criar/editar produto | ✅ Páginas existem | - |
-| Imagens do produto | ? | Alta |
-| Variantes (tamanho, cor, etc.) | ? | Alta |
-| Stock / inventário | ? | Alta |
-| SKU, preço, preço promocional | ? | Alta |
-| SEO (meta title, description) | ? | Média |
-| Publicar/desativar | ? | Alta |
-| Importar/exportar (CSV) | ❌ | Baixa |
-
-### 2. **Categorias e Organização**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Listar categorias | ✅ | - |
-| Criar/editar categoria | ✅ | - |
-| Árvore/hierarquia de categorias | ? | Média |
-| Marcas (brands) | ✅ | - |
-| Coleções / tags | ? | Média |
-
-### 3. **Pedidos**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Listar pedidos | ✅ | - |
-| Detalhe do pedido | ✅ | - |
-| Filtros (estado, data, cliente) | Parcial | Alta |
-| Atualizar estado (em processamento, enviado, etc.) | ? | Alta |
-| Notas internas | ? | Média |
-| Histórico de alterações | ? | Média |
-| Impressão/PDF da fatura | ? | Média |
-
-### 4. **Clientes**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Listar clientes | ❌ | Alta |
-| Detalhe do cliente | ❌ | Alta |
-| Histórico de Kumpras | ❌ | Alta |
-| Grupos/segmentos | ❌ | Baixa |
-
-### 5. **Pagamentos e Transações**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Listar transações | ✅ | - |
-| Reembolsos | ? | Alta |
-| Conciliação | ? | Baixa |
-
-### 6. **Promoções e Marketing**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Cupons | ✅ | - |
-| Descontos automáticos | ❌ | Média |
-| Banners / campanhas | ✅ | - |
-
-### 7. **Relatórios e Analytics**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Dashboard com métricas (vendas, pedidos, etc.) | Parcial | Alta |
-| Relatórios de vendas | ❌ | Média |
-| Produtos mais vendidos | ❌ | Média |
-
-### 8. **Definições / Configurações**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Dados da loja (nome, logo) | ❌ | Alta |
-| Métodos de pagamento | ❌ | Alta |
-| Envios/transportadoras | ❌ | Alta |
-| Impostos | ❌ | Média |
-| Utilizadores/equipa | ❌ | Média |
-| Notificações por email | ❌ | Baixa |
-
-### 9. **Layout e UX (Estilo Shopify)**
-| Funcionalidade | Status | Prioridade |
-|----------------|--------|------------|
-| Sidebar colapsável com ícones | ✅ Básico | - |
-| Header fixo com breadcrumb | ✅ Básico | - |
-| Dashboard home com cards de resumo | Parcial | Alta |
-| Empty states profissionais | Parcial | Média |
-| Notificações / toast | ? | Média |
-| Search global (produtos, pedidos) | ❌ | Média |
-| Tema claro/escuro consistente | ? | Média |
-| Responsivo (mobile) | ? | Alta |
+Legenda: ✅ existe · Parcial · ❌ não existe · ? por confirmar
 
 ---
 
-## Plano de Implementação por Fases
+## 1. Catálogo
 
-### **Fase 1: Layout Profissional (Shell estilo Shopify)** ✅
-Objetivo: base visual sólida, sem alterar funcionalidades atuais.
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| Listar produtos (filtros por categoria, marca, estado) | ✅ | |
+| Criar produto | ✅ | Modal (`?create=1`) |
+| Editar produto | ✅ | Página `/dashboard/products/[id]/edit` |
+| Imagens e galeria | ✅ | Produto e variante |
+| Variantes | ✅ | `VariantManager` |
+| Stock | ✅ | `StockModal` no detalhe |
+| SKU, desconto | ✅ | |
+| Publicar / ocultar | ✅ | |
+| SEO (meta title, description) | ❌ | Só os campos do catálogo Meta |
+| Importar catálogo | Parcial | JSON (`/dashboard/products/importar`); sem exportar |
 
-- [x] Header refinado: logo "Kumpra Fácil", breadcrumb, backdrop blur
-- [x] Sidebar: agrupamento por secções (Principal, Vendas, Catálogo, Marketing)
-- [x] Dashboard home: cards com métricas (Pedidos, Transações, Produtos) e acesso rápido
-- [x] NavUser simplificado (Conta, Terminar sessão) e iniciais no avatar
-- [ ] Empty states melhorados (fase posterior)
+## 2. Categorias e marcas
 
-### **Fase 2: Catálogo e consistência de layout** (em curso)
-- [x] Página de produtos: toolbar e lista alinhados ao estilo Pedidos
-- [x] Criar produto: layout compacto e consistente
-- [x] Categorias, Marcas, Cupons, Banners: mesmo padrão (toolbar + empty state)
-- [ ] Filtros avançados por categoria (fase posterior)
-- [ ] Categorias em árvore / hierárquicas (fase posterior)
-- [ ] Gestão de stock já existe (StockModal no detalhe do produto)
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| Categorias em árvore | ✅ | |
+| Marcas | ✅ | |
+| Coleções / tags | ? | |
 
-### **Fase 3: Pedidos e Clientes** (em curso)
-- [x] Detalhe do pedido: header compacto, link "Ver cliente"
-- [x] Secção Clientes na sidebar (Vendas)
-- [x] Página listagem clientes (placeholder; explica acesso via pedido)
-- [x] Página detalhe cliente `/dashboard/customers/[id]` (dados + endereços)
-- [ ] Workflow de estados do pedido (depende do backend: em processamento, enviado)
-- [ ] Listagem de clientes (quando o backend expor o endpoint)
-- [ ] Histórico de Kumpras por cliente (fase posterior)
+## 3. Pedidos
 
-### **Fase 4: Relatórios e Dashboard**
-- [ ] Gráficos de vendas
-- [ ] Métricas por período
-- [ ] Produtos mais vendidos
-- [ ] Relatórios exportáveis
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| Listar e ver detalhe | ✅ | |
+| Filtros por estado de envio, datas e pesquisa | ✅ | Filtro de estado corre na API |
+| Estado de envio (a processar → entregue) | ✅ | |
+| Histórico de alterações | ✅ | Timeline a partir dos logs |
+| Factura e recibo em PDF | ✅ | |
+| Notas internas | ❌ | |
 
-### **Fase 5: Configurações**
-- [ ] Secção Definições
-- [ ] Dados da loja
-- [ ] Métodos de pagamento e envio (se aplicável)
+## 4. Clientes
+
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| Listar clientes | ✅ | |
+| Ficha do cliente (dados, endereços) | ✅ | Dados pessoais só com `customers.pii.read` |
+| Histórico de compras na ficha | ❌ | |
+| Grupos / segmentos | ❌ | |
+
+## 5. Pagamentos
+
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| Listar transações | ✅ | |
+| Conciliação de pagamentos | ✅ | `ReconcilePaymentSheet` |
+| Reembolsos | ❌ | |
+
+## 6. Marketing e conteúdo
+
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| Cupões | ✅ | |
+| Leads comerciais | ✅ | Com follow-up |
+| Banners | ✅ | |
+| Page Builder (home da loja) | ✅ | |
+| Biblioteca de media | ✅ | |
+| Descontos automáticos | ❌ | Só desconto por produto |
+
+## 7. Analytics
+
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| KPIs com comparação ao período anterior | ✅ | |
+| Gráfico de receita | ✅ | |
+| Produtos e clientes de topo | ✅ | |
+| Vendas por país, estado dos pagamentos | ✅ | |
+| Exportar relatórios | ❌ | |
+
+## 8. Definições
+
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| Dados da loja, aparência, envios, manutenção | ✅ | Grupo "Loja" |
+| Integração Meta | ✅ | |
+| Notificações | Parcial | Telegram; sem e-mail |
+| Equipa e cargos | ✅ | Convites incluídos |
+| Tokens de API | ✅ | |
+| Métodos de pagamento | ❌ | |
+| Impostos | ❌ | |
+
+## 9. Layout e UX
+
+| Funcionalidade | Estado | Notas |
+|---|---|---|
+| Sidebar por secções, só com o que o utilizador pode abrir | ✅ | `lib/nav.ts` |
+| Cabeçalho e toolbars consistentes | ✅ | `PageToolbar` em todas as listas |
+| Estados vazios e erros de carregamento | ✅ | `EmptyState`, `LoadError` |
+| Esqueletos de carregamento | ✅ | Listas e Analytics |
+| Toasts | ✅ | |
+| Tema claro / escuro / sistema | ✅ | Tokens semânticos em `globals.css` |
+| Pesquisa global (produtos, pedidos, clientes) | ❌ | |
+| Responsivo (mobile) | ? | Por testar página a página |
 
 ---
 
-## Próximo Passo: Fase 1
+## Próximos passos sugeridos
 
-A **Fase 1** foca-se apenas no layout e na experiência visual, mantendo as páginas atuais funcionais. Inclui:
+Por impacto para quem opera a loja todos os dias:
 
-1. **Header estilo Shopify**: logo à esquerda, breadcrumb, área de ações à direita
-2. **Sidebar organizada** em secções lógicas com ícones
-3. **Dashboard home** com cards de resumo (se houver dados no backend)
-4. **Consistência visual** em todo o admin
-
-Posso começar pela Fase 1 quando confirmares.
+1. **Home "precisa de atenção"**: pedidos por processar, stock baixo, pagamentos por conciliar.
+2. **Histórico de compras na ficha do cliente.**
+3. **Pesquisa global** (atalho de teclado) para pedidos, produtos e clientes.
+4. **Notas internas nos pedidos.**
+5. **Reembolsos.**
+6. **SEO por produto.**
