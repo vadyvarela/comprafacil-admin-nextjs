@@ -98,8 +98,8 @@ export default function BrandsPage() {
       <div className="flex flex-1 flex-col min-h-0">
         <PageToolbar
           icon={Tag}
-          iconBg="bg-amber-50"
-          iconColor="text-amber-900"
+          iconBg="bg-warning-soft"
+          iconColor="text-warning-strong"
           title="Marcas"
           subtitle={loading ? "A carregar…" : `${brands.length} marca${brands.length !== 1 ? "s" : ""}`}
         >
@@ -179,11 +179,11 @@ export default function BrandsPage() {
                     className="group relative flex min-h-36 flex-col rounded-lg border border-border/80 bg-card p-3.5 shadow-xs transition-colors hover:border-border hover:bg-muted/20"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-amber-50 overflow-hidden">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-warning-soft overflow-hidden">
                         {brand.logo ? (
                           <img src={brand.logo} alt={brand.name} className="h-7 w-7 object-contain" />
                         ) : (
-                          <Tag className="h-4 w-4 text-amber-900" />
+                          <Tag className="h-4 w-4 text-warning-strong" />
                         )}
                       </div>
                       <DropdownMenu>
@@ -230,7 +230,7 @@ export default function BrandsPage() {
                     )}
 
                     {brand.status && (
-                      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${brandStatusClass(brand.status.code)}`}>
+                      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${brandStatusClass(brand.status.code)}`}>
                         {brandStatusLabel(brand.status.code)}
                       </span>
                     )}

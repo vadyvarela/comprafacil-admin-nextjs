@@ -1,5 +1,12 @@
 import {
   BarChart3,
+  Bell,
+  Construction,
+  Megaphone,
+  Palette,
+  Shield,
+  Store,
+  Truck,
   CreditCard,
   FolderTree,
   Image as ImageIcon,
@@ -163,71 +170,101 @@ export const NAV_SECTIONS: NavSection[] = [
   },
 ];
 
+export type SettingsGroup = "Loja" | "Integrações" | "Conta"
+
 export interface SettingsTab {
-  href: string;
-  label: string;
+  href: string
+  label: string
   /** Prefixo que activa o separador; omitir usa correspondência exacta. */
-  prefix?: string;
-  permission: Permission;
+  prefix?: string
+  permission: Permission
+  /** Omitir deixa o separador fora dos grupos (a visão geral). */
+  group?: SettingsGroup
+  description?: string
+  icon?: LucideIcon
 }
 
+export const SETTINGS_GROUPS: SettingsGroup[] = ["Loja", "Integrações", "Conta"]
+
+/**
+ * O Page Builder não está aqui: é conteúdo, vive na sidebar. A rota continua
+ * debaixo de /dashboard/settings e herda o guard `settings.read` do layout.
+ */
 export const SETTINGS_TABS: SettingsTab[] = [
-  { href: "/dashboard/settings", label: "Geral", permission: "settings.read" },
+  { href: "/dashboard/settings", label: "Visão geral", permission: "settings.read" },
   {
     href: "/dashboard/settings/store",
     label: "Loja",
     prefix: "/dashboard/settings/store",
     permission: "settings.read",
-  },
-  {
-    href: "/dashboard/settings/integrations/meta",
-    label: "Meta",
-    prefix: "/dashboard/settings/integrations",
-    permission: "marketing.analytics.read",
+    group: "Loja",
+    description: "Nome, logotipo, contactos e imagens SEO",
+    icon: Store,
   },
   {
     href: "/dashboard/settings/appearance",
     label: "Aparência",
     prefix: "/dashboard/settings/appearance",
     permission: "settings.write",
-  },
-  {
-    href: "/dashboard/settings/page-builder",
-    label: "Page Builder",
-    prefix: "/dashboard/settings/page-builder",
-    permission: "settings.write",
+    group: "Loja",
+    description: "Cores, tipografia e layout da loja pública",
+    icon: Palette,
   },
   {
     href: "/dashboard/settings/shipping",
     label: "Envios",
     prefix: "/dashboard/settings/shipping",
     permission: "settings.write",
-  },
-  {
-    href: "/dashboard/settings/notifications",
-    label: "Notificações",
-    prefix: "/dashboard/settings/notifications",
-    permission: "settings.notifications.write",
+    group: "Loja",
+    description: "Tarifas por ilha e valor de compra",
+    icon: Truck,
   },
   {
     href: "/dashboard/settings/maintenance",
     label: "Manutenção",
     prefix: "/dashboard/settings/maintenance",
     permission: "settings.write",
+    group: "Loja",
+    description: "Fechar a loja pública e mensagem aos clientes",
+    icon: Construction,
+  },
+  {
+    href: "/dashboard/settings/integrations/meta",
+    label: "Meta",
+    prefix: "/dashboard/settings/integrations",
+    permission: "marketing.analytics.read",
+    group: "Integrações",
+    description: "Pixel, Conversions API, catálogo e tracking",
+    icon: Megaphone,
+  },
+  {
+    href: "/dashboard/settings/notifications",
+    label: "Notificações",
+    prefix: "/dashboard/settings/notifications",
+    permission: "settings.notifications.write",
+    group: "Integrações",
+    description: "Alertas de pedidos no Telegram",
+    icon: Bell,
   },
   {
     href: "/dashboard/settings/team",
     label: "Equipa",
     prefix: "/dashboard/settings/team",
     permission: "team.read",
+    group: "Conta",
+    description: "Convidar membros e gerir funções de acesso",
+    icon: Users,
   },
   {
     href: "/dashboard/settings/security",
     label: "Segurança",
     prefix: "/dashboard/settings/security",
     permission: "security.tokens.read",
+    group: "Conta",
+    description: "Tokens de API",
+    icon: Shield,
   },
-];
+]
 
 /**
  * Permissão exigida por um caminho do dashboard.

@@ -27,7 +27,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
     return (
       <div className="grid gap-3">
         <div className="space-y-1">
-          <Label className="text-[10px]">Autoplay (ms)</Label>
+          <Label className="text-[11px]">Autoplay (ms)</Label>
           <Input
             type="number"
             min={3000}
@@ -46,7 +46,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
             }
           />
         </div>
-        <p className="text-[10px] text-muted-foreground leading-snug">
+        <p className="text-[11px] text-muted-foreground leading-snug">
           Entre 1 e 6 slides full-bleed. Imagem obrigatória; tag, headline, botão e overlay são opcionais.
         </p>
         <div className="flex flex-col gap-3">
@@ -55,11 +55,11 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
               key={`${slide.id}-${idx}`}
               className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
             >
-              <legend className="mb-1 px-1 text-[10px] font-semibold text-foreground">
+              <legend className="mb-1 px-1 text-[11px] font-semibold text-foreground">
                 Slide {idx + 1}
               </legend>
               <div className="space-y-1">
-                <Label className="text-[10px]">ID (interno)</Label>
+                <Label className="text-[11px]">ID (interno)</Label>
                 <Input
                   className="h-8 text-xs font-mono"
                   value={slide.id}
@@ -69,7 +69,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px]">Tag (opcional)</Label>
+                <Label className="text-[11px]">Tag (opcional)</Label>
                 <Input
                   className="h-8 text-xs"
                   value={slide.tag ?? ""}
@@ -83,7 +83,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Headline (opcional)</Label>
+                <Label className="text-[11px]">Headline (opcional)</Label>
                 <Input
                   className="h-8 text-xs"
                   value={slide.headline ?? ""}
@@ -97,7 +97,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px]">Texto do botão (opcional)</Label>
+                <Label className="text-[11px]">Texto do botão (opcional)</Label>
                 <Input
                   className="h-8 text-xs"
                   value={slide.ctaLabel ?? ""}
@@ -125,7 +125,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
                 }
               />
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Imagem — URL https ou /path</Label>
+                <Label className="text-[11px]">Imagem — URL https ou /path</Label>
                 <Input
                   className="h-8 text-xs font-mono"
                   value={slide.imageUrl}
@@ -135,7 +135,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Alt da imagem</Label>
+                <Label className="text-[11px]">Alt da imagem</Label>
                 <Input
                   className="h-8 text-xs"
                   value={slide.imageAlt}
@@ -145,7 +145,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Posição object (opcional)</Label>
+                <Label className="text-[11px]">Posição object (opcional)</Label>
                 <Input
                   className="h-8 text-xs font-mono"
                   placeholder="center 30%"
@@ -173,7 +173,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
                   }
                   className="h-4 w-4 rounded border-border accent-primary"
                 />
-                <Label htmlFor={`slide-${idx}-overlay`} className="text-[10px] text-muted-foreground">
+                <Label htmlFor={`slide-${idx}-overlay`} className="text-[11px] text-muted-foreground">
                   Overlay escuro sobre a imagem
                 </Label>
               </div>
@@ -182,7 +182,7 @@ export function ShoeStoreHeroFields({ block, onChange }: BlockFieldsProps<Block>
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-[10px]"
+                  className="h-7 text-[11px]"
                   disabled={slides.length <= 1}
                   onClick={() => patchSlides(slides.filter((_, i) => i !== idx))}
                 >

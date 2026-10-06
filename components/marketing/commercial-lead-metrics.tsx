@@ -15,11 +15,11 @@ type CommercialLeadMetricsProps = {
 }
 
 const metricTone = {
-  blue: "border-sky-200 bg-sky-50 text-sky-700",
-  green: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  amber: "border-amber-200 bg-amber-50 text-amber-700",
-  rose: "border-rose-200 bg-rose-50 text-rose-700",
-  violet: "border-violet-200 bg-violet-50 text-violet-700",
+  blue: "border-info-border bg-info-soft text-info-strong",
+  green: "border-success-border bg-success-soft text-success-strong",
+  amber: "border-warning-border bg-warning-soft text-warning-strong",
+  rose: "border-danger-border bg-danger-soft text-danger-strong",
+  violet: "border-highlight-border bg-highlight-soft text-highlight-strong",
   slate: "border-border bg-muted/40 text-muted-foreground",
 } as const
 
@@ -85,7 +85,7 @@ export function CommercialLeadMetrics({ metrics }: CommercialLeadMetricsProps) {
                 <Icon className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase text-muted-foreground">
+                <p className="text-xs font-semibold uppercase text-muted-foreground">
                   {item.label}
                 </p>
                 <p className="truncate text-sm font-bold tabular-nums text-foreground">

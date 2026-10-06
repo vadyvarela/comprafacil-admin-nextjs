@@ -43,12 +43,12 @@ export function TopProductsCard({ products }: TopProductsCardProps) {
               return (
                 <div key={`${p.name}-${i}`} className="py-3">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted text-[11px] font-bold tabular-nums text-muted-foreground shrink-0">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted text-xs font-bold tabular-nums text-muted-foreground shrink-0">
                       {i + 1}
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{p.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{p.qty} un.</p>
+                      <p className="text-xs text-muted-foreground">{p.qty} un.</p>
                     </div>
                     <span className="text-sm font-bold tabular-nums text-foreground shrink-0 font-mono">
                       {formatCurrency(p.revenue)}

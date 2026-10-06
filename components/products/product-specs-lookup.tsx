@@ -178,7 +178,7 @@ export function ProductSpecsSection({
 
   return (
     <>
-      <FormSection icon={Cpu} title="Especificações técnicas" iconTone="bg-slate-100 text-slate-700">
+      <FormSection icon={Cpu} title="Especificações técnicas" iconTone="bg-muted text-muted-foreground">
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
@@ -191,14 +191,14 @@ export function ProductSpecsSection({
             <Search className="h-3.5 w-3.5 mr-1.5" />
             Buscar especificações
           </Button>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Pesquisa online gratuita (MobileAPI). Revise antes de guardar.
           </p>
         </div>
 
         {rows.length > 0 ? (
           <div className="rounded-md border border-border/70 overflow-hidden">
-            <div className="grid grid-cols-[1fr_1.2fr_32px] gap-2 px-2.5 py-1.5 bg-muted/30 border-b border-border/60 text-[10px] font-medium uppercase text-muted-foreground">
+            <div className="grid grid-cols-[1fr_1.2fr_32px] gap-2 px-2.5 py-1.5 bg-muted/30 border-b border-border/60 text-[11px] font-medium uppercase text-muted-foreground">
               <span>Campo</span>
               <span>Valor</span>
               <span />
@@ -239,7 +239,7 @@ export function ProductSpecsSection({
             </div>
           </div>
         ) : (
-          <p className="text-[11px] text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2">
+          <p className="text-xs text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2">
             Sem especificações. Use a busca ou adicione linhas manualmente.
           </p>
         )}
@@ -308,7 +308,7 @@ export function ProductSpecsSection({
                     disabled={loadingDetail}
                   >
                     <p className="text-sm font-medium text-foreground">{item.name}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {[item.brand, item.releaseDate, item.matchCertainty]
                         .filter(Boolean)
                         .join(" · ")}
@@ -330,7 +330,7 @@ export function ProductSpecsSection({
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="text-xs font-medium text-foreground">{previewName}</p>
-                    <p className="text-[11px] text-muted-foreground">Pré-visualização</p>
+                    <p className="text-xs text-muted-foreground">Pré-visualização</p>
                   </div>
                   <Button
                     type="button"

@@ -96,7 +96,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
             <div className="flex items-center gap-2 flex-wrap mt-1">
               <span className="font-mono text-xs text-muted-foreground break-all">{tx.id}</span>
               {tx.status && (
-                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusClass(tx.status.code)}`}>
+                <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${statusClass(tx.status.code)}`}>
                   {tx.status.code}
                 </span>
               )}
@@ -116,17 +116,17 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
                 label="Estado"
                 value={
                   <div className="flex flex-col items-end gap-0.5">
-                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusClass(tx.status?.code ?? "")}`}>
+                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${statusClass(tx.status?.code ?? "")}`}>
                       {tx.status?.code ?? "—"}
                     </span>
                     {tx.status?.description && (
-                      <span className="text-[11px] text-muted-foreground">{tx.status.description}</span>
+                      <span className="text-xs text-muted-foreground">{tx.status.description}</span>
                     )}
                   </div>
                 }
               />
               {tx.statusReason && <Row label="Motivo do estado" value={tx.statusReason} />}
-              {tx.merchantReference && <Row label="Referência merchant" value={<span className="font-mono text-[11px]">{tx.merchantReference}</span>} />}
+              {tx.merchantReference && <Row label="Referência merchant" value={<span className="font-mono text-xs">{tx.merchantReference}</span>} />}
               {tx.description && <Row label="Descrição" value={tx.description} />}
               {tx.statementDescriptor && <Row label="Statement descriptor" value={tx.statementDescriptor} />}
               {tx.canceledReason && <Row label="Motivo cancelamento" value={tx.canceledReason} />}
@@ -153,7 +153,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
                 {tx.customer.name && <Row label="Nome" value={<span className="font-semibold">{tx.customer.name}</span>} />}
                 {tx.customer.email && <Row label="Email" value={tx.customer.email} />}
                 {tx.customer.phone && <Row label="Telefone" value={tx.customer.phone} />}
-                {tx.customer.id && <Row label="ID" value={<span className="font-mono text-[10px]">{tx.customer.id}</span>} />}
+                {tx.customer.id && <Row label="ID" value={<span className="font-mono text-[11px]">{tx.customer.id}</span>} />}
               </div>
             </div>
           )}
@@ -163,7 +163,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
             <div className="rounded-none border-b border-border">
               <SectionTitle icon={Package} title="Sessão de checkout" />
               <div className="px-4 py-1">
-                <Row label="ID" value={<span className="font-mono text-[10px]">{tx.checkoutSession.id}</span>} />
+                <Row label="ID" value={<span className="font-mono text-[11px]">{tx.checkoutSession.id}</span>} />
                 {tx.checkoutSession.paymentMode && <Row label="Modo pagamento" value={tx.checkoutSession.paymentMode} />}
                 {tx.checkoutSession.maximumNumberOfInstallments != null && (
                   <Row label="Parcelas máx." value={tx.checkoutSession.maximumNumberOfInstallments} />
@@ -183,9 +183,9 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
                           {line.productVariant?.product?.title ?? line.productVariant?.title ?? "Produto"}
                         </p>
                         {line.productVariant?.title && line.productVariant.product && (
-                          <p className="text-[11px] text-muted-foreground">{line.productVariant.title}</p>
+                          <p className="text-xs text-muted-foreground">{line.productVariant.title}</p>
                         )}
-                        <p className="text-[11px] text-muted-foreground mt-0.5">Qtde: {line.quantity}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Qtde: {line.quantity}</p>
                       </div>
                     ))}
                   </div>
@@ -215,9 +215,9 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
             <div className="rounded-none border-b border-border">
               <SectionTitle icon={FileText} title="Fatura" />
               <div className="px-4 py-1">
-                {tx.invoice.number && <Row label="Número" value={<span className="font-mono text-[11px]">{tx.invoice.number}</span>} />}
+                {tx.invoice.number && <Row label="Número" value={<span className="font-mono text-xs">{tx.invoice.number}</span>} />}
                 <Row label="Total fatura" value={<span className="font-bold tabular-nums">{formatCurrency(minorToMajorCurrencyAmount(tx.invoice.amountTotal), tx.invoice.currency)}</span>} />
-                <Row label="Total pago" value={<span className="tabular-nums text-emerald-600 font-semibold">{formatCurrency(minorToMajorCurrencyAmount(tx.invoice.amountPaid), tx.invoice.currency)}</span>} />
+                <Row label="Total pago" value={<span className="tabular-nums text-success font-semibold">{formatCurrency(minorToMajorCurrencyAmount(tx.invoice.amountPaid), tx.invoice.currency)}</span>} />
                 {tx.invoice.dueDate && <Row label="Data de vencimento" value={formatDate(tx.invoice.dueDate)} />}
                 {invoicePdfLink && (
                   <div className="py-2">
@@ -241,7 +241,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
             <div className="rounded-none border-b border-border">
               <SectionTitle icon={Receipt} title="Recibo" />
               <div className="px-4 py-1">
-                {tx.receipt.number && <Row label="Número" value={<span className="font-mono text-[11px]">{tx.receipt.number}</span>} />}
+                {tx.receipt.number && <Row label="Número" value={<span className="font-mono text-xs">{tx.receipt.number}</span>} />}
                 {tx.receipt.sendTo && <Row label="Enviado para" value={tx.receipt.sendTo} />}
                 {tx.receipt.sentAt && <Row label="Enviado em" value={formatDate(tx.receipt.sentAt)} />}
                 {tx.receipt.deliveryStatus && <Row label="Estado entrega" value={tx.receipt.deliveryStatus} />}
@@ -267,7 +267,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
             <div className="rounded-none border-b border-border">
               <SectionTitle icon={FileText} title="Fatura" />
               <div className="px-4 py-1">
-                <Row label="Caminho" value={<span className="font-mono text-[10px]">{tx.invoicePath}</span>} />
+                <Row label="Caminho" value={<span className="font-mono text-[11px]">{tx.invoicePath}</span>} />
               </div>
             </div>
           )}
@@ -277,7 +277,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
             <div className="rounded-none border-b border-border">
               <SectionTitle icon={Hash} title="Metadata" />
               <div className="px-4 py-3">
-                <pre className="text-[10px] font-mono bg-muted/50 rounded-lg p-3 overflow-auto whitespace-pre-wrap break-all max-h-48 text-foreground">
+                <pre className="text-[11px] font-mono bg-muted/50 rounded-lg p-3 overflow-auto whitespace-pre-wrap break-all max-h-48 text-foreground">
                   {tryParseJson(tx.metadata)}
                 </pre>
               </div>
@@ -289,7 +289,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
             <div className="rounded-none border-b border-border">
               <SectionTitle icon={Info} title="Response Metadata" />
               <div className="px-4 py-3">
-                <pre className="text-[10px] font-mono bg-muted/50 rounded-lg p-3 overflow-auto whitespace-pre-wrap break-all max-h-48 text-foreground">
+                <pre className="text-[11px] font-mono bg-muted/50 rounded-lg p-3 overflow-auto whitespace-pre-wrap break-all max-h-48 text-foreground">
                   {tryParseJson(tx.responseMetadata)}
                 </pre>
               </div>

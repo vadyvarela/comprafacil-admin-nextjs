@@ -25,10 +25,10 @@ export function FormField({
       {label ? <Label htmlFor={htmlFor}>{label}</Label> : null}
       {children}
       {description && !error ? (
-        <p className="text-[11px] leading-relaxed text-muted-foreground">{description}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
       ) : null}
       {error ? (
-        <p className="text-[11px] leading-relaxed font-medium text-destructive">{error}</p>
+        <p className="text-xs leading-relaxed font-medium text-destructive">{error}</p>
       ) : null}
     </div>
   )

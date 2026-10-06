@@ -25,7 +25,6 @@ import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { OrderSummary } from "@/lib/graphql/orders/types"
-import type { CheckoutSessionDetailsResponse } from "@/lib/graphql/orders/types"
 
 async function getDashboardData({
   includeStats,
@@ -37,7 +36,7 @@ async function getDashboardData({
   const [statsRes, customersRes, recentOrdersRes] = await Promise.all([
     includeStats ? getDashboardStats({ days: 30 }) : Promise.resolve(null),
     includeCustomers ? getCustomers({ page: 0 }) : Promise.resolve(null),
-    getOrdersPageWithDetails({ page: 0 }),
+    getOrdersPageWithDetails({ page: 0, size: 6 }),
   ])
 
   // API returns amounts in minor units (cents); convert before display — same as analytics.
@@ -52,7 +51,7 @@ async function getDashboardData({
       : 0
   const totalCustomers = customersRes?.ok ? customersRes.data.totalElements ?? 0 : 0
   const avgTicket = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
-  const recentOrders = recentOrdersRes.ok ? recentOrdersRes.data.data.slice(0, 6) : []
+  const recentOrders = recentOrdersRes.ok ? recentOrdersRes.data.data : []
 
   return {
     totalOrders,
@@ -108,7 +107,7 @@ function FulfillmentBadge({ code }: { code: string | null | undefined }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${colorMap[variant] ?? "badge-neutral"}`}
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${colorMap[variant] ?? "badge-neutral"}`}
     >
       {label}
     </span>
@@ -120,7 +119,7 @@ export default async function DashboardPage() {
   const canReadAnalytics = can(principal, "analytics.read")
   const canReadCustomers = can(principal, "customers.read")
   const canWriteProducts = can(principal, "products.write")
-  const canReadCoupons = can(principal, "coupons.read")
+  const canWriteCoupons = can(principal, "coupons.write")
   const { totalOrders, totalRevenue, totalCustomers, avgTicket, recentOrders } =
     await getDashboardData({
       includeStats: canReadAnalytics,
@@ -134,27 +133,27 @@ export default async function DashboardPage() {
           icon: Package,
           label: "Novo produto",
           sub: "Adicionar ao catálogo",
-          iconBg: "bg-indigo-50",
-          iconColor: "text-indigo-700",
+          iconBg: "bg-info-soft",
+          iconColor: "text-info-strong",
         }
       : null,
-    canReadCoupons
+    canWriteCoupons
       ? {
-          href: "/dashboard/coupons",
+          href: "/dashboard/coupons?create=1",
           icon: Sparkles,
           label: "Criar cupão",
           sub: "Promoção ou desconto",
-          iconBg: "bg-emerald-50",
-          iconColor: "text-emerald-700",
+          iconBg: "bg-success-soft",
+          iconColor: "text-success-strong",
         }
       : null,
     {
-      href: "/dashboard/orders",
+      href: "/dashboard/orders?tab=PENDING",
       icon: Clock,
-      label: "Pedidos pendentes",
-      sub: "Ver a processar",
-      iconBg: "bg-amber-50",
-      iconColor: "text-amber-800",
+      label: "Pedidos a processar",
+      sub: "Pagos, por preparar",
+      iconBg: "bg-warning-soft",
+      iconColor: "text-warning-strong",
     },
   ].filter((action): action is NonNullable<typeof action> => action !== null)
 
@@ -196,11 +195,11 @@ export default async function DashboardPage() {
           ) : null}
           <Link href="/dashboard/orders" className="block animate-enter-delay-1">
             <StatsCard
-              label="Pedidos totais"
+              label="Pedidos pagos"
               value={totalOrders.toLocaleString("pt-PT")}
               icon={ShoppingCart}
               accentColor="blue"
-              period="Pedidos pagos"
+              period={canReadAnalytics ? "Últimos 30 dias" : "Desde sempre"}
             />
           </Link>
           {canReadCustomers ? (
@@ -236,12 +235,12 @@ export default async function DashboardPage() {
               </div>
               <div>
                 <span className="text-sm font-medium text-foreground">Pedidos recentes</span>
-                <p className="text-[11px] text-muted-foreground">Últimas transações processadas</p>
+                <p className="text-xs text-muted-foreground">Últimas transações processadas</p>
               </div>
             </div>
             <Link
               href="/dashboard/orders"
-              className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
             >
               Ver todos
               <ArrowRight className="h-3 w-3" />
@@ -257,9 +256,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="divide-y divide-border/70">
               {recentOrders.map((order) => {
-                const fulfillment = (order as OrderSummary & {
-                  fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
-                }).fulfillmentStatus
+                const fulfillment = order.fulfillmentStatus
 
                 return (
                   <Link
@@ -288,7 +285,7 @@ export default async function DashboardPage() {
                       <p className="text-sm font-bold tabular-nums text-foreground">
                         {formatCurrency(order.totalAmount ?? 0, order.currency)}
                       </p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {formatDate(order.createdAt)}
                       </p>
                     </div>
@@ -315,7 +312,7 @@ export default async function DashboardPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground">{action.label}</p>
-                <p className="text-[11px] text-muted-foreground">{action.sub}</p>
+                <p className="text-xs text-muted-foreground">{action.sub}</p>
               </div>
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-auto group-hover:text-muted-foreground transition-colors" />
             </Link>

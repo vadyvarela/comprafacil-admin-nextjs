@@ -142,7 +142,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
               <span className="text-sm font-semibold text-foreground">
                 Receita — {data.period.label}
               </span>
-              <p className="text-[11px] text-muted-foreground">{chartSubtitle}</p>
+              <p className="text-xs text-muted-foreground">{chartSubtitle}</p>
             </div>
             </div>
           </DataPanelHeader>
@@ -170,7 +170,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
                 <span className="text-sm font-semibold text-foreground">
                   Estado dos pagamentos
                 </span>
-                <p className="text-[11px] text-muted-foreground">Todos os tempos</p>
+                <p className="text-xs text-muted-foreground">Todos os tempos</p>
               </div>
               </div>
             </DataPanelHeader>
@@ -187,7 +187,7 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
               </div>
               <div>
                 <span className="text-sm font-semibold text-foreground">Vendas por país</span>
-                <p className="text-[11px] text-muted-foreground">{data.period.label}</p>
+                <p className="text-xs text-muted-foreground">{data.period.label}</p>
               </div>
               </div>
             </DataPanelHeader>

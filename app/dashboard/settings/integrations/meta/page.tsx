@@ -33,8 +33,8 @@ function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
       variant="outline"
       className={
         ok
-          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-          : "border-amber-200 bg-amber-50 text-amber-900"
+          ? "border-success-border bg-success-soft text-success-strong"
+          : "border-warning-border bg-warning-soft text-warning-strong"
       }
     >
       {ok ? (
@@ -56,7 +56,7 @@ function CatalogHealthPanel({
 }) {
   if (error) {
     return (
-      <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+      <div className="rounded-md border border-warning-border bg-warning-soft p-3 text-sm text-warning-strong">
         <div className="flex items-start gap-2">
           <AlertTriangle className="mt-0.5 size-4 shrink-0" />
           <div>
@@ -357,7 +357,7 @@ export default async function MetaIntegrationsPage() {
                 <CardContent className="text-sm">
                   {result.data.tracking.lastCapiError ? (
                     <div className="space-y-2">
-                      <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-800">
+                      <Badge variant="outline" className="border-danger-border bg-danger-soft text-danger-strong">
                         {result.data.tracking.lastCapiError.status || "error"}
                       </Badge>
                       <p className="text-foreground">

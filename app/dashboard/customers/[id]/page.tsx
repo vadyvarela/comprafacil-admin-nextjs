@@ -82,7 +82,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
             <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-xs">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-violet-50 text-sm font-semibold text-violet-800">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-highlight-soft text-sm font-semibold text-highlight-strong">
                     {initials}
                   </div>
                   <div>
@@ -109,40 +109,40 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               {/* Data card */}
               <DataPanel>
                 <div className="flex items-center gap-2 border-b border-border/80 bg-muted/35 px-3 py-2.5">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/50 bg-violet-50">
-                    <User className="h-3.5 w-3.5 text-violet-700" />
+                  <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/50 bg-highlight-soft">
+                    <User className="h-3.5 w-3.5 text-highlight-strong" />
                   </div>
                   <span className="text-xs font-semibold">Dados pessoais</span>
                 </div>
                 <div className="p-4 space-y-0">
                   {customer.name && (
                     <div className="flex items-start justify-between gap-3 py-2.5 border-b border-border/50">
-                      <span className="text-[11px] text-muted-foreground">Nome</span>
+                      <span className="text-xs text-muted-foreground">Nome</span>
                       <span className="text-xs font-medium text-right">{customer.name}</span>
                     </div>
                   )}
                   {customer.email && (
                     <div className="flex items-start justify-between gap-3 py-2.5 border-b border-border/50">
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" />Email</span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><Mail className="h-3 w-3" />Email</span>
                       <span className="text-xs font-medium break-all text-right">{customer.email}</span>
                     </div>
                   )}
                   {customer.phone && (
                     <div className="flex items-start justify-between gap-3 py-2.5 border-b border-border/50">
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Phone className="h-3 w-3" />Telefone</span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><Phone className="h-3 w-3" />Telefone</span>
                       <span className="text-xs font-medium tabular-nums text-right">{customer.phone}</span>
                     </div>
                   )}
                   {customer.identifier && (
                     <div className="flex items-start justify-between gap-3 py-2.5 border-b border-border/50">
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Hash className="h-3 w-3" />Identificador</span>
-                      <span className="font-mono text-[10px] break-all text-right">{customer.identifier}</span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><Hash className="h-3 w-3" />Identificador</span>
+                      <span className="font-mono text-[11px] break-all text-right">{customer.identifier}</span>
                     </div>
                   )}
                   {customer.customerExternalId && (
                     <div className="flex items-start justify-between gap-3 py-2.5">
-                      <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Globe className="h-3 w-3" />ID externo</span>
-                      <span className="font-mono text-[10px] break-all text-right">{customer.customerExternalId}</span>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1"><Globe className="h-3 w-3" />ID externo</span>
+                      <span className="font-mono text-[11px] break-all text-right">{customer.customerExternalId}</span>
                     </div>
                   )}
                 </div>
@@ -152,11 +152,11 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               {customer.addresses && customer.addresses.length > 0 ? (
                 <DataPanel>
                   <div className="flex items-center gap-2 border-b border-border/80 bg-muted/35 px-3 py-2.5">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/50 bg-amber-50">
-                      <MapPin className="h-3.5 w-3.5 text-amber-800" />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/50 bg-warning-soft">
+                      <MapPin className="h-3.5 w-3.5 text-warning-strong" />
                     </div>
                     <span className="text-xs font-semibold">Endereços</span>
-                    <span className="ml-auto text-[11px] text-muted-foreground">
+                    <span className="ml-auto text-xs text-muted-foreground">
                       {customer.addresses.length} endereço{customer.addresses.length !== 1 ? "s" : ""}
                     </span>
                   </div>
@@ -170,12 +170,12 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                           <div key={addr.id} className="px-4 py-3">
                             <div className="flex items-center gap-2 mb-1">
                               {addr.type?.description && (
-                                <span className="text-[11px] text-muted-foreground font-medium">
+                                <span className="text-xs text-muted-foreground font-medium">
                                   {addr.type.description}
                                 </span>
                               )}
                               {addr.isDefault && (
-                                <span className="inline-flex items-center rounded-full bg-blue-50 border border-blue-200 px-1.5 py-0.5 text-[10px] font-medium text-blue-700">
+                                <span className="inline-flex items-center rounded-full bg-info-soft border border-info-border px-1.5 py-0.5 text-[11px] font-medium text-info-strong">
                                   padrão
                                 </span>
                               )}

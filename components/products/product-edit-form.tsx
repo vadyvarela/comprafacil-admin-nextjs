@@ -7,14 +7,6 @@ import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
 import { GET_CATEGORY_LIST } from "@/lib/graphql/categories/queries"
 import { GET_BRAND_LIST } from "@/lib/graphql/brands/queries"
 import { Product } from "@/lib/graphql/products/types"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -59,10 +51,13 @@ import {
 } from "@/lib/products/product-offer"
 import { Badge } from "@/components/ui/badge"
 
-interface EditProductModalProps {
-  product: Product | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+interface ProductEditFormProps {
+  product: Product
+  /** Depois de guardar com sucesso. */
+  onSaved: () => void
+  onCancel: () => void
+  /** Avisa quando o formulário passa a ter (ou deixa de ter) alterações. */
+  onDirtyChange?: (dirty: boolean) => void
 }
 
 type CategoryOption = {
@@ -73,11 +68,12 @@ type CategoryOption = {
 }
 type BrandOption = { id: string; name: string; slug: string }
 
-export function EditProductModal({
+export function ProductEditForm({
   product,
-  open,
-  onOpenChange,
-}: EditProductModalProps) {
+  onSaved,
+  onCancel,
+  onDirtyChange,
+}: ProductEditFormProps) {
   const [formData, setFormData] = useState({
     title: "",
     summary: "",
@@ -100,13 +96,11 @@ export function EditProductModal({
   const [descriptionOpen, setDescriptionOpen] = useState(false)
   const [metaCatalogOpen, setMetaCatalogOpen] = useState(false)
 
-  const { data: categoriesData } = useQuery(GET_CATEGORY_LIST, {
-    skip: !open,
-  })
+  // Fotografia do formulário acabado de carregar, para saber se há alterações.
+  const [initialSnapshot, setInitialSnapshot] = useState<string | null>(null)
 
-  const { data: brandsData } = useQuery(GET_BRAND_LIST, {
-    skip: !open,
-  })
+  const { data: categoriesData } = useQuery(GET_CATEGORY_LIST)
+  const { data: brandsData } = useQuery(GET_BRAND_LIST)
 
   const categories: CategoryOption[] = useMemo(
     () =>
@@ -124,53 +118,62 @@ export function EditProductModal({
   const [updateProduct, { loading, error }] = useMutation(UPDATE_PRODUCT, {
     refetchQueries: [
       { query: GET_PRODUCTS },
-      { query: GET_PRODUCT, variables: { id: product?.id } },
+      { query: GET_PRODUCT, variables: { id: product.id } },
     ],
+    awaitRefetchQueries: true,
     onCompleted: () => {
       showToast.success("Produto actualizado", "As alterações foram guardadas com sucesso")
-      onOpenChange(false)
+      setInitialSnapshot(null)
+      onDirtyChange?.(false)
+      onSaved()
     },
   })
 
   useEffect(() => {
-    if (product && open) {
-      let metadata: Record<string, unknown> | null = null
-      try {
-        metadata = product.metadata ? JSON.parse(product.metadata) : null
-      } catch {
-        /* ignore */
-      }
-
-      const offer = parseProductOffer(metadata?.productOffer)
-
-      setFormData({
-        title: product.title || "",
-        summary: product.summary || "",
-        discount: product.discount?.toString() || "",
-        condition: product.condition || "novo",
-        status: product.status?.code || "ACTIVE",
-        sku: typeof metadata?.sku === "string" ? metadata.sku : "",
-        categoryId: product.category?.id || "none",
-        brandId: product.brand?.id || "none",
-        semFaceId: metadata?.semFaceId === true,
-        batteryHealthPercent:
-          metadata?.batteryHealthPercent !== undefined && metadata?.batteryHealthPercent !== null
-            ? String(metadata.batteryHealthPercent)
-            : "",
-        addOnProductIds: Array.isArray(metadata?.addOnProductIds)
-          ? metadata.addOnProductIds.filter((id): id is string => typeof id === "string" && id !== product.id)
-          : [],
-        specifications: parseSpecificationsFromMetadata(product.metadata),
-        offerEnabled: offer?.enabled === true,
-        offerTitle: offer?.title || "Pack de proteção",
-        offerItems: offer?.items ?? [],
-        metaCatalog: parseMetaCatalogMetadata(product.metadata),
-      })
-      setOfferItemDraft("")
-      setDescriptionOpen(false)
-      setMetaCatalogOpen(false)
+    let metadata: Record<string, unknown> | null = null
+    try {
+      metadata = product.metadata ? JSON.parse(product.metadata) : null
+    } catch {
+      /* ignore */
     }
-  }, [product, open])
+
+    const offer = parseProductOffer(metadata?.productOffer)
+
+    const next = {
+      title: product.title || "",
+      summary: product.summary || "",
+      discount: product.discount?.toString() || "",
+      condition: product.condition || "novo",
+      status: product.status?.code || "ACTIVE",
+      sku: typeof metadata?.sku === "string" ? metadata.sku : "",
+      categoryId: product.category?.id || "none",
+      brandId: product.brand?.id || "none",
+      semFaceId: metadata?.semFaceId === true,
+      batteryHealthPercent:
+        metadata?.batteryHealthPercent !== undefined && metadata?.batteryHealthPercent !== null
+          ? String(metadata.batteryHealthPercent)
+          : "",
+      addOnProductIds: Array.isArray(metadata?.addOnProductIds)
+        ? metadata.addOnProductIds.filter((id): id is string => typeof id === "string" && id !== product.id)
+        : [],
+      specifications: parseSpecificationsFromMetadata(product.metadata),
+      offerEnabled: offer?.enabled === true,
+      offerTitle: offer?.title || "Pack de proteção",
+      offerItems: offer?.items ?? [],
+      metaCatalog: parseMetaCatalogMetadata(product.metadata),
+    }
+    setFormData(next)
+    setInitialSnapshot(JSON.stringify(next))
+    setOfferItemDraft("")
+    setDescriptionOpen(false)
+    setMetaCatalogOpen(false)
+  }, [product])
+
+  const dirty = initialSnapshot !== null && JSON.stringify(formData) !== initialSnapshot
+
+  useEffect(() => {
+    onDirtyChange?.(dirty)
+  }, [dirty, onDirtyChange])
 
   const showIphoneSeminovoFields = useMemo(() => {
     const cat = categories.find((c) => c.id === formData.categoryId)
@@ -190,7 +193,7 @@ export function EditProductModal({
     return brands.find((b) => b.id === formData.brandId)?.name
   }, [brands, formData.brandId])
 
-  const hasVariants = (product?.variants?.length ?? 0) > 0
+  const hasVariants = (product.variants?.length ?? 0) > 0
 
   const addOfferItem = (raw: string) => {
     const value = raw.trim()
@@ -213,8 +216,6 @@ export function EditProductModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!product) return
 
     if (!hasVariants && formData.offerEnabled && formData.offerItems.length === 0) {
       showToast.error(
@@ -312,24 +313,16 @@ export function EditProductModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto p-0 gap-0">
-        <DialogHeader className="px-5 pt-5 pb-4 border-b border-border/80">
-          <DialogTitle className="text-lg font-semibold">Editar produto</DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground mt-1">
-            Actualize as informações visíveis na loja.
-          </DialogDescription>
-        </DialogHeader>
-
+    <>
         {error && (
-          <div className="mx-5 mt-4 bg-destructive/10 text-destructive px-3 py-2.5 rounded-md text-xs border border-destructive/20">
+          <div role="alert" className="mb-4 bg-destructive/10 text-destructive px-3 py-2.5 rounded-md text-xs border border-destructive/20">
             <p className="font-medium">Erro ao actualizar produto</p>
             <p className="mt-0.5 opacity-90">{error.message}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col">
-          <div className="px-5 py-4 space-y-3.5">
+          <div className="space-y-3.5 pb-4">
             <FormSection icon={Package} title="Produto" iconTone="bg-primary/10 text-primary">
               <Field label="Título" htmlFor="edit-title" required>
                 <Input
@@ -356,7 +349,7 @@ export function EditProductModal({
                   className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-sky-50 text-sky-800">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-info-soft text-info-strong">
                       <FileText className="h-3 w-3" />
                     </span>
                     <span className="text-xs font-medium">Descrição</span>
@@ -380,7 +373,7 @@ export function EditProductModal({
               </CollapsibleContent>
             </Collapsible>
 
-            <FormSection icon={Layers} title="Classificação" iconTone="bg-violet-50 text-violet-800">
+            <FormSection icon={Layers} title="Classificação" iconTone="bg-highlight-soft text-highlight-strong">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field label="Categoria" htmlFor="edit-categoryId">
                   <Select
@@ -490,7 +483,7 @@ export function EditProductModal({
               </div>
 
               {hasVariants && (
-                <p className="text-[11px] text-muted-foreground rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+                <p className="text-xs text-muted-foreground rounded-md border border-border/60 bg-muted/20 px-3 py-2">
                   Desconto, bateria, Face ID e ofertas são geridos por variante no gestor de variantes.
                 </p>
               )}
@@ -499,7 +492,7 @@ export function EditProductModal({
                 <div className="rounded-md border border-border/70 bg-muted/20 p-3 space-y-2.5">
                   <div>
                     <p className="text-xs font-medium text-foreground">iPhone seminovo</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Campos informativos na ficha da loja. Opcional.
                     </p>
                   </div>
@@ -558,7 +551,7 @@ export function EditProductModal({
                   className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-blue-50 text-blue-800">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-info-soft text-info-strong">
                       <Megaphone className="h-3 w-3" />
                     </span>
                     <span className="text-xs font-medium">Meta Catalog</span>
@@ -581,13 +574,13 @@ export function EditProductModal({
             </Collapsible>
 
             {!hasVariants && (
-            <FormSection icon={Tag} title="Oferta na loja" iconTone="bg-orange-50 text-orange-800">
+            <FormSection icon={Tag} title="Oferta na loja" iconTone="bg-warning-soft text-warning-strong">
               <div className="flex items-start justify-between gap-3 rounded-md border border-border/70 bg-muted/15 px-3 py-2.5">
                 <div className="min-w-0">
                   <Label htmlFor="edit-offer-enabled" className="text-xs font-medium cursor-pointer">
                     Mostrar faixa de oferta
                   </Label>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                     Aparece no detalhe do produto (faixa laranja). Ex.: capa + película.
                   </p>
                 </div>
@@ -601,7 +594,7 @@ export function EditProductModal({
                   }
                   disabled={loading}
                   className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-                    formData.offerEnabled ? "bg-orange-500" : "bg-muted-foreground/30"
+                    formData.offerEnabled ? "bg-warning" : "bg-muted-foreground/30"
                   }`}
                 >
                   <span
@@ -640,7 +633,7 @@ export function EditProductModal({
                         <Badge
                           key={item}
                           variant="secondary"
-                          className="gap-1 px-2 py-0.5 text-[11px] font-medium"
+                          className="gap-1 px-2 py-0.5 text-xs font-medium"
                         >
                           {item}
                           <button
@@ -681,7 +674,7 @@ export function EditProductModal({
             </FormSection>
             )}
 
-            <FormSection icon={Puzzle} title="Produtos complementares" iconTone="bg-amber-50 text-amber-900">
+            <FormSection icon={Puzzle} title="Produtos complementares" iconTone="bg-warning-soft text-warning-strong">
               <Field
                 label="Acessórios opcionais"
                 hint="Aparecem na página do produto como compra adicional. Máximo 4."
@@ -702,18 +695,23 @@ export function EditProductModal({
             </FormSection>
           </div>
 
-          <DialogFooter className="gap-2 px-5 py-3.5 border-t border-border/80 bg-muted/15 sm:justify-end">
+          <div className="sticky bottom-0 z-20 -mx-5 flex items-center justify-end gap-2 border-t border-border/80 bg-background/95 px-5 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/85 md:-mx-6 md:px-6">
+            {dirty ? (
+              <span className="mr-auto text-xs font-medium text-warning-strong">
+                Alterações por guardar
+              </span>
+            ) : null}
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="h-8"
-              onClick={() => onOpenChange(false)}
+              onClick={onCancel}
               disabled={loading}
             >
               Cancelar
             </Button>
-            <Button type="submit" size="sm" className="h-8 min-w-[108px]" disabled={loading}>
+            <Button type="submit" size="sm" className="h-8 min-w-[108px]" disabled={loading || !dirty}>
               {loading ? (
                 <>
                   <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -723,9 +721,8 @@ export function EditProductModal({
                 "Guardar"
               )}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </>
   )
 }

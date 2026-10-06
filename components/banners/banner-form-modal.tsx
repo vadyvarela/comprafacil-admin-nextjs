@@ -377,19 +377,19 @@ export function BannerFormModal({
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-black/10" />
                         <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                          <p className="text-[10px] font-medium uppercase text-white/70">
+                          <p className="text-[11px] font-medium uppercase text-white/70">
                             {POSITION_LABEL[formData.position] || formData.position}
                           </p>
                           <p className="mt-0.5 text-sm font-semibold leading-tight line-clamp-2">
                             {formData.title || "Título do banner"}
                           </p>
                           {formData.subtitle ? (
-                            <p className="mt-0.5 text-[11px] text-white/80 line-clamp-1">
+                            <p className="mt-0.5 text-xs text-white/80 line-clamp-1">
                               {formData.subtitle}
                             </p>
                           ) : null}
                           {formData.buttonText ? (
-                            <span className="mt-2 inline-flex rounded-full bg-white px-2.5 py-0.5 text-[10px] font-semibold text-zinc-900">
+                            <span className="mt-2 inline-flex rounded-full bg-white px-2.5 py-0.5 text-[11px] font-semibold text-zinc-900">
                               {formData.buttonText}
                             </span>
                           ) : null}
@@ -405,7 +405,7 @@ export function BannerFormModal({
                         <p className="text-xs font-medium text-foreground">
                           Arrasta uma imagem ou envia do PC
                         </p>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           JPEG, PNG, WebP · máx. 10 MB
                         </p>
                       </button>
@@ -450,7 +450,7 @@ export function BannerFormModal({
                     </Button>
                   ) : null}
                   {imageSourceLabel ? (
-                    <span className="ml-auto max-w-45 truncate text-[11px] text-muted-foreground">
+                    <span className="ml-auto max-w-45 truncate text-xs text-muted-foreground">
                       {selectedImage
                         ? `${imageSourceLabel} (${(selectedImage.size / 1024 / 1024).toFixed(2)} MB)`
                         : imageSourceLabel}

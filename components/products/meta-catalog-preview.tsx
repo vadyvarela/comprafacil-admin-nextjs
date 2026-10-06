@@ -275,12 +275,12 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
     <DataPanel>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/35 px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
-            <Megaphone className="h-4 w-4 text-blue-800" aria-hidden />
+          <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-info-soft">
+            <Megaphone className="h-4 w-4 text-info-strong" aria-hidden />
           </div>
           <div>
             <h2 className="text-sm font-semibold">Meta Catalog</h2>
-            <p className="text-[11px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {includedCount}/{rows.length} linha{rows.length !== 1 ? "s" : ""} pronta
             </p>
           </div>
@@ -309,30 +309,30 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
                 <tr key={row.id}>
                   <td className="px-3 py-2">
                     {row.included ? (
-                      <Badge variant="secondary" className="gap-1 text-[10px]">
+                      <Badge variant="secondary" className="gap-1 text-[11px]">
                         <CheckCircle2 className="h-3 w-3" aria-hidden />
                         Incluído
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="gap-1 text-[10px] text-amber-800">
+                      <Badge variant="outline" className="gap-1 text-[11px] text-warning-strong">
                         <AlertCircle className="h-3 w-3" aria-hidden />
                         Fora
                       </Badge>
                     )}
                     {row.reasons.length > 0 ? (
-                      <p className="mt-1 max-w-[150px] text-[10px] text-muted-foreground">
+                      <p className="mt-1 max-w-[150px] text-[11px] text-muted-foreground">
                         {row.reasons.join(", ")}
                       </p>
                     ) : null}
                   </td>
-                  <td className="max-w-[160px] truncate px-3 py-2 font-mono text-[11px]">
+                  <td className="max-w-[160px] truncate px-3 py-2 font-mono text-xs">
                     {row.id}
                   </td>
                   <td className="max-w-[220px] truncate px-3 py-2">{row.title}</td>
-                  <td className="whitespace-nowrap px-3 py-2 font-mono text-[11px]">
+                  <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">
                     {row.price || "—"}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2 font-mono text-[11px]">
+                  <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">
                     {row.sale_price || "—"}
                   </td>
                   <td className="max-w-[220px] truncate px-3 py-2">
@@ -352,7 +352,7 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
           </table>
         </div>
 
-        <pre className="max-h-36 overflow-auto rounded-md border border-border/70 bg-muted/20 p-3 text-[10px] leading-relaxed text-muted-foreground">
+        <pre className="max-h-36 overflow-auto rounded-md border border-border/70 bg-muted/20 p-3 text-[11px] leading-relaxed text-muted-foreground">
           {csvPreview}
         </pre>
       </div>

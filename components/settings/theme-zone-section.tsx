@@ -37,7 +37,7 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] font-semibold">{title}</p>
-          {description ? <p className="text-[11px] text-muted-foreground">{description}</p> : null}
+          {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <input
@@ -47,7 +47,7 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
             onChange={(e) => patch({ custom: e.target.checked })}
             className="h-4 w-4 rounded border-border accent-primary"
           />
-          <Label htmlFor={`${zoneKey}-custom`} className="text-[11px] text-muted-foreground">
+          <Label htmlFor={`${zoneKey}-custom`} className="text-xs text-muted-foreground">
             Personalizar
           </Label>
         </div>
@@ -74,14 +74,14 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[10px] text-muted-foreground leading-snug">
+            <p className="text-[11px] text-muted-foreground leading-snug">
               Aplica-se à home, categorias, busca e listagem de produtos. No telemóvel mantém 2 colunas.
             </p>
           </div>
           <div className="flex items-center justify-between gap-3 rounded-md border border-primary/25 bg-primary/5 px-3 py-2.5">
             <div className="min-w-0">
               <p className="text-[12px] font-semibold text-foreground">Imagem alternativa no hover</p>
-              <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+              <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">
                 Troca a imagem do card ao passar o rato. Define a imagem de hover na galeria de cada produto.
               </p>
             </div>
@@ -93,7 +93,7 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
                 onChange={(e) => patch({ hoverImageSwap: e.target.checked })}
                 className="h-4 w-4 rounded border-border accent-primary"
               />
-              <Label htmlFor={`${zoneKey}-hover-swap`} className="text-[11px] font-medium text-foreground">
+              <Label htmlFor={`${zoneKey}-hover-swap`} className="text-xs font-medium text-foreground">
                 Activar
               </Label>
             </div>
@@ -118,7 +118,7 @@ export function ThemeZoneSurfaceSection({ title, description, zoneKey, zones, on
           <ThemeColorField id={`${zoneKey}-primary`} label="Accent" value={zone.primary ?? "#2563eb"} onChange={(v) => patch({ primary: v })} />
         </div>
       ) : (
-        <p className="text-[11px] text-muted-foreground">A usar cores do tema global.</p>
+        <p className="text-xs text-muted-foreground">A usar cores do tema global.</p>
       )}
     </div>
   )

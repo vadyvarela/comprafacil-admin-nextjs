@@ -78,11 +78,11 @@ function CategoryThumb({
 function StatusDot({ code }: { code?: string }) {
   const active = code?.toUpperCase() === "ACTIVE"
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
       <span
         className={cn(
           "h-1.5 w-1.5 rounded-full",
-          active ? "bg-emerald-500" : "bg-muted-foreground/40",
+          active ? "bg-success" : "bg-muted-foreground/40",
         )}
         aria-hidden
       />
@@ -168,12 +168,12 @@ function CategoryRow({
                 {category.name}
               </span>
               {depth === 0 && hasChildren ? (
-                <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
                   {childCount} sub
                 </span>
               ) : null}
             </span>
-            <span className="mt-0.5 block truncate font-mono text-[11px] text-muted-foreground">
+            <span className="mt-0.5 block truncate font-mono text-xs text-muted-foreground">
               /{category.slug}
             </span>
           </span>
@@ -269,8 +269,8 @@ export function CategoryTree({
   return (
     <DataPanel>
       <div className="hidden grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-border/70 bg-muted/45 px-3 py-2 sm:grid">
-        <p className="pl-8 text-[11px] font-semibold uppercase text-muted-foreground">Categoria</p>
-        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase text-muted-foreground">
+        <p className="pl-8 text-xs font-semibold uppercase text-muted-foreground">Categoria</p>
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
           <span className="inline-flex h-6 w-6 items-center justify-center" title="Home">
             <House className="h-3.5 w-3.5" />
           </span>

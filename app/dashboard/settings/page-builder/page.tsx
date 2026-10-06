@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useQuery } from "@apollo/client/react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
-import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { useConfirmDialog } from "@/components/ui/confirm-dialog"
 import { Button } from "@/components/ui/button"
@@ -192,11 +191,9 @@ export default function PageBuilderPage() {
       <DashboardHeader
         items={[
           { label: "Dashboard", href: "/dashboard" },
-          { label: "Definições", href: "/dashboard/settings" },
           { label: "Page Builder" },
         ]}
       />
-      <SettingsSubnav />
 
       <div className="flex min-h-0 flex-1 flex-col">
         <DocumentBar

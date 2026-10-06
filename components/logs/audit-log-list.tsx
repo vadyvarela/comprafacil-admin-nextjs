@@ -57,10 +57,10 @@ export function AuditLogList({ logs }: Props) {
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-muted/45">
-            <TableHead className="text-[11px] h-9">Data</TableHead>
-            <TableHead className="text-[11px] h-9">Ação</TableHead>
-            <TableHead className="text-[11px] h-9">Entidade</TableHead>
-            <TableHead className="text-[11px] h-9">Actor</TableHead>
+            <TableHead className="text-xs h-9">Data</TableHead>
+            <TableHead className="text-xs h-9">Ação</TableHead>
+            <TableHead className="text-xs h-9">Entidade</TableHead>
+            <TableHead className="text-xs h-9">Actor</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -81,12 +81,12 @@ export function AuditLogList({ logs }: Props) {
                   {href ? (
                     <Link
                       href={href}
-                      className="font-mono text-[11px] text-foreground hover:underline"
+                      className="font-mono text-xs text-foreground hover:underline"
                     >
                       {shortId(log.entityId)}
                     </Link>
                   ) : (
-                    <span className="font-mono text-[11px]">
+                    <span className="font-mono text-xs">
                       {shortId(log.entityId)}
                     </span>
                   )}

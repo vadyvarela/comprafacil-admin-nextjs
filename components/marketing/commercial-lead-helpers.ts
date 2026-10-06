@@ -31,15 +31,15 @@ export function statusLabel(status: CommercialLeadFollowUpStatus) {
 export function followUpStatusClass(status: CommercialLeadFollowUpStatus) {
   switch (status) {
     case "NEW":
-      return "border-sky-200 bg-sky-50 text-sky-700"
+      return "border-info-border bg-info-soft text-info-strong"
     case "CONTACTED":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700"
+      return "border-success-border bg-success-soft text-success-strong"
     case "NO_ANSWER":
-      return "border-amber-200 bg-amber-50 text-amber-700"
+      return "border-warning-border bg-warning-soft text-warning-strong"
     case "CONVERTED":
-      return "border-violet-200 bg-violet-50 text-violet-700"
+      return "border-highlight-border bg-highlight-soft text-highlight-strong"
     case "LOST":
-      return "border-rose-200 bg-rose-50 text-rose-700"
+      return "border-danger-border bg-danger-soft text-danger-strong"
   }
 }
 

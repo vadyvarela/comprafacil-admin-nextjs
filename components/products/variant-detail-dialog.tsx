@@ -170,11 +170,11 @@ export function VariantDetailDialog({
             </div>
           </div>
 
-          <div className="rounded-md border border-orange-200/80 bg-orange-50/30 p-3 space-y-3">
+          <div className="rounded-md border border-warning-border/80 bg-warning-soft/30 p-3 space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-medium">Pack promocional</p>
-                <p className="text-[11px] text-muted-foreground">Faixa laranja na ficha do produto</p>
+                <p className="text-xs text-muted-foreground">Faixa laranja na ficha do produto</p>
               </div>
               <button
                 type="button"
@@ -183,7 +183,7 @@ export function VariantDetailDialog({
                 onClick={() => update("offerEnabled", !draft.offerEnabled)}
                 disabled={disabled}
                 className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-                  draft.offerEnabled ? "bg-orange-500" : "bg-muted-foreground/30"
+                  draft.offerEnabled ? "bg-warning" : "bg-muted-foreground/30"
                 }`}
               >
                 <span
@@ -211,7 +211,7 @@ export function VariantDetailDialog({
                       <Badge
                         key={item}
                         variant="secondary"
-                        className="gap-1 px-2 py-0.5 text-[11px] font-medium"
+                        className="gap-1 px-2 py-0.5 text-xs font-medium"
                       >
                         {item}
                         <button

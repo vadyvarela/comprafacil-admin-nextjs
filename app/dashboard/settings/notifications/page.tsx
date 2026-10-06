@@ -137,7 +137,7 @@ export default function NotificationsSettingsPage() {
           {!loading && row ? (
             <Badge
               variant={enabled ? "default" : "secondary"}
-              className="text-[11px] font-medium"
+              className="text-xs font-medium"
             >
               {enabled ? "Activo" : "Inactivo"}
             </Badge>
@@ -175,7 +175,7 @@ export default function NotificationsSettingsPage() {
                       >
                         @BotFather
                       </a>{" "}
-                      com <code className="rounded bg-muted px-1 text-[10px]">/newbot</code>.
+                      com <code className="rounded bg-muted px-1 text-[11px]">/newbot</code>.
                       {tokenConfigured ? (
                         <>
                           {" "}
@@ -249,7 +249,7 @@ export default function NotificationsSettingsPage() {
                     <>
                       Um ID por linha (ou separados por vírgula). Grupos usam IDs negativos. Para descobrir o teu ID,
                       envia qualquer mensagem ao bot e abre{" "}
-                      <code className="rounded bg-muted px-1 text-[10px]">
+                      <code className="rounded bg-muted px-1 text-[11px]">
                         api.telegram.org/bot&lt;TOKEN&gt;/getUpdates
                       </code>
                       .
@@ -285,13 +285,13 @@ export default function NotificationsSettingsPage() {
               </DataPanelContent>
             </DataPanel>
 
-            <DataPanel className="border-sky-200/70 bg-sky-50/40">
+            <DataPanel className="border-info-border/70 bg-info-soft/40">
               <DataPanelContent className="p-5">
                 <div className="flex gap-2">
-                  <Info className="h-4 w-4 text-sky-800 shrink-0 mt-0.5" aria-hidden />
-                  <div className="space-y-2 text-sm text-sky-950">
+                  <Info className="h-4 w-4 text-info-strong shrink-0 mt-0.5" aria-hidden />
+                  <div className="space-y-2 text-sm text-info-strong">
                     <p className="font-medium">Como funciona</p>
-                    <ul className="text-xs leading-relaxed space-y-1.5 list-disc pl-4 text-sky-900/90">
+                    <ul className="text-xs leading-relaxed space-y-1.5 list-disc pl-4 text-info-strong/90">
                       <li>
                         <strong>Token</strong> — credencial do bot que envia as mensagens.
                       </li>

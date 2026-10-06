@@ -57,7 +57,7 @@ function productSummaryText(order: OrderSummary): string {
 function StatusBadge({ code, label }: { code: string | null | undefined; label: string }) {
   if (!code) return null
   return (
-    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${getFulfillmentStatusClass(code)}`}>
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold ${getFulfillmentStatusClass(code)}`}>
       {label}
     </span>
   )
@@ -85,7 +85,7 @@ function OrderProductPreview({ order }: { order: OrderSummary }) {
           </div>
         )}
         {showMulti && (
-          <span className="absolute bottom-1 right-1 rounded-md bg-background/95 px-1.5 py-0.5 text-[10px] font-bold tabular-nums ring-1 ring-border/80">
+          <span className="absolute bottom-1 right-1 rounded-md bg-background/95 px-1.5 py-0.5 text-[11px] font-bold tabular-nums ring-1 ring-border/80">
             +{lineCount - 1}
           </span>
         )}
@@ -93,7 +93,7 @@ function OrderProductPreview({ order }: { order: OrderSummary }) {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-foreground leading-snug line-clamp-2">{summary}</p>
         {order.itemsCount != null && order.itemsCount > 1 && (
-          <p className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
+          <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
             {order.itemsCount} un.
           </p>
         )}
@@ -107,11 +107,11 @@ export function OrderList({ orders }: OrderListProps) {
     <DataPanel>
       {/* Desktop header */}
       <div className="hidden border-b border-border/60 bg-muted/45 px-4 py-2.5 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(220px,1.25fr)_minmax(0,1fr)_128px_104px_40px] gap-3">
-        <span className="text-[11px] font-semibold uppercase text-muted-foreground">Pedido</span>
-        <span className="text-[11px] font-semibold uppercase text-muted-foreground">Produto</span>
-        <span className="text-[11px] font-semibold uppercase text-muted-foreground">Cliente</span>
-        <span className="text-[11px] font-semibold uppercase text-muted-foreground">Estado envio</span>
-        <span className="text-right text-[11px] font-semibold uppercase text-muted-foreground">Valor</span>
+        <span className="text-xs font-semibold uppercase text-muted-foreground">Pedido</span>
+        <span className="text-xs font-semibold uppercase text-muted-foreground">Produto</span>
+        <span className="text-xs font-semibold uppercase text-muted-foreground">Cliente</span>
+        <span className="text-xs font-semibold uppercase text-muted-foreground">Estado envio</span>
+        <span className="text-right text-xs font-semibold uppercase text-muted-foreground">Valor</span>
         <span />
       </div>
 
@@ -138,12 +138,12 @@ export function OrderList({ orders }: OrderListProps) {
                       #{order.id.slice(0, 8)}
                     </span>
                     {order.status && (
-                      <span className={`lg:hidden inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${getOrderStatusClass(order.status.code)}`}>
+                      <span className={`lg:hidden inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-semibold ${getOrderStatusClass(order.status.code)}`}>
                         {getOrderStatusLabel(order.status.code)}
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                     <Calendar className="h-3 w-3 shrink-0" />
                     {formatOrderDate(order.createdAt)}
                   </p>
@@ -172,7 +172,7 @@ export function OrderList({ orders }: OrderListProps) {
                 {fulfillment?.code ? (
                   <StatusBadge code={fulfillment.code} label={fulfillLabel} />
                 ) : (
-                  <span className="text-[11px] text-muted-foreground/50">—</span>
+                  <span className="text-xs text-muted-foreground/50">—</span>
                 )}
               </div>
 
@@ -182,7 +182,7 @@ export function OrderList({ orders }: OrderListProps) {
                   {formatCurrency(order.totalAmount ?? 0, order.currency)}
                 </p>
                 {order.status && (
-                  <span className={`hidden lg:inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-semibold mt-1 ${getOrderStatusClass(order.status.code)}`}>
+                  <span className={`hidden lg:inline-flex items-center rounded-full border px-1.5 py-0.5 text-[11px] font-semibold mt-1 ${getOrderStatusClass(order.status.code)}`}>
                     {getOrderStatusLabel(order.status.code)}
                   </span>
                 )}

@@ -188,7 +188,7 @@ export function ProductList({
                       {product.title}
                     </span>
                     {product.description && (
-                      <span className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
+                      <span className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                         {product.description}
                       </span>
                     )}
@@ -199,12 +199,12 @@ export function ProductList({
                   {draft ? (
                     <Badge
                       variant="outline"
-                      className="text-[11px] h-5 px-1.5 text-amber-700 border-amber-500/40 bg-amber-50"
+                      className="text-xs h-5 px-1.5 text-warning-strong border-warning/40 bg-warning-soft"
                     >
                       {productVisibilityLabel(product.status?.code)}
                     </Badge>
                   ) : (
-                    <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
+                    <Badge variant="secondary" className="text-xs h-5 px-1.5">
                       {productVisibilityLabel(product.status?.code)}
                     </Badge>
                   )}
@@ -212,32 +212,32 @@ export function ProductList({
 
                 <TableCell className="py-2 hidden md:table-cell">
                   {product.category ? (
-                    <Badge variant="secondary" className="text-[11px] h-5 px-1.5">
+                    <Badge variant="secondary" className="text-xs h-5 px-1.5">
                       {product.category.name}
                     </Badge>
                   ) : (
-                    <span className="text-[11px] text-muted-foreground/40">—</span>
+                    <span className="text-xs text-muted-foreground/40">—</span>
                   )}
                 </TableCell>
 
                 <TableCell className="py-2 hidden md:table-cell">
                   {product.brand ? (
-                    <Badge variant="outline" className="text-[11px] h-5 px-1.5 font-normal">
+                    <Badge variant="outline" className="text-xs h-5 px-1.5 font-normal">
                       {product.brand.name}
                     </Badge>
                   ) : (
-                    <span className="text-[11px] text-muted-foreground/40">—</span>
+                    <span className="text-xs text-muted-foreground/40">—</span>
                   )}
                 </TableCell>
 
                 <TableCell className="py-2 hidden lg:table-cell">
                   {metadata?.sku ? (
-                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
+                    <span className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
                       <Tag className="h-3 w-3" />
                       {metadata.sku}
                     </span>
                   ) : (
-                    <span className="text-[11px] text-muted-foreground/40">—</span>
+                    <span className="text-xs text-muted-foreground/40">—</span>
                   )}
                 </TableCell>
 
@@ -245,12 +245,12 @@ export function ProductList({
                   {product.discount ? (
                     <Badge
                       variant="outline"
-                      className="text-[11px] h-5 px-1.5 text-emerald-400 border-emerald-500/30"
+                      className="text-xs h-5 px-1.5 text-success border-success/30"
                     >
                       {product.discount}%
                     </Badge>
                   ) : (
-                    <span className="text-[11px] text-muted-foreground/40">—</span>
+                    <span className="text-xs text-muted-foreground/40">—</span>
                   )}
                 </TableCell>
 

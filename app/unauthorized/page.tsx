@@ -24,8 +24,8 @@ export default async function UnauthorizedPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background">
       <main className="mx-4 flex w-full max-w-md flex-col items-center gap-6 rounded-lg border border-border/80 bg-card p-8 shadow-xs">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-amber-500/20 bg-amber-500/10">
-          <ShieldAlert className="h-6 w-6 text-amber-600" />
+        <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-warning/20 bg-warning/10">
+          <ShieldAlert className="h-6 w-6 text-warning" />
         </div>
         <div className="text-center space-y-1">
           <h1 className="text-xl font-bold text-foreground">Acesso negado</h1>

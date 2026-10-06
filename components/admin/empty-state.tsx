@@ -20,16 +20,16 @@ const toneClasses: Record<EmptyStateTone, { icon: string; iconWrap: string }> = 
     iconWrap: "bg-muted/45",
   },
   info: {
-    icon: "text-blue-700",
-    iconWrap: "bg-blue-50",
+    icon: "text-info-strong",
+    iconWrap: "bg-info-soft",
   },
   success: {
-    icon: "text-emerald-700",
-    iconWrap: "bg-emerald-50",
+    icon: "text-success-strong",
+    iconWrap: "bg-success-soft",
   },
   warning: {
-    icon: "text-amber-800",
-    iconWrap: "bg-amber-50",
+    icon: "text-warning-strong",
+    iconWrap: "bg-warning-soft",
   },
   danger: {
     icon: "text-destructive",

@@ -13,7 +13,7 @@ export function SectionIntroFields({ block, onChange }: BlockFieldsProps<Block>)
     return (
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="space-y-1 sm:col-span-2">
-          <Label className="flex items-center justify-between gap-2 text-[10px]">
+          <Label className="flex items-center justify-between gap-2 text-[11px]">
             <span>Título</span>
             <span className="font-normal text-muted-foreground tabular-nums">
               {block.props.title.length}/{HOME_LAYOUT_RULES.titleMax}
@@ -28,7 +28,7 @@ export function SectionIntroFields({ block, onChange }: BlockFieldsProps<Block>)
           />
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Subtítulo (opcional)</Label>
+          <Label className="text-[11px]">Subtítulo (opcional)</Label>
           <Input
             className="h-8 text-xs"
             value={block.props.subtitle ?? ""}

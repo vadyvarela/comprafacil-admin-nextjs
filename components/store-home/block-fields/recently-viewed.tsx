@@ -11,7 +11,7 @@ type Block = Extract<HomeBlock, { type: "recentlyViewed" }>
 export function RecentlyViewedFields({ block, onChange }: BlockFieldsProps<Block>) {
     return (
       <div className="space-y-1 max-w-[120px]">
-        <Label className="text-[10px]">Limite</Label>
+        <Label className="text-[11px]">Limite</Label>
         <Input
           type="number"
           min={1}

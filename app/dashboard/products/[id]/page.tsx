@@ -2,8 +2,9 @@
 
 import { useState, type ReactNode } from "react"
 import { useQuery, useMutation } from "@apollo/client/react"
+import Link from "next/link"
 import { useParams, useRouter } from "next/navigation"
-import { GET_PRODUCT, GET_PRODUCTS } from "@/lib/graphql/products/queries"
+import { GET_PRODUCT } from "@/lib/graphql/products/queries"
 import { DELETE_PRODUCT, UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import type { Product, ProductVariant } from "@/lib/graphql/products/types"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
@@ -11,7 +12,6 @@ import { useCan } from "@/components/providers/permissions-provider"
 import { DataPanel } from "@/components/admin/data-panel"
 import { EmptyState } from "@/components/admin/empty-state"
 import { ReadOnlyNotice } from "@/components/admin/read-only-notice"
-import { EditProductModal } from "@/components/products/edit-product-modal"
 import { MetaCatalogPreview } from "@/components/products/meta-catalog-preview"
 import { VariantManager } from "@/components/products/variant-manager"
 import { ProductOptionCatalogPanel } from "@/components/products/product-option-catalog-panel"
@@ -130,7 +130,7 @@ function DetailItem({
 }) {
   return (
     <div className="min-w-0 rounded-md border border-border/70 bg-muted/20 px-3 py-2">
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
       <div
         className={cn(
           "mt-0.5 min-w-0 break-words text-sm font-medium text-foreground",
@@ -165,7 +165,7 @@ function ProductMetric({
         <Icon className="h-3.5 w-3.5" />
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] text-muted-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
         <p className="truncate text-sm font-semibold tabular-nums">{value}</p>
       </div>
     </div>
@@ -213,7 +213,7 @@ function ProductInfoPanel({
           <DetailItem
             label="Desconto"
             value={
-              <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-800">
+              <span className="inline-flex rounded-full border border-danger-border bg-danger-soft px-2 py-0.5 text-xs font-medium text-danger-strong">
                 -{product.discount}%
               </span>
             }
@@ -237,7 +237,7 @@ function ProductInfoPanel({
             value={
               <span>
                 {productOffer.title}
-                <span className="block text-[11px] font-normal text-muted-foreground">
+                <span className="block text-xs font-normal text-muted-foreground">
                   {productOffer.items.join(" / ")}
                 </span>
               </span>
@@ -279,15 +279,15 @@ function VariantRow({
               <div className="mt-1 flex flex-wrap gap-1.5">
                 {attributes.length > 0 ? (
                   attributes.slice(0, 3).map(([key, value]) => (
-                    <Badge key={key} variant="secondary" className="text-[10px] font-normal">
+                    <Badge key={key} variant="secondary" className="text-[11px] font-normal">
                       {key}: {String(value)}
                     </Badge>
                   ))
                 ) : (
-                  <span className="text-[11px] text-muted-foreground">Sem atributos</span>
+                  <span className="text-xs text-muted-foreground">Sem atributos</span>
                 )}
                 {attributes.length > 3 ? (
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-[11px]">
                     +{attributes.length - 3}
                   </Badge>
                 ) : null}
@@ -297,13 +297,13 @@ function VariantRow({
 
           <div className="grid min-w-0 grid-cols-2 gap-2 sm:w-56 sm:shrink-0">
             <div className="rounded-md bg-muted/25 px-2.5 py-1.5">
-              <p className="text-[10px] text-muted-foreground">Preço</p>
+              <p className="text-[11px] text-muted-foreground">Preço</p>
               <p className="truncate text-xs font-semibold tabular-nums">
                 {variantPriceLabel(variant)}
               </p>
             </div>
             <div className="rounded-md bg-muted/25 px-2.5 py-1.5">
-              <p className="text-[10px] text-muted-foreground">Stock</p>
+              <p className="text-[11px] text-muted-foreground">Stock</p>
               <p className="text-xs font-semibold tabular-nums">{variant.quantity || 0} un.</p>
             </div>
           </div>
@@ -340,7 +340,7 @@ function VariantRow({
                 value={
                   <span>
                     {parsed.productOffer.title}
-                    <span className="block text-[11px] font-normal text-muted-foreground">
+                    <span className="block text-xs font-normal text-muted-foreground">
                       {parsed.productOffer.items.join(" / ")}
                     </span>
                   </span>
@@ -358,7 +358,6 @@ export default function ProductDetailPage() {
   const params = useParams()
   const router = useRouter()
   const productId = params.id as string
-  const [editModalOpen, setEditModalOpen] = useState(false)
   const [variantManagerOpen, setVariantManagerOpen] = useState(false)
   const [stockModalOpen, setStockModalOpen] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
@@ -384,30 +383,7 @@ export default function ProductDetailPage() {
     },
   )
 
-  const { data: productsData } = useQuery<{
-    products?: { data?: Array<{ id: string; brand?: Product["brand"] }> }
-  }>(GET_PRODUCTS, {
-    variables: {
-      filter: { includeInactive: true },
-      page: {
-        page: 0,
-        size: 1000,
-        sortBy: "createdAt",
-        sortDirection: "DESC",
-      },
-    },
-    skip: !productId,
-  })
-
   const product = data?.productDetails
-  const fallbackBrand = productsData?.products?.data?.find((item) => item.id === product?.id)?.brand
-  const productForEditing =
-    product
-      ? {
-          ...product,
-          brand: product.brand ?? fallbackBrand ?? null,
-        }
-      : null
 
   const metadata = parseMetadata(product?.metadata)
   const variantCount = product?.variants?.length ?? 0
@@ -539,11 +515,11 @@ export default function ProductDetailPage() {
                 </Button>
                 <div className="min-w-0 space-y-2">
                   <div className="flex flex-wrap items-center gap-2.5">
-                    <h1 className="min-w-0 text-xl font-semibold md:text-2xl">
+                    <h1 className="min-w-0 text-lg font-semibold">
                       {product.title}
                     </h1>
                     {isProductDraft(product.status?.code) ? (
-                      <Badge variant="outline" className="text-xs text-amber-700 border-amber-500/40 bg-amber-50">
+                      <Badge variant="outline" className="text-xs text-warning-strong border-warning/40 bg-warning-soft">
                         {productVisibilityLabel(product.status?.code)}
                       </Badge>
                     ) : (
@@ -578,9 +554,11 @@ export default function ProductDetailPage() {
                       )}
                       {productVisibilityToggleLabel(product.status?.code)}
                     </Button>
-                    <Button onClick={() => setEditModalOpen(true)} size="sm">
-                      <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                      Editar
+                    <Button size="sm" asChild>
+                      <Link href={`/dashboard/products/${productId}/edit`}>
+                        <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                        Editar
+                      </Link>
                     </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -610,7 +588,7 @@ export default function ProductDetailPage() {
                     </DropdownMenu>
                   </>
                 ) : (
-                  <Badge variant="outline" className="h-8 rounded-md px-2.5 text-[11px] text-muted-foreground">
+                  <Badge variant="outline" className="h-8 rounded-md px-2.5 text-xs text-muted-foreground">
                     Modo leitura
                   </Badge>
                 )}
@@ -645,27 +623,27 @@ export default function ProductDetailPage() {
                       icon={Tag}
                       label="Preço variantes"
                       value={variantPriceSummary(variants)}
-                      tone="bg-blue-50 text-blue-800"
+                      tone="bg-info-soft text-info-strong"
                     />
                     <ProductMetric
                       icon={Layers}
                       label="Variantes"
                       value={variantCount}
-                      tone="bg-violet-50 text-violet-800"
+                      tone="bg-highlight-soft text-highlight-strong"
                     />
                     <ProductMetric
                       icon={BoxesIcon}
                       label="Stock variantes"
                       value={totalVariantStock}
-                      tone="bg-emerald-50 text-emerald-800"
+                      tone="bg-success-soft text-success-strong"
                     />
                     <div className="flex min-h-16 min-w-0 items-center justify-between gap-3 rounded-md border border-border/75 bg-muted/20 px-3 py-2.5">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-amber-50 text-amber-800">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-warning-soft text-warning-strong">
                           <Warehouse className="h-3.5 w-3.5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[11px] text-muted-foreground">Stock produto</p>
+                          <p className="text-xs text-muted-foreground">Stock produto</p>
                           <p className="truncate text-sm font-semibold tabular-nums">
                             {product.stock?.quantity ?? 0}
                           </p>
@@ -689,12 +667,12 @@ export default function ProductDetailPage() {
               <DataPanel className="animate-enter-delay-1">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/35 px-4 py-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
-                      <Settings className="h-4 w-4 text-blue-800" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-info-soft">
+                      <Settings className="h-4 w-4 text-info-strong" />
                     </div>
                     <div>
                       <h2 className="text-sm font-semibold">Variantes</h2>
-                      <p className="text-[11px] text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {variantCount} registada{variantCount !== 1 ? "s" : ""}
                       </p>
                     </div>
@@ -755,7 +733,7 @@ export default function ProductDetailPage() {
                     <Info className="h-4 w-4 text-muted-foreground" />
                     <span className="min-w-0">
                       <span className="block text-sm font-medium">Outros detalhes</span>
-                      <span className="block truncate text-[11px] font-normal text-muted-foreground">
+                      <span className="block truncate text-xs font-normal text-muted-foreground">
                         Dados internos, opções da loja e Meta Catalog
                       </span>
                     </span>
@@ -797,12 +775,6 @@ export default function ProductDetailPage() {
 
       {canWrite ? (
         <>
-          <EditProductModal
-            product={productForEditing}
-            open={editModalOpen}
-            onOpenChange={setEditModalOpen}
-          />
-
           <VariantManager
             productId={productId}
             open={variantManagerOpen}
