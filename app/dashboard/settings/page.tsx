@@ -1,130 +1,20 @@
 import Link from "next/link"
+import { ChevronRight } from "lucide-react"
 import { DashboardHeader } from "@/components/layout/dashboard-header"
 import { SettingsSubnav } from "@/components/layout/settings-subnav"
 import { PageHeader } from "@/components/admin/page-header"
 import { getStoreBrand } from "@/lib/services/get-store-brand"
 import { can, getPrincipal } from "@/lib/auth/principal"
-import {
-  Store,
-  Globe,
-  Bell,
-  Shield,
-  CreditCard,
-  Truck,
-  Mail,
-  Palette,
-  ChevronRight,
-  Construction,
-  LayoutGrid,
-  Users,
-  Megaphone,
-} from "lucide-react"
-
-const SETTINGS_SECTIONS = [
-  {
-    title: "Manutenção",
-    description: "Modo manutenção da loja pública e mensagem",
-    icon: Construction,
-    color: "text-warning-strong",
-    bg: "bg-warning-soft border border-border/60",
-    href: "/dashboard/settings/maintenance",
-  },
-  {
-    title: "Loja",
-    description: "Nome, logo, moeda e informações gerais",
-    icon: Store,
-    color: "text-info-strong",
-    bg: "bg-info-soft border border-border/60",
-    href: "/dashboard/settings/store",
-  },
-  {
-    title: "Integrações Meta",
-    description: "Diagnóstico Pixel, CAPI, catálogo e tracking",
-    icon: Megaphone,
-    color: "text-info-strong",
-    bg: "bg-info-soft border border-border/60",
-    href: "/dashboard/settings/integrations/meta",
-  },
-  {
-    title: "Aparência",
-    description: "Tema, cores e personalização visual",
-    icon: Palette,
-    color: "text-highlight-strong",
-    bg: "bg-highlight-soft border border-border/60",
-    href: "/dashboard/settings/appearance",
-  },
-  {
-    title: "Pagamentos",
-    description: "Métodos de pagamento e gateway",
-    icon: CreditCard,
-    color: "text-success-strong",
-    bg: "bg-success-soft border border-border/60",
-    href: null,
-  },
-  {
-    title: "Envios",
-    description: "Tarifas por ilha e valor de compra",
-    icon: Truck,
-    color: "text-warning-strong",
-    bg: "bg-warning-soft border border-border/60",
-    href: "/dashboard/settings/shipping",
-  },
-  {
-    title: "Notificações",
-    description: "E-mails automáticos e alertas",
-    icon: Bell,
-    color: "text-danger-strong",
-    bg: "bg-danger-soft border border-border/60",
-    href: "/dashboard/settings/notifications",
-  },
-  {
-    title: "E-mails",
-    description: "Templates e configurações de envio",
-    icon: Mail,
-    color: "text-info-strong",
-    bg: "bg-info-soft border border-border/60",
-    href: null,
-  },
-  {
-    title: "Domínio",
-    description: "Configurar domínio personalizado",
-    icon: Globe,
-    color: "text-info-strong",
-    bg: "bg-info-soft border border-border/60",
-    href: null,
-  },
-  {
-    title: "Equipa",
-    description: "Convidar membros e gerir funções de acesso",
-    icon: Users,
-    color: "text-success-strong",
-    bg: "bg-success-soft border border-border/60",
-    href: "/dashboard/settings/team",
-    ownerOnly: true,
-  },
-  {
-    title: "Segurança",
-    description: "Tokens de API e autenticação",
-    icon: Shield,
-    color: "text-primary",
-    bg: "bg-primary/10 border border-primary/20",
-    href: "/dashboard/settings/security",
-    ownerOnly: true,
-  },
-  {
-    title: "Page Builder",
-    description: "Home da loja, menu do header e publicação",
-    icon: LayoutGrid,
-    color: "text-fuchsia-800",
-    bg: "bg-fuchsia-50 border border-border/60",
-    href: "/dashboard/settings/page-builder",
-  },
-]
+import { SETTINGS_GROUPS, SETTINGS_TABS } from "@/lib/nav"
 
 export default async function SettingsPage() {
   const storeBrand = await getStoreBrand()
-  const owner = can(await getPrincipal(), "team.read")
-  const sections = SETTINGS_SECTIONS.filter((s) => !s.ownerOnly || owner)
+  const principal = await getPrincipal()
+  // A mesma tabela da sub-navegação: o que aparece aqui é o que se pode abrir.
+  const groups = SETTINGS_GROUPS.map((group) => ({
+    group,
+    tabs: SETTINGS_TABS.filter((tab) => tab.group === group && can(principal, tab.permission)),
+  })).filter(({ tabs }) => tabs.length > 0)
 
   return (
     <>
@@ -135,56 +25,51 @@ export default async function SettingsPage() {
         ]}
       />
       <SettingsSubnav />
-      <div className="flex flex-1 flex-col gap-5 p-4 md:p-5 bg-background">
+      <div className="flex flex-1 flex-col gap-6 p-4 md:p-5 bg-background">
         <div className="animate-enter">
           <PageHeader
             title="Definições"
-            description={`Configurações gerais da loja ${storeBrand.siteName}`}
+            description={`Configurações da loja ${storeBrand.siteName}`}
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 animate-enter">
-          {sections.map((section) =>
-            section.href ? (
-              <Link
-                key={section.title}
-                href={section.href}
-                className="group flex min-h-24 items-center gap-3 rounded-lg border border-border/80 bg-card p-3.5 text-left shadow-xs transition-colors outline-none hover:border-border hover:bg-muted/25 focus-visible:ring-2 focus-visible:ring-ring/35 active:translate-y-px"
-              >
-                <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${section.bg}`}
-                >
-                  <section.icon className={`h-4 w-4 ${section.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{section.title}</p>
-                  <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{section.description}</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 group-hover:text-primary transition-colors" />
-              </Link>
-            ) : (
-              <button
-                key={section.title}
-                className="group flex min-h-24 cursor-not-allowed items-center gap-3 rounded-lg border border-dashed border-border/80 bg-muted/20 p-3.5 text-left opacity-[0.65]"
-                disabled
-                title="Em breve"
-              >
-                <div
-                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-md ${section.bg}`}
-                >
-                  <section.icon className={`h-4 w-4 ${section.color}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">{section.title}</p>
-                  <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{section.description}</p>
-                </div>
-                <span className="text-[11px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
-                  Em breve
-                </span>
-              </button>
-            )
-          )}
-        </div>
+        {groups.map(({ group, tabs }) => (
+          <section key={group} className="space-y-2 animate-enter" aria-labelledby={`settings-${group}`}>
+            <h2
+              id={`settings-${group}`}
+              className="text-xs font-semibold uppercase text-muted-foreground"
+            >
+              {group}
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {tabs.map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className="group flex min-h-20 items-center gap-3 rounded-lg border border-border/80 bg-card p-3.5 text-left shadow-xs transition-colors outline-none hover:border-border hover:bg-muted/25 focus-visible:ring-2 focus-visible:ring-ring/35 active:translate-y-px"
+                  >
+                    {Icon ? (
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/60 bg-muted/40">
+                        <Icon className="h-4 w-4 text-primary" />
+                      </div>
+                    ) : null}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground">{tab.label}</p>
+                      {tab.description ? (
+                        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                          {tab.description}
+                        </p>
+                      ) : null}
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 shrink-0 group-hover:text-primary transition-colors" />
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
+        ))}
       </div>
     </>
   )
