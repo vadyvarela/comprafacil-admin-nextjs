@@ -695,17 +695,17 @@ export function VariantManager({
                                     </div>
                                     <div className="flex flex-wrap gap-1 mt-1">
                                       {galleryCount(combo) > 0 && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                        <Badge variant="outline" className="text-[11px] px-1.5 py-0">
                                           {galleryCount(combo)} foto{galleryCount(combo) !== 1 ? "s" : ""}
                                         </Badge>
                                       )}
                                       {combo.discount && parseInt(combo.discount, 10) > 0 && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-rose-700">
+                                        <Badge variant="outline" className="text-[11px] px-1.5 py-0 text-rose-700">
                                           -{combo.discount}%
                                         </Badge>
                                       )}
                                       {combo.offerEnabled && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-orange-700">
+                                        <Badge variant="outline" className="text-[11px] px-1.5 py-0 text-orange-700">
                                           Pack
                                         </Badge>
                                       )}

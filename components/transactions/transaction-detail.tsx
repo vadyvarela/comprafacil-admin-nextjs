@@ -150,7 +150,7 @@ function SispTable({ raw, labels }: { raw: string; labels: Record<string, string
   }
   if (!parsed || typeof parsed !== "object") {
     return (
-      <pre className="text-[10px] font-mono bg-muted/50 rounded-lg border border-border/60 p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
+      <pre className="text-[11px] font-mono bg-muted/50 rounded-lg border border-border/60 p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
         {raw}
       </pre>
     )
@@ -162,7 +162,7 @@ function SispTable({ raw, labels }: { raw: string; labels: Record<string, string
         <InfoRow
           key={key}
           label={labels[key] ?? key}
-          value={<span className="font-mono text-[11px] break-all">{String(value)}</span>}
+          value={<span className="font-mono text-xs break-all">{String(value)}</span>}
         />
       ))}
     </div>
@@ -208,18 +208,18 @@ function ReceiptStatusBadge({ status }: { status: string }) {
   const s = status?.toUpperCase() ?? ""
   if (s === "DELIVERED" || s === "SENT")
     return (
-      <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium badge-success">
+      <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium badge-success">
         {status}
       </span>
     )
   if (s === "FAILED" || s === "BOUNCED")
     return (
-      <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium badge-danger">
+      <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium badge-danger">
         {status}
       </span>
     )
   return (
-    <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium badge-neutral">
+    <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium badge-neutral">
       {status}
     </span>
   )
@@ -268,7 +268,7 @@ export function TransactionDetail({
                       </span>
                     )}
                     {tx.checkoutSession?.paymentMode && (
-                      <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-xs font-medium text-muted-foreground">
                         {tx.checkoutSession.paymentMode}
                       </span>
                     )}
@@ -316,7 +316,7 @@ export function TransactionDetail({
                         <Clock className="h-2.5 w-2.5 text-muted-foreground" />
                       </span>
                       <p className="text-xs font-semibold text-foreground">Criado</p>
-                      <p className="text-[11px] text-muted-foreground tabular-nums">{formatDate(tx.createdAt)}</p>
+                      <p className="text-xs text-muted-foreground tabular-nums">{formatDate(tx.createdAt)}</p>
                     </li>
                   )}
                   {tx.authorizedAt && (
@@ -325,7 +325,7 @@ export function TransactionDetail({
                         <ShieldCheck className="h-2.5 w-2.5 text-blue-500" />
                       </span>
                       <p className="text-xs font-semibold text-foreground">Autorizado</p>
-                      <p className="text-[11px] text-muted-foreground tabular-nums">{formatDate(tx.authorizedAt)}</p>
+                      <p className="text-xs text-muted-foreground tabular-nums">{formatDate(tx.authorizedAt)}</p>
                     </li>
                   )}
                   {tx.capturedAt && (
@@ -334,7 +334,7 @@ export function TransactionDetail({
                         <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500" />
                       </span>
                       <p className="text-xs font-semibold text-foreground">Capturado</p>
-                      <p className="text-[11px] text-muted-foreground tabular-nums">{formatDate(tx.capturedAt)}</p>
+                      <p className="text-xs text-muted-foreground tabular-nums">{formatDate(tx.capturedAt)}</p>
                     </li>
                   )}
                   {tx.canceledAt && (
@@ -343,9 +343,9 @@ export function TransactionDetail({
                         <XCircle className="h-2.5 w-2.5 text-red-500" />
                       </span>
                       <p className="text-xs font-semibold text-foreground">Cancelado</p>
-                      <p className="text-[11px] text-muted-foreground tabular-nums">{formatDate(tx.canceledAt)}</p>
+                      <p className="text-xs text-muted-foreground tabular-nums">{formatDate(tx.canceledAt)}</p>
                       {tx.canceledReason && (
-                        <p className="text-[11px] text-red-500 mt-0.5">Motivo: {tx.canceledReason}</p>
+                        <p className="text-xs text-red-500 mt-0.5">Motivo: {tx.canceledReason}</p>
                       )}
                     </li>
                   )}
@@ -355,7 +355,7 @@ export function TransactionDetail({
                         <Info className="h-2.5 w-2.5 text-muted-foreground" />
                       </span>
                       <p className="text-xs font-semibold text-foreground">Última actualização</p>
-                      <p className="text-[11px] text-muted-foreground tabular-nums">{formatDate(tx.updatedAt)}</p>
+                      <p className="text-xs text-muted-foreground tabular-nums">{formatDate(tx.updatedAt)}</p>
                     </li>
                   )}
                 </ol>
@@ -374,13 +374,13 @@ export function TransactionDetail({
                   <InfoRow
                     label="ID completo"
                     value={
-                      <span className="font-mono text-[10px] break-all select-all">{tx.id}</span>
+                      <span className="font-mono text-[11px] break-all select-all">{tx.id}</span>
                     }
                   />
                   {tx.merchantReference && (
                     <InfoRow
                       label="Ref. merchant"
-                      value={<span className="font-mono text-[11px]">{tx.merchantReference}</span>}
+                      value={<span className="font-mono text-xs">{tx.merchantReference}</span>}
                     />
                   )}
                   <InfoRow label="Moeda" value={tx.currency} />
@@ -404,7 +404,7 @@ export function TransactionDetail({
                     <InfoRow
                       label="Sessão checkout"
                       value={
-                        <span className="font-mono text-[10px] break-all">{tx.checkoutSession.id}</span>
+                        <span className="font-mono text-[11px] break-all">{tx.checkoutSession.id}</span>
                       }
                     />
                   )}
@@ -437,7 +437,7 @@ export function TransactionDetail({
                       <InfoRow
                         label="ID"
                         value={
-                          <span className="font-mono text-[10px] break-all">{tx.customer.id}</span>
+                          <span className="font-mono text-[11px] break-all">{tx.customer.id}</span>
                         }
                       />
                     )}
@@ -617,7 +617,7 @@ export function TransactionDetail({
                       {tx.invoice.number && (
                         <InfoRow
                           label="Número"
-                          value={<span className="font-mono text-[11px]">{tx.invoice.number}</span>}
+                          value={<span className="font-mono text-xs">{tx.invoice.number}</span>}
                         />
                       )}
                       <InfoRow
@@ -658,7 +658,7 @@ export function TransactionDetail({
                       <div className="px-4 pb-3">
                         <InfoRow
                           label="Caminho"
-                          value={<span className="font-mono text-[10px] break-all">{tx.invoicePath}</span>}
+                          value={<span className="font-mono text-[11px] break-all">{tx.invoicePath}</span>}
                         />
                       </div>
                     ) : null}
@@ -667,7 +667,7 @@ export function TransactionDetail({
                   <div className="px-4 py-1">
                     <InfoRow
                       label="Caminho"
-                      value={<span className="font-mono text-[10px] break-all">{tx.invoicePath}</span>}
+                      value={<span className="font-mono text-[11px] break-all">{tx.invoicePath}</span>}
                     />
                   </div>
                 ) : (
@@ -686,7 +686,7 @@ export function TransactionDetail({
                       {tx.receipt.number && (
                         <InfoRow
                           label="Número"
-                          value={<span className="font-mono text-[11px]">{tx.receipt.number}</span>}
+                          value={<span className="font-mono text-xs">{tx.receipt.number}</span>}
                         />
                       )}
                       {tx.receipt.sendTo && (
@@ -746,7 +746,7 @@ export function TransactionDetail({
               {tx.metadata && (
                 <SectionCard icon={Hash} title="Metadata">
                   <div className="px-4 py-3">
-                    <pre className="text-[10px] font-mono bg-muted/50 rounded-lg border border-border/60 p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
+                    <pre className="text-[11px] font-mono bg-muted/50 rounded-lg border border-border/60 p-3 overflow-auto whitespace-pre-wrap break-all max-h-56 text-foreground leading-relaxed">
                       {tryParseJson(tx.metadata)}
                     </pre>
                   </div>

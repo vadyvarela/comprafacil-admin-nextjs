@@ -70,7 +70,6 @@ export default async function OrdersPage({ searchParams }: PageProps) {
         <Suspense fallback={null}>
           <OrderListToolbar
             totalElements={totalElements}
-            visibleCount={orders.length}
             currentTab={tab}
             error={error}
             dateFrom={dateFrom ?? undefined}

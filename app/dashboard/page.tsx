@@ -107,7 +107,7 @@ function FulfillmentBadge({ code }: { code: string | null | undefined }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${colorMap[variant] ?? "badge-neutral"}`}
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${colorMap[variant] ?? "badge-neutral"}`}
     >
       {label}
     </span>
@@ -235,12 +235,12 @@ export default async function DashboardPage() {
               </div>
               <div>
                 <span className="text-sm font-medium text-foreground">Pedidos recentes</span>
-                <p className="text-[11px] text-muted-foreground">Últimas transações processadas</p>
+                <p className="text-xs text-muted-foreground">Últimas transações processadas</p>
               </div>
             </div>
             <Link
               href="/dashboard/orders"
-              className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-primary transition-colors"
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
             >
               Ver todos
               <ArrowRight className="h-3 w-3" />
@@ -285,7 +285,7 @@ export default async function DashboardPage() {
                       <p className="text-sm font-bold tabular-nums text-foreground">
                         {formatCurrency(order.totalAmount ?? 0, order.currency)}
                       </p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5">
                         {formatDate(order.createdAt)}
                       </p>
                     </div>
@@ -312,7 +312,7 @@ export default async function DashboardPage() {
               </div>
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground">{action.label}</p>
-                <p className="text-[11px] text-muted-foreground">{action.sub}</p>
+                <p className="text-xs text-muted-foreground">{action.sub}</p>
               </div>
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40 ml-auto group-hover:text-muted-foreground transition-colors" />
             </Link>

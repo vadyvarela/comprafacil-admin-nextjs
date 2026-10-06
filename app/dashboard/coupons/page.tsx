@@ -157,22 +157,22 @@ export default function CouponsPage() {
                             </div>
                             <div className="flex items-center gap-1.5">
                               {coupon.defaultCoupon && (
-                                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium badge-info">
+                                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium badge-info">
                                   Padrão
                                 </span>
                               )}
                               {active ? (
-                                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-success">
+                                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium badge-success">
                                   <CheckCircle2 className="h-3 w-3" />
                                   Activo
                                 </span>
                               ) : expired ? (
-                                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-danger">
+                                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium badge-danger">
                                   <XCircle className="h-3 w-3" />
                                   Expirado
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium badge-neutral">
+                                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium badge-neutral">
                                   Inactivo
                                 </span>
                               )}

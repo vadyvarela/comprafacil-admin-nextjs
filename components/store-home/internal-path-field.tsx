@@ -50,7 +50,7 @@ export function InternalPathField({
 
   return (
     <div className={cn("space-y-1", className)}>
-      <Label className="text-[10px]">{label}</Label>
+      <Label className="text-[11px]">{label}</Label>
       <Select
         value={selectValue}
         onValueChange={(v) => {
@@ -97,7 +97,7 @@ export function InternalPathField({
         }}
       />
       {trimmed && !isValidHref(trimmed) ? (
-        <p className="text-[10px] text-destructive leading-snug">
+        <p className="text-[11px] text-destructive leading-snug">
           {allowAnyPath
             ? "Path inválido: tem de começar por / (sem http:// nem //)."
             : "Path não permitido: o primeiro segmento tem de ser um dos permitidos (produtos, categoria, ofertas, busca, perfil, auth, …)."}

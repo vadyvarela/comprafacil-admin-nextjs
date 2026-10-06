@@ -77,7 +77,7 @@ export function StatsCard({
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-center gap-2">
             <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", accent.dot)} aria-hidden />
-            <span className="text-[10px] font-semibold uppercase text-muted-foreground">
+            <span className="text-[11px] font-semibold uppercase text-muted-foreground">
               {label}
             </span>
           </div>
@@ -91,7 +91,7 @@ export function StatsCard({
               {trend === "neutral" && <Minus className="h-3 w-3 text-muted-foreground" />}
               <span
                 className={cn(
-                  "text-[11px] font-medium",
+                  "text-xs font-medium",
                   trend === "up" && "text-emerald-700",
                   trend === "down" && "text-rose-700",
                   trend === "neutral" && "text-muted-foreground"
@@ -99,11 +99,11 @@ export function StatsCard({
               >
                 {delta}
               </span>
-              <span className="text-[11px] text-muted-foreground">{period}</span>
+              <span className="text-xs text-muted-foreground">{period}</span>
             </div>
           )}
           {!delta && period && (
-            <p className="text-[11px] text-muted-foreground">{period}</p>
+            <p className="text-xs text-muted-foreground">{period}</p>
           )}
         </div>
         <div

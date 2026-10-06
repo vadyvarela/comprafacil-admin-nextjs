@@ -51,7 +51,7 @@ export function Field({
         {required ? <span className="text-destructive ml-0.5">*</span> : null}
       </Label>
       <div>{children}</div>
-      {hint ? <p className="text-[11px] leading-relaxed text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="text-xs leading-relaxed text-muted-foreground">{hint}</p> : null}
     </div>
   )
 }

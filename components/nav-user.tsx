@@ -86,7 +86,7 @@ export function NavUser({
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="truncate text-xs text-muted-foreground">{user.email}</span>
                   {role && (
-                    <span className="truncate text-[10px] text-muted-foreground/80 mt-0.5">
+                    <span className="truncate text-[11px] text-muted-foreground/80 mt-0.5">
                       {ROLE_LABELS[role]}
                     </span>
                   )}

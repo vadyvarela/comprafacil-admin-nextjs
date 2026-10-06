@@ -177,10 +177,10 @@ export function CuratedProductPicker({
           <Package className="h-3.5 w-3.5" />
           Escolher produtos…
         </Button>
-        <span className="text-[10px] text-muted-foreground">{countLabel}</span>
+        <span className="text-[11px] text-muted-foreground">{countLabel}</span>
       </div>
       {value.length > 0 ? (
-        <ol className="flex flex-col gap-1 rounded-md border border-border/60 bg-muted/20 px-2 py-1.5 text-[10px]">
+        <ol className="flex flex-col gap-1 rounded-md border border-border/60 bg-muted/20 px-2 py-1.5 text-[11px]">
           {value.map((id, idx) => (
             <li key={id} className="flex items-center gap-2 min-w-0">
               <span className="text-muted-foreground shrink-0 w-4">{idx + 1}.</span>
@@ -203,7 +203,7 @@ export function CuratedProductPicker({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2 min-w-0">
-              <Label className="text-[10px]">Pesquisar</Label>
+              <Label className="text-[11px]">Pesquisar</Label>
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -219,7 +219,7 @@ export function CuratedProductPicker({
                     <Loader2 className="h-4 w-4 animate-spin" /> A carregar…
                   </div>
                 ) : rows.length === 0 ? (
-                  <p className="p-3 text-[11px] text-muted-foreground">Sem resultados.</p>
+                  <p className="p-3 text-xs text-muted-foreground">Sem resultados.</p>
                 ) : (
                   <ul className="divide-y divide-border/50">
                     {rows.map((p) => {
@@ -242,7 +242,7 @@ export function CuratedProductPicker({
                             <span className="min-w-0 flex-1">
                               <span className="line-clamp-2 font-medium">{p.title}</span>
                               {p.category?.name ? (
-                                <span className="mt-0.5 block text-[10px] text-muted-foreground">{p.category.name}</span>
+                                <span className="mt-0.5 block text-[11px] text-muted-foreground">{p.category.name}</span>
                               ) : null}
                             </span>
                           </button>
@@ -255,15 +255,15 @@ export function CuratedProductPicker({
             </div>
 
             <div className="space-y-2 min-w-0 flex flex-col">
-              <Label className="text-[10px]">{orderLabel} ({draft.length}/{max})</Label>
+              <Label className="text-[11px]">{orderLabel} ({draft.length}/{max})</Label>
               <div className="max-h-[min(52vh,320px)] flex-1 overflow-y-auto rounded-md border border-border/60 bg-muted/15">
                 {draft.length === 0 ? (
-                  <p className="p-3 text-[11px] text-muted-foreground">Escolhe produtos à esquerda.</p>
+                  <p className="p-3 text-xs text-muted-foreground">Escolhe produtos à esquerda.</p>
                 ) : (
                   <ol className="divide-y divide-border/50">
                     {draft.map((row, idx) => (
                       <li key={row.id} className="flex items-center gap-1 px-1.5 py-1">
-                        <span className="w-5 shrink-0 text-center text-[10px] text-muted-foreground">{idx + 1}</span>
+                        <span className="w-5 shrink-0 text-center text-[11px] text-muted-foreground">{idx + 1}</span>
                         <span className="min-w-0 flex-1 truncate text-xs">{row.title || row.id.slice(0, 8) + "…"}</span>
                         <Button
                           type="button"

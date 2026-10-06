@@ -37,7 +37,7 @@ export function ThemeColorField({ id, label, hint, value, onChange }: Props) {
           spellCheck={false}
         />
       </div>
-      {hint ? <p className="text-[11px] text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
     </div>
   )
 }

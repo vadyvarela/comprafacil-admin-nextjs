@@ -181,10 +181,10 @@ export default function CouponDetailPage() {
                     <div className="flex items-center gap-2.5 flex-wrap mb-1">
                       <h1 className="text-lg font-semibold truncate">{coupon.name}</h1>
                       {coupon.defaultCoupon && (
-                        <Badge variant="secondary" className="text-[10px]">Padrão</Badge>
+                        <Badge variant="secondary" className="text-[11px]">Padrão</Badge>
                       )}
                       {coupon.status && (
-                        <Badge variant="outline" className="text-[10px] font-mono">{coupon.status.code}</Badge>
+                        <Badge variant="outline" className="text-[11px] font-mono">{coupon.status.code}</Badge>
                       )}
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -253,30 +253,30 @@ export default function CouponDetailPage() {
                   </div>
                   <div className="p-4 space-y-0 text-xs">
                     <div className="flex items-start justify-between gap-3 py-2.5 border-b border-border/50">
-                      <span className="text-[11px] text-muted-foreground">ID</span>
-                      <span className="font-mono text-[10px] break-all text-right">{coupon.id}</span>
+                      <span className="text-xs text-muted-foreground">ID</span>
+                      <span className="font-mono text-[11px] break-all text-right">{coupon.id}</span>
                     </div>
                     {coupon.maxRedemptions && (
                       <div className="flex items-center justify-between gap-3 py-2.5 border-b border-border/50">
-                        <span className="text-[11px] text-muted-foreground">Máx. utilizações</span>
+                        <span className="text-xs text-muted-foreground">Máx. utilizações</span>
                         <span className="font-semibold tabular-nums">{coupon.maxRedemptions}</span>
                       </div>
                     )}
                     {coupon.redeemBy && (
                       <div className="flex items-center justify-between gap-3 py-2.5 border-b border-border/50">
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Válido até</span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" />Válido até</span>
                         <span className="font-medium">{new Date(coupon.redeemBy).toLocaleDateString("pt-PT")}</span>
                       </div>
                     )}
                     {coupon.durationInMonths && (
                       <div className="flex items-center justify-between gap-3 py-2.5 border-b border-border/50">
-                        <span className="text-[11px] text-muted-foreground">Duração</span>
+                        <span className="text-xs text-muted-foreground">Duração</span>
                         <span className="font-medium">{coupon.durationInMonths} meses</span>
                       </div>
                     )}
                     {coupon.product && (
                       <div className="flex items-center justify-between gap-3 py-2.5">
-                        <span className="text-[11px] text-muted-foreground flex items-center gap-1"><Package className="h-3 w-3" />Produto</span>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1"><Package className="h-3 w-3" />Produto</span>
                         <span className="font-medium text-right">{coupon.product.title}</span>
                       </div>
                     )}
@@ -294,7 +294,7 @@ export default function CouponDetailPage() {
                       </div>
                       <div>
                         <h2 className="text-sm font-semibold">Códigos de Promoção</h2>
-                        <p className="text-[11px] text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {coupon.promotionCodes?.length ?? 0} código{(coupon.promotionCodes?.length ?? 0) !== 1 ? "s" : ""} associado{(coupon.promotionCodes?.length ?? 0) !== 1 ? "s" : ""}
                         </p>
                       </div>
@@ -324,12 +324,12 @@ export default function CouponDetailPage() {
                             <div className="flex items-center gap-2 mb-0.5">
                               <span className="font-bold font-mono text-sm">{code.code}</span>
                               {code.status && (
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+                                <Badge variant="outline" className="text-[11px] px-1.5 py-0 font-mono">
                                   {code.status.code}
                                 </Badge>
                               )}
                             </div>
-                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               <span className="tabular-nums">{code.timesRedeemed || 0}/{code.maxRedemptions} utilizações</span>
                               {code.expiresAt && (
                                 <span className="flex items-center gap-1">

@@ -307,15 +307,15 @@ export default function ImportCatalogPage() {
         <div>
           <h1 className="text-lg font-semibold text-foreground">Importar catálogo (JSON)</h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Cada produto com <code className="text-[11px]">variants</code> (preço CVE, stock). Se o título já existir no
+            Cada produto com <code className="text-xs">variants</code> (preço CVE, stock). Se o título já existir no
             gateway, a importação <strong>actualiza stock e preço</strong> das variantes (casamento por SKU ou título) em
             vez de falhar. Por omissão gera-se{" "}
-            <code className="text-[11px]">metadata.attributes</code> na variante com o eixo{" "}
-            <code className="text-[11px]">variantOptionTitle</code> (p.ex. «Armazenamento») +{" "}
-            <code className="text-[11px]">title</code> em cada variante — necessário para o selector na loja. Opcional:{" "}
-            <code className="text-[11px]">attributes</code> por variante para várias dimensões. Categoria e marca por{" "}
-            <code className="text-[11px]">slug</code> ou nome (aceita singular/plural e traços; ex.{" "}
-            <code className="text-[11px]">smartphone</code> casa com slug <code className="text-[11px]">smartphones</code>
+            <code className="text-xs">metadata.attributes</code> na variante com o eixo{" "}
+            <code className="text-xs">variantOptionTitle</code> (p.ex. «Armazenamento») +{" "}
+            <code className="text-xs">title</code> em cada variante — necessário para o selector na loja. Opcional:{" "}
+            <code className="text-xs">attributes</code> por variante para várias dimensões. Categoria e marca por{" "}
+            <code className="text-xs">slug</code> ou nome (aceita singular/plural e traços; ex.{" "}
+            <code className="text-xs">smartphone</code> casa com slug <code className="text-xs">smartphones</code>
             ).
           </p>
         </div>
@@ -354,7 +354,7 @@ export default function ImportCatalogPage() {
           value={jsonText}
           onChange={(e) => setJsonText(e.target.value)}
           spellCheck={false}
-          className="min-h-[280px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-[11px] leading-relaxed text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
+          className="min-h-[280px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs leading-relaxed text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
           placeholder='{"products":[…]}'
         />
 
@@ -408,7 +408,7 @@ export default function ImportCatalogPage() {
         </div>
 
         {log.length > 0 && (
-          <div className="rounded-md border border-border bg-muted/20 p-3 max-h-56 overflow-y-auto font-mono text-[11px] space-y-0.5">
+          <div className="rounded-md border border-border bg-muted/20 p-3 max-h-56 overflow-y-auto font-mono text-xs space-y-0.5">
             {log.map((line, i) => (
               <div key={i} className={line.kind === "err" ? "text-destructive" : "text-foreground"}>
                 {line.text}

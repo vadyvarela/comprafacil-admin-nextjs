@@ -321,7 +321,7 @@ export function MediaPickerDialog({
                       </span>
                     )}
                     {alreadyUsed && (
-                      <span className="absolute bottom-1 left-1 rounded bg-background/90 px-1 py-0.5 text-[9px] font-medium text-muted-foreground">
+                      <span className="absolute bottom-1 left-1 rounded bg-background/90 px-1 py-0.5 text-[10px] font-medium text-muted-foreground">
                         Em uso
                       </span>
                     )}
@@ -344,7 +344,7 @@ export function MediaPickerDialog({
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
-            <span className="text-[11px] text-muted-foreground tabular-nums">
+            <span className="text-xs text-muted-foreground tabular-nums">
               {page + 1} / {pageCount}
             </span>
             <Button

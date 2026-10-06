@@ -356,7 +356,7 @@ export function CreateProductModal({
                   <span className="block text-xs font-medium text-foreground">
                     Activar variante com preço
                   </span>
-                  <span className="block text-[11px] text-muted-foreground leading-snug">
+                  <span className="block text-xs text-muted-foreground leading-snug">
                     Cria uma variante inicial para definir preço e quantidade.
                   </span>
                 </span>
@@ -392,7 +392,7 @@ export function CreateProductModal({
                   </Field>
                 </div>
               ) : (
-                <p className="text-[11px] text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2 leading-relaxed">
+                <p className="text-xs text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2 leading-relaxed">
                   O produto será criado sem variante. Pode adicionar opções e variantes depois na página de detalhes.
                 </p>
               )}

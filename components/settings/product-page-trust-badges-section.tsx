@@ -50,7 +50,7 @@ function BadgeEditor({
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] font-semibold">{meta.title}</p>
-          <p className="text-[10px] text-muted-foreground leading-snug">{meta.hint}</p>
+          <p className="text-[11px] text-muted-foreground leading-snug">{meta.hint}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <input
@@ -60,7 +60,7 @@ function BadgeEditor({
             onChange={(e) => onPatch({ enabled: e.target.checked })}
             className="h-4 w-4 rounded border-border accent-primary"
           />
-          <Label htmlFor={`${badgeKey}-enabled`} className="text-[11px] text-muted-foreground">
+          <Label htmlFor={`${badgeKey}-enabled`} className="text-xs text-muted-foreground">
             Mostrar
           </Label>
         </div>
@@ -68,7 +68,7 @@ function BadgeEditor({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
-          <Label className="text-[10px]">Ícone</Label>
+          <Label className="text-[11px]">Ícone</Label>
           <Select value={badge.icon} onValueChange={(v) => onPatch({ icon: v as ProductPageTrustBadge["icon"] })}>
             <SelectTrigger className="h-8 text-xs">
               <SelectValue />
@@ -83,7 +83,7 @@ function BadgeEditor({
           </Select>
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Título</Label>
+          <Label className="text-[11px]">Título</Label>
           <Input
             className="h-8 text-xs"
             value={badge.title}
@@ -92,7 +92,7 @@ function BadgeEditor({
           />
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Subtítulo (opcional)</Label>
+          <Label className="text-[11px]">Subtítulo (opcional)</Label>
           <Input
             className="h-8 text-xs"
             value={badge.subtitle ?? ""}

@@ -214,7 +214,7 @@ function FollowUpStatusBadge({ lead }: { lead: CommercialRecoveryLead }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold",
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold",
         followUpStatusClass(lead.computedStatus)
       )}
     >
@@ -230,7 +230,7 @@ function PaymentStatusBadge({ lead }: { lead: CommercialRecoveryLead }) {
       <TooltipTrigger asChild>
         <span
           className={cn(
-            "inline-flex cursor-default items-center rounded-full border px-2 py-0.5 text-[11px] font-medium",
+            "inline-flex cursor-default items-center rounded-full border px-2 py-0.5 text-xs font-medium",
             paymentStatusClass(status?.code)
           )}
         >
@@ -239,9 +239,9 @@ function PaymentStatusBadge({ lead }: { lead: CommercialRecoveryLead }) {
       </TooltipTrigger>
       <TooltipContent side="top">
         <div className="max-w-xs space-y-0.5 text-left">
-          <p className="font-mono text-[11px] font-medium">{status?.code || "-"}</p>
+          <p className="font-mono text-xs font-medium">{status?.code || "-"}</p>
           {lead.latestPayment.statusReason ? (
-            <p className="text-[11px] leading-snug text-muted">
+            <p className="text-xs leading-snug text-muted">
               Motivo: {lead.latestPayment.statusReason}
             </p>
           ) : null}

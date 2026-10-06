@@ -114,7 +114,7 @@ function getShippingAddressFromMetadata(
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-3 py-2.5 border-b border-border/50 last:border-0">
-      <span className="text-[11px] text-muted-foreground shrink-0">{label}</span>
+      <span className="text-xs text-muted-foreground shrink-0">{label}</span>
       <span className="text-xs font-medium text-foreground text-right">{value}</span>
     </div>
   )
@@ -201,7 +201,7 @@ export function OrderDetail({
                       </span>
                     )}
                     {order.paymentProviderType && (
-                      <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center rounded-full border border-border bg-muted/50 px-2 py-0.5 text-xs font-medium text-muted-foreground">
                         {order.paymentProviderType}
                       </span>
                     )}
@@ -254,7 +254,7 @@ export function OrderDetail({
                 <div className="px-4 py-1">
                   <InfoRow
                     label="ID completo"
-                    value={<span className="font-mono text-[10px] break-all">{order.id}</span>}
+                    value={<span className="font-mono text-[11px] break-all">{order.id}</span>}
                   />
                   {order.mode && <InfoRow label="Modo" value={order.mode} />}
                   {order.submitType && <InfoRow label="Tipo" value={order.submitType} />}
@@ -304,7 +304,7 @@ export function OrderDetail({
                       <InfoRow
                         label="Identificador"
                         value={
-                          <span className="font-mono text-[10px] break-all">
+                          <span className="font-mono text-[11px] break-all">
                             {order.customer?.identifier || customerDetails?.identifier}
                           </span>
                         }
@@ -332,7 +332,7 @@ export function OrderDetail({
                   title="Morada de entrega"
                   badge={
                     displayShipping ? (
-                      <span className="text-[10px] font-medium text-muted-foreground rounded border border-border/60 bg-muted/30 px-1.5 py-0.5">
+                      <span className="text-[11px] font-medium text-muted-foreground rounded border border-border/60 bg-muted/30 px-1.5 py-0.5">
                         {displayShipping.source === "session" ? "No pedido" : "Perfil"}
                       </span>
                     ) : undefined
@@ -423,7 +423,7 @@ export function OrderDetail({
                 title="Itens do pedido"
                 badge={
                   order.lines && order.lines.length > 0 ? (
-                    <span className="text-[11px] font-medium text-muted-foreground">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {order.lines.length} item{order.lines.length !== 1 ? "s" : ""}
                     </span>
                   ) : undefined
@@ -441,9 +441,9 @@ export function OrderDetail({
                             {line.productVariant?.product?.title ?? line.description ?? "Produto"}
                           </p>
                           {line.productVariant?.title && (
-                            <p className="text-[11px] text-muted-foreground">{line.productVariant.title}</p>
+                            <p className="text-xs text-muted-foreground">{line.productVariant.title}</p>
                           )}
-                          <p className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
+                          <p className="text-xs text-muted-foreground mt-0.5 tabular-nums">
                             {line.quantity} × {formatCurrency(minorToMajorCurrencyAmount(line.unitAmount), line.currency)}
                           </p>
                         </div>
@@ -452,7 +452,7 @@ export function OrderDetail({
                             {formatCurrency(minorToMajorCurrencyAmount(line.quantity * line.unitAmount), line.currency)}
                           </p>
                           {line.status && (
-                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium mt-1 ${getOrderStatusClass(line.status.code)}`}>
+                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium mt-1 ${getOrderStatusClass(line.status.code)}`}>
                               {getOrderStatusLabel(line.status.code)}
                             </span>
                           )}

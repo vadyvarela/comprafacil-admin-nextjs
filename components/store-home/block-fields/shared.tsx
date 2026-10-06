@@ -115,13 +115,13 @@ export function PromoDuoCellFields({
 }) {
   return (
     <fieldset className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2">
-      <legend className="mb-1 px-1 text-[10px] font-semibold text-foreground">{legend}</legend>
+      <legend className="mb-1 px-1 text-[11px] font-semibold text-foreground">{legend}</legend>
       <div className="space-y-1 sm:col-span-2">
-        <Label className="text-[10px]">Título</Label>
+        <Label className="text-[11px]">Título</Label>
         <Input className="h-8 text-xs" value={cell.title} onChange={(e) => onChange({ ...cell, title: e.target.value })} />
       </div>
       <div className="space-y-1 sm:col-span-2">
-        <Label className="text-[10px]">Subtítulo (opcional)</Label>
+        <Label className="text-[11px]">Subtítulo (opcional)</Label>
         <Input
           className="h-8 text-xs"
           value={cell.subtitle ?? ""}
@@ -129,7 +129,7 @@ export function PromoDuoCellFields({
         />
       </div>
       <div className="space-y-1">
-        <Label className="text-[10px]">Texto do botão / link</Label>
+        <Label className="text-[11px]">Texto do botão / link</Label>
         <Input
           className="h-8 text-xs"
           value={cell.ctaLabel}
@@ -137,7 +137,7 @@ export function PromoDuoCellFields({
         />
       </div>
       <div className="space-y-1">
-        <Label className="text-[10px]">Gradiente</Label>
+        <Label className="text-[11px]">Gradiente</Label>
         <Select value={cell.gradient} onValueChange={(v) => onChange({ ...cell, gradient: v as PromoDuoCell["gradient"] })}>
           <SelectTrigger className="h-8 text-xs">
             <SelectValue />
@@ -160,7 +160,7 @@ export function PromoDuoCellFields({
         onChange={(href) => onChange({ ...cell, href: href?.trim() ? href : "/produtos" })}
       />
       <div className="space-y-1 sm:col-span-2">
-        <Label className="text-[10px]">Imagem (opcional) — URL https ou /path</Label>
+        <Label className="text-[11px]">Imagem (opcional) — URL https ou /path</Label>
         <Input
           className="h-8 text-xs font-mono"
           placeholder="https://… ou /imagem.png"
@@ -199,7 +199,7 @@ export function CategoryRailHomeFields({
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       <div className="space-y-1 sm:col-span-2">
-        <Label className="text-[10px]">Categoria</Label>
+        <Label className="text-[11px]">Categoria</Label>
         <Select
           value={derivedId || undefined}
           disabled={loading && list.length === 0}
@@ -224,14 +224,14 @@ export function CategoryRailHomeFields({
             {list.map((c) => (
               <SelectItem key={c.id} value={c.id} className="text-xs">
                 <span className="truncate">{c.name}</span>
-                <span className="text-muted-foreground ml-1 font-mono text-[10px]">{c.slug}</span>
+                <span className="text-muted-foreground ml-1 font-mono text-[11px]">{c.slug}</span>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
       <div className="space-y-1">
-        <Label className="text-[10px]">Limite</Label>
+        <Label className="text-[11px]">Limite</Label>
         <Input
           type="number"
           min={1}
@@ -245,12 +245,12 @@ export function CategoryRailHomeFields({
             })
           }
         />
-        <p className="text-[10px] text-muted-foreground tabular-nums">
+        <p className="text-[11px] text-muted-foreground tabular-nums">
           {block.props.limit} / {HOME_LAYOUT_RULES.railLimitMax} produtos
         </p>
       </div>
       <div className="space-y-1 sm:col-span-2">
-        <Label className="flex items-center justify-between gap-2 text-[10px]">
+        <Label className="flex items-center justify-between gap-2 text-[11px]">
           <span>Título (opcional)</span>
           <span className="font-normal text-muted-foreground tabular-nums">
             {(block.props.title ?? "").length}/{HOME_LAYOUT_RULES.titleMax}
@@ -268,7 +268,7 @@ export function CategoryRailHomeFields({
         />
       </div>
       <div className="space-y-1 sm:col-span-2">
-        <Label className="flex items-center justify-between gap-2 text-[10px]">
+        <Label className="flex items-center justify-between gap-2 text-[11px]">
           <span>Subtítulo (opcional)</span>
           <span className="font-normal text-muted-foreground tabular-nums">
             {(block.props.subtitle ?? "").length}/{HOME_LAYOUT_RULES.subtitleMax}
@@ -334,7 +334,7 @@ export function ShopByCategoryHomeFields({
   return (
     <div className="grid gap-3">
       <div className="space-y-1">
-        <Label className="text-[10px]">Título da secção</Label>
+        <Label className="text-[11px]">Título da secção</Label>
         <Input
           className="h-8 text-xs"
           value={block.props.title}
@@ -343,7 +343,7 @@ export function ShopByCategoryHomeFields({
           }
         />
       </div>
-      <p className="text-[10px] text-muted-foreground leading-snug">
+      <p className="text-[11px] text-muted-foreground leading-snug">
         Entre 2 e 8 categorias. Imagem opcional sobrescreve a do GTW.
       </p>
       <div className="flex flex-col gap-3">
@@ -356,7 +356,7 @@ export function ShopByCategoryHomeFields({
               className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
             >
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Categoria</Label>
+                <Label className="text-[11px]">Categoria</Label>
                 <Select
                   value={derivedId || undefined}
                   disabled={loading && list.length === 0}
@@ -384,7 +384,7 @@ export function ShopByCategoryHomeFields({
                 </Select>
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Título no cartão (opcional)</Label>
+                <Label className="text-[11px]">Título no cartão (opcional)</Label>
                 <Input
                   className="h-8 text-xs"
                   value={it.title ?? ""}
@@ -392,7 +392,7 @@ export function ShopByCategoryHomeFields({
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Imagem (opcional) — URL ou /path</Label>
+                <Label className="text-[11px]">Imagem (opcional) — URL ou /path</Label>
                 <Input
                   className="h-8 text-xs font-mono"
                   value={it.imageUrl ?? ""}
@@ -400,7 +400,7 @@ export function ShopByCategoryHomeFields({
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px]">CTA</Label>
+                <Label className="text-[11px]">CTA</Label>
                 <Input
                   className="h-8 text-xs"
                   value={it.ctaLabel ?? "Ver produtos"}
@@ -412,7 +412,7 @@ export function ShopByCategoryHomeFields({
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-[10px]"
+                  className="h-7 text-[11px]"
                   disabled={items.length <= 2}
                   onClick={() => patchItems(items.filter((_, i) => i !== idx))}
                 >

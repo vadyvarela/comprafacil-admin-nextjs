@@ -17,7 +17,7 @@ export function NewsletterFields({ block, onChange }: BlockFieldsProps<Block>) {
     return (
       <div className="grid gap-2">
         <div className="space-y-1">
-          <Label className="text-[10px]">Variante</Label>
+          <Label className="text-[11px]">Variante</Label>
           <Select
             value={block.props.variant ?? "banner"}
             onValueChange={(v) =>
@@ -38,7 +38,7 @@ export function NewsletterFields({ block, onChange }: BlockFieldsProps<Block>) {
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Título (opcional)</Label>
+          <Label className="text-[11px]">Título (opcional)</Label>
           <Input
             className="h-8 text-xs"
             value={block.props.title ?? ""}
@@ -51,7 +51,7 @@ export function NewsletterFields({ block, onChange }: BlockFieldsProps<Block>) {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Subtítulo (opcional)</Label>
+          <Label className="text-[11px]">Subtítulo (opcional)</Label>
           <Input
             className="h-8 text-xs"
             value={block.props.subtitle ?? ""}

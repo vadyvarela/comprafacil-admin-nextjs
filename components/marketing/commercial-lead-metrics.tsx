@@ -85,7 +85,7 @@ export function CommercialLeadMetrics({ metrics }: CommercialLeadMetricsProps) {
                 <Icon className="h-4 w-4" />
               </span>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase text-muted-foreground">
+                <p className="text-xs font-semibold uppercase text-muted-foreground">
                   {item.label}
                 </p>
                 <p className="truncate text-sm font-bold tabular-nums text-foreground">

@@ -193,11 +193,11 @@ export default function MaintenanceSettingsPage() {
                     <p className="font-medium text-amber-950">Validar antes de abrir</p>
                     <p className="text-xs text-amber-900/90 leading-relaxed">
                       Com a manutenção activa, acede a{" "}
-                      <code className="rounded bg-amber-100/80 px-1 py-0.5 text-[11px]">
+                      <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">
                         /_preview
                       </code>{" "}
                       na loja com a credencial definida em{" "}
-                      <code className="rounded bg-amber-100/80 px-1 py-0.5 text-[11px]">
+                      <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">
                         TECHARENA_MAINTENANCE_PREVIEW_SECRET
                       </code>{" "}
                       (env do servidor techarena).
@@ -213,7 +213,7 @@ export default function MaintenanceSettingsPage() {
                         <ExternalLink className="h-3 w-3" aria-hidden />
                       </a>
                     ) : (
-                      <p className="text-[11px] text-amber-900/80">
+                      <p className="text-xs text-amber-900/80">
                         Define{" "}
                         <code className="rounded bg-amber-100/80 px-1">NEXT_PUBLIC_TECHARENA_URL</code>{" "}
                         no backoffice para o link directo.

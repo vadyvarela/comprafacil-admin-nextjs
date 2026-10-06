@@ -22,7 +22,7 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
     return (
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Etiqueta do painel (opcional)</Label>
+          <Label className="text-[11px]">Etiqueta do painel (opcional)</Label>
           <Input
             className="h-8 text-xs"
             value={block.props.panelEyebrow ?? ""}
@@ -35,7 +35,7 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
           />
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Título do painel</Label>
+          <Label className="text-[11px]">Título do painel</Label>
           <Input
             className="h-8 text-xs"
             value={block.props.panelTitle}
@@ -43,7 +43,7 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
           />
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Descrição (opcional)</Label>
+          <Label className="text-[11px]">Descrição (opcional)</Label>
           <Textarea
             className="min-h-[72px] text-xs"
             value={block.props.panelDescription ?? ""}
@@ -56,7 +56,7 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Texto do botão</Label>
+          <Label className="text-[11px]">Texto do botão</Label>
           <Input
             className="h-8 text-xs"
             value={block.props.panelCtaLabel}
@@ -64,7 +64,7 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Gradiente do painel</Label>
+          <Label className="text-[11px]">Gradiente do painel</Label>
           <Select
             value={block.props.panelGradient}
             onValueChange={(v) =>
@@ -100,7 +100,7 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
           }
         />
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Imagem do painel (opcional) — URL https ou /path</Label>
+          <Label className="text-[11px]">Imagem do painel (opcional) — URL https ou /path</Label>
           <Input
             className="h-8 text-xs font-mono"
             placeholder="https://… ou /banner.png"
@@ -114,7 +114,7 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Variante produtos</Label>
+          <Label className="text-[11px]">Variante produtos</Label>
           <Select
             value={block.props.variant}
             onValueChange={(v) => {
@@ -144,7 +144,7 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">N.º produtos (4–10)</Label>
+          <Label className="text-[11px]">N.º produtos (4–10)</Label>
           <Input
             type="number"
             min={4}
@@ -158,16 +158,16 @@ export function SplitDealRailFields({ block, onChange }: BlockFieldsProps<Block>
               })
             }
           />
-          <p className="text-[10px] text-muted-foreground tabular-nums">
+          <p className="text-[11px] text-muted-foreground tabular-nums">
             {block.props.limit} produtos (permitido 4–10)
           </p>
         </div>
-        <p className="text-[10px] text-muted-foreground leading-snug sm:col-span-2">
+        <p className="text-[11px] text-muted-foreground leading-snug sm:col-span-2">
           {PRODUCT_RAIL_VARIANT_HELP[block.props.variant] ?? ""}
         </p>
         {block.props.variant === "curated" ? (
           <>
-            <p className="text-[10px] text-muted-foreground tabular-nums sm:col-span-2">
+            <p className="text-[11px] text-muted-foreground tabular-nums sm:col-span-2">
               Seleccionados: {(block.props.productIds ?? []).length} / 10
             </p>
             <CuratedProductPicker

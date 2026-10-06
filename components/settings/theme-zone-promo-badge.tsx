@@ -22,7 +22,7 @@ export function ThemeZonePromoSection({ zones, onChange }: Props) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] font-semibold">Promoções</p>
-          <p className="text-[11px] text-muted-foreground">Gradiente dos cartões promocionais</p>
+          <p className="text-xs text-muted-foreground">Gradiente dos cartões promocionais</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <input
@@ -32,7 +32,7 @@ export function ThemeZonePromoSection({ zones, onChange }: Props) {
             onChange={(e) => patchPromo({ custom: e.target.checked })}
             className="h-4 w-4 rounded border-border accent-primary"
           />
-          <Label htmlFor="promo-custom" className="text-[11px] text-muted-foreground">
+          <Label htmlFor="promo-custom" className="text-xs text-muted-foreground">
             Personalizar
           </Label>
         </div>
@@ -44,7 +44,7 @@ export function ThemeZonePromoSection({ zones, onChange }: Props) {
           <ThemeColorField id="promo-to" label="Fim" value={promo.gradientTo ?? "#2563eb"} onChange={(v) => patchPromo({ gradientTo: v })} />
         </div>
       ) : (
-        <p className="text-[11px] text-muted-foreground">Gradiente derivado da cor primária.</p>
+        <p className="text-xs text-muted-foreground">Gradiente derivado da cor primária.</p>
       )}
     </div>
   )
@@ -63,7 +63,7 @@ export function ThemeZoneBadgeSection({ zones, onChange }: Props) {
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-[13px] font-semibold">Badges</p>
-          <p className="text-[11px] text-muted-foreground">Etiquetas de promoção e stock</p>
+          <p className="text-xs text-muted-foreground">Etiquetas de promoção e stock</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <input
@@ -73,7 +73,7 @@ export function ThemeZoneBadgeSection({ zones, onChange }: Props) {
             onChange={(e) => patchBadge({ custom: e.target.checked })}
             className="h-4 w-4 rounded border-border accent-primary"
           />
-          <Label htmlFor="badge-custom" className="text-[11px] text-muted-foreground">
+          <Label htmlFor="badge-custom" className="text-xs text-muted-foreground">
             Personalizar
           </Label>
         </div>
@@ -85,7 +85,7 @@ export function ThemeZoneBadgeSection({ zones, onChange }: Props) {
           <ThemeColorField id="badge-warning" label="Aviso" value={badge.warning ?? "#f59e0b"} onChange={(v) => patchBadge({ warning: v })} />
         </div>
       ) : (
-        <p className="text-[11px] text-muted-foreground">Cores padrão de sistema.</p>
+        <p className="text-xs text-muted-foreground">Cores padrão de sistema.</p>
       )}
     </div>
   )

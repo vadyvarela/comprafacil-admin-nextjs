@@ -93,7 +93,7 @@ export function StoreHomeHeaderNavPanel({
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold leading-tight">Menu horizontal (header)</p>
-          <p className="text-[10px] leading-snug text-muted-foreground">
+          <p className="text-[11px] leading-snug text-muted-foreground">
             Só aparecem na loja as entradas que adicionares (ordem = menu). «Destaque» = fundo tipo promoções. Máx.{" "}
             {max}.
           </p>
@@ -134,7 +134,7 @@ export function StoreHomeHeaderNavPanel({
               >
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   <div className="min-w-[100px] flex-1 space-y-1">
-                    <Label className="text-[10px]">Tipo</Label>
+                    <Label className="text-[11px]">Tipo</Label>
                     <Select
                       value={row.kind}
                       onValueChange={(v) => {
@@ -161,7 +161,7 @@ export function StoreHomeHeaderNavPanel({
                     </Select>
                   </div>
                   <div className="min-w-[100px] flex-1 space-y-1">
-                    <Label className="text-[10px]">Estilo</Label>
+                    <Label className="text-[11px]">Estilo</Label>
                     <Select
                       value={promoTone(row)}
                       onValueChange={(v) => {
@@ -224,7 +224,7 @@ export function StoreHomeHeaderNavPanel({
 
                 {row.kind === "category" ? (
                   <div className="space-y-1">
-                    <Label className="text-[10px]">Categoria</Label>
+                    <Label className="text-[11px]">Categoria</Label>
                     <Select
                       value={list.find((c) => c.slug === row.slug)?.id ?? ""}
                       disabled={loading && list.length === 0}
@@ -246,7 +246,7 @@ export function StoreHomeHeaderNavPanel({
                         {list.map((c) => (
                           <SelectItem key={c.id} value={c.id} className="text-xs">
                             <span className="truncate">{c.name}</span>
-                            <span className="ml-1 font-mono text-[10px] text-muted-foreground">{c.slug}</span>
+                            <span className="ml-1 font-mono text-[11px] text-muted-foreground">{c.slug}</span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -255,7 +255,7 @@ export function StoreHomeHeaderNavPanel({
                 ) : (
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div className="space-y-1 sm:col-span-2">
-                      <Label className="text-[10px]">Texto no menu</Label>
+                      <Label className="text-[11px]">Texto no menu</Label>
                       <Input
                         className="h-8 text-xs"
                         value={row.label}
@@ -279,7 +279,7 @@ export function StoreHomeHeaderNavPanel({
             ))}
           </ul>
         ) : (
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground">
             Sem entradas — o menu horizontal na loja fica vazio até adicionares itens.
           </p>
         )}

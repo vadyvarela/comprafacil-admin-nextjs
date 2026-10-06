@@ -137,7 +137,7 @@ export default function NotificationsSettingsPage() {
           {!loading && row ? (
             <Badge
               variant={enabled ? "default" : "secondary"}
-              className="text-[11px] font-medium"
+              className="text-xs font-medium"
             >
               {enabled ? "Activo" : "Inactivo"}
             </Badge>
@@ -175,7 +175,7 @@ export default function NotificationsSettingsPage() {
                       >
                         @BotFather
                       </a>{" "}
-                      com <code className="rounded bg-muted px-1 text-[10px]">/newbot</code>.
+                      com <code className="rounded bg-muted px-1 text-[11px]">/newbot</code>.
                       {tokenConfigured ? (
                         <>
                           {" "}
@@ -249,7 +249,7 @@ export default function NotificationsSettingsPage() {
                     <>
                       Um ID por linha (ou separados por vírgula). Grupos usam IDs negativos. Para descobrir o teu ID,
                       envia qualquer mensagem ao bot e abre{" "}
-                      <code className="rounded bg-muted px-1 text-[10px]">
+                      <code className="rounded bg-muted px-1 text-[11px]">
                         api.telegram.org/bot&lt;TOKEN&gt;/getUpdates
                       </code>
                       .

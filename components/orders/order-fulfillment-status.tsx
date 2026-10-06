@@ -133,7 +133,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus, canManage =
               Reativar
             </button>
           ) : (
-            <span className="shrink-0 rounded-md border border-border/80 bg-muted/30 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+            <span className="shrink-0 rounded-md border border-border/80 bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground">
               Modo leitura
             </span>
           )}
@@ -152,7 +152,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus, canManage =
           <button
             onClick={() => handleChange("CANCELLED")}
             disabled={!!loading}
-            className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-destructive hover:border-destructive/40 hover:bg-destructive/5 transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-destructive hover:border-destructive/40 hover:bg-destructive/5 transition-colors disabled:opacity-50"
           >
             {loading === "CANCELLED" ? (
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -162,7 +162,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus, canManage =
             Cancelar pedido
           </button>
         ) : (
-          <span className="rounded-md border border-border/80 bg-muted/30 px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
+          <span className="rounded-md border border-border/80 bg-muted/30 px-2.5 py-1 text-xs font-medium text-muted-foreground">
             Modo leitura
           </span>
         )}
@@ -214,7 +214,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus, canManage =
 
                   {/* Label */}
                   <span className={cn(
-                    "text-[10px] font-semibold leading-tight text-center hidden sm:block",
+                    "text-[11px] font-semibold leading-tight text-center hidden sm:block",
                     isDone   && "text-emerald-600",
                     isActive && "text-primary",
                     isPending && "text-muted-foreground/50"

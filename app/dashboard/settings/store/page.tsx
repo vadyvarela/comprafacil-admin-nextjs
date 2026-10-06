@@ -294,7 +294,7 @@ export default function StoreSettingsPage() {
                     onChange={(e) => patch({ nif: e.target.value })}
                     placeholder="876567890"
                   />
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Aparece na fatura e no recibo.
                   </p>
                 </div>
@@ -367,7 +367,7 @@ export default function StoreSettingsPage() {
                     onChange={(e) => patch({ whatsappNumber: e.target.value })}
                     placeholder="+2389519891"
                   />
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Número com indicativo (só dígitos e +). A loja gera o link wa.me.
                   </p>
                 </div>
@@ -383,7 +383,7 @@ export default function StoreSettingsPage() {
                     </div>
                     <CardTitle className="text-sm font-semibold">Meta Commerce</CardTitle>
                   </div>
-                  <Badge variant={values.metaPixelId.trim() ? "secondary" : "outline"} className="text-[11px]">
+                  <Badge variant={values.metaPixelId.trim() ? "secondary" : "outline"} className="text-xs">
                     {values.metaPixelId.trim() ? "Pixel configurado" : "Pixel pendente"}
                   </Badge>
                 </div>
@@ -398,7 +398,7 @@ export default function StoreSettingsPage() {
                     placeholder="123456789012345"
                     inputMode="numeric"
                   />
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     ID numérico do pixel no Events Manager. A loja usa este valor para Facebook/Instagram.
                   </p>
                 </div>
@@ -423,7 +423,7 @@ export default function StoreSettingsPage() {
                       </a>
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Usa esta URL como Data Feed no Commerce Manager e agenda actualização automática.
                   </p>
                 </div>
@@ -471,7 +471,7 @@ export default function StoreSettingsPage() {
                   placeholder={"iPhone\nSamsung\nTV"}
                   className="resize-y min-h-[88px] text-sm font-mono"
                 />
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Um termo por linha, até 8 sugestões. Aparecem no campo de pesquisa da loja.
                 </p>
               </CardContent>

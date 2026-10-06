@@ -174,7 +174,7 @@ export function VariantGalleryUpload({
           </span>
         </div>
         {uploading && (
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
             <Loader2 className="h-3 w-3 animate-spin" />
             A enviar…
           </span>
@@ -196,13 +196,13 @@ export function VariantGalleryUpload({
                 sizes="100px"
               />
               {index === 0 && (
-                <span className="absolute top-1 left-1 flex items-center gap-0.5 rounded bg-blue-600 px-1 py-0.5 text-[9px] font-bold text-white">
+                <span className="absolute top-1 left-1 flex items-center gap-0.5 rounded bg-blue-600 px-1 py-0.5 text-[10px] font-bold text-white">
                   <Star className="h-2.5 w-2.5 fill-current" />
                   Capa
                 </span>
               )}
               {localHover === url && index !== 0 && (
-                <span className="absolute top-1 right-1 flex items-center gap-0.5 rounded bg-violet-600 px-1 py-0.5 text-[9px] font-bold text-white">
+                <span className="absolute top-1 right-1 flex items-center gap-0.5 rounded bg-violet-600 px-1 py-0.5 text-[10px] font-bold text-white">
                   <MousePointer2 className="h-2.5 w-2.5" />
                   Hover
                 </span>
@@ -213,7 +213,7 @@ export function VariantGalleryUpload({
                     type="button"
                     size="sm"
                     variant="secondary"
-                    className="h-6 text-[10px] px-1.5 w-full"
+                    className="h-6 text-[11px] px-1.5 w-full"
                     disabled={busy}
                     onClick={() => setAsCover(index)}
                   >
@@ -225,7 +225,7 @@ export function VariantGalleryUpload({
                     type="button"
                     size="sm"
                     variant={localHover === url ? "default" : "secondary"}
-                    className="h-6 text-[10px] px-1.5 w-full"
+                    className="h-6 text-[11px] px-1.5 w-full"
                     disabled={busy}
                     onClick={() => setAsHover(index)}
                   >

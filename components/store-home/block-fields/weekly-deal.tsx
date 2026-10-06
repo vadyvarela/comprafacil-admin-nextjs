@@ -23,7 +23,7 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
     return (
       <div className="grid gap-2 sm:grid-cols-2">
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Rótulo (ex.: Oferta da semana)</Label>
+          <Label className="text-[11px]">Rótulo (ex.: Oferta da semana)</Label>
           <Input
             className="h-8 text-xs"
             value={block.props.title}
@@ -33,7 +33,7 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
           />
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Headline (grande)</Label>
+          <Label className="text-[11px]">Headline (grande)</Label>
           <Textarea
             className="min-h-[64px] text-xs resize-y"
             placeholder={"Ex.: Som premium.\nPreço especial."}
@@ -45,12 +45,12 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
               })
             }
           />
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground">
             Enter = quebra de linha na loja.
           </p>
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Fim do countdown (ISO / datetime-local)</Label>
+          <Label className="text-[11px]">Fim do countdown (ISO / datetime-local)</Label>
           <Input
             type="datetime-local"
             className="h-8 text-xs"
@@ -62,12 +62,12 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
               onChange({ ...block, props: { ...block.props, endsAt: iso } })
             }}
           />
-          <p className="text-[10px] text-muted-foreground font-mono truncate">
+          <p className="text-[11px] text-muted-foreground font-mono truncate">
             {block.props.endsAt}
           </p>
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Produto</Label>
+          <Label className="text-[11px]">Produto</Label>
           <CuratedProductPicker
             value={[block.props.productId]}
             max={1}
@@ -79,7 +79,7 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
           />
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Imagem custom (opcional)</Label>
+          <Label className="text-[11px]">Imagem custom (opcional)</Label>
           <Input
             className="h-8 text-xs font-mono"
             placeholder="https://… ou /media/… — vazio = imagem do produto"
@@ -91,7 +91,7 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
               })
             }
           />
-          <p className="text-[10px] text-muted-foreground leading-snug">
+          <p className="text-[11px] text-muted-foreground leading-snug">
             Se preenchido, substitui a foto do produto no banner.
           </p>
           {block.props.imageUrl?.trim() ? (
@@ -104,7 +104,7 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
           ) : null}
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Subtítulo do produto (opcional)</Label>
+          <Label className="text-[11px]">Subtítulo do produto (opcional)</Label>
           <Input
             className="h-8 text-xs"
             placeholder="Ex.: Bluetooth"
@@ -118,7 +118,7 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Texto do botão</Label>
+          <Label className="text-[11px]">Texto do botão</Label>
           <Input
             className="h-8 text-xs"
             value={block.props.ctaLabel}
@@ -128,7 +128,7 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Badge (opcional)</Label>
+          <Label className="text-[11px]">Badge (opcional)</Label>
           <Input
             className="h-8 text-xs"
             placeholder="-30%"
@@ -142,7 +142,7 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
           />
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">Glow / gradiente do produto</Label>
+          <Label className="text-[11px]">Glow / gradiente do produto</Label>
           <Select
             value={block.props.glow ?? "blue"}
             onValueChange={(v) =>
@@ -166,12 +166,12 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
               ))}
             </SelectContent>
           </Select>
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground">
             Cor do brilho atrás do produto e do botão/badge.
           </p>
         </div>
         <div className="space-y-1 sm:col-span-2">
-          <Label className="text-[10px]">
+          <Label className="text-[11px]">
             Link do botão (opcional — path ou URL completa)
           </Label>
           <Input
@@ -192,11 +192,11 @@ export function WeeklyDealFields({ block, onChange }: BlockFieldsProps<Block>) {
               })
             }}
           />
-          <p className="text-[10px] text-muted-foreground leading-snug">
+          <p className="text-[11px] text-muted-foreground leading-snug">
             Vazio = página do produto. Aceita paths internos (/…) ou links externos (https://…).
           </p>
           {block.props.ctaHref?.trim() && !isWeeklyDealHref(block.props.ctaHref) ? (
-            <p className="text-[10px] text-destructive leading-snug">
+            <p className="text-[11px] text-destructive leading-snug">
               Link inválido: usa /caminho ou http(s)://…
             </p>
           ) : null}

@@ -32,7 +32,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
     return (
       <div className="grid gap-4">
         <div className="space-y-1">
-          <Label className="text-[10px]">Tema de fundo</Label>
+          <Label className="text-[11px]">Tema de fundo</Label>
           <Select
             value={block.props.theme ?? "darkOrange"}
             onValueChange={(v) =>
@@ -58,12 +58,12 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               <SelectItem value="roseNight">Noite · rosa</SelectItem>
             </SelectContent>
           </Select>
-          <p className="text-[10px] text-muted-foreground leading-snug">
+          <p className="text-[11px] text-muted-foreground leading-snug">
             Muda o gradiente e a cor de destaque (badge, CTA, headline).
           </p>
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px]">Autoplay (ms)</Label>
+          <Label className="text-[11px]">Autoplay (ms)</Label>
           <Input
             type="number"
             min={3000}
@@ -82,7 +82,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
             }
           />
         </div>
-        <p className="text-[10px] text-muted-foreground leading-snug">
+        <p className="text-[11px] text-muted-foreground leading-snug">
           Slides (1–6). Badge + nome do produto no topo. Card direito: preço, stock, garantia.
           CTA aceita `/produto/…` ou `https://…`. WhatsApp usa as settings da loja.
         </p>
@@ -91,9 +91,9 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
             key={slide.id}
             className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
           >
-            <p className="text-[10px] font-semibold sm:col-span-2">Slide {idx + 1}</p>
+            <p className="text-[11px] font-semibold sm:col-span-2">Slide {idx + 1}</p>
             <div className="space-y-1">
-              <Label className="text-[10px]">Badge</Label>
+              <Label className="text-[11px]">Badge</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.badge ?? ""}
@@ -102,7 +102,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px]">Nome do produto (topo)</Label>
+              <Label className="text-[11px]">Nome do produto (topo)</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.productLabel ?? ""}
@@ -111,7 +111,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">Headline</Label>
+              <Label className="text-[11px]">Headline</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.headline}
@@ -119,7 +119,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">Destaque (cor accent)</Label>
+              <Label className="text-[11px]">Destaque (cor accent)</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.headlineAccent ?? ""}
@@ -129,7 +129,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">Subtítulo</Label>
+              <Label className="text-[11px]">Subtítulo</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.subtitle ?? ""}
@@ -137,7 +137,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px]">CTA primário</Label>
+              <Label className="text-[11px]">CTA primário</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.primaryCtaLabel}
@@ -145,7 +145,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px]">Link CTA (produto ou URL)</Label>
+              <Label className="text-[11px]">Link CTA (produto ou URL)</Label>
               <Input
                 className={cn(
                   "h-8 text-xs font-mono",
@@ -161,12 +161,12 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
                   updateSlide(idx, { primaryCtaHref: v || "/produtos" })
                 }}
               />
-              <p className="text-[10px] text-muted-foreground leading-snug">
+              <p className="text-[11px] text-muted-foreground leading-snug">
                 Ex.: /produto/iphone-17-pro-max ou URL completa.
               </p>
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">CTA WhatsApp (opcional)</Label>
+              <Label className="text-[11px]">CTA WhatsApp (opcional)</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.secondaryCtaLabel ?? ""}
@@ -176,7 +176,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">Imagem URL</Label>
+              <Label className="text-[11px]">Imagem URL</Label>
               <Input
                 className="h-8 text-xs font-mono"
                 value={slide.imageUrl}
@@ -184,7 +184,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">Alt da imagem</Label>
+              <Label className="text-[11px]">Alt da imagem</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.imageAlt}
@@ -192,11 +192,11 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
 
-            <p className="text-[10px] font-semibold text-foreground sm:col-span-2 pt-1">
+            <p className="text-[11px] font-semibold text-foreground sm:col-span-2 pt-1">
               Card de produto (direita)
             </p>
             <div className="space-y-1">
-              <Label className="text-[10px]">Prefixo preço</Label>
+              <Label className="text-[11px]">Prefixo preço</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.pricePrefix ?? ""}
@@ -205,7 +205,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px]">Preço</Label>
+              <Label className="text-[11px]">Preço</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.price ?? ""}
@@ -214,7 +214,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px]">Stock</Label>
+              <Label className="text-[11px]">Stock</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.stockLabel ?? ""}
@@ -223,7 +223,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px]">Garantia</Label>
+              <Label className="text-[11px]">Garantia</Label>
               <Input
                 className="h-8 text-xs"
                 value={slide.warrantyLabel ?? ""}
@@ -239,7 +239,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-7 text-[10px]"
+                className="h-7 text-[11px]"
                 disabled={slides.length <= 1}
                 onClick={() => patchSlides(slides.filter((_, i) => i !== idx))}
               >
@@ -280,7 +280,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
           Adicionar slide
         </Button>
 
-        <p className="text-[10px] font-semibold text-foreground pt-1">
+        <p className="text-[11px] font-semibold text-foreground pt-1">
           Faixa inferior (0 ou 2–5)
         </p>
         {trust.map((t, idx) => (
@@ -289,7 +289,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
             className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
           >
             <div className="space-y-1">
-              <Label className="text-[10px]">Ícone</Label>
+              <Label className="text-[11px]">Ícone</Label>
               <Select
                 value={t.icon}
                 onValueChange={(v) =>
@@ -313,7 +313,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px]">Cor</Label>
+              <Label className="text-[11px]">Cor</Label>
               <Select
                 value={t.tone}
                 onValueChange={(v) =>
@@ -338,7 +338,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               </Select>
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">Título</Label>
+              <Label className="text-[11px]">Título</Label>
               <Input
                 className="h-8 text-xs"
                 value={t.label}
@@ -352,7 +352,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
               />
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label className="text-[10px]">Subtítulo</Label>
+              <Label className="text-[11px]">Subtítulo</Label>
               <Input
                 className="h-8 text-xs"
                 value={t.sublabel ?? ""}
@@ -370,7 +370,7 @@ export function HeroV2Fields({ block, onChange }: BlockFieldsProps<Block>) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-7 text-[10px]"
+                className="h-7 text-[11px]"
                 onClick={() => patchTrust(trust.filter((_, i) => i !== idx))}
               >
                 Remover

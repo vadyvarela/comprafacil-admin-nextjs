@@ -178,7 +178,7 @@ export default async function SettingsPage() {
                   <p className="text-sm font-semibold text-foreground">{section.title}</p>
                   <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">{section.description}</p>
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                <span className="text-[11px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
                   Em breve
                 </span>
               </button>

@@ -230,7 +230,7 @@ export default function BrandsPage() {
                     )}
 
                     {brand.status && (
-                      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${brandStatusClass(brand.status.code)}`}>
+                      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${brandStatusClass(brand.status.code)}`}>
                         {brandStatusLabel(brand.status.code)}
                       </span>
                     )}

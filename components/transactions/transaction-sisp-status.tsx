@@ -49,7 +49,7 @@ export function TransactionSispStatus({ merchantReference }: TransactionSispStat
   return (
     <div className="space-y-2 border-t border-border/60 px-4 py-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[11px] font-medium text-muted-foreground uppercase">
+        <p className="text-xs font-medium text-muted-foreground uppercase">
           Estado SISP
         </p>
         <Button
@@ -108,13 +108,13 @@ function StatusLine({
         <XCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 mt-0.5" />
       )}
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-semibold text-foreground leading-tight">
+        <p className="text-xs font-semibold text-foreground leading-tight">
           {label}:{" "}
           <span className={ok ? "text-emerald-700" : "text-amber-700"}>
             {ok ? "Sim" : "Não"}
           </span>
         </p>
-        <p className="text-[11px] text-muted-foreground wrap-break-word leading-snug">{detail}</p>
+        <p className="text-xs text-muted-foreground wrap-break-word leading-snug">{detail}</p>
       </div>
     </div>
   )

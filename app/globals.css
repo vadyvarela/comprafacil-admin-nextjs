@@ -129,7 +129,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground text-[13px] antialiased;
+    @apply bg-background text-foreground text-sm antialiased;
     font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   }
   h1, h2, h3 {

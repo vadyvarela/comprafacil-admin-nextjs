@@ -214,7 +214,7 @@ export function ProductListToolbar({
             </Button>
           </>
         ) : (
-          <span className="inline-flex h-8 items-center rounded-md border border-border/80 bg-muted/30 px-2.5 text-[11px] font-medium text-muted-foreground">
+          <span className="inline-flex h-8 items-center rounded-md border border-border/80 bg-muted/30 px-2.5 text-xs font-medium text-muted-foreground">
             Modo leitura
           </span>
         )}

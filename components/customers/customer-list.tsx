@@ -102,7 +102,7 @@ export function CustomerList({ customers }: CustomerListProps) {
                 <TableCell className="text-muted-foreground tabular-nums text-xs">
                   {customer.phone || "—"}
                 </TableCell>
-                <TableCell className="font-mono text-[11px] text-muted-foreground">
+                <TableCell className="font-mono text-xs text-muted-foreground">
                   {customer.customerExternalId ? shortId(customer.customerExternalId) : "—"}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-xs tabular-nums">

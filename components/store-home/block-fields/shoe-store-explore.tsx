@@ -35,7 +35,7 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
       <div className="grid gap-3">
         <div className="grid gap-2 sm:grid-cols-2">
           <div className="space-y-1 sm:col-span-2">
-            <Label className="text-[10px]">Título da secção</Label>
+            <Label className="text-[11px]">Título da secção</Label>
             <Input
               className="h-8 text-xs"
               value={block.props.title}
@@ -43,7 +43,7 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px]">Texto «Ver tudo»</Label>
+            <Label className="text-[11px]">Texto «Ver tudo»</Label>
             <Input
               className="h-8 text-xs"
               value={block.props.seeAllLabel}
@@ -65,7 +65,7 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
             }
           />
         </div>
-        <p className="text-[10px] text-muted-foreground leading-snug">
+        <p className="text-[11px] text-muted-foreground leading-snug">
           Entre 2 e 6 tiles. Tamanho «hero» = grande (2×2); «half» = metade; «wide» = faixa larga.
         </p>
         <div className="flex flex-col gap-3">
@@ -74,11 +74,11 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
               key={`${tile.id}-${idx}`}
               className="grid gap-2 rounded-md border border-border/60 bg-muted/10 p-2 sm:grid-cols-2"
             >
-              <legend className="mb-1 px-1 text-[10px] font-semibold text-foreground">
+              <legend className="mb-1 px-1 text-[11px] font-semibold text-foreground">
                 Tile {idx + 1}
               </legend>
               <div className="space-y-1">
-                <Label className="text-[10px]">Label</Label>
+                <Label className="text-[11px]">Label</Label>
                 <Input
                   className="h-8 text-xs"
                   value={tile.label}
@@ -88,7 +88,7 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Descrição</Label>
+                <Label className="text-[11px]">Descrição</Label>
                 <Input
                   className="h-8 text-xs"
                   value={tile.description ?? ""}
@@ -101,7 +101,7 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px]">Tamanho</Label>
+                <Label className="text-[11px]">Tamanho</Label>
                 <Select
                   value={tile.span}
                   onValueChange={(v) =>
@@ -137,7 +137,7 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
                 }
               />
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Imagem — URL https ou /path</Label>
+                <Label className="text-[11px]">Imagem — URL https ou /path</Label>
                 <Input
                   className="h-8 text-xs font-mono"
                   value={tile.imageUrl}
@@ -147,7 +147,7 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
                 />
               </div>
               <div className="space-y-1 sm:col-span-2">
-                <Label className="text-[10px]">Alt da imagem</Label>
+                <Label className="text-[11px]">Alt da imagem</Label>
                 <Input
                   className="h-8 text-xs"
                   value={tile.imageAlt}
@@ -161,7 +161,7 @@ export function ShoeStoreExploreFields({ block, onChange }: BlockFieldsProps<Blo
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-[10px]"
+                  className="h-7 text-[11px]"
                   disabled={tiles.length <= 2}
                   onClick={() => patchTiles(tiles.filter((_, i) => i !== idx))}
                 >

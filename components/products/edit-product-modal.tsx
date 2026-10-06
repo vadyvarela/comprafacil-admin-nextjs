@@ -490,7 +490,7 @@ export function EditProductModal({
               </div>
 
               {hasVariants && (
-                <p className="text-[11px] text-muted-foreground rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+                <p className="text-xs text-muted-foreground rounded-md border border-border/60 bg-muted/20 px-3 py-2">
                   Desconto, bateria, Face ID e ofertas são geridos por variante no gestor de variantes.
                 </p>
               )}
@@ -499,7 +499,7 @@ export function EditProductModal({
                 <div className="rounded-md border border-border/70 bg-muted/20 p-3 space-y-2.5">
                   <div>
                     <p className="text-xs font-medium text-foreground">iPhone seminovo</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       Campos informativos na ficha da loja. Opcional.
                     </p>
                   </div>
@@ -587,7 +587,7 @@ export function EditProductModal({
                   <Label htmlFor="edit-offer-enabled" className="text-xs font-medium cursor-pointer">
                     Mostrar faixa de oferta
                   </Label>
-                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                  <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
                     Aparece no detalhe do produto (faixa laranja). Ex.: capa + película.
                   </p>
                 </div>
@@ -640,7 +640,7 @@ export function EditProductModal({
                         <Badge
                           key={item}
                           variant="secondary"
-                          className="gap-1 px-2 py-0.5 text-[11px] font-medium"
+                          className="gap-1 px-2 py-0.5 text-xs font-medium"
                         >
                           {item}
                           <button
