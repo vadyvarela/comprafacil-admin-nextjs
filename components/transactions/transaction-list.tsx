@@ -62,16 +62,16 @@ function StatusBadge({ tx }: { tx: PaymentIntent }) {
     <Tooltip>
       <TooltipTrigger asChild>
         <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium cursor-default ${statusClass(tx.status?.code ?? "")}`}
+          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium cursor-default ${statusClass(tx.status?.code ?? "")}`}
         >
           {tx.status?.description ?? tx.status?.code ?? "—"}
         </span>
       </TooltipTrigger>
       <TooltipContent side="top">
         <div className="max-w-xs text-left space-y-0.5">
-          <p className="font-medium font-mono text-[11px]">{tx.status?.code ?? "—"}</p>
+          <p className="font-medium font-mono text-xs">{tx.status?.code ?? "—"}</p>
           {tx.statusReason && (
-            <p className="text-[11px] leading-snug text-muted">Motivo: {tx.statusReason}</p>
+            <p className="text-xs leading-snug text-muted">Motivo: {tx.statusReason}</p>
           )}
         </div>
       </TooltipContent>

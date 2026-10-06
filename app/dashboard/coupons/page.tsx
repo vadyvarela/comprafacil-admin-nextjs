@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQuery } from "@apollo/client/react"
 import { GET_COUPONS } from "@/lib/graphql/coupons/queries"
 import { Coupon } from "@/lib/graphql/coupons/types"
@@ -27,6 +27,16 @@ import { EmptyState } from "@/components/admin/empty-state"
 export default function CouponsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+
+  // `?create=1` (atalho do dashboard) abre logo o formulário. Lido depois da
+  // hidratação e retirado do URL para um refresh não o reabrir.
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.get("create") !== "1") return
+    setCreateModalOpen(true)
+    url.searchParams.delete("create")
+    window.history.replaceState(null, "", url)
+  }, [])
 
   const { data, loading, error, refetch } = useQuery<{ coupons: Coupon[] }>(GET_COUPONS)
 
@@ -56,8 +66,8 @@ export default function CouponsPage() {
       <div className="flex flex-1 flex-col min-h-0">
         <PageToolbar
           icon={TicketPercent}
-          iconBg="bg-emerald-50"
-          iconColor="text-emerald-700"
+          iconBg="bg-success-soft"
+          iconColor="text-success-strong"
           title="Cupões"
           subtitle={loading ? "A carregar…" : `${total} cupão${total !== 1 ? "ões" : ""}`}
         >
@@ -142,27 +152,27 @@ export default function CouponsPage() {
                       >
                         <div className="flex min-h-40 flex-col rounded-lg border border-border/80 bg-card p-3.5 shadow-xs transition-colors hover:border-border hover:bg-muted/20">
                           <div className="flex items-start justify-between mb-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-emerald-50">
-                              <TicketPercent className="h-4 w-4 text-emerald-800" />
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-success-soft">
+                              <TicketPercent className="h-4 w-4 text-success-strong" />
                             </div>
                             <div className="flex items-center gap-1.5">
                               {coupon.defaultCoupon && (
-                                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium badge-info">
+                                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium badge-info">
                                   Padrão
                                 </span>
                               )}
                               {active ? (
-                                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-success">
+                                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium badge-success">
                                   <CheckCircle2 className="h-3 w-3" />
                                   Activo
                                 </span>
                               ) : expired ? (
-                                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium badge-danger">
+                                <span className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium badge-danger">
                                   <XCircle className="h-3 w-3" />
                                   Expirado
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium badge-neutral">
+                                <span className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium badge-neutral">
                                   Inactivo
                                 </span>
                               )}
@@ -174,13 +184,13 @@ export default function CouponsPage() {
                           </h3>
 
                           {discountType === "percent" && (
-                            <div className="flex items-center gap-1 text-lg font-semibold text-emerald-800 mb-2 font-mono">
+                            <div className="flex items-center gap-1 text-lg font-semibold text-success-strong mb-2 font-mono">
                               <Percent className="h-4 w-4" />
                               {coupon.percentOff}% OFF
                             </div>
                           )}
                           {discountType === "amount" && (
-                            <div className="flex items-center gap-1 text-lg font-semibold text-emerald-800 mb-2 font-mono">
+                            <div className="flex items-center gap-1 text-lg font-semibold text-success-strong mb-2 font-mono">
                               <DollarSign className="h-4 w-4" />
                               {coupon.amountOff} {coupon.currency}
                             </div>

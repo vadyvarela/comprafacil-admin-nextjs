@@ -56,7 +56,7 @@ type StoreBrandMarkProps = {
 }
 
 const textSizeClasses = {
-  sm: { title: "text-sm", subtitle: "text-[10px]" },
+  sm: { title: "text-sm", subtitle: "text-[11px]" },
   md: { title: "text-xl", subtitle: "text-sm" },
 } as const
 

@@ -36,7 +36,7 @@ function CatalogBlock({
 }) {
   return (
     <div className="rounded-md border border-border/70 bg-muted/15 p-3 space-y-2">
-      <p className="text-[11px] font-medium text-muted-foreground uppercase">
+      <p className="text-xs font-medium text-muted-foreground uppercase">
         {title}
       </p>
       {catalog.length === 0 ? (
@@ -47,7 +47,7 @@ function CatalogBlock({
             <p className="text-xs font-semibold">{entry.name}</p>
             <div className="flex flex-wrap gap-1.5">
               {entry.values.map((value) => (
-                <Badge key={value} variant="secondary" className="text-[10px] font-normal">
+                <Badge key={value} variant="secondary" className="text-[11px] font-normal">
                   {value}
                 </Badge>
               ))}
@@ -131,13 +131,13 @@ export function ProductOptionCatalogPanel({
     <DataPanel>
       <div className="flex items-start justify-between gap-3 border-b border-border/80 bg-muted/35 px-4 py-3">
         <div className="flex items-start gap-2.5 min-w-0">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-amber-50">
-            <Store className="h-4 w-4 text-amber-800" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-warning-soft">
+            <Store className="h-4 w-4 text-warning-strong" />
           </div>
           <div className="min-w-0">
             <h2 className="text-sm font-semibold">Opções na loja</h2>
-            <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-              A página de detalhe usa <code className="text-[10px]">metadata.attributes</code> do
+            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+              A página de detalhe usa <code className="text-[11px]">metadata.attributes</code> do
               produto. Deve coincidir com as opções das variantes.
             </p>
           </div>
@@ -145,7 +145,7 @@ export function ProductOptionCatalogPanel({
         {aligned ? (
           <Badge
             variant="outline"
-            className="shrink-0 text-[10px] border-emerald-500/40 bg-emerald-50 text-emerald-800"
+            className="shrink-0 text-[11px] border-success/40 bg-success-soft text-success-strong"
           >
             <CheckCircle2 className="h-3 w-3 mr-1" />
             Alinhado
@@ -153,7 +153,7 @@ export function ProductOptionCatalogPanel({
         ) : (
           <Badge
             variant="outline"
-            className="shrink-0 text-[10px] border-amber-500/40 bg-amber-50 text-amber-800"
+            className="shrink-0 text-[11px] border-warning/40 bg-warning-soft text-warning-strong"
           >
             <AlertTriangle className="h-3 w-3 mr-1" />
             Desalinhado
@@ -176,15 +176,15 @@ export function ProductOptionCatalogPanel({
         </div>
 
         {!aligned && variantCatalog.length > 0 && (
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-md border border-amber-500/30 bg-amber-50/60 px-3 py-2.5">
-            <p className="text-[11px] text-amber-900 leading-relaxed">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-md border border-warning/30 bg-warning-soft/60 px-3 py-2.5">
+            <p className="text-xs text-warning-strong leading-relaxed">
               O catálogo do produto não coincide com as variantes. Isto pode fazer o selector da
               loja mostrar opções erradas (ex.: TIPO em vez de Modelo).
             </p>
             <Button
               size="sm"
               variant="outline"
-              className="shrink-0 h-8 text-xs border-amber-500/40 bg-white hover:bg-amber-50"
+              className="shrink-0 h-8 text-xs border-warning/40 bg-card hover:bg-warning-soft"
               onClick={() => void handleSync()}
               disabled={syncing}
             >

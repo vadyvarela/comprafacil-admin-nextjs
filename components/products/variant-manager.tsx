@@ -547,7 +547,7 @@ export function VariantManager({
                   type="button"
                   onClick={() => setActiveVariants(!activeVariants)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    activeVariants ? "bg-green-600" : "bg-gray-300"
+                    activeVariants ? "bg-success" : "bg-gray-300"
                   }`}
                 >
                   <span
@@ -590,7 +590,7 @@ export function VariantManager({
                             variant="ghost"
                             size="icon"
                             onClick={() => removeOption(option.id)}
-                            className="text-red-600"
+                            className="text-danger"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -609,7 +609,7 @@ export function VariantManager({
                                 <button
                                   type="button"
                                   onClick={() => removeOptionValue(option.id, value)}
-                                  className="ml-1 hover:text-red-600"
+                                  className="ml-1 hover:text-danger"
                                 >
                                   <XIcon className="h-3 w-3" />
                                 </button>
@@ -695,17 +695,17 @@ export function VariantManager({
                                     </div>
                                     <div className="flex flex-wrap gap-1 mt-1">
                                       {galleryCount(combo) > 0 && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                        <Badge variant="outline" className="text-[11px] px-1.5 py-0">
                                           {galleryCount(combo)} foto{galleryCount(combo) !== 1 ? "s" : ""}
                                         </Badge>
                                       )}
                                       {combo.discount && parseInt(combo.discount, 10) > 0 && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-rose-700">
+                                        <Badge variant="outline" className="text-[11px] px-1.5 py-0 text-danger-strong">
                                           -{combo.discount}%
                                         </Badge>
                                       )}
                                       {combo.offerEnabled && (
-                                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-orange-700">
+                                        <Badge variant="outline" className="text-[11px] px-1.5 py-0 text-warning-strong">
                                           Pack
                                         </Badge>
                                       )}

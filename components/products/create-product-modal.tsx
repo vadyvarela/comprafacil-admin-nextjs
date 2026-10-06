@@ -256,7 +256,7 @@ export function CreateProductModal({
               </Field>
             </FormSection>
 
-            <FormSection icon={Layers} title="Classificação" iconTone="bg-violet-50 text-violet-800">
+            <FormSection icon={Layers} title="Classificação" iconTone="bg-highlight-soft text-highlight-strong">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Categoria" htmlFor="categoryId">
                   <Select
@@ -337,7 +337,7 @@ export function CreateProductModal({
               </div>
             </FormSection>
 
-            <FormSection icon={Tag} title="Preço e stock" iconTone="bg-emerald-50 text-emerald-800">
+            <FormSection icon={Tag} title="Preço e stock" iconTone="bg-success-soft text-success-strong">
               <label
                 htmlFor="createDefaultVariant"
                 className="flex items-start gap-2.5 rounded-md border border-border/70 bg-muted/15 px-3 py-2.5 cursor-pointer hover:bg-muted/25 transition-colors"
@@ -356,7 +356,7 @@ export function CreateProductModal({
                   <span className="block text-xs font-medium text-foreground">
                     Activar variante com preço
                   </span>
-                  <span className="block text-[11px] text-muted-foreground leading-snug">
+                  <span className="block text-xs text-muted-foreground leading-snug">
                     Cria uma variante inicial para definir preço e quantidade.
                   </span>
                 </span>
@@ -392,7 +392,7 @@ export function CreateProductModal({
                   </Field>
                 </div>
               ) : (
-                <p className="text-[11px] text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2 leading-relaxed">
+                <p className="text-xs text-muted-foreground rounded-md border border-dashed border-border/70 bg-muted/10 px-3 py-2 leading-relaxed">
                   O produto será criado sem variante. Pode adicionar opções e variantes depois na página de detalhes.
                 </p>
               )}
@@ -418,7 +418,7 @@ export function CreateProductModal({
                   className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-sky-50 text-sky-800">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-info-soft text-info-strong">
                       <FileText className="h-3 w-3" />
                     </span>
                     <span className="text-xs font-medium">Descrição</span>

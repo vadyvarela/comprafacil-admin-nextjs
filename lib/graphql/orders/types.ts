@@ -21,6 +21,7 @@ export interface CheckoutSessionResponse {
   mode?: string
   currency?: string
   submitType?: string
+  /** Atenção: na pesquisa vem em unidades maiores (escudos), nos detalhes em cêntimos. */
   amountDiscount?: number
   paymentProviderType?: string
   status?: DomainModel
@@ -30,6 +31,10 @@ export interface CheckoutSessionResponse {
   createdAt?: string
   updatedAt?: string
   customer?: CustomerResponse
+  /** Cêntimos, como nos detalhes. */
+  amountShipping?: number
+  lines?: OrderItemResponse[] | null
+  fulfillmentStatus?: DomainModel | null
 }
 
 export interface OrderItemResponse {
@@ -101,4 +106,5 @@ export interface OrderSummary extends CheckoutSessionResponse {
   itemsCount?: number
   /** Número de linhas distintas no pedido (para badge "+N") */
   orderLineCount?: number
+  fulfillmentStatus?: DomainModel | null
 }

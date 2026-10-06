@@ -447,7 +447,7 @@ export default function MediaLibraryPage() {
           size="sm"
           className={cn(
             "justify-center gap-1 font-medium",
-            compact ? "h-7 px-2 text-[10px]" : "h-6 sm:h-7 w-full px-1 text-[9px] sm:text-[10px]"
+            compact ? "h-7 px-2 text-[11px]" : "h-6 sm:h-7 w-full px-1 text-[10px] sm:text-[11px]"
           )}
           onClick={() => void copyUrl(src)}
         >
@@ -460,7 +460,7 @@ export default function MediaLibraryPage() {
           size="sm"
           className={cn(
             "border-destructive/30 text-destructive hover:bg-destructive/5 hover:text-destructive",
-            compact ? "h-7 px-2 text-[10px]" : "h-6 px-1 w-full text-[9px] sm:text-[10px]"
+            compact ? "h-7 px-2 text-[11px]" : "h-6 px-1 w-full text-[10px] sm:text-[11px]"
           )}
           onClick={() => openDeleteDialog([row])}
         >
@@ -652,7 +652,7 @@ export default function MediaLibraryPage() {
           <div
             onDragOver={(e) => e.preventDefault()}
             onDrop={onDrop}
-            className="mb-4 rounded-md border border-dashed border-border/80 bg-muted/20 px-3 py-2.5 text-[11px] text-muted-foreground"
+            className="mb-4 rounded-md border border-dashed border-border/80 bg-muted/20 px-3 py-2.5 text-xs text-muted-foreground"
           >
             <span className="inline-flex items-center gap-1.5 text-foreground/80">
               <Link2 className="h-3.5 w-3.5 shrink-0 opacity-70" />
@@ -741,17 +741,17 @@ export default function MediaLibraryPage() {
                       </div>
                       <div className="min-h-0 space-y-0.5 p-1 sm:p-1.5">
                         <p
-                          className="truncate text-[9px] font-medium leading-tight text-foreground/90 sm:text-[10px]"
+                          className="truncate text-[10px] font-medium leading-tight text-foreground/90 sm:text-[11px]"
                           title={name}
                         >
                           {name}
                         </p>
                         {meta ? (
-                          <p className="truncate text-[8px] text-muted-foreground sm:text-[9px]" title={meta}>
+                          <p className="truncate text-[10px] text-muted-foreground sm:text-[10px]" title={meta}>
                             {meta}
                           </p>
                         ) : null}
-                        <p className="text-[8px] tabular-nums text-muted-foreground/80">
+                        <p className="text-[10px] tabular-nums text-muted-foreground/80">
                           {formatBytes(row.byteSize ?? null)}
                         </p>
                         {renderMediaActions(row)}
@@ -770,10 +770,10 @@ export default function MediaLibraryPage() {
                   <TableRow className="hover:bg-transparent">
                     <TableHead className="w-10 pl-3" />
                     <TableHead className="w-14" />
-                    <TableHead className="text-[11px]">Nome</TableHead>
-                    <TableHead className="text-[11px] hidden md:table-cell">Grupo / origem</TableHead>
-                    <TableHead className="text-[11px] w-20">Tamanho</TableHead>
-                    <TableHead className="text-[11px] w-36 text-right pr-3">Ações</TableHead>
+                    <TableHead className="text-xs">Nome</TableHead>
+                    <TableHead className="text-xs hidden md:table-cell">Grupo / origem</TableHead>
+                    <TableHead className="text-xs w-20">Tamanho</TableHead>
+                    <TableHead className="text-xs w-36 text-right pr-3">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -807,11 +807,11 @@ export default function MediaLibraryPage() {
                           </p>
                         </TableCell>
                         <TableCell className="py-2 hidden md:table-cell">
-                          <p className="text-[11px] text-muted-foreground truncate max-w-[180px]" title={meta ?? ""}>
+                          <p className="text-xs text-muted-foreground truncate max-w-[180px]" title={meta ?? ""}>
                             {meta ?? "—"}
                           </p>
                         </TableCell>
-                        <TableCell className="py-2 text-[11px] text-muted-foreground tabular-nums">
+                        <TableCell className="py-2 text-xs text-muted-foreground tabular-nums">
                           {formatBytes(row.byteSize ?? null)}
                         </TableCell>
                         <TableCell className="py-2 pr-3" onClick={(e) => e.stopPropagation()}>
@@ -827,7 +827,7 @@ export default function MediaLibraryPage() {
 
           {!loading && total > 0 && (
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between rounded-lg border border-border/70 bg-muted/20 px-3 py-2.5">
-              <span className="text-[11px] text-muted-foreground tabular-nums">
+              <span className="text-xs text-muted-foreground tabular-nums">
                 {rangeStart}–{rangeEnd} de {total} · {PAGE_SIZE} por página
               </span>
               <div className="flex items-center gap-2">
@@ -842,7 +842,7 @@ export default function MediaLibraryPage() {
                   <ChevronLeft className="h-3.5 w-3.5" />
                   Anterior
                 </Button>
-                <span className="text-[11px] text-muted-foreground tabular-nums min-w-[72px] text-center">
+                <span className="text-xs text-muted-foreground tabular-nums min-w-[72px] text-center">
                   {current} / {Math.max(pageCount, 1)}
                 </span>
                 <Button
@@ -905,13 +905,13 @@ export default function MediaLibraryPage() {
                     )
                   })}
                   {deleteTargets.length > 16 && (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-md border border-dashed border-border/70 bg-background text-[10px] font-medium text-muted-foreground">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-md border border-dashed border-border/70 bg-background text-[11px] font-medium text-muted-foreground">
                       +{deleteTargets.length - 16}
                     </div>
                   )}
                 </div>
                 {deleteCount === 1 && deleteTargets[0]?.originalFilename && (
-                  <p className="mt-2 text-[11px] text-muted-foreground truncate">
+                  <p className="mt-2 text-xs text-muted-foreground truncate">
                     {deleteTargets[0].originalFilename}
                   </p>
                 )}

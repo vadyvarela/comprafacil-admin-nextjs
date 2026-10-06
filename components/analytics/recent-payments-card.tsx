@@ -47,7 +47,7 @@ export function RecentPaymentsCard({ payments }: RecentPaymentsCardProps) {
                   <p className="text-sm font-medium text-foreground truncate">
                     {payment.customerName}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {payment.reference ?? payment.id.slice(0, 8)}
                     {payment.date && (
                       <span className="ml-2">

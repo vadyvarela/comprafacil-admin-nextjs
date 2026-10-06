@@ -186,7 +186,7 @@ export function ProductImageUpload({ productId, currentImage }: ProductImageUplo
           <p className="text-xs text-muted-foreground text-center px-4">
             Clique para selecionar uma imagem
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
+          <p className="text-[11px] text-muted-foreground mt-1">
             PNG, JPG, WEBP até 10MB
           </p>
         </div>

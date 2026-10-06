@@ -294,7 +294,7 @@ export default function StoreSettingsPage() {
                     onChange={(e) => patch({ nif: e.target.value })}
                     placeholder="876567890"
                   />
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Aparece na fatura e no recibo.
                   </p>
                 </div>
@@ -367,7 +367,7 @@ export default function StoreSettingsPage() {
                     onChange={(e) => patch({ whatsappNumber: e.target.value })}
                     placeholder="+2389519891"
                   />
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Número com indicativo (só dígitos e +). A loja gera o link wa.me.
                   </p>
                 </div>
@@ -378,12 +378,12 @@ export default function StoreSettingsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-blue-50">
-                      <Megaphone className="h-3.5 w-3.5 text-blue-800" aria-hidden />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-info-soft">
+                      <Megaphone className="h-3.5 w-3.5 text-info-strong" aria-hidden />
                     </div>
                     <CardTitle className="text-sm font-semibold">Meta Commerce</CardTitle>
                   </div>
-                  <Badge variant={values.metaPixelId.trim() ? "secondary" : "outline"} className="text-[11px]">
+                  <Badge variant={values.metaPixelId.trim() ? "secondary" : "outline"} className="text-xs">
                     {values.metaPixelId.trim() ? "Pixel configurado" : "Pixel pendente"}
                   </Badge>
                 </div>
@@ -398,7 +398,7 @@ export default function StoreSettingsPage() {
                     placeholder="123456789012345"
                     inputMode="numeric"
                   />
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     ID numérico do pixel no Events Manager. A loja usa este valor para Facebook/Instagram.
                   </p>
                 </div>
@@ -423,14 +423,14 @@ export default function StoreSettingsPage() {
                       </a>
                     </Button>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Usa esta URL como Data Feed no Commerce Manager e agenda actualização automática.
                   </p>
                 </div>
 
                 <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-xs text-muted-foreground">
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700" aria-hidden />
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success-strong" aria-hidden />
                     <p>
                       O token da Conversions API continua nas variáveis da API:
                       {" "}
@@ -471,7 +471,7 @@ export default function StoreSettingsPage() {
                   placeholder={"iPhone\nSamsung\nTV"}
                   className="resize-y min-h-[88px] text-sm font-mono"
                 />
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Um termo por linha, até 8 sugestões. Aparecem no campo de pesquisa da loja.
                 </p>
               </CardContent>

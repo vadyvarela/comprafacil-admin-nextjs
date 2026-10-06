@@ -5,6 +5,7 @@ import { ApolloClientProvider } from "@/lib/providers/apollo-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { adminTitle } from "@/lib/store-brand";
 import { getStoreBrand } from "@/lib/services/get-store-brand";
+import { THEME_INIT_SCRIPT } from "@/lib/theme-script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,7 +37,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    // suppressHydrationWarning: o script abaixo muda a classe do <html> antes
+    // de o React hidratar.
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
       >

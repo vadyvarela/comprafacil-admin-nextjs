@@ -273,7 +273,7 @@ export function ProductGalleryUpload({
           </span>
         </div>
         {busy && (
-          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+          <span className="text-[11px] text-muted-foreground flex items-center gap-1">
             <Loader2 className="h-3 w-3 animate-spin" />
             A guardar…
           </span>
@@ -295,13 +295,13 @@ export function ProductGalleryUpload({
                 sizes="120px"
               />
               {index === 0 && (
-                <span className="absolute top-1 left-1 flex items-center gap-0.5 rounded bg-blue-600 px-1 py-0.5 text-[9px] font-bold text-white">
+                <span className="absolute top-1 left-1 flex items-center gap-0.5 rounded bg-info px-1 py-0.5 text-[10px] font-bold text-white">
                   <Star className="h-2.5 w-2.5 fill-current" />
                   Capa
                 </span>
               )}
               {hoverImageUrl === url && index !== 0 && (
-                <span className="absolute top-1 right-1 flex items-center gap-0.5 rounded bg-violet-600 px-1 py-0.5 text-[9px] font-bold text-white">
+                <span className="absolute top-1 right-1 flex items-center gap-0.5 rounded bg-highlight px-1 py-0.5 text-[10px] font-bold text-white">
                   <MousePointer2 className="h-2.5 w-2.5" />
                   Hover
                 </span>
@@ -313,7 +313,7 @@ export function ProductGalleryUpload({
                     type="button"
                     size="sm"
                     variant="secondary"
-                    className="h-6 text-[10px] px-1.5 w-full"
+                    className="h-6 text-[11px] px-1.5 w-full"
                     disabled={busy}
                     onClick={() => void setAsCover(index)}
                   >
@@ -325,7 +325,7 @@ export function ProductGalleryUpload({
                     type="button"
                     size="sm"
                     variant={hoverImageUrl === url ? "default" : "secondary"}
-                    className="h-6 text-[10px] px-1.5 w-full"
+                    className="h-6 text-[11px] px-1.5 w-full"
                     disabled={busy}
                     onClick={() => void setAsHover(index)}
                   >
@@ -385,7 +385,7 @@ export function ProductGalleryUpload({
             {readOnly ? "Sem imagens na galeria" : "Adicionar imagens à galeria"}
           </p>
           {!readOnly ? (
-            <p className="text-[10px] text-muted-foreground mt-0.5 text-center">
+            <p className="text-[11px] text-muted-foreground mt-0.5 text-center">
               Upload do PC ou escolher da biblioteca
             </p>
           ) : null}
@@ -453,7 +453,7 @@ export function ProductGalleryUpload({
       ) : null}
 
       {!readOnly ? (
-        <p className="text-[10px] text-muted-foreground leading-snug">
+        <p className="text-[11px] text-muted-foreground leading-snug">
           A primeira imagem é a capa na loja. Marca outra imagem como &quot;Hover&quot; para trocar no card
           (requer activação em Aparência → Cartão de produto).
         </p>

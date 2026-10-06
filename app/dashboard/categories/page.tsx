@@ -89,8 +89,8 @@ export default function CategoriesPage() {
       <div className="flex flex-1 flex-col min-h-0">
         <PageToolbar
           icon={FolderTree}
-          iconBg="bg-blue-50"
-          iconColor="text-blue-800"
+          iconBg="bg-info-soft"
+          iconColor="text-info-strong"
           title="Categorias"
           subtitle={subtitle}
         >

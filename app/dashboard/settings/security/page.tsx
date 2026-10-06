@@ -328,7 +328,7 @@ export default function SecurityPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Check className="h-4 w-4 text-emerald-500" />
+              <Check className="h-4 w-4 text-success" />
               Token gerado com sucesso
             </DialogTitle>
             <DialogDescription>
@@ -348,16 +348,16 @@ export default function SecurityPage() {
                 onClick={() => handleCopy(generatedToken!.token)}
               >
                 {copied ? (
-                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  <Check className="h-3.5 w-3.5 text-success" />
                 ) : (
                   <Copy className="h-3.5 w-3.5" />
                 )}
               </Button>
             </div>
 
-            <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
-              <TriangleAlert className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-700 dark:text-amber-400">
+            <div className="flex items-start gap-2 rounded-lg bg-warning/10 border border-warning/20 p-3">
+              <TriangleAlert className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+              <p className="text-xs text-warning-strong">
                 Adiciona este valor como <span className="font-mono font-semibold">CMS_ACCESS_TOKEN</span> nas
                 variáveis de ambiente do backoffice e como{" "}
                 <span className="font-mono font-semibold">STORE_API_TOKEN</span> no frontend da loja.

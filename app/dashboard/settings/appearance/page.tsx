@@ -336,13 +336,13 @@ export default function AppearanceSettingsPage() {
                   }}
                 >
                   <div
-                    className="border-b px-3 py-2 text-[11px] font-semibold uppercase"
+                    className="border-b px-3 py-2 text-xs font-semibold uppercase"
                     style={{ borderColor: header.border, background: header.background, color: header.foreground }}
                   >
                     Header
                   </div>
                   <div
-                    className="mx-3 mt-2 rounded-md px-2 py-1 text-[10px] font-semibold"
+                    className="mx-3 mt-2 rounded-md px-2 py-1 text-[11px] font-semibold"
                     style={{
                       background: `linear-gradient(135deg, ${promo.gradientFrom}, ${promo.gradientVia}, ${promo.gradientTo})`,
                       color: "#fff",

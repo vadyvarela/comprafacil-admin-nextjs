@@ -128,7 +128,7 @@ export function VariantImageUpload({
             size="icon"
             onClick={handleRemove}
             disabled={uploading || disabled}
-            className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 p-0 text-white opacity-100 transition-opacity hover:bg-red-600 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+            className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-danger p-0 text-white opacity-100 transition-opacity hover:bg-danger sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
             aria-label="Remover imagem da variante"
             title="Remover imagem"
           >

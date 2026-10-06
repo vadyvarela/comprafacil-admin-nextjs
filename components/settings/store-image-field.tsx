@@ -66,7 +66,7 @@ export function StoreImageField({
       <Label htmlFor={id} className="text-sm font-medium">
         {label}
       </Label>
-      {hint ? <p className="text-[11px] text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
       <div className="flex flex-wrap items-center gap-3">
         {value && !broken ? (
           <div className="relative rounded-md border border-border/80 bg-muted/30 px-3 py-2">

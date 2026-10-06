@@ -1,29 +1,26 @@
 # Arquitetura Next.js – Kumpra Fácil Admin
 
-> **Nota:** a secção de autenticação e permissões deste documento está
-> desactualizada. Descrevia um modelo binário (`admin` ou nada) que já não
-> existe, e um `middleware.ts` que hoje é `proxy.ts`. O modelo actual está em
-> [docs/AUTHZ.md](./docs/AUTHZ.md).
-
 Estrutura do projeto com foco em **Server Components**, **Server Actions**, **Auth0** e organização clara de componentes, actions e hooks.
 
 ## Princípios
 
 - **Server-first**: páginas e dados no servidor; cliente apenas quando necessário (formulários, modais, interatividade).
-- **Autenticação e permissões**: primeira página é login; apenas utilizadores com role **admin** acedem ao dashboard (utilizadores do front não podem aceder).
+- **Autenticação e permissões**: o Auth0 autentica, a API autoriza. O backoffice recebe as permissões já resolvidas e só desenha a partir delas — ver [docs/AUTHZ.md](./docs/AUTHZ.md).
 - **Actions centralizadas**: chamadas ao backend (GraphQL) em `lib/actions/`, com runner server-only.
 - **Componentes por domínio**: `components/<domínio>/` com componentes de apresentação e poucos client components.
 - **Hooks mínimos**: apenas para lógica de UI (ex.: `use-mobile`, debounce); dados vêm do servidor ou de actions.
 
 ---
 
-## Autenticação (Auth0)
+## Autenticação e permissões
 
-- **Primeira página** (`/`): se não houver sessão, mostra ecrã de login com link para `/api/auth/login`. Se houver sessão e o utilizador tiver role **admin**, redireciona para `/dashboard`. Caso contrário, redireciona para `/unauthorized`.
-- **Dashboard** (`/dashboard/*`): o `dashboard/layout.tsx` é um Server Component que chama `auth0.getSession()`. Sem sessão → redirect para `/api/auth/login`. Com sessão mas sem role admin → redirect para `/unauthorized`.
-- **Permissões**: em `lib/auth/config.ts` define-se `ADMIN_ROLE` (ex.: `"admin"`) e `ROLE_CLAIM` (claim do token onde o Auth0 envia as roles, ex.: `https://Kumprafacil.com/roles`). A função `hasAdminRole(user)` verifica se o utilizador tem permissão.
-- **Auth0**: middleware em `middleware.ts` usa `auth0.middleware(request)` para tratar login, logout, callback e renovação de sessão. Rotas de auth: `/api/auth/login`, `/api/auth/logout`, `/api/auth/callback`.
-- **Configuração no Auth0**: criar uma Action (ou Rule) que adicione ao token um claim com as roles do utilizador (ex.: `app_metadata.roles` ou custom claim `https://Kumprafacil.com/roles` com valor `["admin"]`). Utilizadores do front devem ter apenas role `customer` ou nenhuma; apenas utilizadores com `admin` acedem ao backoffice.
+O modelo completo está em [docs/AUTHZ.md](./docs/AUTHZ.md). Resumo do que toca ao código deste repo:
+
+- `proxy.ts` trata das rotas do Auth0 (login, logout, callback, renovação de sessão).
+- `app/dashboard/layout.tsx` chama `requireSessionPage()` e passa as permissões ao `PermissionsProvider`.
+- Páginas e layouts de rota guardam-se com `requirePermissionPage("<permissão>")`; server actions com `requirePermissionOrThrow`.
+- No cliente, `useCan()` esconde o que o utilizador não pode usar. A decisão final é sempre da API.
+- `lib/auth/permissions.ts` é gerado (`pnpm permissions:sync`); não editar à mão.
 
 ---
 
@@ -51,7 +48,11 @@ app/
 lib/
   auth0.ts                   # Cliente Auth0 (rotas /api/auth/*)
   auth/
-    config.ts                # ADMIN_ROLE, ROLE_CLAIM, hasAdminRole()
+    permissions.ts           # Gerado: nomes das permissões (pnpm permissions:sync)
+    principal.ts             # getPrincipal(), can()
+    requirePermission.ts     # Guards de página e de server action
+  nav.ts                     # Sidebar, separadores das definições e permissões de cada um
+  theme.ts                   # Tema claro/escuro/sistema
   actions/
     index.ts                 # Re-export das actions
     graphql.ts               # runGraphQL (server-only)
@@ -132,6 +133,21 @@ hooks/
 
 ---
 
+## Convenções de UI
+
+- **Cabeçalho de página.** Todas as páginas começam com `DashboardHeader` (breadcrumb). Por baixo:
+  - listas usam `PageToolbar` (`components/admin/page-toolbar.tsx`): ícone, título, contagem, pesquisa à direita, filtros extra no `footer`;
+  - visão geral e definições usam `PageHeader`;
+  - definições juntam `SettingsSubnav`, gerado a partir de `SETTINGS_TABS`.
+- **Erros de carregamento** numa lista: `LoadError` (`components/admin/load-error.tsx`).
+- **Carregamento:** cada lista server-side tem `loading.tsx` com `ListPageSkeleton` ou `OverviewPageSkeleton` (`components/admin/page-skeletons.tsx`).
+- **Cores de estado:** usar os tokens `success`, `warning`, `danger`, `info` e `highlight` (`bg-success-soft`, `text-warning-strong`, `border-danger-border`, `bg-info`…), nunca as cores do Tailwind (`emerald-50`, `amber-700`…). Os tokens estão em `app/globals.css`, com valores para claro e escuro; as cores fixas não mudam com o tema.
+- **Tema:** claro, escuro ou sistema, escolhido no menu do utilizador (`lib/theme.ts`). A classe `.dark` vai no `<html>`.
+- **Tamanho de texto:** corpo a 14px. Nada abaixo de 10px; 11px só para rótulos em maiúsculas.
+- **Formulários grandes** (ex.: editar produto) são páginas, não modais: `/dashboard/products/[id]/edit`, com barra de guardar fixa e aviso de alterações por guardar.
+
+---
+
 ## Adicionar um novo domínio (ex.: “Campanhas”)
 
 1. **GraphQL**  
@@ -151,7 +167,8 @@ hooks/
    - `loading.tsx` em cada rota se fizer sentido.
 
 5. **Menu**  
-   - Incluir item em `components/app-sidebar.tsx`.
+   - Acrescentar a entrada em `NAV_SECTIONS` (ou `SETTINGS_TABS`) em `lib/nav.ts`, com a permissão que a mostra.  
+   - Guardar a rota com um `layout.tsx` que chama `requirePermissionPage`.
 
 ---
 
@@ -164,8 +181,6 @@ hooks/
 - `AUTH0_ISSUER_BASE_URL` ou `AUTH0_DOMAIN` – domínio do tenant Auth0 (ex.: `https://tenant.auth0.com`).
 - `AUTH0_CLIENT_ID` – Client ID da aplicação Auth0 (Regular Web Application).
 - `AUTH0_CLIENT_SECRET` – Client Secret da aplicação.
-- `AUTH0_ADMIN_ROLE` – (opcional) Nome da role que permite acesso ao admin. Default: `admin`.
-- `AUTH0_ROLE_CLAIM` – (opcional) Claim do token onde vêm as roles. Default: `https://Kumprafacil.com/roles`.
 
 No Auth0 Dashboard, registar para esta aplicação: **Allowed Callback URLs** (ex.: `http://localhost:3001/api/auth/callback`), **Allowed Logout URLs** (ex.: `http://localhost:3001`).
 

@@ -18,7 +18,7 @@ export function MultiCategoryRailsFields({ block, onChange }: BlockFieldsProps<B
     return (
       <div className="grid gap-2">
         <div className="space-y-1">
-          <Label className="text-[10px]">Modo</Label>
+          <Label className="text-[11px]">Modo</Label>
           <Select
             value={mode}
             onValueChange={(v) => {
@@ -46,7 +46,7 @@ export function MultiCategoryRailsFields({ block, onChange }: BlockFieldsProps<B
         </div>
         {mode === "max" ? (
           <div className="space-y-1">
-            <Label className="text-[10px]">N.º de categorias</Label>
+            <Label className="text-[11px]">N.º de categorias</Label>
             <Input
               type="number"
               min={1}
@@ -63,7 +63,7 @@ export function MultiCategoryRailsFields({ block, onChange }: BlockFieldsProps<B
           </div>
         ) : (
           <div className="space-y-1">
-            <Label className="text-[10px]">Slugs (vírgula)</Label>
+            <Label className="text-[11px]">Slugs (vírgula)</Label>
             <Input
               className="h-8 text-xs font-mono"
               value={(block.props.slugs ?? []).join(", ")}

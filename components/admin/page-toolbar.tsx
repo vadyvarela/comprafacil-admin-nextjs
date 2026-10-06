@@ -10,6 +10,8 @@ interface PageToolbarProps {
   /** Texto simples ou conteúdo composto (ex.: badge de estado). */
   subtitle?: ReactNode
   children?: ReactNode
+  /** Linhas por baixo do título: filtros secundários, erros. */
+  footer?: ReactNode
   className?: string
 }
 
@@ -20,6 +22,7 @@ export function PageToolbar({
   title,
   subtitle,
   children,
+  footer,
   className,
 }: PageToolbarProps) {
   return (
@@ -43,7 +46,7 @@ export function PageToolbar({
             <div>
               <h1 className="text-sm font-semibold text-foreground">{title}</h1>
               {subtitle != null && subtitle !== "" ? (
-                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
                   {subtitle}
                 </div>
               ) : null}
@@ -53,6 +56,7 @@ export function PageToolbar({
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">{children}</div>
           )}
         </div>
+        {footer ? <div className="mt-3 space-y-3">{footer}</div> : null}
       </div>
     </div>
   )

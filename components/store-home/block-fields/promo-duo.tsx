@@ -22,7 +22,7 @@ export function PromoDuoFields({ block, onChange }: BlockFieldsProps<Block>) {
     })
     return (
       <div className="grid gap-3">
-        <p className="text-[10px] text-muted-foreground leading-snug">
+        <p className="text-[11px] text-muted-foreground leading-snug">
           Entre 2 e 4 cartões. Cada um pode ter imagem (URL ou path <span className="font-mono">/</span>).
         </p>
         <div className="flex flex-col gap-3">
@@ -38,7 +38,7 @@ export function PromoDuoFields({ block, onChange }: BlockFieldsProps<Block>) {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-7 text-[10px]"
+                  className="h-7 text-[11px]"
                   disabled={items.length <= 2}
                   onClick={() => patchItems(items.filter((_, i) => i !== idx))}
                 >

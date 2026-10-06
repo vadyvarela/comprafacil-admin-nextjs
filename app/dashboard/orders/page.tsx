@@ -28,7 +28,7 @@ function emptyStateConfig(
   if (tab !== "all") {
     return {
       title: "Nenhum pedido nesta aba",
-      description: "Esta aba filtra os pedidos pagos carregados para a página atual.",
+      description: "Não há pedidos pagos com este estado.",
       icon: CreditCard,
     }
   }
@@ -70,7 +70,6 @@ export default async function OrdersPage({ searchParams }: PageProps) {
         <Suspense fallback={null}>
           <OrderListToolbar
             totalElements={totalElements}
-            visibleCount={orders.length}
             currentTab={tab}
             error={error}
             dateFrom={dateFrom ?? undefined}

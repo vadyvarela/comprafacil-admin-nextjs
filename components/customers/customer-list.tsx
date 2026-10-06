@@ -46,12 +46,12 @@ function shortId(id: string): string {
 }
 
 const AVATAR_COLORS = [
-  "bg-violet-100 text-violet-900",
-  "bg-blue-100 text-blue-900",
-  "bg-emerald-100 text-emerald-900",
-  "bg-amber-100 text-amber-900",
-  "bg-rose-100 text-rose-900",
-  "bg-sky-100 text-sky-900",
+  "bg-highlight-soft text-highlight-strong",
+  "bg-info-soft text-info-strong",
+  "bg-success-soft text-success-strong",
+  "bg-warning-soft text-warning-strong",
+  "bg-danger-soft text-danger-strong",
+  "bg-info-soft text-info-strong",
 ]
 
 function avatarColor(id: string): string {
@@ -102,7 +102,7 @@ export function CustomerList({ customers }: CustomerListProps) {
                 <TableCell className="text-muted-foreground tabular-nums text-xs">
                   {customer.phone || "—"}
                 </TableCell>
-                <TableCell className="font-mono text-[11px] text-muted-foreground">
+                <TableCell className="font-mono text-xs text-muted-foreground">
                   {customer.customerExternalId ? shortId(customer.customerExternalId) : "—"}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-xs tabular-nums">
