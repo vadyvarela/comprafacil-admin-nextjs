@@ -1,13 +1,13 @@
 import { ListPageSkeleton } from "@/components/admin/page-skeletons"
 
-export default function OrdersLoading() {
+export default function LogsLoading() {
   return (
     <ListPageSkeleton
       breadcrumb={[
         { label: "Dashboard", href: "/dashboard" },
-        { label: "Pedidos" },
+        { label: "Logs" },
       ]}
-      filterRows={2}
+      filterRows={1}
     />
   )
 }
