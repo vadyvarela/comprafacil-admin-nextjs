@@ -26,6 +26,27 @@ export const CHECKOUT_SESSION_SEARCH = gql`
           email
           identifier
         }
+        amountShipping
+        fulfillmentStatus {
+          code
+          description
+        }
+        lines {
+          id
+          description
+          quantity
+          unitAmount
+          productVariant {
+            id
+            title
+            image
+            product {
+              id
+              title
+              image
+            }
+          }
+        }
       }
       pageNumber
       pageSize

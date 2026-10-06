@@ -25,7 +25,6 @@ import { formatCurrency, minorToMajorCurrencyAmount } from "@/lib/utils/currency
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { OrderSummary } from "@/lib/graphql/orders/types"
-import type { CheckoutSessionDetailsResponse } from "@/lib/graphql/orders/types"
 
 async function getDashboardData({
   includeStats,
@@ -37,7 +36,7 @@ async function getDashboardData({
   const [statsRes, customersRes, recentOrdersRes] = await Promise.all([
     includeStats ? getDashboardStats({ days: 30 }) : Promise.resolve(null),
     includeCustomers ? getCustomers({ page: 0 }) : Promise.resolve(null),
-    getOrdersPageWithDetails({ page: 0 }),
+    getOrdersPageWithDetails({ page: 0, size: 6 }),
   ])
 
   // API returns amounts in minor units (cents); convert before display — same as analytics.
@@ -52,7 +51,7 @@ async function getDashboardData({
       : 0
   const totalCustomers = customersRes?.ok ? customersRes.data.totalElements ?? 0 : 0
   const avgTicket = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0
-  const recentOrders = recentOrdersRes.ok ? recentOrdersRes.data.data.slice(0, 6) : []
+  const recentOrders = recentOrdersRes.ok ? recentOrdersRes.data.data : []
 
   return {
     totalOrders,
@@ -120,7 +119,7 @@ export default async function DashboardPage() {
   const canReadAnalytics = can(principal, "analytics.read")
   const canReadCustomers = can(principal, "customers.read")
   const canWriteProducts = can(principal, "products.write")
-  const canReadCoupons = can(principal, "coupons.read")
+  const canWriteCoupons = can(principal, "coupons.write")
   const { totalOrders, totalRevenue, totalCustomers, avgTicket, recentOrders } =
     await getDashboardData({
       includeStats: canReadAnalytics,
@@ -138,9 +137,9 @@ export default async function DashboardPage() {
           iconColor: "text-indigo-700",
         }
       : null,
-    canReadCoupons
+    canWriteCoupons
       ? {
-          href: "/dashboard/coupons",
+          href: "/dashboard/coupons?create=1",
           icon: Sparkles,
           label: "Criar cupão",
           sub: "Promoção ou desconto",
@@ -149,10 +148,10 @@ export default async function DashboardPage() {
         }
       : null,
     {
-      href: "/dashboard/orders",
+      href: "/dashboard/orders?tab=PENDING",
       icon: Clock,
-      label: "Pedidos pendentes",
-      sub: "Ver a processar",
+      label: "Pedidos a processar",
+      sub: "Pagos, por preparar",
       iconBg: "bg-amber-50",
       iconColor: "text-amber-800",
     },
@@ -196,11 +195,11 @@ export default async function DashboardPage() {
           ) : null}
           <Link href="/dashboard/orders" className="block animate-enter-delay-1">
             <StatsCard
-              label="Pedidos totais"
+              label="Pedidos pagos"
               value={totalOrders.toLocaleString("pt-PT")}
               icon={ShoppingCart}
               accentColor="blue"
-              period="Pedidos pagos"
+              period={canReadAnalytics ? "Últimos 30 dias" : "Desde sempre"}
             />
           </Link>
           {canReadCustomers ? (
@@ -257,9 +256,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="divide-y divide-border/70">
               {recentOrders.map((order) => {
-                const fulfillment = (order as OrderSummary & {
-                  fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
-                }).fulfillmentStatus
+                const fulfillment = order.fulfillmentStatus
 
                 return (
                   <Link

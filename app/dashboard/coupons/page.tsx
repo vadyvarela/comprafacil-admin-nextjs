@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useQuery } from "@apollo/client/react"
 import { GET_COUPONS } from "@/lib/graphql/coupons/queries"
 import { Coupon } from "@/lib/graphql/coupons/types"
@@ -27,6 +27,16 @@ import { EmptyState } from "@/components/admin/empty-state"
 export default function CouponsPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
+
+  // `?create=1` (atalho do dashboard) abre logo o formulário. Lido depois da
+  // hidratação e retirado do URL para um refresh não o reabrir.
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.get("create") !== "1") return
+    setCreateModalOpen(true)
+    url.searchParams.delete("create")
+    window.history.replaceState(null, "", url)
+  }, [])
 
   const { data, loading, error, refetch } = useQuery<{ coupons: Coupon[] }>(GET_COUPONS)
 

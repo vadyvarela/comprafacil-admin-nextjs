@@ -28,7 +28,7 @@ function emptyStateConfig(
   if (tab !== "all") {
     return {
       title: "Nenhum pedido nesta aba",
-      description: "Esta aba filtra os pedidos pagos carregados para a página atual.",
+      description: "Não há pedidos pagos com este estado.",
       icon: CreditCard,
     }
   }

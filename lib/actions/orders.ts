@@ -22,6 +22,8 @@ export type { OrdersTab } from "@/lib/orders/types"
 export interface OrdersPageParams {
   search?: string | null
   page?: number
+  /** Omitir usa ORDER_PAGE_SIZE. */
+  size?: number
   tab?: OrdersTab
   dateFrom?: string | null
   dateTo?: string | null
@@ -64,6 +66,7 @@ export function parseOrdersTab(value?: string | null): OrdersTab {
 export async function getOrdersPage(params: OrdersPageParams): Promise<OrdersPageOutput> {
   const search = params.search?.trim() ?? null
   const page = Math.max(0, params.page ?? 0)
+  const tab = parseOrdersTab(params.tab)
 
   const result = await runGraphQL<{ checkoutSessionSearch: CheckoutSessionPageResponse }>(
     CHECKOUT_SESSION_SEARCH,
@@ -73,10 +76,11 @@ export async function getOrdersPage(params: OrdersPageParams): Promise<OrdersPag
         search: search ?? null,
         dateFrom: toGraphQLDateTimeBoundary(params.dateFrom, "start"),
         dateTo: toGraphQLDateTimeBoundary(params.dateTo, "end"),
+        fulfillmentStatus: tab === "all" ? null : tab,
       },
       page: {
         page,
-        size: ORDER_PAGE_SIZE,
+        size: params.size ?? ORDER_PAGE_SIZE,
         sortBy: "createdAt",
         sortDirection: "DESC",
       },
@@ -130,13 +134,11 @@ export { getOrderStatusLabel } from "@/lib/orders/status"
 export type { OrderSummary } from "@/lib/graphql/orders/types"
 
 /**
- * Calcula total e resumo de produtos a partir dos detalhes.
+ * Calcula total e resumo de produtos a partir das linhas que a pesquisa já traz.
  */
-export function enrichOrderWithDetails(
-  order: CheckoutSessionResponse,
-  details: CheckoutSessionDetailsResponse | null
-): OrderSummary {
-  if (!details?.lines?.length) {
+export function summarizeOrder(order: CheckoutSessionResponse): OrderSummary {
+  const lines = order.lines ?? []
+  if (lines.length === 0) {
     return {
       ...order,
       totalAmount: null,
@@ -144,20 +146,20 @@ export function enrichOrderWithDetails(
       primaryProductImageUrl: null,
       itemsCount: 0,
       orderLineCount: 0,
-      fulfillmentStatus: details?.fulfillmentStatus ?? null,
-    } as OrderSummary & {
-      fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
+      fulfillmentStatus: order.fulfillmentStatus ?? null,
     }
   }
   const pricing = computeCheckoutPricing({
-    lines: details.lines.map((line) => ({
-      unitAmount: Number(line.unitAmount) ?? 0,
+    lines: lines.map((line) => ({
+      unitAmount: Number(line.unitAmount) || 0,
       quantity: line.quantity ?? 0,
     })),
-    amountDiscount: details.amountDiscount,
-    amountShipping: details.amountShipping,
+    // A pesquisa devolve o desconto em escudos; o cálculo trabalha em cêntimos.
+    amountDiscount:
+      order.amountDiscount != null ? Math.round(order.amountDiscount * 100) : null,
+    amountShipping: order.amountShipping,
   })
-  const names = details.lines
+  const names = lines
     .map((l) =>
       l.productVariant?.product?.title ?? l.productVariant?.title ?? l.description ?? null
     )
@@ -170,9 +172,9 @@ export function enrichOrderWithDetails(
         : names.length <= 2
           ? names.join(", ")
           : `${names[0]} +${names.length - 1}`
-  const itemsCount = details.lines.reduce((s, l) => s + (l.quantity ?? 0), 0)
-  const orderLineCount = details.lines.length
-  const firstLine = details.lines[0]
+  const itemsCount = lines.reduce((s, l) => s + (l.quantity ?? 0), 0)
+  const orderLineCount = lines.length
+  const firstLine = lines[0]
   const pv = firstLine?.productVariant
   const primaryProductImageUrl =
     (pv?.image?.trim() ? pv.image.trim() : null) ??
@@ -181,19 +183,17 @@ export function enrichOrderWithDetails(
   return {
     ...order,
     totalAmount: minorToMajorCurrencyAmount(pricing.totalMinor),
-    currency: details.currency ?? order.currency,
     productSummary: productSummary ?? null,
     primaryProductImageUrl,
     itemsCount,
     orderLineCount,
-    fulfillmentStatus: details.fulfillmentStatus ?? null,
-  } as OrderSummary & {
-    fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
+    fulfillmentStatus: order.fulfillmentStatus ?? null,
   }
 }
 
 /**
- * Lista pedidos e enriquece cada um com detalhes (total + produtos) em paralelo.
+ * Lista pedidos com total e resumo de produtos. O filtro por estado de envio
+ * corre na API, por isso o total e a paginação batem certo com a aba.
  */
 export async function getOrdersPageWithDetails(
   params: OrdersPageParams
@@ -203,39 +203,10 @@ export async function getOrdersPageWithDetails(
 > {
   const pageResult = await getOrdersPage(params)
   if (!pageResult.ok) return { ok: false, error: pageResult.error }
-  const orders = pageResult.data.data
-  if (orders.length === 0) {
-    return {
-      ok: true,
-      data: {
-        data: [],
-        totalElements: pageResult.data.totalElements ?? 0,
-        totalPages: pageResult.data.totalPages ?? 0,
-      },
-    }
-  }
-  const detailsResults = await Promise.all(
-    orders.map((o) => getOrderById(o.id))
-  )
-  const enriched = orders.map((order, i) => {
-    const det = detailsResults[i]
-    const details = det?.ok ? det.data : null
-    return enrichOrderWithDetails(order, details) as OrderSummary & {
-      fulfillmentStatus?: CheckoutSessionDetailsResponse["fulfillmentStatus"] | null
-    }
-  })
-
-  const tab = parseOrdersTab(params.tab)
-  const data: OrderSummary[] =
-    tab === "all"
-      ? enriched
-      : enriched.filter(
-          (o) => o.fulfillmentStatus?.code?.toUpperCase() === tab
-        )
   return {
     ok: true,
     data: {
-      data,
+      data: pageResult.data.data.map(summarizeOrder),
       totalElements: pageResult.data.totalElements ?? 0,
       totalPages: pageResult.data.totalPages ?? 0,
     },
