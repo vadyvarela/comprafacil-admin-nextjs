@@ -143,8 +143,8 @@ export function CommercialLeadsList({ leads }: CommercialLeadsListProps) {
             className="rounded-lg border border-border/80 bg-card p-3.5 shadow-xs"
           >
             <div className="flex items-start gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-emerald-200 bg-emerald-50">
-                <Phone className="h-4 w-4 text-emerald-700" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-success-border bg-success-soft">
+                <Phone className="h-4 w-4 text-success-strong" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
@@ -257,8 +257,8 @@ function NextContact({ lead }: { lead: CommercialRecoveryLead }) {
     <span
       className={cn(
         "text-xs tabular-nums",
-        tone === "due" && "font-semibold text-rose-600",
-        tone === "scheduled" && "font-medium text-emerald-700",
+        tone === "due" && "font-semibold text-danger",
+        tone === "scheduled" && "font-medium text-success-strong",
         tone === "muted" && "text-muted-foreground"
       )}
     >

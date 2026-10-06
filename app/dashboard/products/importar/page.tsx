@@ -384,7 +384,7 @@ export default function ImportCatalogPage() {
                 {issues.length > 40 ? <li>… mais {issues.length - 40} linhas com erro</li> : null}
               </ul>
             )}
-            {issues.length === 0 && <p className="text-emerald-700 flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Validação OK</p>}
+            {issues.length === 0 && <p className="text-success-strong flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Validação OK</p>}
           </div>
         )}
 

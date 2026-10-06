@@ -20,8 +20,8 @@ export function CustomerListToolbar({ totalElements, error }: CustomerListToolba
   return (
     <PageToolbar
       icon={Users}
-      iconBg="bg-violet-50"
-      iconColor="text-violet-700"
+      iconBg="bg-highlight-soft"
+      iconColor="text-highlight-strong"
       title="Clientes"
       subtitle={
         <>

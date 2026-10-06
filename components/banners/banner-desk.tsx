@@ -57,8 +57,8 @@ export function BannerDesk() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <PageToolbar
           icon={ImageIcon}
-          iconBg="bg-rose-50"
-          iconColor="text-rose-700"
+          iconBg="bg-danger-soft"
+          iconColor="text-danger-strong"
           title="Banners"
           subtitle={loading ? "A carregar…" : `${banners.length} banner${banners.length !== 1 ? "s" : ""}`}
         >

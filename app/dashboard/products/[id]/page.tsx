@@ -213,7 +213,7 @@ function ProductInfoPanel({
           <DetailItem
             label="Desconto"
             value={
-              <span className="inline-flex rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-800">
+              <span className="inline-flex rounded-full border border-danger-border bg-danger-soft px-2 py-0.5 text-xs font-medium text-danger-strong">
                 -{product.discount}%
               </span>
             }
@@ -543,7 +543,7 @@ export default function ProductDetailPage() {
                       {product.title}
                     </h1>
                     {isProductDraft(product.status?.code) ? (
-                      <Badge variant="outline" className="text-xs text-amber-700 border-amber-500/40 bg-amber-50">
+                      <Badge variant="outline" className="text-xs text-warning-strong border-warning/40 bg-warning-soft">
                         {productVisibilityLabel(product.status?.code)}
                       </Badge>
                     ) : (
@@ -645,23 +645,23 @@ export default function ProductDetailPage() {
                       icon={Tag}
                       label="Preço variantes"
                       value={variantPriceSummary(variants)}
-                      tone="bg-blue-50 text-blue-800"
+                      tone="bg-info-soft text-info-strong"
                     />
                     <ProductMetric
                       icon={Layers}
                       label="Variantes"
                       value={variantCount}
-                      tone="bg-violet-50 text-violet-800"
+                      tone="bg-highlight-soft text-highlight-strong"
                     />
                     <ProductMetric
                       icon={BoxesIcon}
                       label="Stock variantes"
                       value={totalVariantStock}
-                      tone="bg-emerald-50 text-emerald-800"
+                      tone="bg-success-soft text-success-strong"
                     />
                     <div className="flex min-h-16 min-w-0 items-center justify-between gap-3 rounded-md border border-border/75 bg-muted/20 px-3 py-2.5">
                       <div className="flex min-w-0 items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-amber-50 text-amber-800">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/60 bg-warning-soft text-warning-strong">
                           <Warehouse className="h-3.5 w-3.5" />
                         </div>
                         <div className="min-w-0">
@@ -689,8 +689,8 @@ export default function ProductDetailPage() {
               <DataPanel className="animate-enter-delay-1">
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/35 px-4 py-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
-                      <Settings className="h-4 w-4 text-blue-800" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-info-soft">
+                      <Settings className="h-4 w-4 text-info-strong" />
                     </div>
                     <div>
                       <h2 className="text-sm font-semibold">Variantes</h2>

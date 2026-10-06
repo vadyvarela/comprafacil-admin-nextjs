@@ -178,7 +178,7 @@ export function ProductSpecsSection({
 
   return (
     <>
-      <FormSection icon={Cpu} title="Especificações técnicas" iconTone="bg-slate-100 text-slate-700">
+      <FormSection icon={Cpu} title="Especificações técnicas" iconTone="bg-muted text-muted-foreground">
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"

@@ -63,13 +63,13 @@ function statusClass(code: string): string {
 function StatusIcon({ code }: { code: string }) {
   const c = code?.toUpperCase() ?? ""
   if (["PS", "COMPLETED", "CAPTURED", "PAID"].some((x) => c.includes(x)))
-    return <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+    return <CheckCircle2 className="h-5 w-5 text-success" />
   if (["ERROR", "CANCELED", "FAILED", "REJECTED"].some((x) => c.includes(x)))
-    return <XCircle className="h-5 w-5 text-red-500" />
+    return <XCircle className="h-5 w-5 text-danger" />
   if (c.includes("PENDING") || c.includes("PROCESSING"))
-    return <Clock className="h-5 w-5 text-amber-500" />
+    return <Clock className="h-5 w-5 text-warning" />
   if (c.includes("AUTHORIZED"))
-    return <ShieldCheck className="h-5 w-5 text-blue-500" />
+    return <ShieldCheck className="h-5 w-5 text-info" />
   return <AlertCircle className="h-5 w-5 text-muted-foreground" />
 }
 
@@ -251,8 +251,8 @@ export function TransactionDetail({
           <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-xs">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-emerald-50">
-                  <CreditCard className="h-5 w-5 text-emerald-700" />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-success-soft">
+                  <CreditCard className="h-5 w-5 text-success-strong" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap mb-1">
@@ -282,7 +282,7 @@ export function TransactionDetail({
                   <div className="mt-3 flex items-baseline gap-2">
                     <span className="text-2xl font-extrabold tabular-nums">{formatCurrency(tx.amount / 100, tx.currency)}</span>
                     {discount > 0 && (
-                      <span className="text-xs font-medium text-emerald-700">
+                      <span className="text-xs font-medium text-success-strong">
                         −{formatCurrency(discount, tx.currency)} desc.
                       </span>
                     )}
@@ -303,8 +303,8 @@ export function TransactionDetail({
           {(tx.createdAt || tx.authorizedAt || tx.capturedAt || tx.canceledAt) && (
             <DataPanel className="animate-enter-delay-1">
               <div className="flex items-center gap-2 border-b border-border/80 bg-muted/35 px-3 py-2.5">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/50 bg-blue-50">
-                  <Calendar className="h-3.5 w-3.5 text-blue-700" />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border/50 bg-info-soft">
+                  <Calendar className="h-3.5 w-3.5 text-info-strong" />
                 </div>
                 <span className="text-xs font-semibold text-foreground">Linha do tempo</span>
               </div>
@@ -321,8 +321,8 @@ export function TransactionDetail({
                   )}
                   {tx.authorizedAt && (
                     <li className="pl-5 relative">
-                      <span className="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-blue-50 dark:bg-blue-950 border-2 border-blue-300 dark:border-blue-700 flex items-center justify-center">
-                        <ShieldCheck className="h-2.5 w-2.5 text-blue-500" />
+                      <span className="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-info-soft border-2 border-info-border flex items-center justify-center">
+                        <ShieldCheck className="h-2.5 w-2.5 text-info" />
                       </span>
                       <p className="text-xs font-semibold text-foreground">Autorizado</p>
                       <p className="text-xs text-muted-foreground tabular-nums">{formatDate(tx.authorizedAt)}</p>
@@ -330,8 +330,8 @@ export function TransactionDetail({
                   )}
                   {tx.capturedAt && (
                     <li className="pl-5 relative">
-                      <span className="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-emerald-50 dark:bg-emerald-950 border-2 border-emerald-300 dark:border-emerald-700 flex items-center justify-center">
-                        <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500" />
+                      <span className="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-success-soft border-2 border-success-border flex items-center justify-center">
+                        <CheckCircle2 className="h-2.5 w-2.5 text-success" />
                       </span>
                       <p className="text-xs font-semibold text-foreground">Capturado</p>
                       <p className="text-xs text-muted-foreground tabular-nums">{formatDate(tx.capturedAt)}</p>
@@ -339,13 +339,13 @@ export function TransactionDetail({
                   )}
                   {tx.canceledAt && (
                     <li className="pl-5 relative">
-                      <span className="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-red-50 dark:bg-red-950 border-2 border-red-300 dark:border-red-700 flex items-center justify-center">
-                        <XCircle className="h-2.5 w-2.5 text-red-500" />
+                      <span className="absolute -left-[9px] top-1 h-4 w-4 rounded-full bg-danger-soft border-2 border-danger-border flex items-center justify-center">
+                        <XCircle className="h-2.5 w-2.5 text-danger" />
                       </span>
                       <p className="text-xs font-semibold text-foreground">Cancelado</p>
                       <p className="text-xs text-muted-foreground tabular-nums">{formatDate(tx.canceledAt)}</p>
                       {tx.canceledReason && (
-                        <p className="text-xs text-red-500 mt-0.5">Motivo: {tx.canceledReason}</p>
+                        <p className="text-xs text-danger mt-0.5">Motivo: {tx.canceledReason}</p>
                       )}
                     </li>
                   )}
@@ -546,7 +546,7 @@ export function TransactionDetail({
                     <span className="tabular-nums font-semibold text-foreground">{formatCurrency(tx.amount / 100, tx.currency)}</span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-sm text-emerald-400">
+                    <div className="flex justify-between text-sm text-success">
                       <span>Desconto</span>
                       <span className="tabular-nums font-medium">−{formatCurrency(discount, tx.currency)}</span>
                     </div>
@@ -631,7 +631,7 @@ export function TransactionDetail({
                       <InfoRow
                         label="Total pago"
                         value={
-                          <span className="tabular-nums text-emerald-400 font-bold">
+                          <span className="tabular-nums text-success font-bold">
                             {formatCurrency(tx.invoice.amountPaid / 100, tx.invoice.currency)}
                           </span>
                         }

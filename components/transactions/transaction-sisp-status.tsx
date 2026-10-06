@@ -103,14 +103,14 @@ function StatusLine({
   return (
     <div className="flex items-start gap-2 min-w-0">
       {ok ? (
-        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600 mt-0.5" />
+        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success mt-0.5" />
       ) : (
-        <XCircle className="h-3.5 w-3.5 shrink-0 text-amber-600 mt-0.5" />
+        <XCircle className="h-3.5 w-3.5 shrink-0 text-warning mt-0.5" />
       )}
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold text-foreground leading-tight">
           {label}:{" "}
-          <span className={ok ? "text-emerald-700" : "text-amber-700"}>
+          <span className={ok ? "text-success-strong" : "text-warning-strong"}>
             {ok ? "Sim" : "Não"}
           </span>
         </p>

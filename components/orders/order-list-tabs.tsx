@@ -11,11 +11,11 @@ const TABS: {
   dot?: string
 }[] = [
   { value: "all", label: "Todos" },
-  { value: "PENDING", label: "A processar", dot: "bg-amber-500" },
-  { value: "PREPARING", label: "Em preparação", dot: "bg-blue-500" },
-  { value: "SHIPPED", label: "Enviado", dot: "bg-indigo-500" },
-  { value: "DELIVERED", label: "Entregue", dot: "bg-emerald-500" },
-  { value: "CANCELLED", label: "Cancelado", dot: "bg-red-400" },
+  { value: "PENDING", label: "A processar", dot: "bg-warning" },
+  { value: "PREPARING", label: "Em preparação", dot: "bg-info" },
+  { value: "SHIPPED", label: "Enviado", dot: "bg-highlight" },
+  { value: "DELIVERED", label: "Entregue", dot: "bg-success" },
+  { value: "CANCELLED", label: "Cancelado", dot: "bg-danger" },
 ]
 
 type OrderListTabsProps = {

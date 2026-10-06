@@ -187,8 +187,8 @@ export function OrderDetail({
           <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-xs">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-start gap-3 min-w-0">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-blue-50">
-                  <Package className="h-5 w-5 text-blue-700" />
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-info-soft">
+                  <Package className="h-5 w-5 text-info-strong" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap mb-1">
@@ -216,7 +216,7 @@ export function OrderDetail({
                   <div className="mt-3 flex items-baseline gap-2">
                     <span className="text-2xl font-extrabold tabular-nums">{formatCurrency(total, currency)}</span>
                     {discount > 0 && (
-                      <span className="text-xs font-medium text-emerald-700">
+                      <span className="text-xs font-medium text-success-strong">
                         −{formatCurrency(discount, currency)} desc.
                       </span>
                     )}
@@ -265,7 +265,7 @@ export function OrderDetail({
               </SectionCard>
 
               {(order.customer || customerDetails) && (
-                <SectionCard icon={User} iconBg="bg-violet-50" iconColor="text-violet-700" title="Dados do cliente">
+                <SectionCard icon={User} iconBg="bg-highlight-soft" iconColor="text-highlight-strong" title="Dados do cliente">
                   <div className="px-4 py-1">
                     {(order.customer?.name || customerDetails?.name) && (
                       <InfoRow
@@ -327,8 +327,8 @@ export function OrderDetail({
               {(displayShipping || deliveryPhone || order.customer?.id || customerDetails?.id) && (
                 <SectionCard
                   icon={MapPin}
-                  iconBg="bg-amber-50"
-                  iconColor="text-amber-800"
+                  iconBg="bg-warning-soft"
+                  iconColor="text-warning-strong"
                   title="Morada de entrega"
                   badge={
                     displayShipping ? (
@@ -418,8 +418,8 @@ export function OrderDetail({
             <div className="lg:col-span-2 space-y-5">
               <SectionCard
                 icon={Package}
-                iconBg="bg-indigo-50"
-                iconColor="text-indigo-700"
+                iconBg="bg-info-soft"
+                iconColor="text-info-strong"
                 title="Itens do pedido"
                 badge={
                   order.lines && order.lines.length > 0 ? (
@@ -470,7 +470,7 @@ export function OrderDetail({
                 )}
               </SectionCard>
 
-              <SectionCard icon={CreditCard} iconBg="bg-emerald-50" iconColor="text-emerald-700" title="Resumo do pagamento">
+              <SectionCard icon={CreditCard} iconBg="bg-success-soft" iconColor="text-success-strong" title="Resumo do pagamento">
                 <div className="px-4 py-4 space-y-2.5">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
@@ -478,8 +478,8 @@ export function OrderDetail({
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-emerald-700">Desconto</span>
-                      <span className="tabular-nums font-medium text-emerald-700">−{formatCurrency(discount, currency)}</span>
+                      <span className="text-success-strong">Desconto</span>
+                      <span className="tabular-nums font-medium text-success-strong">−{formatCurrency(discount, currency)}</span>
                     </div>
                   )}
                   {shipping > 0 && (

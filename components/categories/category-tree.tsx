@@ -82,7 +82,7 @@ function StatusDot({ code }: { code?: string }) {
       <span
         className={cn(
           "h-1.5 w-1.5 rounded-full",
-          active ? "bg-emerald-500" : "bg-muted-foreground/40",
+          active ? "bg-success" : "bg-muted-foreground/40",
         )}
         aria-hidden
       />

@@ -174,8 +174,8 @@ export default function CouponDetailPage() {
             <div className="animate-enter rounded-lg border border-border/80 bg-card p-5 shadow-xs">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="flex items-start gap-3 min-w-0">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-amber-50">
-                    <TicketPercent className="h-5 w-5 text-amber-800" />
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-border/60 bg-warning-soft">
+                    <TicketPercent className="h-5 w-5 text-warning-strong" />
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2.5 flex-wrap mb-1">
@@ -189,13 +189,13 @@ export default function CouponDetailPage() {
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
                       {discountType === "percent" && (
-                        <span className="flex items-center gap-1 font-bold text-amber-400">
+                        <span className="flex items-center gap-1 font-bold text-warning">
                           <Percent className="h-3.5 w-3.5" />
                           {coupon.percentOff}% OFF
                         </span>
                       )}
                       {discountType === "amount" && (
-                        <span className="flex items-center gap-1 font-bold text-amber-400">
+                        <span className="flex items-center gap-1 font-bold text-warning">
                           <DollarSign className="h-3.5 w-3.5" />
                           {coupon.amountOff} {coupon.currency}
                         </span>
@@ -289,8 +289,8 @@ export default function CouponDetailPage() {
                 <DataPanel>
                   <div className="flex items-center justify-between border-b border-border/80 bg-muted/35 px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-amber-50">
-                        <Copy className="h-4 w-4 text-amber-900" />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-warning-soft">
+                        <Copy className="h-4 w-4 text-warning-strong" />
                       </div>
                       <div>
                         <h2 className="text-sm font-semibold">Códigos de Promoção</h2>
@@ -342,7 +342,7 @@ export default function CouponDetailPage() {
                           <div className="shrink-0">
                             <div className="h-1.5 w-20 rounded-full bg-muted overflow-hidden">
                               <div
-                                className="h-full rounded-full bg-amber-400 transition-all"
+                                className="h-full rounded-full bg-warning transition-all"
                                 style={{ width: `${Math.min(100, ((code.timesRedeemed || 0) / (code.maxRedemptions || 1)) * 100)}%` }}
                               />
                             </div>

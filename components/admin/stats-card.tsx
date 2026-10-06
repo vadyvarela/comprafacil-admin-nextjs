@@ -17,39 +17,39 @@ interface StatsCardProps {
 
 const accentMap: Record<AccentColor, { icon: string; bg: string; dot: string }> = {
   emerald: {
-    icon: "text-emerald-700 dark:text-emerald-300",
-    bg: "bg-emerald-50",
-    dot: "bg-emerald-500",
+    icon: "text-success-strong",
+    bg: "bg-success-soft",
+    dot: "bg-success",
   },
   blue: {
-    icon: "text-blue-700 dark:text-blue-300",
-    bg: "bg-blue-50",
-    dot: "bg-blue-500",
+    icon: "text-info-strong",
+    bg: "bg-info-soft",
+    dot: "bg-info",
   },
   violet: {
-    icon: "text-violet-700 dark:text-violet-300",
-    bg: "bg-violet-50",
-    dot: "bg-violet-500",
+    icon: "text-highlight-strong",
+    bg: "bg-highlight-soft",
+    dot: "bg-highlight",
   },
   amber: {
-    icon: "text-amber-800 dark:text-amber-300",
-    bg: "bg-amber-50",
-    dot: "bg-amber-500",
+    icon: "text-warning-strong",
+    bg: "bg-warning-soft",
+    dot: "bg-warning",
   },
   rose: {
-    icon: "text-rose-700 dark:text-rose-300",
-    bg: "bg-rose-50",
-    dot: "bg-rose-500",
+    icon: "text-danger-strong",
+    bg: "bg-danger-soft",
+    dot: "bg-danger",
   },
   indigo: {
-    icon: "text-indigo-700 dark:text-indigo-300",
-    bg: "bg-indigo-50",
-    dot: "bg-indigo-500",
+    icon: "text-info-strong",
+    bg: "bg-info-soft",
+    dot: "bg-info",
   },
   cyan: {
-    icon: "text-cyan-800 dark:text-cyan-300",
-    bg: "bg-cyan-50",
-    dot: "bg-cyan-500",
+    icon: "text-info-strong",
+    bg: "bg-info-soft",
+    dot: "bg-info",
   },
 }
 
@@ -86,14 +86,14 @@ export function StatsCard({
           </p>
           {delta && (
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              {trend === "up" && <TrendingUp className="h-3 w-3 text-emerald-600" />}
-              {trend === "down" && <TrendingDown className="h-3 w-3 text-rose-600" />}
+              {trend === "up" && <TrendingUp className="h-3 w-3 text-success" />}
+              {trend === "down" && <TrendingDown className="h-3 w-3 text-danger" />}
               {trend === "neutral" && <Minus className="h-3 w-3 text-muted-foreground" />}
               <span
                 className={cn(
                   "text-xs font-medium",
-                  trend === "up" && "text-emerald-700",
-                  trend === "down" && "text-rose-700",
+                  trend === "up" && "text-success-strong",
+                  trend === "down" && "text-danger-strong",
                   trend === "neutral" && "text-muted-foreground"
                 )}
               >
@@ -109,8 +109,7 @@ export function StatsCard({
         <div
           className={cn(
             "flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border/60",
-            accent.bg,
-            "dark:bg-muted/60"
+            accent.bg
           )}
         >
           <Icon className={cn("h-4 w-4", accent.icon)} />

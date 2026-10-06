@@ -261,7 +261,7 @@ export default function ShippingSettingsPage() {
         />
 
         {states.length === 0 && !islandsLoading ? (
-          <p className="text-xs text-amber-700 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+          <p className="text-xs text-warning-strong rounded-md border border-warning-border bg-warning-soft px-3 py-2">
             {islandsError
               ? `Erro ao carregar ilhas: ${islandsError.message}`
               : "Nenhuma ilha no GTW (tabela locations). Reinicia o payment-gateway para criar as ilhas de Cabo Verde."}

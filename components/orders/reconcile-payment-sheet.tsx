@@ -128,7 +128,7 @@ export function ReconcilePaymentSheet({
           className="flex flex-1 flex-col overflow-hidden"
         >
           <div className="flex-1 space-y-4 overflow-auto p-4">
-            <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+            <p className="rounded-md border border-warning-border bg-warning-soft px-3 py-2 text-xs leading-relaxed text-warning-strong">
               A referência corresponde ao <strong>merchantReference</strong> da transação. Confirme os dados antes de enviar.
             </p>
             <FormField label="Referência do pagamento *" htmlFor="referenceId">

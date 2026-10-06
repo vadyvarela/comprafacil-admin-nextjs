@@ -87,8 +87,8 @@ export function TransactionListToolbar({
   return (
     <PageToolbar
       icon={CreditCard}
-      iconBg="bg-emerald-50"
-      iconColor="text-emerald-700"
+      iconBg="bg-success-soft"
+      iconColor="text-success-strong"
       title="Transações"
       subtitle={
         <>

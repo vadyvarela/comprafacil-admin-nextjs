@@ -275,8 +275,8 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
     <DataPanel>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 bg-muted/35 px-4 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-blue-50">
-            <Megaphone className="h-4 w-4 text-blue-800" aria-hidden />
+          <div className="flex h-8 w-8 items-center justify-center rounded-md border border-border/60 bg-info-soft">
+            <Megaphone className="h-4 w-4 text-info-strong" aria-hidden />
           </div>
           <div>
             <h2 className="text-sm font-semibold">Meta Catalog</h2>
@@ -314,7 +314,7 @@ export function MetaCatalogPreview({ product }: { product: Product }) {
                         Incluído
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="gap-1 text-[11px] text-amber-800">
+                      <Badge variant="outline" className="gap-1 text-[11px] text-warning-strong">
                         <AlertCircle className="h-3 w-3" aria-hidden />
                         Fora
                       </Badge>

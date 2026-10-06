@@ -217,7 +217,7 @@ export function TransactionDetailSheet({ tx, open, onOpenChange }: Props) {
               <div className="px-4 py-1">
                 {tx.invoice.number && <Row label="Número" value={<span className="font-mono text-xs">{tx.invoice.number}</span>} />}
                 <Row label="Total fatura" value={<span className="font-bold tabular-nums">{formatCurrency(minorToMajorCurrencyAmount(tx.invoice.amountTotal), tx.invoice.currency)}</span>} />
-                <Row label="Total pago" value={<span className="tabular-nums text-emerald-600 font-semibold">{formatCurrency(minorToMajorCurrencyAmount(tx.invoice.amountPaid), tx.invoice.currency)}</span>} />
+                <Row label="Total pago" value={<span className="tabular-nums text-success font-semibold">{formatCurrency(minorToMajorCurrencyAmount(tx.invoice.amountPaid), tx.invoice.currency)}</span>} />
                 {tx.invoice.dueDate && <Row label="Data de vencimento" value={formatDate(tx.invoice.dueDate)} />}
                 {invoicePdfLink && (
                   <div className="py-2">

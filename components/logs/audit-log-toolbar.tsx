@@ -97,8 +97,8 @@ export function AuditLogToolbar({
   return (
     <PageToolbar
       icon={ScrollText}
-      iconBg="bg-slate-100"
-      iconColor="text-slate-700"
+      iconBg="bg-muted"
+      iconColor="text-muted-foreground"
       title="Logs"
       subtitle={
         <>

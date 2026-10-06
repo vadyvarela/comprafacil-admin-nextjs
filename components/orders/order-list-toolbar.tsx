@@ -82,8 +82,8 @@ export function OrderListToolbar({
   return (
     <PageToolbar
       icon={ShoppingCart}
-      iconBg="bg-blue-50"
-      iconColor="text-blue-700"
+      iconBg="bg-info-soft"
+      iconColor="text-info-strong"
       title="Pedidos"
       subtitle={
         <>

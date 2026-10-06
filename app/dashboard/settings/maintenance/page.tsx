@@ -185,19 +185,19 @@ export default function MaintenanceSettingsPage() {
               </DataPanelContent>
             </DataPanel>
 
-            <DataPanel className="border-amber-200/80 bg-amber-50/50">
+            <DataPanel className="border-warning-border/80 bg-warning-soft/50">
               <DataPanelContent className="space-y-3 p-5">
                 <div className="flex gap-2">
-                  <AlertTriangle className="h-4 w-4 text-amber-800 shrink-0 mt-0.5" aria-hidden />
+                  <AlertTriangle className="h-4 w-4 text-warning-strong shrink-0 mt-0.5" aria-hidden />
                   <div className="space-y-2 text-sm">
-                    <p className="font-medium text-amber-950">Validar antes de abrir</p>
-                    <p className="text-xs text-amber-900/90 leading-relaxed">
+                    <p className="font-medium text-warning-strong">Validar antes de abrir</p>
+                    <p className="text-xs text-warning-strong/90 leading-relaxed">
                       Com a manutenção activa, acede a{" "}
-                      <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">
+                      <code className="rounded bg-warning-soft/80 px-1 py-0.5 text-xs">
                         /_preview
                       </code>{" "}
                       na loja com a credencial definida em{" "}
-                      <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs">
+                      <code className="rounded bg-warning-soft/80 px-1 py-0.5 text-xs">
                         TECHARENA_MAINTENANCE_PREVIEW_SECRET
                       </code>{" "}
                       (env do servidor techarena).
@@ -207,15 +207,15 @@ export default function MaintenanceSettingsPage() {
                         href={`${storeUrl.replace(/\/$/, "")}/_preview`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs font-medium text-amber-950 hover:underline"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-warning-strong hover:underline"
                       >
                         Abrir pré-visualização
                         <ExternalLink className="h-3 w-3" aria-hidden />
                       </a>
                     ) : (
-                      <p className="text-xs text-amber-900/80">
+                      <p className="text-xs text-warning-strong/80">
                         Define{" "}
-                        <code className="rounded bg-amber-100/80 px-1">NEXT_PUBLIC_TECHARENA_URL</code>{" "}
+                        <code className="rounded bg-warning-soft/80 px-1">NEXT_PUBLIC_TECHARENA_URL</code>{" "}
                         no backoffice para o link directo.
                       </p>
                     )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronsUpDown, LogOut, User } from "lucide-react"
+import { ChevronsUpDown, LogOut, Monitor, Moon, Sun, User } from "lucide-react"
 
 import type { StoreRole } from "@/lib/auth/roles"
 import { ROLE_LABELS } from "@/lib/auth/roles"
@@ -14,6 +14,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -23,6 +25,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useTheme, type ThemePreference } from "@/lib/theme"
+
+const THEME_OPTIONS: { value: ThemePreference; label: string; icon: typeof Sun }[] = [
+  { value: "light", label: "Claro", icon: Sun },
+  { value: "dark", label: "Escuro", icon: Moon },
+  { value: "system", label: "Sistema", icon: Monitor },
+]
 
 function getInitials(name: string) {
   return name
@@ -45,6 +54,7 @@ export function NavUser({
   role?: StoreRole | null
 }) {
   const { isMobile } = useSidebar()
+  const { preference, setPreference } = useTheme()
 
   return (
     <SidebarMenu>
@@ -98,6 +108,21 @@ export function NavUser({
               <User className="mr-2 h-4 w-4" />
               Conta
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+              Tema
+            </DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={preference}
+              onValueChange={(value) => setPreference(value as ThemePreference)}
+            >
+              {THEME_OPTIONS.map((option) => (
+                <DropdownMenuRadioItem key={option.value} value={option.value}>
+                  <option.icon className="mr-2 h-4 w-4" />
+                  {option.label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <a href="/auth/logout" className="cursor-pointer">

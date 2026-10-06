@@ -121,10 +121,10 @@ export function DocumentBar({
 
 function StatusPill({ dirty, saving }: { dirty: boolean; saving: boolean }) {
   const tone = saving
-    ? "bg-amber-500"
+    ? "bg-warning"
     : dirty
-      ? "bg-amber-500"
-      : "bg-emerald-500"
+      ? "bg-warning"
+      : "bg-success"
   return (
     <span
       aria-hidden

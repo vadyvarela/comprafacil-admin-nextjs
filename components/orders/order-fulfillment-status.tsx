@@ -116,8 +116,8 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus, canManage =
           <span className="text-xs font-bold text-foreground uppercase">Estado do envio</span>
         </div>
         <div className="p-4 flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-100">
-            <XCircle className="h-4.5 w-4.5 text-red-500" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-danger-soft">
+            <XCircle className="h-4.5 w-4.5 text-danger" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground">Pedido cancelado</p>
@@ -196,7 +196,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus, canManage =
                   {/* Circle */}
                   <div className={cn(
                     "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-all",
-                    isDone  && "border-emerald-500 bg-emerald-500",
+                    isDone  && "border-success bg-success",
                     isActive && "border-primary bg-primary",
                     isPending && "border-border bg-background"
                   )}>
@@ -215,7 +215,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus, canManage =
                   {/* Label */}
                   <span className={cn(
                     "text-[11px] font-semibold leading-tight text-center hidden sm:block",
-                    isDone   && "text-emerald-600",
+                    isDone   && "text-success",
                     isActive && "text-primary",
                     isPending && "text-muted-foreground/50"
                   )}>
@@ -227,7 +227,7 @@ export function OrderFulfillmentStatus({ orderId, fulfillmentStatus, canManage =
                 {!isLast && (
                   <div className={cn(
                     "h-0.5 flex-1 mx-1 rounded-full transition-colors",
-                    isDone ? "bg-emerald-400" : "bg-border"
+                    isDone ? "bg-success" : "bg-border"
                   )} />
                 )}
               </div>

@@ -81,8 +81,8 @@ export function CommercialLeadsToolbar({
   return (
     <PageToolbar
       icon={PhoneCall}
-      iconBg="bg-emerald-50"
-      iconColor="text-emerald-700"
+      iconBg="bg-success-soft"
+      iconColor="text-success-strong"
       title="Leads"
       subtitle={
         <>

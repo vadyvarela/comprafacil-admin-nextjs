@@ -356,7 +356,7 @@ export function EditProductModal({
                   className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-sky-50 text-sky-800">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-info-soft text-info-strong">
                       <FileText className="h-3 w-3" />
                     </span>
                     <span className="text-xs font-medium">Descrição</span>
@@ -380,7 +380,7 @@ export function EditProductModal({
               </CollapsibleContent>
             </Collapsible>
 
-            <FormSection icon={Layers} title="Classificação" iconTone="bg-violet-50 text-violet-800">
+            <FormSection icon={Layers} title="Classificação" iconTone="bg-highlight-soft text-highlight-strong">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <Field label="Categoria" htmlFor="edit-categoryId">
                   <Select
@@ -558,7 +558,7 @@ export function EditProductModal({
                   className="h-auto w-full justify-between gap-3 rounded-none px-3.5 py-2 text-left hover:bg-muted/25"
                 >
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-blue-50 text-blue-800">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-border/60 bg-info-soft text-info-strong">
                       <Megaphone className="h-3 w-3" />
                     </span>
                     <span className="text-xs font-medium">Meta Catalog</span>
@@ -581,7 +581,7 @@ export function EditProductModal({
             </Collapsible>
 
             {!hasVariants && (
-            <FormSection icon={Tag} title="Oferta na loja" iconTone="bg-orange-50 text-orange-800">
+            <FormSection icon={Tag} title="Oferta na loja" iconTone="bg-warning-soft text-warning-strong">
               <div className="flex items-start justify-between gap-3 rounded-md border border-border/70 bg-muted/15 px-3 py-2.5">
                 <div className="min-w-0">
                   <Label htmlFor="edit-offer-enabled" className="text-xs font-medium cursor-pointer">
@@ -601,7 +601,7 @@ export function EditProductModal({
                   }
                   disabled={loading}
                   className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-                    formData.offerEnabled ? "bg-orange-500" : "bg-muted-foreground/30"
+                    formData.offerEnabled ? "bg-warning" : "bg-muted-foreground/30"
                   }`}
                 >
                   <span
@@ -681,7 +681,7 @@ export function EditProductModal({
             </FormSection>
             )}
 
-            <FormSection icon={Puzzle} title="Produtos complementares" iconTone="bg-amber-50 text-amber-900">
+            <FormSection icon={Puzzle} title="Produtos complementares" iconTone="bg-warning-soft text-warning-strong">
               <Field
                 label="Acessórios opcionais"
                 hint="Aparecem na página do produto como compra adicional. Máximo 4."

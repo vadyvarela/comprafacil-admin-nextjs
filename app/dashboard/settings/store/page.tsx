@@ -378,8 +378,8 @@ export default function StoreSettingsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-blue-50">
-                      <Megaphone className="h-3.5 w-3.5 text-blue-800" aria-hidden />
+                    <div className="flex h-7 w-7 items-center justify-center rounded-md border border-border/60 bg-info-soft">
+                      <Megaphone className="h-3.5 w-3.5 text-info-strong" aria-hidden />
                     </div>
                     <CardTitle className="text-sm font-semibold">Meta Commerce</CardTitle>
                   </div>
@@ -430,7 +430,7 @@ export default function StoreSettingsPage() {
 
                 <div className="rounded-md border border-border/70 bg-muted/20 p-3 text-xs text-muted-foreground">
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-700" aria-hidden />
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success-strong" aria-hidden />
                     <p>
                       O token da Conversions API continua nas variáveis da API:
                       {" "}

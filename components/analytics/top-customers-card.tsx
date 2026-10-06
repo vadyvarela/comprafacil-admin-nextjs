@@ -54,7 +54,7 @@ export function TopCustomersCard({ customers }: TopCustomersCardProps) {
                   </div>
                   <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden ml-10">
                     <div
-                      className="h-full rounded-full bg-violet-500 transition-all duration-500"
+                      className="h-full rounded-full bg-highlight transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>

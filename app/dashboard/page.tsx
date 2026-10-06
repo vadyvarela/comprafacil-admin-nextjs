@@ -133,8 +133,8 @@ export default async function DashboardPage() {
           icon: Package,
           label: "Novo produto",
           sub: "Adicionar ao catálogo",
-          iconBg: "bg-indigo-50",
-          iconColor: "text-indigo-700",
+          iconBg: "bg-info-soft",
+          iconColor: "text-info-strong",
         }
       : null,
     canWriteCoupons
@@ -143,8 +143,8 @@ export default async function DashboardPage() {
           icon: Sparkles,
           label: "Criar cupão",
           sub: "Promoção ou desconto",
-          iconBg: "bg-emerald-50",
-          iconColor: "text-emerald-700",
+          iconBg: "bg-success-soft",
+          iconColor: "text-success-strong",
         }
       : null,
     {
@@ -152,8 +152,8 @@ export default async function DashboardPage() {
       icon: Clock,
       label: "Pedidos a processar",
       sub: "Pagos, por preparar",
-      iconBg: "bg-amber-50",
-      iconColor: "text-amber-800",
+      iconBg: "bg-warning-soft",
+      iconColor: "text-warning-strong",
     },
   ].filter((action): action is NonNullable<typeof action> => action !== null)
 

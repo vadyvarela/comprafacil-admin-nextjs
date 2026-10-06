@@ -199,7 +199,7 @@ export function ProductList({
                   {draft ? (
                     <Badge
                       variant="outline"
-                      className="text-xs h-5 px-1.5 text-amber-700 border-amber-500/40 bg-amber-50"
+                      className="text-xs h-5 px-1.5 text-warning-strong border-warning/40 bg-warning-soft"
                     >
                       {productVisibilityLabel(product.status?.code)}
                     </Badge>
@@ -245,7 +245,7 @@ export function ProductList({
                   {product.discount ? (
                     <Badge
                       variant="outline"
-                      className="text-xs h-5 px-1.5 text-emerald-400 border-emerald-500/30"
+                      className="text-xs h-5 px-1.5 text-success border-success/30"
                     >
                       {product.discount}%
                     </Badge>

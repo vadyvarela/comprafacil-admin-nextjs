@@ -119,8 +119,8 @@ export function ProductListToolbar({
     <>
       <PageToolbar
         icon={Package}
-        iconBg="bg-indigo-500/10"
-        iconColor="text-indigo-400"
+        iconBg="bg-info/10"
+        iconColor="text-info"
         title="Produtos"
         subtitle={isPending ? "A pesquisar…" : subtitle}
       >
