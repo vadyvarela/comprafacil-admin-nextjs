@@ -25,6 +25,7 @@ import {
 import { ChevronDown, Loader2, Package, FileText, Layers, Megaphone, Puzzle, Tag, X as XIcon } from "lucide-react"
 import { showToast } from "@/lib/utils/toast"
 import { recordAuditLog } from "@/lib/actions/auditLogs"
+import { productFormChanges } from "@/lib/audit/product-changes"
 import { RichTextEditor } from "../ui/rich-text-editor"
 import { looksLikeIphoneProduct, normalizeBatteryHealthPercent } from "@/lib/utils/iphone-seminovo-metadata"
 import { CuratedProductPicker } from "@/components/store-home/curated-product-picker"
@@ -301,7 +302,15 @@ export function ProductEditForm({
         action: "PRODUCT_UPDATED",
         entityType: "PRODUCT",
         entityId: product.id,
-        metadata: { title: formData.title },
+        metadata: {
+          title: formData.title,
+          changes: initialSnapshot
+            ? productFormChanges(JSON.parse(initialSnapshot), formData, {
+                categoryName: (id) => categories.find((c) => c.id === id)?.name,
+                brandName: (id) => brands.find((b) => b.id === id)?.name,
+              })
+            : [],
+        },
       })
     } catch (err: unknown) {
       console.error("Error updating product:", err)

@@ -2,7 +2,8 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { History } from "lucide-react"
 import type { AuditLog } from "@/lib/graphql/audit/types"
-import { getFulfillmentStatusLabel } from "@/lib/orders/status"
+import { describeActor, describeAuditSummary } from "@/lib/audit/describe"
+import { actionLabel } from "@/lib/audit/labels"
 import { DataPanel } from "@/components/admin/data-panel"
 import { EmptyState } from "@/components/admin/empty-state"
 
@@ -19,24 +20,8 @@ function formatDate(iso: string): string {
   }
 }
 
-function actorLabel(log: AuditLog): string {
-  if (log.actorName?.trim()) return log.actorName.trim()
-  if (log.actorEmail?.trim()) return log.actorEmail.trim()
-  if (log.actorId?.trim()) return log.actorId.slice(0, 12)
-  return "—"
-}
-
-function statusLabel(code: unknown): string {
-  if (typeof code !== "string" || !code.trim()) return "—"
-  return getFulfillmentStatusLabel(code)
-}
-
 function describeLog(log: AuditLog): string {
-  if (log.action === "ORDER_FULFILLMENT_STATUS_CHANGED") {
-    const meta = (log.metadata ?? {}) as { from?: string | null; to?: string | null }
-    return `${statusLabel(meta.from)} → ${statusLabel(meta.to)}`
-  }
-  return log.action
+  return describeAuditSummary(log) ?? actionLabel(log.action)
 }
 
 export function OrderAuditTimeline({ logs, error }: Props) {
@@ -65,7 +50,7 @@ export function OrderAuditTimeline({ logs, error }: Props) {
                 <div className="min-w-0 flex-1 space-y-0.5">
                   <p className="font-medium text-foreground">{describeLog(log)}</p>
                   <p className="text-muted-foreground">
-                    {formatDate(log.createdAt)} · {actorLabel(log)}
+                    {formatDate(log.createdAt)} · {describeActor(log).label}
                   </p>
                 </div>
               </li>
