@@ -187,7 +187,14 @@ export function CreateProductModal({
         action: "PRODUCT_CREATED",
         entityType: "PRODUCT",
         entityId: productId,
-        metadata: { title: formData.title.trim() },
+        metadata: {
+          title: formData.title.trim(),
+          status: formData.status === "ACTIVE" ? "Publicado" : "Rascunho",
+          condition: formData.condition,
+          category: categoryId ? categories.find((c) => c.id === categoryId)?.name ?? null : null,
+          brand: brandId ? brands.find((b) => b.id === brandId)?.name ?? null : null,
+          quantity: formData.createDefaultVariant ? quantity : null,
+        },
       })
 
       if (formData.createDefaultVariant) {

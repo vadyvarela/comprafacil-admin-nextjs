@@ -98,11 +98,12 @@ export async function recordAuditLog(
       action: input.action,
       entityType: input.entityType,
       entityId: input.entityId,
-      // Sem `actor`: quem o determina é a API, a partir do token. Enviá-lo
-      // daqui era o que tornava o histórico forjável.
+      // Sem `actor`: quem o determina é a API, a partir do token — por isso
+      // vai o token da pessoa, não o de serviço. Enviá-lo daqui era o que
+      // tornava o histórico forjável.
       metadata: input.metadata ?? null,
     },
-  })
+  }, { asUser: true })
 
   if (result.errors?.length) {
     return { ok: false, error: result.errors.map((e) => e.message).join("; ") }
