@@ -1,5 +1,6 @@
 import "server-only"
 import { print, type DocumentNode } from "graphql"
+import { getValidSession } from "@/lib/auth0"
 
 const GTW_URL = process.env.GTW_URL
 const GTW_TOKEN = process.env.GTW_TOKEN
@@ -19,15 +20,35 @@ export type GraphQLResponse<T> =
   | { data: T; errors?: never }
   | { data?: never; errors: { message: string }[] }
 
+type RunGraphQLOptions = {
+  /**
+   * Reencaminha o access token de quem está autenticado em vez do token de
+   * serviço. Obrigatório onde a API precisa de saber *quem* fez a coisa — com
+   * o token de serviço, a auditoria só consegue gravar "master token (legado)".
+   */
+  asUser?: boolean
+}
+
 /**
  * Executa uma operação GraphQL no gateway (server-only).
  * Use em Server Components ou Server Actions.
  */
 export async function runGraphQL<T = unknown>(
   document: DocumentNode | string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
+  options: RunGraphQLOptions = {}
 ): Promise<GraphQLResponse<T>> {
-  const { url, token } = getConfig()
+  const config = getConfig()
+  const url = config.url
+  let token = config.token
+  if (options.asUser) {
+    const session = await getValidSession()
+    const accessToken = session?.tokenSet?.accessToken
+    if (!accessToken) {
+      return { errors: [{ message: "Sessão inválida ou expirada." }] }
+    }
+    token = accessToken
+  }
   const query = typeof document === "string" ? document : print(document)
 
   const res = await fetch(url, {

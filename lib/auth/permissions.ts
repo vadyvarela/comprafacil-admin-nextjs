@@ -74,6 +74,8 @@ export const PLATFORM_PERMISSIONS = [
   "platform.stores.read",
   "platform.stores.write",
   "platform.impersonate",
+  "platform.revenue.read",
+  "platform.events.read",
 ] as const;
 
 export const ALL_PERMISSIONS = [

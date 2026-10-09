@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   BarChart3,
   Bell,
   Construction,
@@ -20,6 +21,7 @@ import {
   Tag,
   TicketPercent,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import type { Permission } from "@/lib/auth/permissions";
@@ -165,6 +167,26 @@ export const NAV_SECTIONS: NavSection[] = [
         url: "/dashboard/logs",
         icon: ScrollText,
         permission: "audit.read",
+      },
+    ],
+  },
+  {
+    // Só aparece a quem tem `platformAdmin` na API — nenhum role de loja
+    // recebe estas permissões.
+    section: "Plataforma",
+    items: [
+      {
+        title: "Comissão",
+        url: "/dashboard/platform",
+        icon: Wallet,
+        exact: true,
+        permission: "platform.revenue.read",
+      },
+      {
+        title: "Erros e alertas",
+        url: "/dashboard/platform/events",
+        icon: AlertTriangle,
+        permission: "platform.events.read",
       },
     ],
   },
