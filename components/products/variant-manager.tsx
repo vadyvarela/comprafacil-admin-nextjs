@@ -52,6 +52,11 @@ interface ProductOption {
   values: string[]
 }
 
+/** Remove espaços nas chaves ("Cores " → "Cores") para bater com os atributos do produto na loja. */
+function trimAttributeKeys(attrs: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(Object.entries(attrs).map(([k, v]) => [k.trim(), v]))
+}
+
 export function VariantManager({
   productId,
   open,
@@ -92,7 +97,8 @@ export function VariantManager({
             const metadata = JSON.parse(variant.metadata)
             const attributes = metadata.attributes || {}
 
-            Object.entries(attributes).forEach(([key, value]) => {
+            Object.entries(attributes).forEach(([rawKey, value]) => {
+              const key = rawKey.trim()
               if (!extractedOptions[key]) {
                 extractedOptions[key] = new Set()
               }
@@ -121,7 +127,7 @@ export function VariantManager({
         if (variant.metadata) {
           try {
             const metadata = JSON.parse(variant.metadata)
-            optionValues = metadata.attributes || {}
+            optionValues = trimAttributeKeys(metadata.attributes || {})
           } catch {
             /* ignore */
           }
@@ -166,7 +172,7 @@ export function VariantManager({
       const option = opts[index]
 
       option.values.forEach((value) => {
-        const newCurrent = { ...current, [option.title]: value }
+        const newCurrent = { ...current, [option.title.trim()]: value }
         results.push(...generate(opts, index + 1, newCurrent))
       })
 
@@ -312,7 +318,7 @@ export function VariantManager({
         : galleryUrls[0] || combo.image?.trim() || ""
 
     return buildVariantMetadataJson(existing?.metadata, {
-      attributes: combo.optionValues,
+      attributes: trimAttributeKeys(combo.optionValues),
       sku: combo.sku,
       image: cover || undefined,
       images: galleryUrls,
