@@ -32,7 +32,7 @@ export type FunnelResult =
  */
 export async function fetchFunnel(period: AnalyticsPeriod): Promise<FunnelResult> {
   try {
-    if (!can(await getPrincipal(), "marketing.analytics.read")) {
+    if (!can(await getPrincipal(), "platform.events.read")) {
       throw new Error("Insufficient permissions")
     }
   } catch {

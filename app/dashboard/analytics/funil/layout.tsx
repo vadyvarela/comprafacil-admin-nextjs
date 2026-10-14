@@ -5,6 +5,6 @@ export default async function Layout({
 }: {
   children: React.ReactNode
 }) {
-  await requirePermissionPage("marketing.analytics.read")
+  await requirePermissionPage("platform.events.read")
   return children
 }

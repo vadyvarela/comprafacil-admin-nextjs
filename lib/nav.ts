@@ -74,12 +74,6 @@ export const NAV_SECTIONS: NavSection[] = [
         exact: true,
         permission: "analytics.read",
       },
-      {
-        title: "Funil de conversão",
-        url: "/dashboard/analytics/funil",
-        icon: Filter,
-        permission: "marketing.analytics.read",
-      },
     ],
   },
   {
@@ -195,6 +189,13 @@ export const NAV_SECTIONS: NavSection[] = [
         title: "Erros e alertas",
         url: "/dashboard/platform/events",
         icon: AlertTriangle,
+        permission: "platform.events.read",
+      },
+      {
+        // Só superadmin por agora: ainda a validar os dados antes de abrir à loja.
+        title: "Funil de conversão",
+        url: "/dashboard/analytics/funil",
+        icon: Filter,
         permission: "platform.events.read",
       },
     ],
