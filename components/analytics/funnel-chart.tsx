@@ -36,7 +36,8 @@ type Row = {
 }
 
 export function buildFunnelRows(steps: FunnelData["steps"]): Row[] {
-  const entry = steps[0]?.sessions ?? 0
+  // Base = maior passo, para o funil não ficar vazio se faltar o passo do topo.
+  const entry = Math.max(0, ...steps.map((s) => s.sessions))
   return steps.map((step, i) => {
     const previous = i > 0 ? steps[i - 1].sessions : null
     return {
@@ -61,8 +62,10 @@ export function biggestDrop(rows: Row[]): Row | null {
 
 export function FunnelChart({ steps }: { steps: FunnelData["steps"] }) {
   const rows = buildFunnelRows(steps)
-  const entry = rows[0]?.sessions ?? 0
+  const entry = Math.max(0, ...rows.map((r) => r.sessions))
   const worst = biggestDrop(rows)
+  // Compras existem mas visitas não: os eventos do site não estão a chegar à API.
+  const siteEventsMissing = (rows[0]?.sessions ?? 0) === 0 && entry > 0
 
   if (!entry) {
     return (
@@ -73,6 +76,13 @@ export function FunnelChart({ steps }: { steps: FunnelData["steps"] }) {
   }
 
   return (
+    <>
+    {siteEventsMissing && (
+      <p className="mx-3 mb-2 rounded-md bg-warning-soft px-3 py-2 text-xs text-warning-strong">
+        Há compras mas nenhuma visita registada. Os eventos do site (visitas, produto,
+        carrinho) não estão a chegar à API, por isso as taxas deste funil não são fiáveis.
+      </p>
+    )}
     <ol className="space-y-1">
       {rows.map((row) => {
         const isWorst = worst?.eventName === row.eventName
@@ -132,6 +142,7 @@ export function FunnelChart({ steps }: { steps: FunnelData["steps"] }) {
         )
       })}
     </ol>
+    </>
   )
 }
 
@@ -191,6 +202,7 @@ export function FunnelPayments({ payments }: { payments: FunnelData["payments"] 
 
 const SOURCE_LABELS: Record<string, string> = {
   direto: "Direto / desconhecido",
+  direct: "Direto / desconhecido",
   facebook: "Facebook",
   fb: "Facebook",
   instagram: "Instagram",

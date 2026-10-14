@@ -27,6 +27,10 @@ const BADGE_LABELS: Record<BadgeKey, { title: string; hint: string }> = {
     title: "Garantia",
     hint: "Segundo destaque informativo na ficha do produto.",
   },
+  returns: {
+    title: "Devolução",
+    hint: "Política de troca ou devolução, ex.: prazo e condições. Escreve só o que a loja cumpre.",
+  },
 }
 
 type Props = {

@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-export const trustBadgeIconSchema = z.enum(["truck", "shield", "store", "card", "support"])
+export const trustBadgeIconSchema = z.enum(["truck", "shield", "store", "card", "support", "returns"])
 export type TrustBadgeIcon = z.infer<typeof trustBadgeIconSchema>
 
 export const productPageTrustBadgeSchema = z.object({
@@ -13,6 +13,13 @@ export const productPageTrustBadgeSchema = z.object({
 export const productPageTrustBadgesSchema = z.object({
   delivery: productPageTrustBadgeSchema,
   warranty: productPageTrustBadgeSchema,
+  // Opcional: configurações gravadas antes deste selo existir continuam válidas.
+  returns: productPageTrustBadgeSchema.default({
+    enabled: false,
+    icon: "returns",
+    title: "",
+    subtitle: "",
+  }),
 })
 
 export type ProductPageTrustBadge = z.infer<typeof productPageTrustBadgeSchema>
@@ -30,6 +37,12 @@ export const DEFAULT_PRODUCT_PAGE_TRUST_BADGES: ProductPageTrustBadges = {
     icon: "shield",
     title: "1 Ano garantia",
     subtitle: "Garantia completa",
+  },
+  returns: {
+    enabled: false,
+    icon: "returns",
+    title: "",
+    subtitle: "",
   },
 }
 
@@ -57,4 +70,5 @@ export const TRUST_BADGE_ICON_OPTIONS: Array<{ value: TrustBadgeIcon; label: str
   { value: "store", label: "Loja física" },
   { value: "card", label: "Cartão (pagamento)" },
   { value: "support", label: "Auriculares (apoio)" },
+  { value: "returns", label: "Seta circular (devolução)" },
 ]
