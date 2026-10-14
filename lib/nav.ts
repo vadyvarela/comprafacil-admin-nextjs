@@ -9,6 +9,7 @@ import {
   Store,
   Truck,
   CreditCard,
+  Filter,
   FolderTree,
   Image as ImageIcon,
   Images,
@@ -69,7 +70,15 @@ export const NAV_SECTIONS: NavSection[] = [
         title: "Analytics",
         url: "/dashboard/analytics",
         icon: BarChart3,
+        // Exacto para não ficar activo também no Funil, que é sub-rota.
+        exact: true,
         permission: "analytics.read",
+      },
+      {
+        title: "Funil de conversão",
+        url: "/dashboard/analytics/funil",
+        icon: Filter,
+        permission: "marketing.analytics.read",
       },
     ],
   },
