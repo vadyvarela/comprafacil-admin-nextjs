@@ -1,17 +1,22 @@
 "use server"
 
+import { revalidatePath } from "next/cache"
 import { can, getPrincipal } from "@/lib/auth/principal"
 import { runGraphQL } from "./graphql"
 import {
+  CREATE_STORE,
   PLATFORM_EVENTS,
   PLATFORM_REVENUE,
+  PLATFORM_STORES,
   PLATFORM_TRANSACTIONS,
 } from "@/lib/graphql/platform/queries"
 import type {
+  CreateStoreResult,
   Page,
   PageInput,
   PlatformEvent,
   PlatformRevenueSummary,
+  PlatformStore,
   PlatformTransaction,
 } from "@/lib/graphql/platform/types"
 
@@ -76,4 +81,41 @@ export async function getPlatformEvents(params: {
   if (result.errors?.length) return { ok: false, error: errorOf(result.errors) }
   if (!result.data?.platformEvents) return { ok: false, error: "Resposta inválida do servidor." }
   return { ok: true, data: result.data.platformEvents }
+}
+
+export async function getPlatformStores(): Promise<Result<PlatformStore[]>> {
+  if (!can(await getPrincipal(), "platform.stores.read")) {
+    return { ok: false, error: "Sem permissão." }
+  }
+  const result = await runGraphQL<{ platformStores: PlatformStore[] }>(
+    PLATFORM_STORES,
+    {},
+    { asUser: true }
+  )
+  if (result.errors?.length) return { ok: false, error: errorOf(result.errors) }
+  if (!result.data?.platformStores) return { ok: false, error: "Resposta inválida do servidor." }
+  return { ok: true, data: result.data.platformStores }
+}
+
+/**
+ * Cria uma loja. Quem chama fica dono dela, e por isso ela aparece logo no
+ * seletor de loja. O token da loja pública vem em claro só nesta resposta.
+ */
+export async function createStore(input: {
+  name: string
+  slug: string
+  commissionRate: number | null
+}): Promise<Result<CreateStoreResult>> {
+  if (!can(await getPrincipal(), "platform.stores.write")) {
+    return { ok: false, error: "Sem permissão." }
+  }
+  const result = await runGraphQL<{ createStore: CreateStoreResult }>(
+    CREATE_STORE,
+    { input },
+    { asUser: true }
+  )
+  if (result.errors?.length) return { ok: false, error: errorOf(result.errors) }
+  if (!result.data?.createStore) return { ok: false, error: "Resposta inválida do servidor." }
+  revalidatePath("/dashboard", "layout")
+  return { ok: true, data: result.data.createStore }
 }

@@ -192,6 +192,12 @@ export const NAV_SECTIONS: NavSection[] = [
         permission: "platform.events.read",
       },
       {
+        title: "Lojas",
+        url: "/dashboard/platform/stores",
+        icon: Store,
+        permission: "platform.stores.read",
+      },
+      {
         // Só superadmin por agora: ainda a validar os dados antes de abrir à loja.
         title: "Funil de conversão",
         url: "/dashboard/platform/funil",

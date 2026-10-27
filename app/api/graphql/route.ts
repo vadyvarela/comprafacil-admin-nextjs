@@ -1,3 +1,4 @@
+import { activeStoreHeader } from "@/lib/auth/store-header";
 import { NextRequest, NextResponse } from "next/server";
 import { getValidSession } from "@/lib/auth0";
 import { rateLimit } from "@/lib/security/rate-limit";
@@ -54,6 +55,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: unknown = await request.json();
+    const storeHeader = await activeStoreHeader();
     const send = () =>
       fetch(`${GTW_URL}/${GTW_TOKEN}`, {
         method: "POST",
@@ -62,6 +64,7 @@ export async function POST(request: NextRequest) {
           // A identidade de quem está sentado ao teclado, não um token
           // partilhado. É isto que faz a API poder decidir por pessoa.
           Authorization: `Bearer ${session.tokenSet.accessToken}`,
+          ...storeHeader,
         },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(30_000),

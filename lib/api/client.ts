@@ -1,5 +1,6 @@
 import "server-only";
 import { getValidSession } from "@/lib/auth0";
+import { readActiveStoreCookie } from "@/lib/auth/active-store-cookie";
 
 /**
  * Cliente da API, com a identidade do utilizador por cima.
@@ -31,8 +32,11 @@ export class ApiError extends Error {
 }
 
 type ApiFetchOptions = RequestInit & {
-  /** Loja em cujo âmbito o pedido corre. Omitir usa a loja activa da sessão. */
-  storeId?: string;
+  /**
+   * Loja em cujo âmbito o pedido corre. Omitir usa a loja escolhida no seletor;
+   * `null` não manda cabeçalho e deixa a API escolher a loja por defeito.
+   */
+  storeId?: string | null;
   /**
    * Usa o token de serviço em vez da identidade de quem está autenticado.
    * Só para trabalho sem pessoa por trás — nunca para servir um pedido do
@@ -45,7 +49,11 @@ export async function apiFetch<T = unknown>(
   path: string,
   options: ApiFetchOptions = {},
 ): Promise<T> {
-  const { storeId, asService, headers, ...init } = options;
+  const { storeId: requestedStoreId, asService, headers, ...init } = options;
+  const storeId =
+    requestedStoreId === undefined
+      ? await readActiveStoreCookie()
+      : requestedStoreId;
 
   const authorization = asService
     ? SERVICE_TOKEN && `Bearer ${SERVICE_TOKEN}`

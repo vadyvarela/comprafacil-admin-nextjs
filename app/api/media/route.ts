@@ -1,3 +1,4 @@
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { NextRequest, NextResponse } from "next/server"
 import { validateImageBlob } from "@/lib/security/upload-validation"
 import { requirePermissionApi } from "@/lib/auth/requirePermission"
@@ -31,6 +32,7 @@ export async function GET(request: NextRequest) {
       method: "GET",
       headers: {
         Authorization: `Bearer ${cfg.cmsAccessToken}`,
+        ...(await activeStoreHeader()),
       },
       signal: AbortSignal.timeout(30000),
     })
@@ -71,6 +73,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         Authorization: `Bearer ${cfg.cmsAccessToken}`,
+        ...(await activeStoreHeader()),
       },
       body: outbound,
       signal: AbortSignal.timeout(120000),

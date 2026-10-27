@@ -1,3 +1,4 @@
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { NextRequest, NextResponse } from "next/server"
 import { validateImageFormData } from "@/lib/security/upload-validation"
 import { requirePermissionApi } from "@/lib/auth/requirePermission"
@@ -29,6 +30,7 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         Authorization: `Bearer ${cmsAccessToken}`,
+        ...(await activeStoreHeader()),
       },
       body: formData,
       signal: AbortSignal.timeout(120000),

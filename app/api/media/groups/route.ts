@@ -1,3 +1,4 @@
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { NextResponse } from "next/server"
 import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
@@ -22,6 +23,7 @@ export async function GET() {
       method: "GET",
       headers: {
         Authorization: `Bearer ${cfg.cmsAccessToken}`,
+        ...(await activeStoreHeader()),
       },
       signal: AbortSignal.timeout(30000),
     })
