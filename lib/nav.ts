@@ -194,7 +194,7 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         // Só superadmin por agora: ainda a validar os dados antes de abrir à loja.
         title: "Funil de conversão",
-        url: "/dashboard/analytics/funil",
+        url: "/dashboard/platform/funil",
         icon: Filter,
         permission: "platform.events.read",
       },
