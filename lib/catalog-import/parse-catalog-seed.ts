@@ -1,6 +1,8 @@
 import type {
   CatalogImportRowIssue,
   CatalogResolvedIds,
+  CatalogSeedBrand,
+  CatalogSeedCategory,
   CatalogSeedFile,
   CatalogSeedProduct,
 } from "./types"
@@ -197,7 +199,30 @@ export function parseCatalogSeedJson(raw: string): { ok: true; data: CatalogSeed
   if (!Array.isArray(products)) {
     return { ok: false, error: "Campo «products» em falta ou não é array." }
   }
-  return { ok: true, data: { meta: root.meta, products: products as CatalogSeedProduct[] } }
+  const categories = root.categories ?? []
+  const brands = root.brands ?? []
+  if (!Array.isArray(categories) || !Array.isArray(brands)) {
+    return { ok: false, error: "«categories» e «brands», quando existem, têm de ser arrays." }
+  }
+  const named = (x: unknown) =>
+    x != null &&
+    typeof x === "object" &&
+    typeof (x as Record<string, unknown>).name === "string" &&
+    typeof (x as Record<string, unknown>).slug === "string" &&
+    Boolean(((x as Record<string, unknown>).name as string).trim()) &&
+    Boolean(((x as Record<string, unknown>).slug as string).trim())
+  if (!categories.every(named) || !brands.every(named)) {
+    return { ok: false, error: "Cada categoria e marca precisa de «name» e «slug»." }
+  }
+  return {
+    ok: true,
+    data: {
+      meta: root.meta,
+      categories: categories as CatalogSeedCategory[],
+      brands: brands as CatalogSeedBrand[],
+      products: products as CatalogSeedProduct[],
+    },
+  }
 }
 
 function checkVariantAxisConsistency(p: CatalogSeedProduct): string | null {
