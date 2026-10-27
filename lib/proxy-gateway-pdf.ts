@@ -1,4 +1,5 @@
 import "server-only"
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { createHmac } from "crypto"
 import { NextResponse } from "next/server"
 
@@ -42,6 +43,7 @@ export async function proxyGatewayPdf(opts: {
       method: "GET",
       headers: {
         Authorization: `Bearer ${apiToken}`,
+        ...(await activeStoreHeader()),
       },
       signal: AbortSignal.timeout(60_000),
     })

@@ -1,3 +1,4 @@
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { NextRequest, NextResponse } from "next/server"
 import { validateImageFormData } from "@/lib/security/upload-validation"
 import {
@@ -87,6 +88,7 @@ export async function PUT(
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${cmsAccessToken}`,
+          ...(await activeStoreHeader()),
         },
         body: JSON.stringify(graphqlQuery),
       })
@@ -127,6 +129,7 @@ export async function PUT(
       method: "PUT",
       headers: {
         Authorization: `Bearer ${cmsAccessToken}`,
+        ...(await activeStoreHeader()),
       },
       body: formData,
       signal: AbortSignal.timeout(120000),
@@ -166,6 +169,7 @@ export async function PUT(
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${cmsAccessToken}`,
+          ...(await activeStoreHeader()),
         },
         body: JSON.stringify({
           query: `

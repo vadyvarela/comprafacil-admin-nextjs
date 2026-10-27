@@ -1,4 +1,5 @@
 import "server-only"
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { print, type DocumentNode } from "graphql"
 import { getValidSession } from "@/lib/auth0"
 
@@ -56,6 +57,7 @@ export async function runGraphQL<T = unknown>(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
+      ...(await activeStoreHeader()),
     },
     body: JSON.stringify({ query, variables }),
     signal: AbortSignal.timeout(30000),

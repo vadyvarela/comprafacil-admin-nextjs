@@ -1,5 +1,6 @@
 "use server"
 
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { requirePermissionOrThrow } from "@/lib/auth/requirePermission"
 
 
@@ -46,6 +47,7 @@ export async function purchaseReconciliation(
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        ...(await activeStoreHeader()),
       },
       body: JSON.stringify({
         referenceId: payload.referenceId,

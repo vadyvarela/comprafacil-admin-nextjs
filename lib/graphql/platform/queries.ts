@@ -77,3 +77,32 @@ export const PLATFORM_EVENTS = gql`
     }
   }
 `
+
+export const PLATFORM_STORES = gql`
+  query PlatformStores {
+    platformStores {
+      id
+      slug
+      name
+      status
+      commissionRate
+      createdAt
+    }
+  }
+`
+
+export const CREATE_STORE = gql`
+  mutation CreateStore($input: CreateStoreInput!) {
+    createStore(input: $input) {
+      store {
+        id
+        slug
+        name
+        status
+        commissionRate
+        createdAt
+      }
+      storefrontToken
+    }
+  }
+`
