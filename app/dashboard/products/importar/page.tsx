@@ -24,7 +24,7 @@ import {
   isCatalogImportReady,
   resolveProductRefs,
 } from "@/lib/catalog-import/parse-catalog-seed"
-import type { CatalogSeedFile, CatalogSeedProduct } from "@/lib/catalog-import/types"
+import type { CatalogSeedFile, CatalogSeedProduct, CatalogSeedVariant } from "@/lib/catalog-import/types"
 import {
   productOptionCatalogFromVariants,
   seedVariantAttributes,
@@ -69,7 +69,22 @@ function buildProductMetadata(p: CatalogSeedProduct): string | null {
   } catch {
     /* validação em collectImportIssues */
   }
+  const images = productImages(p)
+  if (images.length) m.images = images
   return Object.keys(m).length ? JSON.stringify(m) : null
+}
+
+/** Imagens de uma variante, pela ordem do ficheiro, sem repetições. */
+function variantImages(v: CatalogSeedVariant): string[] {
+  const all = [v.image, ...(v.images ?? [])]
+    .map((url) => url?.trim())
+    .filter((url): url is string => Boolean(url))
+  return [...new Set(all)]
+}
+
+/** Galeria do produto: as imagens de todas as variantes, até 8. */
+function productImages(p: CatalogSeedProduct): string[] {
+  return [...new Set(p.variants.flatMap(variantImages))].slice(0, 8)
 }
 
 export default function ImportCatalogPage() {
@@ -171,6 +186,8 @@ export default function ImportCatalogPage() {
                 summary: p.summary?.trim() || null,
                 discount,
                 type: { code: "TICKET" },
+                // Antes as imagens do ficheiro eram ignoradas e o produto nascia sem foto.
+                image: productImages(p)[0] ?? null,
                 metadata: buildProductMetadata(p),
                 condition: p.condition,
                 categoryId,
@@ -227,6 +244,8 @@ export default function ImportCatalogPage() {
           const attrs = seedVariantAttributes(p, v)
           const variantMeta: Record<string, unknown> = { attributes: attrs }
           if (v.sku?.trim()) variantMeta.sku = v.sku.trim()
+          const vImages = variantImages(v)
+          if (vImages.length) variantMeta.images = vImages
           const variantTitle = v.title?.trim() || variantTitleFromAttributes(attrs)
           const vr = await with429Retry(`variant: ${p.title}`, () =>
             gtwClient.mutate({
@@ -236,6 +255,7 @@ export default function ImportCatalogPage() {
                   productId,
                   title: variantTitle,
                   quantity: v.quantity,
+                  image: vImages[0] ?? null,
                   metadata: JSON.stringify(variantMeta),
                   priceData: {
                     nickname: "Preço",
