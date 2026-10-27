@@ -4,7 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useQuery } from "@apollo/client/react"
 import { Upload, Play, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
-import { CREATE_PRODUCT } from "@/lib/graphql/products/mutations"
+import { CREATE_PRODUCT, UPDATE_PRODUCT } from "@/lib/graphql/products/mutations"
 import { CREATE_CATEGORY } from "@/lib/graphql/categories/mutations"
 import { CREATE_BRAND } from "@/lib/graphql/brands/mutations"
 import { CREATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
@@ -97,6 +97,8 @@ export default function ImportCatalogPage() {
   const [importing, setImporting] = useState(false)
   const [progress, setProgress] = useState({ current: 0, total: 0 })
   const [log, setLog] = useState<LogLine[]>([])
+  // Publicar ao importar: novos nascem publicados; os que já existem (mesmo título) passam a publicados.
+  const [publish, setPublish] = useState(true)
 
   const { data: catData, loading: catLoading } = useQuery<{
     categoryList: { id: string; name: string; slug: string }[]
@@ -255,6 +257,8 @@ export default function ImportCatalogPage() {
                 summary: p.summary?.trim() || null,
                 discount,
                 type: { code: "TICKET" },
+                // Sem estado, a API cria em rascunho.
+                ...(publish ? { status: { code: "ACTIVE" } } : {}),
                 // Antes as imagens do ficheiro eram ignoradas e o produto nascia sem foto.
                 image: productImages(p)[0] ?? null,
                 metadata: buildProductMetadata(p),
@@ -291,6 +295,22 @@ export default function ImportCatalogPage() {
               syncExistingProductFromCatalog(gtwClient, existingId, p)
             )
             await sleep(120)
+            if (publish) {
+              // A API só altera os campos enviados: título igual, estado publicado.
+              const pub = await with429Retry(`publishProduct:${p.title}`, () =>
+                gtwClient.mutate({
+                  mutation: UPDATE_PRODUCT,
+                  variables: {
+                    id: existingId,
+                    input: { title: p.title.trim(), type: { code: "TICKET" }, status: { code: "ACTIVE" } },
+                  },
+                  errorPolicy: "all",
+                })
+              )
+              const pubErr = combineMutationErrors(pub)
+              if (pubErr) sync.warnings.push(`não publicado: ${pubErr}`)
+              await sleep(120)
+            }
             synced++
             const w = sync.warnings.length ? ` — ${sync.warnings.join("; ")}` : ""
             setLog((l) => [
@@ -482,6 +502,20 @@ export default function ImportCatalogPage() {
             {issues.length === 0 && <p className="text-success-strong flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Validação OK</p>}
           </div>
         )}
+
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
+            checked={publish}
+            onChange={(e) => setPublish(e.target.checked)}
+            disabled={importing}
+            className="size-4 accent-primary"
+          />
+          Publicar logo na loja
+          <span className="text-xs text-muted-foreground">
+            (os produtos que já existem com o mesmo título também passam a publicados)
+          </span>
+        </label>
 
         <div className="flex flex-wrap items-center gap-3">
           <Button type="button" disabled={!ready || importing || listsLoading} onClick={() => void runImport()}>
