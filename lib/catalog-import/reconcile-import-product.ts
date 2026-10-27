@@ -10,7 +10,7 @@ type GtwClient = typeof gtwClient
 
 const FIND_PRODUCTS_BY_TITLE = gql`
   query FindProductsByTitle($title: String!) {
-    products(filter: { title: $title }, page: { page: 0, size: 40, sortBy: "createdAt", sortDirection: "DESC" }) {
+    products(filter: { title: $title, includeInactive: true }, page: { page: 0, size: 40, sortBy: "createdAt", sortDirection: "DESC" }) {
       data {
         id
         title
