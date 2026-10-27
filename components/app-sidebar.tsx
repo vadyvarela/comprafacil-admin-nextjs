@@ -21,6 +21,7 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
@@ -32,6 +33,8 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user?: { name?: string | null; email?: string | null; picture?: string | null }
   stores?: { id: string; name: string; active: boolean }[]
   staleActiveStore?: boolean
+  /** Número ao lado de um item, por URL: o que espera por alguém (avaliações por moderar). */
+  badges?: Record<string, number>
 }
 
 export function AppSidebar({
@@ -40,6 +43,7 @@ export function AppSidebar({
   user: sessionUser,
   stores = [],
   staleActiveStore = false,
+  badges = {},
   ...props
 }: AppSidebarProps) {
   const pathname = usePathname()
@@ -107,6 +111,14 @@ export function AppSidebar({
                             <span className="font-medium">{item.title}</span>
                           </Link>
                         </SidebarMenuButton>
+                        {badges[item.url] ? (
+                          <SidebarMenuBadge
+                            className="bg-warning-soft text-warning-strong"
+                            aria-label={`${badges[item.url]} por tratar`}
+                          >
+                            {badges[item.url] > 99 ? "99+" : badges[item.url]}
+                          </SidebarMenuBadge>
+                        ) : null}
                       </SidebarMenuItem>
                     )
                   })}
