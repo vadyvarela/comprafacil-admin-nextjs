@@ -67,3 +67,19 @@ export type PageInput = {
   page: number
   size: number
 }
+
+export type PlatformStore = {
+  id: string
+  slug: string
+  name: string
+  status: "ACTIVE" | "SUSPENDED" | "ARCHIVED" | string
+  /** 0.04 = 4%. Nula: usa a taxa por omissão da plataforma. */
+  commissionRate?: number | null
+  createdAt: string
+}
+
+export type CreateStoreResult = {
+  store: PlatformStore
+  /** Em claro, só nesta resposta. A API guarda apenas o hash. */
+  storefrontToken: string
+}
