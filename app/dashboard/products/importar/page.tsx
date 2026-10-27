@@ -5,6 +5,8 @@ import Link from "next/link"
 import { useQuery } from "@apollo/client/react"
 import { Upload, Play, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import { CREATE_PRODUCT } from "@/lib/graphql/products/mutations"
+import { CREATE_CATEGORY } from "@/lib/graphql/categories/mutations"
+import { CREATE_BRAND } from "@/lib/graphql/brands/mutations"
 import { CREATE_PRODUCT_VARIANT } from "@/lib/graphql/variants/mutations"
 import {
   combineMutationErrors,
@@ -107,12 +109,24 @@ export default function ImportCatalogPage() {
   const brands = useMemo(() => brandData?.brandList ?? [], [brandData])
   const listsLoading = catLoading || brandLoading
 
+  // As categorias e marcas do ficheiro que ainda não existem contam como
+  // existentes para validar: são criadas antes dos produtos.
+  const toCreate = useMemo(
+    () => ({
+      categories: missingBySlug(categories, parsed?.categories),
+      brands: missingBySlug(brands, parsed?.brands),
+    }),
+    [categories, brands, parsed]
+  )
+  const plannedCategories = useMemo(() => withPlanned(categories, toCreate.categories), [categories, toCreate])
+  const plannedBrands = useMemo(() => withPlanned(brands, toCreate.brands), [brands, toCreate])
+
   const issues = useMemo(() => {
     if (!parsed) return []
-    return collectImportIssues(parsed, categories, brands, {
+    return collectImportIssues(parsed, plannedCategories, plannedBrands, {
       skipEntityResolution: listsLoading,
     })
-  }, [parsed, categories, brands, listsLoading])
+  }, [parsed, plannedCategories, plannedBrands, listsLoading])
 
   const ready = Boolean(parsed) && !listsLoading && isCatalogImportReady(issues) && !parseError
 
@@ -146,14 +160,69 @@ export default function ImportCatalogPage() {
     let synced = 0
     let fail = 0
 
+    // Listas locais: recebem o que for criado aqui, para os produtos já as encontrarem.
+    const cats = [...categories]
+    const brs = [...brands]
+    try {
+      for (const seed of toCreate.brands) {
+        const res = await with429Retry(`createBrand: ${seed.name}`, () =>
+          gtwClient.mutate<{ createBrand: { id: string; name: string; slug: string } }>({
+            mutation: CREATE_BRAND,
+            variables: { input: { name: seed.name.trim(), slug: seed.slug.trim(), status: { code: "ACTIVE" } } },
+            errorPolicy: "all",
+          })
+        )
+        const created = res.data?.createBrand
+        if (!created) throw new Error(`marca «${seed.name}»: ${combineMutationErrors(res) || "sem resposta"}`)
+        brs.push(created)
+        setLog((l) => [...l, { kind: "ok", text: `+ marca ${created.name}` }])
+        await sleep(120)
+      }
+      for (const [i, seed] of toCreate.categories.entries()) {
+        const parentSlug = seed.parentSlug?.trim()
+        const parent = parentSlug ? cats.find((c) => c.slug === parentSlug) : null
+        if (parentSlug && !parent) {
+          throw new Error(`categoria «${seed.name}»: mãe «${parentSlug}» não existe nem vem antes no ficheiro`)
+        }
+        const res = await with429Retry(`createCategory: ${seed.name}`, () =>
+          gtwClient.mutate<{ createCategory: { id: string; name: string; slug: string } }>({
+            mutation: CREATE_CATEGORY,
+            variables: {
+              input: {
+                name: seed.name.trim(),
+                slug: seed.slug.trim(),
+                image: seed.image?.trim() || null,
+                showOnHome: seed.showOnHome ?? true,
+                orderIndex: seed.orderIndex ?? i,
+                parentCategoryId: parent?.id ?? null,
+                status: { code: "ACTIVE" },
+              },
+            },
+            errorPolicy: "all",
+          })
+        )
+        const created = res.data?.createCategory
+        if (!created) throw new Error(`categoria «${seed.name}»: ${combineMutationErrors(res) || "sem resposta"}`)
+        cats.push(created)
+        setLog((l) => [...l, { kind: "ok", text: `+ categoria ${created.name}` }])
+        await sleep(120)
+      }
+    } catch (e: unknown) {
+      // Sem categorias ou marcas, os produtos falhariam todos: pára aqui.
+      const msg = e instanceof Error ? e.message : String(e)
+      setLog((l) => [...l, { kind: "err", text: `✗ ${msg}. Nenhum produto foi importado.` }])
+      setImporting(false)
+      return
+    }
+
     for (let i = 0; i < products.length; i++) {
       const p = products[i]
       setProgress({ current: i + 1, total: products.length })
 
       const preflight = collectImportIssues(
         { meta: parsed.meta, products: [p] },
-        categories,
-        brands,
+        cats,
+        brs,
         { skipEntityResolution: false }
       )
       if (preflight.length > 0) {
@@ -163,7 +232,7 @@ export default function ImportCatalogPage() {
         continue
       }
 
-      const { categoryId, brandId } = resolveProductRefs(p, categories, brands)
+      const { categoryId, brandId } = resolveProductRefs(p, cats, brs)
       if (!categoryId || !brandId) {
         fail++
         setLog((l) => [...l, { kind: "err", text: `✗ ${p.title}: categoria ou marca não resolvida (interno)` }])
@@ -389,6 +458,12 @@ export default function ImportCatalogPage() {
             <p className="font-medium text-foreground">
               {parsed.products.length} produto(s) · {issues.length ? `${issues.length} com erros` : "pronto a importar"}
             </p>
+            {!listsLoading && (toCreate.categories.length > 0 || toCreate.brands.length > 0) ? (
+              <p className="text-muted-foreground">
+                Antes dos produtos, cria nesta loja: {toCreate.categories.length} categoria(s)
+                {toCreate.brands.length > 0 ? ` e ${toCreate.brands.length} marca(s)` : ""}. As que já existem (mesmo slug) ficam como estão.
+              </p>
+            ) : null}
             {issues.length > 0 && (
               <ul className="space-y-2 max-h-48 overflow-y-auto text-muted-foreground">
                 {issues.slice(0, 40).map((row) => (
@@ -439,4 +514,17 @@ export default function ImportCatalogPage() {
       </div>
     </>
   )
+}
+
+type Entity = { id: string; name: string; slug: string }
+
+/** Entradas do ficheiro cujo slug ainda não existe na loja activa. */
+function missingBySlug<T extends { slug: string }>(existing: Entity[], seeds: T[] | undefined): T[] {
+  const have = new Set(existing.map((e) => e.slug.trim().toLowerCase()))
+  return (seeds ?? []).filter((s) => !have.has(s.slug.trim().toLowerCase()))
+}
+
+/** A lista existente mais as entradas a criar, com um id provisório só para validação. */
+function withPlanned(existing: Entity[], planned: { name: string; slug: string }[]): Entity[] {
+  return [...existing, ...planned.map((p) => ({ id: `novo:${p.slug}`, name: p.name, slug: p.slug }))]
 }
