@@ -1,5 +1,6 @@
 import "server-only"
-import { can, getPrincipal } from "@/lib/auth/principal"
+import { ApiError, apiFetch } from "@/lib/api/client"
+import { requirePermissionOrThrow } from "@/lib/auth/requirePermission"
 import type { AnalyticsPeriod } from "@/lib/analytics/period"
 
 export type FunnelStepName =
@@ -29,50 +30,41 @@ export type FunnelResult =
 
 /**
  * GET /api/marketing-analytics/funnel no gateway.
+ *
+ * Vai com o token de quem está autenticado e no âmbito da loja activa: é a API
+ * que confirma a permissão e decide de que loja são os dados.
  */
 export async function fetchFunnel(period: AnalyticsPeriod): Promise<FunnelResult> {
+  let storeId: string
   try {
-    if (!can(await getPrincipal(), "platform.events.read")) {
-      throw new Error("Insufficient permissions")
+    storeId = (await requirePermissionOrThrow("platform.events.read")).activeStoreId
+  } catch (err) {
+    const denied = err instanceof Error && err.message === "Insufficient permissions"
+    return {
+      ok: false,
+      message: denied ? "Sem permissão." : "Autenticação admin necessária.",
     }
-  } catch {
-    return { ok: false, message: "Autenticação admin necessária." }
-  }
-
-  const base = process.env.GTW_URL
-  const token = process.env.CMS_ACCESS_TOKEN
-  if (!base || !token) {
-    return { ok: false, message: "Gateway não configurado." }
   }
 
   const params = new URLSearchParams({
     from: period.from.toISOString(),
     to: period.to.toISOString(),
   })
-  const url = `${base.replace(/\/$/, "")}/api/marketing-analytics/funnel?${params}`
 
   try {
-    const res = await fetch(url, {
+    const data = await apiFetch<FunnelData>(`/api/marketing-analytics/funnel?${params}`, {
       method: "GET",
-      headers: { Authorization: `Bearer ${token}` },
-      cache: "no-store",
+      storeId,
       signal: AbortSignal.timeout(15000),
     })
-
-    if (!res.ok) {
-      const text = await res.text()
-      return {
-        ok: false,
-        message: `Erro do gateway (${res.status}): ${text || res.statusText}`,
-      }
-    }
-
-    const json = (await res.json()) as { data?: FunnelData }
-    if (!json?.data?.steps) {
+    if (!data?.steps) {
       return { ok: false, message: "Resposta do funil inválida." }
     }
-    return { ok: true, data: json.data }
+    return { ok: true, data }
   } catch (err) {
+    if (err instanceof ApiError) {
+      return { ok: false, message: `Erro do gateway (${err.status}): ${err.message}` }
+    }
     const message = err instanceof Error ? err.message : "Erro ao obter o funil."
     return { ok: false, message }
   }

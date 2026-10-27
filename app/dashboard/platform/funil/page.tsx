@@ -59,8 +59,8 @@ function pointsDelta(current: number, previous: number) {
 
 const BREADCRUMB = [
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Analytics", href: "/dashboard/analytics" },
-  { label: "Funil" },
+  { label: "Plataforma" },
+  { label: "Funil de conversão" },
 ]
 
 export default async function FunnelPage({ searchParams }: PageProps) {
