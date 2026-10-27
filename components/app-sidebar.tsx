@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { Settings } from "lucide-react"
 
 import { NavUser } from "@/components/nav-user"
+import { StoreSwitcher } from "@/components/store-switcher"
 import { StoreBrandLogo } from "@/components/store-brand-mark"
 import type { StoreBrandSummary } from "@/lib/store-brand"
 import { NAV_SECTIONS } from "@/lib/nav"
@@ -29,12 +30,16 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   storeBrand: StoreBrandSummary
   primaryRole: StoreRole | null
   user?: { name?: string | null; email?: string | null; picture?: string | null }
+  stores?: { id: string; name: string; active: boolean }[]
+  staleActiveStore?: boolean
 }
 
 export function AppSidebar({
   storeBrand,
   primaryRole,
   user: sessionUser,
+  stores = [],
+  staleActiveStore = false,
   ...props
 }: AppSidebarProps) {
   const pathname = usePathname()
@@ -68,6 +73,7 @@ export function AppSidebar({
             </p>
           </div>
         </Link>
+        <StoreSwitcher stores={stores} stale={staleActiveStore} />
       </SidebarHeader>
 
       <SidebarContent className="py-2">

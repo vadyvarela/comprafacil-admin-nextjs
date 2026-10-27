@@ -27,6 +27,8 @@ export default async function DashboardLayout({
             email: principal.user?.email ?? null,
             picture: principal.user?.picture ?? undefined,
           }}
+          stores={principal.stores.map(({ id, name, active }) => ({ id, name, active }))}
+          staleActiveStore={principal.staleActiveStore ?? false}
         />
         <SidebarInset className="min-h-0 min-w-0">{children}</SidebarInset>
       </SidebarProvider>

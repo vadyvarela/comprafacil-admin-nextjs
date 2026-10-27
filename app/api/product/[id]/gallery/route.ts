@@ -1,3 +1,4 @@
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { NextRequest, NextResponse } from "next/server"
 import {
   metadataWithGallery,
@@ -52,6 +53,7 @@ async function fetchProduct(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${cmsAccessToken}`,
+      ...(await activeStoreHeader()),
     },
     body: JSON.stringify(graphqlQuery),
   })
@@ -104,6 +106,7 @@ async function updateProductGallery(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${cmsAccessToken}`,
+      ...(await activeStoreHeader()),
     },
     body: JSON.stringify(mutation),
   })

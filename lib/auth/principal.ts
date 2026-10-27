@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { apiFetch, ApiError } from "@/lib/api/client";
+import { readActiveStoreCookie } from "@/lib/auth/active-store-cookie";
 import { isPermission, type Permission } from "@/lib/auth/permissions";
 
 /**
@@ -38,6 +39,11 @@ export interface Principal {
     platformAdmin: boolean;
   } | null;
   stores: PrincipalStore[];
+  /**
+   * O cookie do seletor apontava para uma loja a que a pessoa já não tem
+   * acesso. A sessão abriu na loja por defeito e o cookie tem de ser limpo.
+   */
+  staleActiveStore?: boolean;
 }
 
 interface RawMe {
@@ -58,7 +64,24 @@ interface RawMe {
  */
 export const getPrincipal = cache(async (): Promise<Principal | null> => {
   try {
-    const me = await apiFetch<RawMe>("/api/me");
+    let staleActiveStore = false;
+    let me: RawMe;
+    try {
+      me = await apiFetch<RawMe>("/api/me");
+    } catch (error) {
+      // Um 401 com loja escolhida pode ser só o cookie a apontar para uma loja
+      // de onde a pessoa saiu. Tenta-se outra vez na loja por defeito antes de
+      // dar a sessão por perdida.
+      if (
+        !(error instanceof ApiError) ||
+        error.status !== 401 ||
+        !(await readActiveStoreCookie())
+      ) {
+        throw error;
+      }
+      me = await apiFetch<RawMe>("/api/me", { storeId: null });
+      staleActiveStore = true;
+    }
     if (!me?.activeStoreId) {
       return null;
     }
@@ -77,6 +100,7 @@ export const getPrincipal = cache(async (): Promise<Principal | null> => {
       impersonating: me.impersonating ?? false,
       user: me.user ?? null,
       stores: me.stores ?? [],
+      staleActiveStore,
     };
   } catch (error) {
     // Só falhas da API degradam para "sem principal". Tudo o resto sobe: o

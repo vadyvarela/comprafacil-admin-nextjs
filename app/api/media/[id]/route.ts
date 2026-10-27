@@ -1,3 +1,4 @@
+import { activeStoreHeader } from "@/lib/auth/store-header"
 import { NextRequest, NextResponse } from "next/server"
 import { requirePermissionApi } from "@/lib/auth/requirePermission"
 
@@ -21,6 +22,7 @@ export async function DELETE(
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${cmsAccessToken}`,
+        ...(await activeStoreHeader()),
       },
       signal: AbortSignal.timeout(60000),
     })
