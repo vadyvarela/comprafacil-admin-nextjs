@@ -44,8 +44,28 @@ export interface CatalogSeedProduct {
   variants: CatalogSeedVariant[]
 }
 
+/** Categoria a criar se ainda não existir na loja activa (procura pelo slug). */
+export interface CatalogSeedCategory {
+  name: string
+  slug: string
+  /** Slug da categoria mãe: tem de existir na loja ou vir antes no ficheiro. */
+  parentSlug?: string
+  image?: string
+  showOnHome?: boolean
+  orderIndex?: number
+}
+
+/** Marca a criar se ainda não existir na loja activa (procura pelo slug). */
+export interface CatalogSeedBrand {
+  name: string
+  slug: string
+}
+
 export interface CatalogSeedFile {
   meta?: unknown
+  /** Opcional: criadas antes dos produtos, só as que faltam. */
+  categories?: CatalogSeedCategory[]
+  brands?: CatalogSeedBrand[]
   products: CatalogSeedProduct[]
 }
 
