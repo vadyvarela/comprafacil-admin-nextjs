@@ -74,6 +74,54 @@ export function ProductList({
   const [deleteProduct] = useMutation(DELETE_PRODUCT)
   const [updateProduct] = useMutation(UPDATE_PRODUCT)
 
+  // Seleção para acções em massa. Ids que já não estão na página (depois de
+  // filtrar ou mudar de página) deixam de contar.
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulk, setBulk] = useState<{ label: string; done: number; total: number } | null>(null)
+  const pageIds = products.map((p) => p.id)
+  const selectedOnPage = products.filter((p) => selected.has(p.id))
+  const allSelected = pageIds.length > 0 && selectedOnPage.length === pageIds.length
+  const someSelected = selectedOnPage.length > 0 && !allSelected
+
+  const toggleOne = (id: string) =>
+    setSelected((current) => {
+      const next = new Set(current)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const toggleAll = () => setSelected(allSelected ? new Set() : new Set(pageIds))
+
+  /** Publica (ACTIVE) ou passa a rascunho (INACTIVE) os selecionados, um a um. */
+  const handleBulkVisibility = async (nextCode: string) => {
+    const targets = selectedOnPage.filter((p) => isProductDraft(p.status?.code) !== isProductDraft(nextCode))
+    const label = nextCode === "ACTIVE" ? "A publicar" : "A passar a rascunho"
+    if (targets.length === 0) {
+      showToast.success("Nada a mudar", `Os produtos selecionados já estão ${productVisibilityLabel(nextCode).toLowerCase()}s.`)
+      return
+    }
+    let failed = 0
+    setBulk({ label, done: 0, total: targets.length })
+    for (const [i, product] of targets.entries()) {
+      try {
+        await updateProduct({
+          variables: { id: product.id, input: productVisibilityUpdateInput(product, nextCode) },
+        })
+      } catch (err: unknown) {
+        failed++
+        console.error("Bulk visibility failed for", product.id, err)
+      }
+      setBulk({ label, done: i + 1, total: targets.length })
+    }
+    setBulk(null)
+    setSelected(new Set())
+    router.refresh()
+    const ok = targets.length - failed
+    const what = nextCode === "ACTIVE" ? "publicado(s)" : "passado(s) a rascunho"
+    if (failed === 0) showToast.success("Feito", `${ok} produto(s) ${what}.`)
+    else showToast.error("Alguns falharam", `${ok} ${what}, ${failed} com erro. Tente outra vez nesses.`)
+  }
+
   const handleToggleVisibility = async (product: Product, e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -139,9 +187,60 @@ export function ProductList({
 
   return (
     <DataPanel>
+      {canWrite && (selectedOnPage.length > 0 || bulk) ? (
+        <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border bg-muted/60 px-3 py-2 backdrop-blur">
+          <span className="text-sm font-medium text-foreground">
+            {bulk
+              ? `${bulk.label} ${bulk.done}/${bulk.total}…`
+              : `${selectedOnPage.length} selecionado(s)`}
+          </span>
+          {!bulk ? (
+            <>
+              <Button size="sm" className="h-8 gap-1.5" onClick={() => void handleBulkVisibility("ACTIVE")}>
+                <Globe className="h-3.5 w-3.5" />
+                Publicar
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-8 gap-1.5"
+                onClick={() => void handleBulkVisibility("INACTIVE")}
+              >
+                <EyeOff className="h-3.5 w-3.5" />
+                Passar a rascunho
+              </Button>
+              <Button size="sm" variant="ghost" className="h-8" onClick={() => setSelected(new Set())}>
+                Limpar seleção
+              </Button>
+              {allSelected && totalElements > products.length ? (
+                <span className="text-xs text-muted-foreground">
+                  Só esta página: {products.length} de {totalElements}.
+                </span>
+              ) : null}
+            </>
+          ) : (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+        </div>
+      ) : null}
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-muted/45">
+            {canWrite ? (
+              <TableHead className="w-10 px-3">
+                <input
+                  type="checkbox"
+                  aria-label="Selecionar todos os produtos desta página"
+                  checked={allSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = someSelected
+                  }}
+                  onChange={toggleAll}
+                  disabled={Boolean(bulk)}
+                  className="size-4 cursor-pointer accent-primary align-middle"
+                />
+              </TableHead>
+            ) : null}
             <TableHead className="w-14 text-xs">Img</TableHead>
             <TableHead className="text-xs">Produto</TableHead>
             <TableHead className="text-xs hidden sm:table-cell">Visibilidade</TableHead>
@@ -163,7 +262,23 @@ export function ProductList({
             const draft = isProductDraft(product.status?.code)
 
             return (
-              <TableRow key={product.id} className="group cursor-pointer hover:bg-muted/20">
+              <TableRow
+                key={product.id}
+                data-state={selected.has(product.id) ? "selected" : undefined}
+                className="group cursor-pointer hover:bg-muted/20"
+              >
+                {canWrite ? (
+                  <TableCell className="w-10 py-2 px-3">
+                    <input
+                      type="checkbox"
+                      aria-label={`Selecionar ${product.title}`}
+                      checked={selected.has(product.id)}
+                      onChange={() => toggleOne(product.id)}
+                      disabled={Boolean(bulk)}
+                      className="size-4 cursor-pointer accent-primary align-middle"
+                    />
+                  </TableCell>
+                ) : null}
                 <TableCell className="py-2 px-3">
                   <Link href={`/dashboard/products/${product.id}`} className="block">
                     <div className="h-10 w-10 rounded-lg border border-border bg-muted overflow-hidden shrink-0 flex items-center justify-center">
