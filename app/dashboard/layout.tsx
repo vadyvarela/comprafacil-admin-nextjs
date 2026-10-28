@@ -1,7 +1,8 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { PermissionsProvider } from "@/components/providers/permissions-provider";
 import { getStoreBrand } from "@/lib/services/get-store-brand";
-import { activeStore } from "@/lib/auth/principal";
+import { activeStore, can } from "@/lib/auth/principal";
+import { getPendingProductReviewCount } from "@/lib/actions/reviews";
 import { requireSessionPage } from "@/lib/auth/requirePermission";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
@@ -15,6 +16,9 @@ export default async function DashboardLayout({
   const principal = await requireSessionPage();
   const storeBrand = await getStoreBrand();
   const store = activeStore(principal);
+  const pendingReviews = can(principal, "reviews.read")
+    ? await getPendingProductReviewCount()
+    : 0;
 
   return (
     <PermissionsProvider permissions={principal.permissions}>
@@ -29,6 +33,7 @@ export default async function DashboardLayout({
           }}
           stores={principal.stores.map(({ id, name, active }) => ({ id, name, active }))}
           staleActiveStore={principal.staleActiveStore ?? false}
+          badges={{ "/dashboard/reviews": pendingReviews }}
         />
         <SidebarInset className="min-h-0 min-w-0">{children}</SidebarInset>
       </SidebarProvider>

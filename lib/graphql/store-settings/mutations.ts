@@ -9,6 +9,9 @@ const STORE_SETTINGS_FIELDS = `
   faviconUrl
   ogImageUrl
   supportEmail
+  emailFromName
+  emailFromAddress
+  emailReplyTo
   supportPhonePrimary
   supportPhoneSecondary
   address
@@ -45,6 +48,9 @@ export const UPDATE_STORE_SETTINGS = gql`
     $faviconUrl: String
     $ogImageUrl: String
     $supportEmail: String
+    $emailFromName: String
+    $emailFromAddress: String
+    $emailReplyTo: String
     $supportPhonePrimary: String
     $supportPhoneSecondary: String
     $nif: String
@@ -65,6 +71,9 @@ export const UPDATE_STORE_SETTINGS = gql`
       faviconUrl: $faviconUrl
       ogImageUrl: $ogImageUrl
       supportEmail: $supportEmail
+      emailFromName: $emailFromName
+      emailFromAddress: $emailFromAddress
+      emailReplyTo: $emailReplyTo
       supportPhonePrimary: $supportPhonePrimary
       supportPhoneSecondary: $supportPhoneSecondary
       nif: $nif
