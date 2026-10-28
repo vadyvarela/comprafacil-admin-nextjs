@@ -9,6 +9,9 @@ export interface StoreSettingsGql {
   faviconUrl?: string | null
   ogImageUrl?: string | null
   supportEmail?: string | null
+  emailFromName?: string | null
+  emailFromAddress?: string | null
+  emailReplyTo?: string | null
   supportPhonePrimary?: string | null
   supportPhoneSecondary?: string | null
   nif?: string | null

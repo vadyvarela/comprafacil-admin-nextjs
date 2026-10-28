@@ -28,6 +28,8 @@ export const STORE_PERMISSIONS = [
   "categories.write",
   "brands.read",
   "brands.write",
+  "reviews.read",
+  "reviews.moderate",
   "coupons.read",
   "coupons.write",
   "promotions.read",
@@ -68,6 +70,7 @@ export const STOREFRONT_PERMISSIONS = [
   "storefront.order.status",
   "storefront.analytics.write",
   "storefront.documents.read",
+  "storefront.reviews.write",
 ] as const;
 
 export const PLATFORM_PERMISSIONS = [

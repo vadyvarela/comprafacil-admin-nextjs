@@ -9,6 +9,9 @@ const STORE_SETTINGS_FIELDS = `
   faviconUrl
   ogImageUrl
   supportEmail
+  emailFromName
+  emailFromAddress
+  emailReplyTo
   supportPhonePrimary
   supportPhoneSecondary
   nif

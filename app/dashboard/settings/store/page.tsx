@@ -43,6 +43,9 @@ type StoreDraft = {
   faviconUrl: string
   ogImageUrl: string
   supportEmail: string
+  emailFromName: string
+  emailFromAddress: string
+  emailReplyTo: string
   supportPhonePrimary: string
   supportPhoneSecondary: string
   nif: string
@@ -84,6 +87,9 @@ function rowToDraft(row: StoreSettingsGql): StoreDraft {
     faviconUrl: row.faviconUrl?.trim() ?? "",
     ogImageUrl: row.ogImageUrl?.trim() ?? "",
     supportEmail: row.supportEmail?.trim() ?? "",
+    emailFromName: row.emailFromName?.trim() ?? "",
+    emailFromAddress: row.emailFromAddress?.trim() ?? "",
+    emailReplyTo: row.emailReplyTo?.trim() ?? "",
     supportPhonePrimary: row.supportPhonePrimary?.trim() ?? "",
     supportPhoneSecondary: row.supportPhoneSecondary?.trim() ?? "",
     nif: row.nif?.trim() ?? "",
@@ -146,6 +152,9 @@ export default function StoreSettingsPage() {
           faviconUrl: values.faviconUrl.trim() || null,
           ogImageUrl: values.ogImageUrl.trim() || null,
           supportEmail: values.supportEmail.trim() || null,
+          emailFromName: values.emailFromName.trim() || null,
+          emailFromAddress: values.emailFromAddress.trim() || null,
+          emailReplyTo: values.emailReplyTo.trim() || null,
           supportPhonePrimary: values.supportPhonePrimary.trim() || null,
           supportPhoneSecondary: values.supportPhoneSecondary.trim() || null,
           nif: values.nif.trim() || null,
@@ -307,6 +316,52 @@ export default function StoreSettingsPage() {
                     onChange={(e) => patch({ address: e.target.value })}
                     placeholder="Linhas de morada no footer"
                     className="resize-y min-h-[72px] text-sm"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold">Emails aos clientes</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-xs text-muted-foreground">
+                  Confirmações de encomenda e convites saem com estes dados. Campos vazios: o nome da
+                  loja assina, e as respostas vão para o email de contacto acima.
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="email-from-name">Nome do remetente</Label>
+                  <Input
+                    id="email-from-name"
+                    maxLength={120}
+                    value={values.emailFromName}
+                    onChange={(e) => patch({ emailFromName: e.target.value })}
+                    placeholder={values.siteName.trim() || "Nome da loja"}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email-from-address">Endereço do remetente</Label>
+                  <Input
+                    id="email-from-address"
+                    type="email"
+                    value={values.emailFromAddress}
+                    onChange={(e) => patch({ emailFromAddress: e.target.value })}
+                    placeholder="noreply@a-tua-loja.cv"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Tem de ser de um domínio verificado no Resend; senão os emails não saem. Vazio:
+                    usa o endereço da plataforma.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email-reply-to">Respostas dos clientes vão para</Label>
+                  <Input
+                    id="email-reply-to"
+                    type="email"
+                    value={values.emailReplyTo}
+                    onChange={(e) => patch({ emailReplyTo: e.target.value })}
+                    placeholder={values.supportEmail.trim() || "suporte@a-tua-loja.cv"}
                   />
                 </div>
               </CardContent>
