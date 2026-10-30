@@ -42,6 +42,7 @@ import { DatePicker } from "@/components/ui/date-picker"
 import { showToast } from "@/lib/utils/toast"
 import { getErrorMessage } from "@/lib/utils/errors"
 import { cn } from "@/lib/utils"
+import { isLocalLink, POSITION_LABEL } from "@/components/banners/banner-meta"
 
 type BannerFormModalProps = {
   open: boolean
@@ -75,13 +76,6 @@ const EMPTY_FORM: FormState = {
   status: "ACTIVE",
   startDate: undefined,
   endDate: undefined,
-}
-
-const POSITION_LABEL: Record<string, string> = {
-  hero: "Hero",
-  "hero-side": "Lateral",
-  promo: "Promo",
-  sidebar: "Sidebar",
 }
 
 function toIsoDateTime(date: Date | undefined): string | null {
@@ -231,6 +225,11 @@ export function BannerFormModal({
     }
     if (!selectedImage && !formData.image.trim()) {
       showToast.error("Campos obrigatórios", "Selecciona ou envia uma imagem")
+      return
+    }
+
+    if (isLocalLink(formData.link)) {
+      showToast.error("Link inválido", "Este link só abre no teu computador. Usa um caminho como /entregas")
       return
     }
 
@@ -513,12 +512,13 @@ export function BannerFormModal({
                     </Label>
                     <Input
                       id="banner-link"
-                      type="url"
+                      type="text"
+                      inputMode="url"
                       value={formData.link}
                       onChange={(e) =>
                         setFormData({ ...formData, link: e.target.value })
                       }
-                      placeholder="https://…"
+                      placeholder="/produtos ou https://…"
                       className="h-8 text-sm"
                     />
                   </div>

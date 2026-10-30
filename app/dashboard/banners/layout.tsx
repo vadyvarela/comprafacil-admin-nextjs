@@ -6,7 +6,5 @@ export default async function Layout({
   children: React.ReactNode
 }) {
   await requirePermissionPage("banners.read")
-  return (
-    <div className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden">{children}</div>
-  )
+  return children
 }
