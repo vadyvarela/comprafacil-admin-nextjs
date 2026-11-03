@@ -52,6 +52,12 @@ export function summarizeHomeBlock(block: HomeBlock): string | null {
     case "categoryRail":
       return join(block.props.title, block.props.categorySlug)
 
+    case "categoryTabs":
+      return join(
+        block.props.title,
+        block.props.tabs.map((tab) => tab.label ?? tab.categorySlug).join(" · ")
+      )
+
     case "multiCategoryRails": {
       const slugs = block.props.slugs
       if (slugs?.length) return plural(slugs.length, "categoria", "categorias")
