@@ -1,6 +1,7 @@
 import {
   Clock,
   Columns2,
+  FolderKanban,
   GalleryHorizontal,
   GalleryHorizontalEnd,
   Grid2x2,
@@ -36,6 +37,7 @@ export const HOME_BLOCK_ICONS: Record<HomeBlockType, LucideIcon> = {
   productRail: GalleryHorizontalEnd,
   categoryRail: Tag,
   multiCategoryRails: Layers,
+  categoryTabs: FolderKanban,
   newsletter: Mail,
   recentlyViewed: Clock,
 }

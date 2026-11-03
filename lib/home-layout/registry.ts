@@ -13,6 +13,7 @@ export const HOME_BLOCK_TYPES = [
   "productRail",
   "categoryRail",
   "multiCategoryRails",
+  "categoryTabs",
   "newsletter",
   "recentlyViewed",
 ] as const
@@ -92,6 +93,11 @@ export const HOME_BLOCK_REGISTRY: Record<HomeBlockType, HomeBlockRegistryEntry> 
     label: "Várias categorias (legado)",
     description: "Várias secções de categoria num só bloco (slugs ou categorias «na home»).",
     hint: "Preferível vários «Rail por categoria» — mais simples de perceber e de reordenar.",
+  },
+  categoryTabs: {
+    label: "Categorias em tabs",
+    description: "Duas a seis categorias num só bloco, com tabs que trocam os produtos.",
+    hint: "Escolhe as categorias por ordem; o texto da tab é opcional (usa o nome da categoria).",
   },
   newsletter: {
     label: "CTA newsletter",
