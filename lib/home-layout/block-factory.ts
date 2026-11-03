@@ -136,6 +136,17 @@ export function createEmptyBlock(type: HomeBlockType): HomeBlock {
           seeAllHref: "/categoria/smartphones",
         },
       }
+    case "categoryTabs":
+      return {
+        id,
+        type: "categoryTabs",
+        enabled: true,
+        props: {
+          title: "Explora por categoria",
+          limit: 8,
+          tabs: [{ categorySlug: "smartphones" }, { categorySlug: "acessorios" }],
+        },
+      }
     case "multiCategoryRails":
       return {
         id,

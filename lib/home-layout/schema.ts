@@ -129,6 +129,40 @@ const categoryRailBlockSchema = z.object({
     .strict(),
 })
 
+/** Várias categorias num só bloco, com tabs; a loja troca os produtos sem recarregar. */
+export const CATEGORY_TABS_RULES = {
+  minTabs: 2,
+  maxTabs: 6,
+  labelMax: 24,
+} as const
+
+const categoryTabSchema = z
+  .object({
+    /** UUID da categoria no GTW (preenchido pelo backoffice ao escolher na lista). */
+    categoryId: z.string().uuid().optional(),
+    categorySlug: slugSchema,
+    /** Texto da tab; omitido = nome da categoria. */
+    label: z.string().min(1).max(CATEGORY_TABS_RULES.labelMax).optional(),
+  })
+  .strict()
+
+const categoryTabsBlockSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("categoryTabs"),
+  enabled: z.boolean().default(true),
+  props: z
+    .object({
+      title: z.string().min(1).max(HOME_LAYOUT_RULES.titleMax).optional(),
+      subtitle: z.string().max(HOME_LAYOUT_RULES.subtitleMax).optional(),
+      limit: railLimitSchema,
+      tabs: z
+        .array(categoryTabSchema)
+        .min(CATEGORY_TABS_RULES.minTabs)
+        .max(CATEGORY_TABS_RULES.maxTabs),
+    })
+    .strict(),
+})
+
 const multiCategoryRailsBlockSchema = z.object({
   id: z.string().uuid(),
   type: z.literal("multiCategoryRails"),
@@ -529,6 +563,7 @@ export const homeBlockSchema = z.discriminatedUnion("type", [
   productRailBlockSchema,
   categoryRailBlockSchema,
   multiCategoryRailsBlockSchema,
+  categoryTabsBlockSchema,
   newsletterBlockSchema,
   recentlyViewedBlockSchema,
   shopByCategoryBlockSchema,

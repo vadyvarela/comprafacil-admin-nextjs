@@ -6,6 +6,7 @@ import type { HomeBlockType } from "@/lib/home-layout/registry"
 import type { BlockFieldsProps } from "./block-fields/shared"
 
 import { CategoryRailFields } from "./block-fields/category-rail"
+import { CategoryTabsFields } from "./block-fields/category-tabs"
 import { HeroFields } from "./block-fields/hero"
 import { HeroV2Fields } from "./block-fields/hero-v2"
 import { MultiCategoryRailsFields } from "./block-fields/multi-category-rails"
@@ -47,6 +48,7 @@ const BLOCK_FIELD_EDITORS: { [K in HomeBlockType]: FieldsComponent<K> } = {
   productRail: ProductRailFields,
   categoryRail: CategoryRailFields,
   multiCategoryRails: MultiCategoryRailsFields,
+  categoryTabs: CategoryTabsFields,
   newsletter: NewsletterFields,
   recentlyViewed: RecentlyViewedFields,
 }
