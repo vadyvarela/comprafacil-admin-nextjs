@@ -98,6 +98,8 @@ export const HOME_BLOCK_REGISTRY: Record<HomeBlockType, HomeBlockRegistryEntry> 
     label: "Categorias em tabs",
     description: "Duas a seis categorias num só bloco, com tabs que trocam os produtos.",
     hint: "Escolhe as categorias por ordem; o texto da tab é opcional (usa o nome da categoria).",
+    // A loja de moda (loja-feed) não conhece este bloco e rejeitaria o layout inteiro.
+    verticals: ["tech", "beauty", "automotive", "general"],
   },
   newsletter: {
     label: "CTA newsletter",

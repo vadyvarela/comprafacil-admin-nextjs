@@ -142,7 +142,7 @@ const categoryTabSchema = z
     categoryId: z.string().uuid().optional(),
     categorySlug: slugSchema,
     /** Texto da tab; omitido = nome da categoria. */
-    label: z.string().min(1).max(CATEGORY_TABS_RULES.labelMax).optional(),
+    label: z.string().trim().min(1).max(CATEGORY_TABS_RULES.labelMax).optional(),
   })
   .strict()
 
@@ -158,7 +158,23 @@ const categoryTabsBlockSchema = z.object({
       tabs: z
         .array(categoryTabSchema)
         .min(CATEGORY_TABS_RULES.minTabs)
-        .max(CATEGORY_TABS_RULES.maxTabs),
+        .max(CATEGORY_TABS_RULES.maxTabs)
+        .superRefine((tabs, ctx) => {
+          // A loja usa o slug como chave da tab: repetidos partem a troca de tabs.
+          const slugs = new Set<string>()
+          const ids = new Set<string>()
+          tabs.forEach((tab, index) => {
+            if (slugs.has(tab.categorySlug) || (tab.categoryId && ids.has(tab.categoryId))) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: [index, "categorySlug"],
+                message: "Categoria repetida nas tabs",
+              })
+            }
+            slugs.add(tab.categorySlug)
+            if (tab.categoryId) ids.add(tab.categoryId)
+          })
+        }),
     })
     .strict(),
 })
