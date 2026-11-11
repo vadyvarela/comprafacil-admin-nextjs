@@ -17,7 +17,12 @@ function newId(): string {
   })
 }
 
-export function createEmptyBlock(type: HomeBlockType): HomeBlock {
+export type BlockFactoryContext = {
+  /** Categorias da loja, já ordenadas; usadas para preencher blocos de categoria. */
+  categories?: { id: string; slug: string }[]
+}
+
+export function createEmptyBlock(type: HomeBlockType, ctx: BlockFactoryContext = {}): HomeBlock {
   const id = newId()
   switch (type) {
     case "hero":
@@ -144,7 +149,12 @@ export function createEmptyBlock(type: HomeBlockType): HomeBlock {
         props: {
           title: "Explora por categoria",
           limit: 8,
-          tabs: [{ categorySlug: "smartphones" }, { categorySlug: "acessorios" }],
+          tabs:
+            ctx.categories && ctx.categories.length >= 2
+              ? ctx.categories
+                  .slice(0, 2)
+                  .map((c) => ({ categoryId: c.id, categorySlug: c.slug }))
+              : [{ categorySlug: "smartphones" }, { categorySlug: "acessorios" }],
         },
       }
     case "multiCategoryRails":
