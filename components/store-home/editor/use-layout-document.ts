@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery } from "@apollo/client/react"
 import { GET_STORE_HOME_LAYOUT } from "@/lib/graphql/store-home-layout/queries"
+import { useSortedCategoryList } from "@/components/store-home/block-fields/shared"
 import {
   PUBLISH_STORE_HOME_LAYOUT,
   SAVE_STORE_HOME_LAYOUT_DRAFT,
@@ -257,15 +258,17 @@ export function useLayoutDocument() {
     [mutateDoc],
   )
 
+  const { list: categories } = useSortedCategoryList()
+
   const addBlock = useCallback(
     (type: HomeBlockType): string => {
-      const block = createEmptyBlock(type)
+      const block = createEmptyBlock(type, { categories })
       mutateDoc((d) => ({ ...d, blocks: [...d.blocks, block] }), {
         forceHistory: true,
       })
       return block.id
     },
-    [mutateDoc],
+    [mutateDoc, categories],
   )
 
   const toggleBlockEnabled = useCallback(

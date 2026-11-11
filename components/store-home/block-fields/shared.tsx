@@ -32,6 +32,39 @@ import {
 } from "@/lib/home-layout/weekly-deal-theme"
 
 
+export type CategoryOption = { id: string; name: string; slug: string }
+
+/** Categorias da loja por ordem alfabética, para os menus dos blocos. */
+export function useSortedCategoryList(): { list: CategoryOption[]; loading: boolean } {
+  const { data, loading } = useQuery<{ categoryList: CategoryOption[] }>(GET_CATEGORY_LIST, {
+    fetchPolicy: "cache-and-network",
+  })
+  const list = useMemo(
+    () =>
+      [...(data?.categoryList ?? [])].sort((a, b) =>
+        a.name.localeCompare(b.name, "pt", { sensitivity: "base" })
+      ),
+    [data?.categoryList]
+  )
+  return { list, loading }
+}
+
+/**
+ * Id da categoria escolhida: pelo id guardado se ainda existir, senão pelo slug.
+ * Uma categoria apagada e recriada com o mesmo slug tem outro id.
+ */
+export function resolveCategoryId(
+  list: CategoryOption[],
+  categoryId: string | null | undefined,
+  categorySlug: string | null | undefined
+): string {
+  return (
+    (categoryId ? list.find((c) => c.id === categoryId)?.id : undefined) ??
+    (categorySlug ? list.find((c) => c.slug === categorySlug)?.id : undefined) ??
+    ""
+  )
+}
+
 export type BlockFieldsProps<T> = {
   block: T
   onChange: (next: HomeBlock) => void
@@ -181,20 +214,9 @@ export function CategoryRailHomeFields({
   block: CategoryRailBlock
   onChange: (next: HomeBlock) => void
 }) {
-  const { data, loading } = useQuery<{
-    categoryList: { id: string; name: string; slug: string }[]
-  }>(GET_CATEGORY_LIST, { fetchPolicy: "cache-and-network" })
+  const { list, loading } = useSortedCategoryList()
 
-  const list = useMemo(() => {
-    return [...(data?.categoryList ?? [])].sort((a, b) =>
-      a.name.localeCompare(b.name, "pt", { sensitivity: "base" })
-    )
-  }, [data?.categoryList])
-
-  const derivedId =
-    block.props.categoryId ??
-    list.find((c) => c.slug === block.props.categorySlug)?.id ??
-    ""
+  const derivedId = resolveCategoryId(list, block.props.categoryId, block.props.categorySlug)
 
   return (
     <div className="grid gap-2 sm:grid-cols-2">
@@ -314,15 +336,7 @@ export function ShopByCategoryHomeFields({
   block: ShopByCategoryBlock
   onChange: (next: HomeBlock) => void
 }) {
-  const { data, loading } = useQuery<{
-    categoryList: { id: string; name: string; slug: string }[]
-  }>(GET_CATEGORY_LIST, { fetchPolicy: "cache-and-network" })
-
-  const list = useMemo(() => {
-    return [...(data?.categoryList ?? [])].sort((a, b) =>
-      a.name.localeCompare(b.name, "pt", { sensitivity: "base" })
-    )
-  }, [data?.categoryList])
+  const { list, loading } = useSortedCategoryList()
 
   const items = block.props.items
   const patchItems = (next: typeof items) =>
@@ -348,8 +362,7 @@ export function ShopByCategoryHomeFields({
       </p>
       <div className="flex flex-col gap-3">
         {items.map((it, idx) => {
-          const derivedId =
-            it.categoryId ?? list.find((c) => c.slug === it.categorySlug)?.id ?? ""
+          const derivedId = resolveCategoryId(list, it.categoryId, it.categorySlug)
           return (
             <div
               key={idx}
